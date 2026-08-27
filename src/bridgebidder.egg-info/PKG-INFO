@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: bridgebidder
+Version: 0.1.0
+Summary: A 2/1 Game Forcing bridge bidding engine with explanations, inference and simulation arbitration
+Requires-Python: >=3.11
+Requires-Dist: pydantic>=2
+Requires-Dist: PyYAML>=6
+Provides-Extra: dd
+Requires-Dist: endplay>=0.5; extra == "dd"
+Provides-Extra: test
+Requires-Dist: pytest>=7; extra == "test"

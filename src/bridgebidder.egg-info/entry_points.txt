@@ -1,0 +1,2 @@
+[console_scripts]
+bid = bridgebidder.cli:main

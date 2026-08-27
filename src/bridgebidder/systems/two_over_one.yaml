@@ -1,0 +1,2829 @@
+# =============================================================================
+# Two-over-One Game Forcing — system knowledge base
+#
+# The bidding system is DATA.  Each context matches a family of auction
+# positions (pattern is matched after stripping leading passes; "?" is the
+# decision point, "..." matches any prefix).  Rules are candidate calls with
+# hand constraints, priorities (higher = systemically preferred), shown
+# meanings, forcing implications and conditions.
+#
+# Style decisions and config flags are documented in DECISIONS.md.
+# =============================================================================
+
+system:
+  name: "Two-over-One Game Forcing"
+  config:
+    forcing_nt: semi            # semi | full  (semi: opener may pass 1NT with bal min)
+    two_over_one_suit_length: 3 # minimum minor length for a 2/1 response
+    nt_with_5M: true            # 1NT opening allowed with a 5-card major (5332)
+  defense_notes: >
+    Defense to their 1NT: natural (X = penalty 15+, 2-level bids natural 5+
+    cards, constructive).  No Michaels/unusual NT; cue-bids of their suit are
+    limit+ raises of partner only in the sequences defined below.
+
+contexts:
+
+  # ===========================================================================
+  # OPENING BIDS (pattern "?" = nobody has acted yet; leading passes stripped,
+  # opening_seat conditions distinguish 1st-4th chair)
+  # ===========================================================================
+
+  - id: openings
+    description: "Opening bids, all seats"
+    pattern: "?"
+    rules:
+      - id: open_2C
+        call: 2C
+        priority: 96
+        requires:
+          any_of:
+            - hcp: [22, 40]
+            - hcp: [18, 21]
+              evals: { ltc: [0, 3.5] }
+        shows: "strong artificial: 22+ HCP or equivalent playing strength"
+        establishes: { forcing: game_forcing, game_force: false }
+        alertable: true
+        convention: strong_2C
+
+      - id: open_2NT
+        call: 2NT
+        priority: 94
+        requires: { hcp: [20, 21], balanced: true }
+        shows: "20-21 balanced"
+        establishes: { forcing: non_forcing }
+
+      - id: open_1NT
+        call: 1NT
+        priority: 92
+        requires: { hcp: [15, 17], balanced: true }
+        shows: "15-17 balanced (may contain a 5-card major)"
+        establishes: { forcing: non_forcing }
+        when: { config: { nt_with_5M: true } }
+
+      - id: open_1NT_no5M
+        call: 1NT
+        priority: 92
+        requires:
+          hcp: [15, 17]
+          balanced: true
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "15-17 balanced, no 5-card major"
+        establishes: { forcing: non_forcing }
+        when: { config: { nt_with_5M: false } }
+
+      - id: open_1S
+        call: 1S
+        priority: 81
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [12, 21]
+          evals: { "suit_diff(S,H)": [0, 13] }
+        shows: "5+ spades, 12-21 HCP"
+        establishes: { forcing: non_forcing }
+
+      - id: open_1H
+        call: 1H
+        priority: 80
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [12, 21]
+          evals: { "suit_diff(H,S)": [1, 13] }
+        shows: "5+ hearts, 12-21 HCP"
+        establishes: { forcing: non_forcing }
+
+      # rule-of-20 light openings, 1st/2nd seat only
+      - id: open_1S_rule20
+        call: 1S
+        priority: 79
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [10, 11]
+          evals: { rule_of_20: [20, 33], "suit_diff(S,H)": [0, 13], suit_quality(S): [1.5, 9] }
+        shows: "5+ spades, light opening satisfying the rule of 20"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2] }
+
+      - id: open_1H_rule20
+        call: 1H
+        priority: 78
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [10, 11]
+          evals: { rule_of_20: [20, 33], "suit_diff(H,S)": [1, 13], suit_quality(H): [1.5, 9] }
+        shows: "5+ hearts, light opening satisfying the rule of 20"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2] }
+
+      # 4th seat: rule of 15
+      - id: open_1S_rule15
+        call: 1S
+        priority: 77
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [10, 11]
+          evals: { rule_of_15: [15, 30], "suit_diff(S,H)": [0, 13] }
+        shows: "5+ spades, 4th-seat opening satisfying the rule of 15"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [4] }
+
+      - id: open_1D
+        call: 1D
+        priority: 74
+        requires:
+          hcp: [12, 21]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+          any_of:
+            - suits: { D: [4, 13] }
+              evals: { "suit_diff(D,C)": [0, 13] }
+            - suits: { D: [3, 3], C: [0, 2] }
+        shows: "opening, 3+ diamonds (better minor), no 5-card major, 12-21 HCP"
+        establishes: { forcing: non_forcing }
+
+      - id: open_1C
+        call: 1C
+        priority: 73
+        requires:
+          hcp: [12, 21]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+          any_of:
+            - suits: { C: [4, 13] }
+              evals: { "suit_diff(C,D)": [1, 13] }
+            - suits: { C: [3, 3], D: [0, 3] }
+        shows: "opening, 3+ clubs (better minor), no 5-card major, 12-21 HCP"
+        establishes: { forcing: non_forcing }
+
+      - id: open_1m_rule20
+        call: 1D
+        priority: 72
+        requires:
+          hcp: [10, 11]
+          suits: { D: [5, 13] }
+          evals: { rule_of_20: [20, 33], "suit_diff(D,C)": [0, 13] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "5+ diamonds, light opening satisfying the rule of 20"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2] }
+
+      - id: open_1C_rule20
+        call: 1C
+        priority: 71
+        requires:
+          hcp: [10, 11]
+          suits: { C: [5, 13] }
+          evals: { rule_of_20: [20, 33], "suit_diff(C,D)": [1, 13] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "5+ clubs, light opening satisfying the rule of 20"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2] }
+
+      # weak twos: 6-card suit, 5-10 HCP, suit quality tightens when vulnerable
+      - id: open_weak_2S_nv
+        call: 2S
+        priority: 66
+        requires:
+          suits: { S: [6, 6], H: [0, 3] }
+          hcp: [5, 10]
+          features: [ "good_suit(S)" ]
+        shows: "weak two: 6 spades, 5-10 HCP"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_weak_2S_vul
+        call: 2S
+        priority: 66
+        requires:
+          suits: { S: [6, 6], H: [0, 3] }
+          hcp: [7, 10]
+          features: [ "two_of_top3(S)" ]
+        shows: "weak two: 6 good spades, 7-10 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+      - id: open_weak_2H_nv
+        call: 2H
+        priority: 65
+        requires:
+          suits: { H: [6, 6], S: [0, 3] }
+          hcp: [5, 10]
+          features: [ "good_suit(H)" ]
+        shows: "weak two: 6 hearts, 5-10 HCP"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_weak_2H_vul
+        call: 2H
+        priority: 65
+        requires:
+          suits: { H: [6, 6], S: [0, 3] }
+          hcp: [7, 10]
+          features: [ "two_of_top3(H)" ]
+        shows: "weak two: 6 good hearts, 7-10 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+      - id: open_weak_2D_nv
+        call: 2D
+        priority: 64
+        requires:
+          suits: { D: [6, 6], H: [0, 3], S: [0, 3] }
+          hcp: [5, 10]
+          features: [ "good_suit(D)" ]
+        shows: "weak two: 6 diamonds, 5-10 HCP"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_weak_2D_vul
+        call: 2D
+        priority: 64
+        requires:
+          suits: { D: [6, 6], H: [0, 3], S: [0, 3] }
+          hcp: [7, 10]
+          features: [ "two_of_top3(D)" ]
+        shows: "weak two: 6 good diamonds, 7-10 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+
+      # 3-level preempts: 7-card suit, seats 1-3
+      - id: open_3C
+        call: 3C
+        priority: 60
+        requires: { suits: { C: [7, 13] }, hcp: [4, 9], features: [ "good_suit(C)" ] }
+        shows: "preempt: 7+ clubs, 4-9 HCP"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2, 3] }
+      - id: open_3D
+        call: 3D
+        priority: 60
+        requires: { suits: { D: [7, 13] }, hcp: [4, 9], features: [ "good_suit(D)" ] }
+        shows: "preempt: 7+ diamonds, 4-9 HCP"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2, 3] }
+      - id: open_3H
+        call: 3H
+        priority: 60
+        requires: { suits: { H: [7, 13] }, hcp: [4, 9], features: [ "good_suit(H)" ] }
+        shows: "preempt: 7+ hearts, 4-9 HCP"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2, 3] }
+      - id: open_3S
+        call: 3S
+        priority: 60
+        requires: { suits: { S: [7, 13] }, hcp: [4, 9], features: [ "good_suit(S)" ] }
+        shows: "preempt: 7+ spades, 4-9 HCP"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2, 3] }
+
+      - id: open_pass_4th
+        call: P
+        priority: 22
+        requires: { hcp: [0, 12], evals: { rule_of_15: [0, 14] } }
+        shows: "4th seat: not worth opening (rule of 15 fails)"
+        establishes: { forcing: sign_off }
+        when: { opening_seat: [4] }
+        negative_inference_weight: soft
+
+      - id: open_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 10] }
+        shows: "fewer than opening values"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  # ===========================================================================
+  # 1NT OPENING STRUCTURE (Stayman, Jacoby transfers, invitational sequences)
+  # ===========================================================================
+
+  - id: resp_1NT
+    description: "Responses to a 1NT opening"
+    pattern: "1NT - P - ?"
+    rules:
+      - id: nt_stayman
+        call: 2C
+        priority: 85
+        requires:
+          hcp: [8, 40]
+          any_of: [ { suits: { H: [4, 4] } }, { suits: { S: [4, 4] } } ]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "Stayman: at least one 4-card major, invitational+ values"
+        establishes: { forcing: one_round }
+        convention: stayman
+        announce: null
+
+      - id: nt_transfer_H
+        call: 2D
+        priority: 88
+        requires: { suits: { H: [5, 13] } }
+        shows: "Jacoby transfer to hearts (5+ hearts, any strength)"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+        announce: "transfer"
+
+      - id: nt_transfer_S
+        call: 2H
+        priority: 87
+        requires: { suits: { S: [5, 13] }, evals: { "suit_diff(S,H)": [0, 13] } }
+        shows: "Jacoby transfer to spades (5+ spades, any strength)"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+        announce: "transfer"
+
+      - id: nt_2NT_inv
+        call: 2NT
+        priority: 60
+        requires:
+          hcp: [8, 9]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "invitational, 8-9 HCP, no 4-card major"
+        establishes: { forcing: invitational }
+
+      - id: nt_3NT
+        call: 3NT
+        priority: 62
+        requires:
+          hcp: [10, 15]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "to play, 10-15 HCP, no 4-card major"
+        establishes: { forcing: sign_off }
+
+      - id: nt_4NT_quant
+        call: 4NT
+        priority: 64
+        requires:
+          hcp: [16, 17]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "quantitative slam invitation, 16-17 HCP (not Blackwood)"
+        establishes: { forcing: invitational }
+        alertable: true
+
+      - id: nt_6NT
+        call: 6NT
+        priority: 63
+        requires:
+          hcp: [18, 20]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "to play: 18-20 HCP balanced opposite 15-17"
+        establishes: { forcing: sign_off }
+
+      - id: nt_pass
+        call: P
+        priority: 25
+        requires:
+          hcp: [0, 7]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } }, { suits: { D: [6, 13] } } ] }
+        shows: "weak hand, no 5-card major"
+        establishes: { forcing: sign_off }
+
+  - id: nt_stayman_rebid
+    description: "Opener's rebid over Stayman"
+    pattern: "1NT - P - 2C - P - ?"
+    rules:
+      - id: stayman_2H
+        call: 2H
+        priority: 70
+        requires: { suits: { H: [4, 5] } }
+        shows: "4+ hearts (may also hold 4 spades)"
+        establishes: { forcing: non_forcing }
+      - id: stayman_2S
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [4, 5] } }
+        shows: "4+ spades, denies 4 hearts"
+        establishes: { forcing: non_forcing }
+      - id: stayman_2D
+        call: 2D
+        priority: 50
+        requires:
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "no 4-card major"
+        establishes: { forcing: non_forcing }
+
+  - id: stayman_resp_after_2D
+    description: "Responder's rebid after Stayman 2D denial"
+    pattern: "1NT - P - 2C - P - 2D - P - ?"
+    rules:
+      - id: stm_2D_2NT
+        call: 2NT
+        priority: 60
+        requires: { hcp: [8, 9] }
+        shows: "invitational, 8-9 HCP (had a 4-card major)"
+        establishes: { forcing: invitational }
+      - id: stm_2D_3NT
+        call: 3NT
+        priority: 62
+        requires: { hcp: [10, 15] }
+        shows: "to play, game values (had a 4-card major)"
+        establishes: { forcing: sign_off }
+
+  - id: stayman_resp_after_2M
+    description: "Responder's rebid after Stayman finds/misses a fit"
+    expand: { M: [H, S] }
+    pattern: "1NT - P - 2C - P - 2$M - P - ?"
+    rules:
+      - id: stm_raise_3$M
+        call: 3$M
+        priority: 70
+        requires: { suits: { $M: [4, 4] }, hcp: [8, 9] }
+        shows: "invitational raise with a 4-card fit"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: stm_raise_4$M
+        call: 4$M
+        priority: 72
+        requires: { suits: { $M: [4, 4] }, hcp: [10, 15] }
+        shows: "game raise with a 4-card fit"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: stm_2NT_nofit
+        call: 2NT
+        priority: 55
+        requires: { hcp: [8, 9], suits: { $M: [0, 3] } }
+        shows: "invitational, no fit for the major"
+        establishes: { forcing: invitational }
+      - id: stm_3NT_nofit
+        call: 3NT
+        priority: 57
+        requires: { hcp: [10, 15], suits: { $M: [0, 3] } }
+        shows: "to play, no fit for the major (opener may correct with the other major)"
+        establishes: { forcing: sign_off }
+
+  - id: nt_transfer_accept_H
+    description: "Opener completes the hearts transfer"
+    pattern: "1NT - P - 2D - P - ?"
+    rules:
+      - id: tr_super_3H
+        call: 3H
+        priority: 60
+        requires: { suits: { H: [4, 5] }, hcp: [17, 17] }
+        shows: "super-accept: 4 hearts, maximum"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: tr_accept_2H
+        call: 2H
+        priority: 55
+        requires: {}
+        shows: "completing the transfer (forced)"
+        establishes: { forcing: non_forcing }
+
+  - id: nt_transfer_accept_S
+    description: "Opener completes the spades transfer"
+    pattern: "1NT - P - 2H - P - ?"
+    rules:
+      - id: tr_super_3S
+        call: 3S
+        priority: 60
+        requires: { suits: { S: [4, 5] }, hcp: [17, 17] }
+        shows: "super-accept: 4 spades, maximum"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: tr_accept_2S
+        call: 2S
+        priority: 55
+        requires: {}
+        shows: "completing the transfer (forced)"
+        establishes: { forcing: non_forcing }
+
+  - id: nt_after_transfer
+    description: "Responder's rebid after a completed transfer"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "1NT - P - 2$T - P - 2$M - P - ?"
+    rules:
+      - id: tr_pass_weak
+        call: P
+        priority: 55
+        requires: { hcp: [0, 7], suits: { $M: [5, 13] } }
+        shows: "weak with 5+ $M: sign-off"
+        establishes: { forcing: sign_off }
+      - id: tr_2NT_inv
+        call: 2NT
+        priority: 56
+        requires: { hcp: [8, 9], suits: { $M: [5, 5] } }
+        shows: "invitational, exactly 5 $M (opener passes/corrects)"
+        establishes: { forcing: invitational }
+      - id: tr_3M_inv
+        call: 3$M
+        priority: 57
+        requires: { hcp: [8, 9], suits: { $M: [6, 13] } }
+        shows: "invitational with 6+ $M"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: tr_3NT_choice
+        call: 3NT
+        priority: 58
+        requires: { hcp: [10, 15], suits: { $M: [5, 5] } }
+        shows: "game values, exactly 5 $M: choice of games (opener corrects to 4$M with 3+)"
+        establishes: { forcing: sign_off }
+      - id: tr_4$M
+        call: 4$M
+        priority: 59
+        requires: { hcp: [10, 15], suits: { $M: [6, 13] } }
+        shows: "game with 6+ $M"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+
+  - id: nt_transfer_3NT_choice
+    description: "Opener's correction over the choice-of-games 3NT"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "1NT - P - 2$T - P - 2$M - P - 3NT - P - ?"
+    rules:
+      - id: choice_4$M
+        call: 4$M
+        priority: 60
+        requires: { suits: { $M: [3, 5] } }
+        shows: "3+ card fit: playing game in the major"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: choice_pass
+        call: P
+        priority: 55
+        requires: { suits: { $M: [0, 2] } }
+        shows: "doubleton in responder's major: 3NT stands"
+        establishes: { forcing: sign_off }
+
+  - id: nt_2NT_opener_decides
+    description: "Opener over the 8-9 invite"
+    pattern: "1NT - P - 2NT - P - ?"
+    rules:
+      - id: inv_accept_3NT
+        call: 3NT
+        priority: 60
+        requires: { hcp: [16, 17] }
+        shows: "accepting the invitation (16-17)"
+        establishes: { forcing: sign_off }
+      - id: inv_decline_P
+        call: P
+        priority: 55
+        requires: { hcp: [15, 15] }
+        shows: "declining the invitation (minimum)"
+        establishes: { forcing: sign_off }
+
+  - id: nt_quant_opener_decides
+    description: "Opener over the quantitative 4NT"
+    pattern: "1NT - P - 4NT - P - ?"
+    rules:
+      - id: quant_accept_6NT
+        call: 6NT
+        priority: 60
+        requires: { hcp: [17, 17] }
+        shows: "accepting the quantitative invite (maximum)"
+        establishes: { forcing: sign_off }
+      - id: quant_decline_P
+        call: P
+        priority: 55
+        requires: { hcp: [15, 16] }
+        shows: "declining the quantitative invite"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # 2NT OPENING STRUCTURE
+  # ===========================================================================
+
+  - id: resp_2NT
+    description: "Responses to a 2NT opening"
+    pattern: "2NT - P - ?"
+    rules:
+      - id: nt2_stayman
+        call: 3C
+        priority: 80
+        requires:
+          hcp: [4, 40]
+          any_of: [ { suits: { H: [4, 4] } }, { suits: { S: [4, 4] } } ]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "Stayman over 2NT"
+        establishes: { forcing: one_round }
+        convention: stayman
+      - id: nt2_transfer_H
+        call: 3D
+        priority: 82
+        requires: { suits: { H: [5, 13] } }
+        shows: "transfer to hearts"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+        announce: "transfer"
+      - id: nt2_transfer_S
+        call: 3H
+        priority: 81
+        requires: { suits: { S: [5, 13] }, evals: { "suit_diff(S,H)": [0, 13] } }
+        shows: "transfer to spades"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+        announce: "transfer"
+      - id: nt2_3NT
+        call: 3NT
+        priority: 60
+        requires:
+          hcp: [4, 10]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "to play"
+        establishes: { forcing: sign_off }
+      - id: nt2_4NT_quant
+        call: 4NT
+        priority: 61
+        requires:
+          hcp: [11, 12]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "quantitative slam invite opposite 20-21"
+        establishes: { forcing: invitational }
+        alertable: true
+      - id: nt2_pass
+        call: P
+        priority: 25
+        requires: { hcp: [0, 3], not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] } }
+        shows: "bust"
+        establishes: { forcing: sign_off }
+
+  - id: nt2_stayman_rebid
+    description: "Opener's rebid over 3C Stayman"
+    pattern: "2NT - P - 3C - P - ?"
+    rules:
+      - id: nt2_stm_3H
+        call: 3H
+        priority: 70
+        requires: { suits: { H: [4, 5] } }
+        shows: "4+ hearts"
+        establishes: { forcing: non_forcing }
+      - id: nt2_stm_3S
+        call: 3S
+        priority: 60
+        requires: { suits: { S: [4, 5] } }
+        shows: "4+ spades, denies 4 hearts"
+        establishes: { forcing: non_forcing }
+      - id: nt2_stm_3D
+        call: 3D
+        priority: 50
+        requires:
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "no 4-card major"
+        establishes: { forcing: non_forcing }
+
+  - id: nt2_transfer_accept
+    description: "Opener completes the 3-level transfer"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "2NT - P - 3$T - P - ?"
+    rules:
+      - id: nt2_tr_accept
+        call: 3$M
+        priority: 55
+        requires: {}
+        shows: "completing the transfer (forced)"
+        establishes: { forcing: non_forcing }
+
+  # ===========================================================================
+  # 2C OPENING STRUCTURE
+  # ===========================================================================
+
+  - id: resp_2C
+    description: "Responses to the strong artificial 2C"
+    pattern: "2C - P - ?"
+    rules:
+      - id: r2c_2H_positive
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [5, 13] }, hcp: [8, 40], features: [ "two_of_top3(H)" ] }
+        shows: "positive: 5+ good hearts, 8+ HCP"
+        establishes: { forcing: game_forcing }
+      - id: r2c_2S_positive
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [5, 13] }, hcp: [8, 40], features: [ "two_of_top3(S)" ] }
+        shows: "positive: 5+ good spades, 8+ HCP"
+        establishes: { forcing: game_forcing }
+      - id: r2c_2NT_positive
+        call: 2NT
+        priority: 55
+        requires: { hcp: [8, 40], balanced: true }
+        shows: "positive: balanced, 8+ HCP"
+        establishes: { forcing: game_forcing }
+      - id: r2c_2D_waiting
+        call: 2D
+        priority: 50
+        requires: {}
+        shows: "waiting: says nothing yet (could be any strength)"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: waiting_2D
+        negative_inference_weight: soft
+
+  - id: r2c_opener_rebid
+    description: "Opener's rebid after 2C - 2D"
+    pattern: "2C - P - 2D - P - ?"
+    rules:
+      - id: r2c_2NT_2224
+        call: 2NT
+        priority: 60
+        requires: { hcp: [22, 24], balanced: true }
+        shows: "22-24 balanced (systems on as over 2NT)"
+        establishes: { forcing: non_forcing }
+      - id: r2c_3NT_2527
+        call: 3NT
+        priority: 59
+        requires: { hcp: [25, 27], balanced: true }
+        shows: "25-27 balanced"
+        establishes: { forcing: non_forcing }
+      - id: r2c_2H_nat
+        call: 2H
+        priority: 58
+        requires: { suits: { H: [5, 13] }, evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "natural, 5+ hearts, game forcing"
+        establishes: { forcing: game_forcing }
+      - id: r2c_2S_nat
+        call: 2S
+        priority: 57
+        requires: { suits: { S: [5, 13] }, evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "natural, 5+ spades, game forcing"
+        establishes: { forcing: game_forcing }
+      - id: r2c_3C_nat
+        call: 3C
+        priority: 56
+        requires: { suits: { C: [5, 13] }, evals: { "suit_diff(C,D)": [0, 13] } }
+        shows: "natural, 5+ clubs, game forcing"
+        establishes: { forcing: game_forcing }
+      - id: r2c_3D_nat
+        call: 3D
+        priority: 55
+        requires: { suits: { D: [5, 13] }, evals: { "suit_diff(D,C)": [1, 13] } }
+        shows: "natural, 5+ diamonds, game forcing"
+        establishes: { forcing: game_forcing }
+
+  - id: r2c_after_2NT
+    description: "Responder after 2C - 2D - 2NT (systems on)"
+    pattern: "2C - P - 2D - P - 2NT - P - ?"
+    rules:
+      - id: r2c_nt_stayman
+        call: 3C
+        priority: 80
+        requires:
+          any_of: [ { suits: { H: [4, 4] } }, { suits: { S: [4, 4] } } ]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "Stayman"
+        establishes: { forcing: one_round }
+        convention: stayman
+      - id: r2c_nt_tr_H
+        call: 3D
+        priority: 82
+        requires: { suits: { H: [5, 13] } }
+        shows: "transfer to hearts"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+      - id: r2c_nt_tr_S
+        call: 3H
+        priority: 81
+        requires: { suits: { S: [5, 13] }, evals: { "suit_diff(S,H)": [0, 13] } }
+        shows: "transfer to spades"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+      - id: r2c_nt_3NT
+        call: 3NT
+        priority: 60
+        requires:
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "to play opposite 22-24"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # RESPONSES TO 1C / 1D (uncontested)
+  # ===========================================================================
+
+  - id: resp_1m
+    description: "Responses to a minor-suit opening, no interference"
+    expand: { m: [C, D] }
+    pattern: "1$m - P - ?"
+    rules:
+      - id: r1m_1H
+        call: 1H
+        priority: 76
+        requires:
+          hcp: [6, 40]
+          any_of:
+            - suits: { H: [4, 13] }
+              evals: { "suit_diff(H,S)": [0, 13] }
+            - suits: { H: [4, 4], S: [4, 4] }
+        shows: "4+ hearts, 6+ HCP (up the line)"
+        establishes: { forcing: one_round }
+      - id: r1m_1S
+        call: 1S
+        priority: 75
+        requires:
+          hcp: [6, 40]
+          suits: { S: [4, 13] }
+          evals: { "suit_diff(S,H)": [1, 13] }
+        shows: "4+ spades, 6+ HCP, longer than hearts"
+        establishes: { forcing: one_round }
+      - id: r1m_2over1
+        call: 2C
+        priority: 70
+        requires:
+          hcp: [12, 40]
+          suits: { C: [4, 13] }
+        shows: "2/1 game forcing: 4+ clubs, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false }
+      - id: r1m_1NT
+        call: 1NT
+        priority: 45
+        requires:
+          hcp: [6, 10]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "6-10 HCP, no 4-card major"
+        establishes: { forcing: non_forcing }
+      - id: r1m_raise2
+        call: 2$m
+        priority: 50
+        requires:
+          hcp: [6, 10]
+          suits: { $m: [4, 13] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "simple raise: 4+ $m support, 6-10 HCP, no 4-card major"
+        establishes: { forcing: non_forcing, agreed_suit: $m }
+      - id: r1m_raise3
+        call: 3$m
+        priority: 52
+        requires:
+          hcp: [10, 12]
+          suits: { $m: [5, 13] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "limit raise: 5+ $m support, 10-12 HCP, no 4-card major"
+        establishes: { forcing: invitational, agreed_suit: $m }
+      - id: r1m_2NT
+        call: 2NT
+        priority: 54
+        requires:
+          hcp: [11, 12]
+          balanced: true
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "invitational: 11-12 balanced, no 4-card major"
+        establishes: { forcing: invitational }
+      - id: r1m_3NT
+        call: 3NT
+        priority: 55
+        requires:
+          hcp: [13, 15]
+          balanced: true
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "13-15 balanced, no 4-card major"
+        establishes: { forcing: sign_off }
+      - id: r1m_pass
+        call: P
+        priority: 15
+        requires: { hcp: [0, 5] }
+        shows: "0-5 HCP: too weak to respond"
+        establishes: { forcing: sign_off }
+
+  # 1D-specific extra: 2D is a diamond raise, 2C is the 2/1 (handled above for
+  # the clubs case).  For 1D the 2/1 bid is 2C; expand covers 2C above only for
+  # the 1C opening incorrectly, so override here.
+  - id: resp_1D_2C_gf
+    description: "2C game-forcing response to 1D"
+    pattern: "1D - P - ?"
+    rules:
+      - id: r1D_2C_gf
+        call: 2C
+        priority: 71
+        requires:
+          hcp: [12, 40]
+          suits: { C: [4, 13] }
+        shows: "2/1 game forcing: 4+ clubs, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false }
+      - id: r1D_2C_gf3
+        call: 2C
+        priority: 70
+        requires:
+          hcp: [12, 40]
+          suits: { C: [3, 13] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "2/1 game forcing: 3+ clubs, 12+ HCP, no 4-card major"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false, config: { two_over_one_suit_length: 3 } }
+
+  # ===========================================================================
+  # RESPONSES TO 1H (uncontested)
+  # ===========================================================================
+
+  - id: resp_1H_splinters
+    description: "Splinter raises of 1H"
+    pattern: "1H - P - ?"
+    rules:
+      - id: r1H_splinter_3S
+        call: 3S
+        priority: 89
+        requires: { suits: { H: [4, 13], S: [0, 1] }, hcp: [9, 13] }
+        shows: "splinter: 4+ hearts, singleton/void in spades, game-going raise"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+        alertable: true
+        convention: splinter
+        when: { passed_hand: false }
+      - id: r1H_splinter_4C
+        call: 4C
+        priority: 89
+        requires: { suits: { H: [4, 13], C: [0, 1] }, hcp: [9, 13] }
+        shows: "splinter: 4+ hearts, singleton/void in clubs, game-going raise"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+        alertable: true
+        convention: splinter
+        when: { passed_hand: false }
+      - id: r1H_splinter_4D
+        call: 4D
+        priority: 89
+        requires: { suits: { H: [4, 13], D: [0, 1] }, hcp: [9, 13] }
+        shows: "splinter: 4+ hearts, singleton/void in diamonds, game-going raise"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+        alertable: true
+        convention: splinter
+        when: { passed_hand: false }
+
+  - id: resp_1H
+    description: "Responses to 1H, no interference"
+    pattern: "1H - P - ?"
+    rules:
+      - id: r1H_jacoby_2NT
+        call: 2NT
+        priority: 90
+        requires:
+          suits: { H: [4, 13] }
+          hcp: [11, 40]
+          evals: { total_points: [13, 40], singleton_or_void: [0, 0] }
+        shows: "Jacoby 2NT: 4+ hearts, game-forcing raise, no shortness"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+        alertable: true
+        convention: jacoby_2nt
+        when: { passed_hand: false }
+      - id: r1H_2C
+        call: 2C
+        priority: 75
+        requires: { hcp: [12, 40], suits: { C: [3, 13] }, not: { suits: { H: [4, 13] } } }
+        shows: "2/1 game forcing: 3+ clubs, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false, config: { two_over_one_suit_length: 3 } }
+      - id: r1H_2C_4
+        call: 2C
+        priority: 75
+        requires: { hcp: [12, 40], suits: { C: [4, 13] }, not: { suits: { H: [4, 13] } } }
+        shows: "2/1 game forcing: 4+ clubs, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false, config: { two_over_one_suit_length: 4 } }
+      - id: r1H_2D
+        call: 2D
+        priority: 76
+        requires: { hcp: [12, 40], suits: { D: [4, 13] }, not: { suits: { H: [4, 13] } } }
+        shows: "2/1 game forcing: 4+ diamonds, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false }
+      - id: r1H_1S
+        call: 1S
+        priority: 72
+        requires: { hcp: [6, 40], suits: { S: [4, 13] }, not: { suits: { H: [3, 13] }, hcp: [5, 9] } }
+        shows: "4+ spades, 6+ HCP, forcing one round"
+        establishes: { forcing: one_round }
+      - id: r1H_limit_raise
+        call: 3H
+        priority: 62
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [10, 12] }, hcp: [8, 11] }
+        shows: "limit raise: 3+ hearts, 10-12 support points"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: r1H_single_raise
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "single raise: 3+ hearts, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: r1H_game_raise_preempt
+        call: 4H
+        priority: 63
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [2, 9]
+          features: [ "singleton_or_void(any)" ]
+        shows: "preemptive game raise: 5+ hearts, weak with shortness"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: r1H_1NT
+        call: 1NT
+        priority: 40
+        requires:
+          hcp: [6, 11]
+          not: { any_of: [ { suits: { S: [4, 13] } }, { suits: { H: [3, 13] }, evals: { total_points: [6, 9] } } ] }
+        shows: "1NT response: 6-11 HCP, denies 4 spades and a simple raise (semi-forcing)"
+        establishes: { forcing: non_forcing }
+        announce: "semi-forcing"
+        when: { config: { forcing_nt: semi } }
+      - id: r1H_1NT_full
+        call: 1NT
+        priority: 40
+        requires:
+          hcp: [6, 11]
+          not: { any_of: [ { suits: { S: [4, 13] } }, { suits: { H: [3, 13] }, evals: { total_points: [6, 9] } } ] }
+        shows: "forcing 1NT: 6-11 HCP, denies 4 spades"
+        establishes: { forcing: one_round }
+        alertable: true
+        when: { config: { forcing_nt: full } }
+      - id: r1H_pass
+        call: P
+        priority: 15
+        requires: { hcp: [0, 5] }
+        shows: "0-5 HCP: too weak to respond"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # RESPONSES TO 1S (uncontested)
+  # ===========================================================================
+
+  - id: resp_1S_splinters
+    description: "Splinter raises of 1S"
+    pattern: "1S - P - ?"
+    rules:
+      - id: r1S_splinter_4C
+        call: 4C
+        priority: 89
+        requires: { suits: { S: [4, 13], C: [0, 1] }, hcp: [9, 13] }
+        shows: "splinter: 4+ spades, singleton/void in clubs, game-going raise"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+        alertable: true
+        convention: splinter
+        when: { passed_hand: false }
+      - id: r1S_splinter_4D
+        call: 4D
+        priority: 89
+        requires: { suits: { S: [4, 13], D: [0, 1] }, hcp: [9, 13] }
+        shows: "splinter: 4+ spades, singleton/void in diamonds, game-going raise"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+        alertable: true
+        convention: splinter
+        when: { passed_hand: false }
+      - id: r1S_splinter_4H
+        call: 4H
+        priority: 89
+        requires: { suits: { S: [4, 13], H: [0, 1] }, hcp: [9, 13] }
+        shows: "splinter: 4+ spades, singleton/void in hearts, game-going raise"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+        alertable: true
+        convention: splinter
+        when: { passed_hand: false }
+
+  - id: resp_1S
+    description: "Responses to 1S, no interference"
+    pattern: "1S - P - ?"
+    rules:
+      - id: r1S_jacoby_2NT
+        call: 2NT
+        priority: 90
+        requires:
+          suits: { S: [4, 13] }
+          hcp: [11, 40]
+          evals: { total_points: [13, 40], singleton_or_void: [0, 0] }
+        shows: "Jacoby 2NT: 4+ spades, game-forcing raise, no shortness"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+        alertable: true
+        convention: jacoby_2nt
+        when: { passed_hand: false }
+      - id: r1S_2C
+        call: 2C
+        priority: 75
+        requires: { hcp: [12, 40], suits: { C: [3, 13] }, not: { suits: { S: [4, 13] } } }
+        shows: "2/1 game forcing: 3+ clubs, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false, config: { two_over_one_suit_length: 3 } }
+      - id: r1S_2C_4
+        call: 2C
+        priority: 75
+        requires: { hcp: [12, 40], suits: { C: [4, 13] }, not: { suits: { S: [4, 13] } } }
+        shows: "2/1 game forcing: 4+ clubs, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false, config: { two_over_one_suit_length: 4 } }
+      - id: r1S_2D
+        call: 2D
+        priority: 76
+        requires: { hcp: [12, 40], suits: { D: [4, 13] }, not: { suits: { S: [4, 13] } } }
+        shows: "2/1 game forcing: 4+ diamonds, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false }
+      - id: r1S_2H
+        call: 2H
+        priority: 77
+        requires: { hcp: [12, 40], suits: { H: [5, 13] }, not: { suits: { S: [4, 13] } } }
+        shows: "2/1 game forcing: 5+ hearts, 12+ HCP"
+        establishes: { forcing: game_forcing }
+        when: { passed_hand: false }
+      - id: r1S_limit_raise
+        call: 3S
+        priority: 62
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [10, 12] }, hcp: [8, 11] }
+        shows: "limit raise: 3+ spades, 10-12 support points"
+        establishes: { forcing: invitational, agreed_suit: S }
+      - id: r1S_single_raise
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "single raise: 3+ spades, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: r1S_game_raise_preempt
+        call: 4S
+        priority: 63
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [2, 9]
+          features: [ "singleton_or_void(any)" ]
+        shows: "preemptive game raise: 5+ spades, weak with shortness"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: r1S_1NT
+        call: 1NT
+        priority: 40
+        requires:
+          hcp: [6, 11]
+          not: { suits: { S: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "1NT response: 6-11 HCP, denies a simple raise (semi-forcing)"
+        establishes: { forcing: non_forcing }
+        announce: "semi-forcing"
+        when: { config: { forcing_nt: semi } }
+      - id: r1S_1NT_full
+        call: 1NT
+        priority: 40
+        requires:
+          hcp: [6, 11]
+          not: { suits: { S: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "forcing 1NT: 6-11 HCP"
+        establishes: { forcing: one_round }
+        alertable: true
+        when: { config: { forcing_nt: full } }
+      - id: r1S_pass
+        call: P
+        priority: 15
+        requires: { hcp: [0, 5] }
+        shows: "0-5 HCP: too weak to respond"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # RESPONSES TO WEAK TWOS AND PREEMPTS (partner opened)
+  # ===========================================================================
+
+  - id: resp_weak2
+    description: "Responses to partner's weak two (RONF: raises are to play)"
+    expand: { W: [D, H, S] }
+    pattern: "2$W - P - ?"
+    rules:
+      - id: rw2_raise3
+        call: 3$W
+        priority: 60
+        requires: { suits: { $W: [3, 13] }, hcp: [0, 14] }
+        shows: "raise to play / furthering the preempt (RONF)"
+        establishes: { forcing: sign_off, agreed_suit: $W }
+      - id: rw2_2NT_ask
+        call: 2NT
+        priority: 70
+        requires: { hcp: [15, 40] }
+        shows: "strong inquiry (15+), asking for a feature"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: feature_ask
+      - id: rw2_pass
+        call: P
+        priority: 40
+        requires: { hcp: [0, 14], suits: { $W: [0, 2] } }
+        shows: "nothing to say opposite a weak two"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: resp_weak2_major_game
+    description: "Raising partner's weak two major to game"
+    expand: { W: [H, S] }
+    pattern: "2$W - P - ?"
+    rules:
+      - id: rw2_game
+        call: 4$W
+        priority: 65
+        requires:
+          suits: { $W: [2, 13] }
+          any_of:
+            - evals: { total_points: [16, 40] }
+            - suits: { $W: [4, 13] }
+              hcp: [4, 12]
+        shows: "to play: values for game or a further preempt"
+        establishes: { forcing: sign_off, agreed_suit: $W }
+
+  # ===========================================================================
+  # OPENER REBIDS after 1m - P - 1M - P
+  # ===========================================================================
+
+  - id: opener_rebid_1m_1M
+    description: "Opener's rebid after a 1-level major response, no interference"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - ?"
+    rules:
+      - id: ob_raise_2$M
+        call: 2$M
+        priority: 80
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [12, 15] } }
+        shows: "raise: 4 $M support, minimum (12-15)"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: ob_raise_3$M
+        call: 3$M
+        priority: 78
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [16, 18] } }
+        shows: "jump raise: 4 $M support, invitational (16-18)"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: ob_raise_4$M
+        call: 4$M
+        priority: 76
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [19, 40] } }
+        shows: "game raise: 4 $M support, 19+ support points"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: ob_1NT
+        call: 1NT
+        priority: 55
+        requires: { hcp: [12, 14], balanced: true, not: { suits: { $M: [4, 13] } } }
+        shows: "balanced minimum 12-14, no fit"
+        establishes: { forcing: non_forcing }
+      - id: ob_2NT
+        call: 2NT
+        priority: 56
+        requires: { hcp: [18, 19], balanced: true, not: { suits: { $M: [4, 13] } } }
+        shows: "jump: balanced 18-19, no fit"
+        establishes: { forcing: non_forcing }
+      - id: ob_rebid_2$m
+        call: 2$m
+        priority: 50
+        requires: { suits: { $m: [6, 13] }, hcp: [12, 15], not: { suits: { $M: [4, 13] } } }
+        shows: "rebid: 6+ $m, minimum"
+        establishes: { forcing: non_forcing }
+      - id: ob_rebid_3$m
+        call: 3$m
+        priority: 49
+        requires: { suits: { $m: [6, 13] }, hcp: [16, 18], not: { suits: { $M: [4, 13] } } }
+        shows: "jump rebid: 6+ good $m, 16-18"
+        establishes: { forcing: invitational }
+
+  - id: opener_rebid_1C_1H_extras
+    description: "1C - 1H: opener's 1S / reverses"
+    pattern: "1C - P - 1H - P - ?"
+    rules:
+      - id: ob_1C1H_1S
+        call: 1S
+        priority: 60
+        requires: { suits: { S: [4, 13] }, hcp: [12, 17], not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades, 12-17, unbalanced or 4-4-x-x"
+        establishes: { forcing: non_forcing }
+      - id: ob_1C1H_2D_reverse
+        call: 2D
+        priority: 58
+        requires: { suits: { D: [4, 13], C: [5, 13] }, hcp: [17, 21] }
+        shows: "reverse: 4+ diamonds, longer clubs, 17+"
+        establishes: { forcing: one_round }
+    when: {}
+
+  - id: opener_rebid_1D_1H_extras
+    description: "1D - 1H: opener's 1S / reverses"
+    pattern: "1D - P - 1H - P - ?"
+    rules:
+      - id: ob_1D1H_1S
+        call: 1S
+        priority: 60
+        requires: { suits: { S: [4, 13] }, hcp: [12, 17], not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades, 12-17"
+        establishes: { forcing: non_forcing }
+      - id: ob_1D1H_2C
+        call: 2C
+        priority: 58
+        requires: { suits: { C: [4, 13], D: [4, 13] }, hcp: [12, 17], not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
+        shows: "second suit: 4+ clubs, 12-17"
+        establishes: { forcing: non_forcing }
+
+  - id: opener_rebid_1m_1S_extras
+    description: "1m - 1S: opener's second suit / reverses"
+    expand: { m: [C, D] }
+    pattern: "1$m - P - 1S - P - ?"
+    rules:
+      - id: ob_1m1S_2H_reverse
+        call: 2H
+        priority: 58
+        requires: { suits: { H: [4, 13], $m: [5, 13] }, hcp: [17, 21] }
+        shows: "reverse: 4+ hearts, longer $m, 17+"
+        establishes: { forcing: one_round }
+
+  - id: opener_rebid_1C_1S_2D
+    description: "1C - 1S: 2D is a reverse"
+    pattern: "1C - P - 1S - P - ?"
+    rules:
+      - id: ob_1C1S_2D_reverse
+        call: 2D
+        priority: 57
+        requires: { suits: { D: [4, 13], C: [5, 13] }, hcp: [17, 21] }
+        shows: "reverse: 4+ diamonds, longer clubs, 17+"
+        establishes: { forcing: one_round }
+
+  - id: opener_rebid_1D_1S_2C
+    description: "1D - 1S: 2C second suit (not a reverse)"
+    pattern: "1D - P - 1S - P - ?"
+    rules:
+      - id: ob_1D1S_2C
+        call: 2C
+        priority: 57
+        requires: { suits: { C: [4, 13], D: [4, 13] }, hcp: [12, 17], not: { suits: { S: [4, 13] } } }
+        shows: "second suit: 4+ clubs, 12-17"
+        establishes: { forcing: non_forcing }
+
+  # ===========================================================================
+  # OPENER REBIDS after 1M - P - 1NT (semi-forcing) and 1H - P - 1S
+  # ===========================================================================
+
+  - id: opener_rebid_1H_1S
+    description: "Opener's rebid after 1H - 1S"
+    pattern: "1H - P - 1S - P - ?"
+    rules:
+      - id: ob_1H1S_raise2S
+        call: 2S
+        priority: 80
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [12, 15] } }
+        shows: "raise: 4 spades, minimum"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ob_1H1S_raise3S
+        call: 3S
+        priority: 78
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [16, 18] } }
+        shows: "jump raise: 4 spades, 16-18"
+        establishes: { forcing: invitational, agreed_suit: S }
+      - id: ob_1H1S_raise4S
+        call: 4S
+        priority: 76
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [19, 40] } }
+        shows: "game raise: 4 spades, 19+"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: ob_1H1S_1NT
+        call: 1NT
+        priority: 55
+        requires: { hcp: [12, 14], evals: { semi_balanced: [1, 1] }, not: { suits: { S: [4, 13] } } }
+        shows: "12-14, no spade fit"
+        establishes: { forcing: non_forcing }
+      - id: ob_1H1S_2NT
+        call: 2NT
+        priority: 54
+        requires: { hcp: [18, 19], balanced: true, not: { suits: { S: [4, 13] } } }
+        shows: "jump: 18-19 balanced"
+        establishes: { forcing: non_forcing }
+      - id: ob_1H1S_2H
+        call: 2H
+        priority: 52
+        requires: { suits: { H: [6, 13] }, hcp: [12, 15], not: { suits: { S: [4, 13] } } }
+        shows: "rebid: 6+ hearts, minimum"
+        establishes: { forcing: non_forcing }
+      - id: ob_1H1S_3H
+        call: 3H
+        priority: 51
+        requires: { suits: { H: [6, 13] }, hcp: [16, 18], not: { suits: { S: [4, 13] } } }
+        shows: "jump rebid: 6+ good hearts, 16-18"
+        establishes: { forcing: invitational }
+      - id: ob_1H1S_2m
+        call: 2C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [12, 17], not: { suits: { S: [4, 13] } } }
+        shows: "second suit: 4+ clubs"
+        establishes: { forcing: non_forcing }
+      - id: ob_1H1S_2D
+        call: 2D
+        priority: 49
+        requires: { suits: { D: [4, 13] }, hcp: [12, 17], not: { any_of: [ { suits: { S: [4, 13] } }, { suits: { C: [5, 13] } } ] } }
+        shows: "second suit: 4+ diamonds"
+        establishes: { forcing: non_forcing }
+
+  - id: opener_rebid_1M_1NT
+    description: "Opener's rebid over the (semi-)forcing 1NT"
+    expand: { M: [H, S] }
+    pattern: "1$M - P - 1NT - P - ?"
+    rules:
+      - id: ob_1M1NT_pass
+        call: P
+        priority: 55
+        requires: { hcp: [12, 14], balanced: true }
+        shows: "balanced minimum: passing the semi-forcing 1NT"
+        establishes: { forcing: sign_off }
+        when: { config: { forcing_nt: semi } }
+      - id: ob_1M1NT_2C
+        call: 2C
+        priority: 52
+        requires: { suits: { C: [3, 13] }, hcp: [12, 17], not: { suits: { $M: [6, 13] } } }
+        shows: "3+ clubs, 12-17, no 6-card major"
+        establishes: { forcing: non_forcing }
+      - id: ob_1M1NT_2D
+        call: 2D
+        priority: 53
+        requires: { suits: { D: [4, 13] }, hcp: [12, 17], not: { suits: { $M: [6, 13] } } }
+        shows: "4+ diamonds, 12-17"
+        establishes: { forcing: non_forcing }
+      - id: ob_1M1NT_2$M
+        call: 2$M
+        priority: 54
+        requires: { suits: { $M: [6, 13] }, hcp: [12, 15] }
+        shows: "6+ $M, minimum"
+        establishes: { forcing: non_forcing }
+      - id: ob_1M1NT_2NT
+        call: 2NT
+        priority: 51
+        requires: { hcp: [18, 19], balanced: true }
+        shows: "jump: 18-19 balanced"
+        establishes: { forcing: non_forcing }
+      - id: ob_1M1NT_3$M
+        call: 3$M
+        priority: 50
+        requires: { suits: { $M: [6, 13] }, hcp: [16, 18], features: [ "good_suit($M)" ] }
+        shows: "jump rebid: 6+ good $M, 16-18"
+        establishes: { forcing: invitational }
+
+  - id: opener_rebid_1S_2H
+    description: "Opener's rebid after the 1S - 2H game force"
+    pattern: "1S - P - 2H - P - ?"
+    rules:
+      - id: ob_1S2H_raise3H
+        call: 3H
+        priority: 80
+        requires: { suits: { H: [3, 13] } }
+        shows: "3+ hearts: setting trumps (GF continues)"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+      - id: ob_1S2H_4H
+        call: 4H
+        priority: 78
+        requires: { suits: { H: [4, 13] }, hcp: [12, 14], evals: { singleton_or_void: [0, 0] } }
+        shows: "4 hearts, minimum, no shortness"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ob_1S2H_2S
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [6, 13] }, not: { suits: { H: [3, 13] } } }
+        shows: "6+ spades"
+        establishes: { forcing: game_forcing }
+      - id: ob_1S2H_2NT
+        call: 2NT
+        priority: 55
+        requires: { evals: { semi_balanced: [1, 1] }, suits: { S: [5, 5] }, not: { suits: { H: [3, 13] } } }
+        shows: "5332-ish, no heart fit"
+        establishes: { forcing: game_forcing }
+      - id: ob_1S2H_3C
+        call: 3C
+        priority: 52
+        requires: { suits: { C: [4, 13] }, not: { any_of: [ { suits: { H: [3, 13] } }, { suits: { S: [6, 13] } } ] } }
+        shows: "second suit: 4+ clubs"
+        establishes: { forcing: game_forcing }
+      - id: ob_1S2H_3D
+        call: 3D
+        priority: 51
+        requires: { suits: { D: [4, 13] }, not: { any_of: [ { suits: { H: [3, 13] } }, { suits: { S: [6, 13] } } ] } }
+        shows: "second suit: 4+ diamonds"
+        establishes: { forcing: game_forcing }
+
+  # ===========================================================================
+  # OPENER REBIDS after a 2/1 in a minor (game force)
+  # ===========================================================================
+
+  - id: opener_rebid_after_2over1_minor
+    description: "Opener's rebid after 1M - 2m (GF)"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+    pattern: "1$M - P - 2$x - P - ?"
+    rules:
+      - id: ob_2over1_2$M
+        call: 2$M
+        priority: 60
+        requires: { suits: { $M: [6, 13] } }
+        shows: "6+ $M (GF continues)"
+        establishes: { forcing: game_forcing }
+      - id: ob_2over1_2NT
+        call: 2NT
+        priority: 52
+        requires: { hcp: [12, 14], evals: { semi_balanced: [1, 1] } }
+        shows: "balanced minimum, stoppers likely (GF)"
+        establishes: { forcing: game_forcing }
+      - id: ob_2over1_3NT
+        call: 3NT
+        priority: 50
+        requires: { hcp: [18, 19], balanced: true }
+        shows: "18-19 balanced"
+        establishes: { forcing: non_forcing }
+      - id: ob_2over1_raise
+        call: 3$x
+        priority: 58
+        requires: { suits: { $x: [4, 13] } }
+        shows: "raising the 2/1 suit: 4+ $x (GF)"
+        establishes: { forcing: game_forcing, agreed_suit: $x }
+
+  - id: opener_rebid_1H_2C_extras
+    description: "1H - 2C: opener's second suits"
+    pattern: "1H - P - 2C - P - ?"
+    rules:
+      - id: ob_1H2C_2D
+        call: 2D
+        priority: 55
+        requires: { suits: { D: [4, 13] }, not: { suits: { H: [6, 13] } } }
+        shows: "second suit: 4+ diamonds (GF)"
+        establishes: { forcing: game_forcing }
+      - id: ob_1H2C_2S
+        call: 2S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, hcp: [15, 21], not: { suits: { H: [6, 13] } } }
+        shows: "second suit: 4+ spades, extras (high reverse in a GF)"
+        establishes: { forcing: game_forcing }
+  - id: opener_rebid_1H_2D_extras
+    description: "1H - 2D: opener's second suits"
+    pattern: "1H - P - 2D - P - ?"
+    rules:
+      - id: ob_1H2D_3C
+        call: 3C
+        priority: 54
+        requires: { suits: { C: [4, 13] }, not: { suits: { H: [6, 13] } } }
+        shows: "second suit: 4+ clubs (GF)"
+        establishes: { forcing: game_forcing }
+      - id: ob_1H2D_2S
+        call: 2S
+        priority: 53
+        requires: { suits: { S: [4, 13] }, hcp: [15, 21], not: { suits: { H: [6, 13] } } }
+        shows: "second suit: 4+ spades, extras (GF)"
+        establishes: { forcing: game_forcing }
+  - id: opener_rebid_1S_2m_extras
+    description: "1S - 2m: opener's second suits"
+    expand: { x: [C, D] }
+    pattern: "1S - P - 2$x - P - ?"
+    rules:
+      - id: ob_1S2x_2H
+        call: 2H
+        priority: 54
+        requires: { suits: { H: [4, 13] }, not: { suits: { S: [6, 13] } } }
+        shows: "second suit: 4+ hearts (GF)"
+        establishes: { forcing: game_forcing }
+
+  # ===========================================================================
+  # RESPONDER REBIDS (main uncontested lines)
+  # ===========================================================================
+
+  - id: responder_rebid_after_1NT_rebid
+    description: "Responder's second call after 1m - 1M - 1NT"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 1NT - P - ?"
+    rules:
+      - id: rr_nt_pass
+        call: P
+        priority: 50
+        requires: { hcp: [6, 10] }
+        shows: "no game interest opposite 12-14"
+        establishes: { forcing: sign_off }
+      - id: rr_nt_2NT
+        call: 2NT
+        priority: 52
+        requires: { hcp: [11, 12], not: { suits: { $M: [6, 13] } } }
+        shows: "invitational 11-12"
+        establishes: { forcing: invitational }
+      - id: rr_nt_3NT
+        call: 3NT
+        priority: 54
+        requires: { hcp: [13, 18], not: { suits: { $M: [6, 13] } } }
+        shows: "to play"
+        establishes: { forcing: sign_off }
+      - id: rr_nt_2$M
+        call: 2$M
+        priority: 51
+        requires: { suits: { $M: [6, 13] }, hcp: [6, 10] }
+        shows: "6+ $M, to play"
+        establishes: { forcing: sign_off }
+      - id: rr_nt_4$M
+        call: 4$M
+        priority: 53
+        requires: { suits: { $M: [6, 13] }, hcp: [13, 18] }
+        shows: "6+ $M, game values"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+
+  - id: responder_rebid_after_raise
+    description: "Responder's second call after 1m - 1M - 2M"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 2$M - P - ?"
+    rules:
+      - id: rr_raise_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [6, 10] } }
+        shows: "no game interest opposite the minimum raise"
+        establishes: { forcing: sign_off }
+      - id: rr_raise_game
+        call: 4$M
+        priority: 54
+        requires: { evals: { total_points: [13, 40] }, suits: { $M: [4, 13] } }
+        shows: "game values opposite the raise"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: rr_raise_inv
+        call: 3$M
+        priority: 52
+        requires: { evals: { total_points: [11, 12] }, suits: { $M: [4, 13] } }
+        shows: "invitational opposite the raise"
+        establishes: { forcing: invitational, agreed_suit: $M }
+
+  - id: responder_rebid_after_1M_raise
+    description: "Responder continuation after 1M - 2M"
+    expand: { M: [H, S] }
+    pattern: "1$M - P - 2$M - P - ?"
+    rules:
+      - id: op_after_raise_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [12, 16] } }
+        shows: "no game interest opposite 6-9"
+        establishes: { forcing: sign_off }
+      - id: op_after_raise_game
+        call: 4$M
+        priority: 54
+        requires: { evals: { total_points: [19, 40] } }
+        shows: "bidding game opposite the single raise"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: op_after_raise_inv
+        call: 3$M
+        priority: 52
+        requires: { evals: { total_points: [17, 18] } }
+        shows: "game try opposite the single raise"
+        establishes: { forcing: invitational, agreed_suit: $M }
+
+  - id: opener_after_limit_raise
+    description: "Opener over the limit raise 1M - 3M"
+    expand: { M: [H, S] }
+    pattern: "1$M - P - 3$M - P - ?"
+    rules:
+      - id: op_lr_game
+        call: 4$M
+        priority: 54
+        requires: { evals: { total_points: [14, 40] } }
+        shows: "accepting the limit raise"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: op_lr_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [12, 13] } }
+        shows: "declining the limit raise (dead minimum)"
+        establishes: { forcing: sign_off }
+
+  - id: opener_after_jacoby
+    description: "Opener's rebid over Jacoby 2NT"
+    expand: { M: [H, S] }
+    pattern: "1$M - P - 2NT - P - ?"
+    rules:
+      - id: jac_shortness_C
+        call: 3C
+        priority: 70
+        requires: { suits: { C: [0, 1] }, hcp: [12, 40] }
+        shows: "singleton or void in clubs"
+        establishes: { forcing: game_forcing }
+        alertable: true
+      - id: jac_shortness_D
+        call: 3D
+        priority: 70
+        requires: { suits: { D: [0, 1] }, hcp: [12, 40] }
+        shows: "singleton or void in diamonds"
+        establishes: { forcing: game_forcing }
+        alertable: true
+      - id: jac_extras_3$M
+        call: 3$M
+        priority: 60
+        requires: { hcp: [15, 40], evals: { singleton_or_void: [0, 0] } }
+        shows: "extra values (15+), no shortness: slam interest"
+        establishes: { forcing: game_forcing }
+      - id: jac_3NT
+        call: 3NT
+        priority: 55
+        requires: { hcp: [14, 15], evals: { singleton_or_void: [0, 0] } }
+        shows: "14-15 semi-balanced, no shortness"
+        establishes: { forcing: game_forcing }
+        alertable: true
+      - id: jac_minimum_4$M
+        call: 4$M
+        priority: 50
+        requires: { hcp: [12, 14], evals: { singleton_or_void: [0, 0] } }
+        shows: "minimum, no shortness, no slam interest"
+        establishes: { forcing: non_forcing }
+
+  - id: opener_after_jacoby_H_shortS
+    description: "1H - 2NT: 3S shows spade shortness"
+    pattern: "1H - P - 2NT - P - ?"
+    rules:
+      - id: jac_H_short_S
+        call: 3S
+        priority: 70
+        requires: { suits: { S: [0, 1] }, hcp: [12, 40] }
+        shows: "singleton or void in spades"
+        establishes: { forcing: game_forcing }
+        alertable: true
+  - id: opener_after_jacoby_S_shortH
+    description: "1S - 2NT: 3H shows heart shortness"
+    pattern: "1S - P - 2NT - P - ?"
+    rules:
+      - id: jac_S_short_H
+        call: 3H
+        priority: 70
+        requires: { suits: { H: [0, 1] }, hcp: [12, 40] }
+        shows: "singleton or void in hearts"
+        establishes: { forcing: game_forcing }
+        alertable: true
+
+  - id: responder_after_jacoby_reply
+    description: "Responder places the contract after the Jacoby reply"
+    expand: { M: [H, S] }
+    pattern: "1$M - P - 2NT - P - bid - P - ?"
+    rules:
+      - id: jac_place_4$M
+        call: 4$M
+        priority: 40
+        requires: { evals: { total_points: [13, 16] } }
+        shows: "minimum game-force: signing off in game"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: jac_rkc
+        call: 4NT
+        priority: 45
+        requires: { evals: { total_points: [17, 40], controls: [4, 12] } }
+        shows: "RKC 1430 for $M"
+        establishes: { forcing: one_round, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+
+  # ===========================================================================
+  # SUPPORT DOUBLES / REDOUBLES (opener, after responder's 1-level suit
+  # response and RHO's interference below 2 of responder's suit)
+  # ===========================================================================
+
+  - id: support_double
+    description: "Support double: X = exactly 3-card support for responder's major"
+    expand_pairs:
+      - { m: C, M: H }
+      - { m: C, M: S }
+      - { m: D, M: H }
+      - { m: D, M: S }
+    pattern: "1$m - P - 1$M - bid<2$M - ?"
+    rules:
+      - id: sd_double
+        call: X
+        priority: 85
+        requires: { suits: { $M: [3, 3] }, hcp: [12, 21] }
+        shows: "support double: exactly 3-card $M support, any strength"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: support_double
+      - id: sd_raise
+        call: 2$M
+        priority: 80
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [12, 15] } }
+        shows: "raise: 4+ $M support (support double would show exactly 3)"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: sd_rebid_2$m
+        call: 2$m
+        priority: 55
+        requires: { suits: { $m: [6, 13] }, hcp: [12, 15] }
+        shows: "6+ $m, minimum, fewer than 3 $M"
+        establishes: { forcing: non_forcing }
+      - id: sd_1NT
+        call: 1NT
+        priority: 54
+        requires: { hcp: [12, 14], balanced: true, features: [ "stopper(their)" ] }
+        shows: "12-14 balanced with a stopper, fewer than 3 $M"
+        establishes: { forcing: non_forcing }
+      - id: sd_pass
+        call: P
+        priority: 30
+        requires: { hcp: [12, 14], suits: { $M: [0, 2] } }
+        shows: "minimum without 3-card support or a convenient rebid"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: support_redouble
+    description: "Support redouble after RHO's takeout double"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - X - ?"
+    rules:
+      - id: srd_redouble
+        call: XX
+        priority: 85
+        requires: { suits: { $M: [3, 3] }, hcp: [12, 21] }
+        shows: "support redouble: exactly 3-card $M support"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: support_redouble
+      - id: srd_raise
+        call: 2$M
+        priority: 80
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [12, 15] } }
+        shows: "raise: 4+ $M support"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: srd_pass
+        call: P
+        priority: 30
+        requires: { hcp: [12, 14], suits: { $M: [0, 2] } }
+        shows: "minimum, fewer than 3 $M"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  # ===========================================================================
+  # RESPONSES AFTER INTERFERENCE OVER OUR MINOR OPENING
+  # ===========================================================================
+
+  - id: resp_1m_over_1H
+    description: "Responder after 1m - (1H): negative doubles"
+    expand: { m: [C, D] }
+    pattern: "1$m - 1H - ?"
+    rules:
+      - id: nx_1m1H_X
+        call: X
+        priority: 80
+        requires: { suits: { S: [4, 4] }, hcp: [6, 40] }
+        shows: "negative double: exactly 4 spades, 6+ HCP"
+        establishes: { forcing: one_round }
+        alertable: false
+        convention: negative_double
+      - id: nx_1m1H_1S
+        call: 1S
+        priority: 78
+        requires: { suits: { S: [5, 13] }, hcp: [6, 40] }
+        shows: "5+ spades, 6+ HCP, forcing"
+        establishes: { forcing: one_round }
+      - id: nx_1m1H_1NT
+        call: 1NT
+        priority: 50
+        requires: { hcp: [6, 10], features: [ "stopper(H)" ], not: { suits: { S: [4, 13] } } }
+        shows: "6-10 with a heart stopper"
+        establishes: { forcing: non_forcing }
+      - id: nx_1m1H_2NT
+        call: 2NT
+        priority: 51
+        requires: { hcp: [11, 12], features: [ "stopper(H)" ], not: { suits: { S: [4, 13] } } }
+        shows: "11-12 with a heart stopper"
+        establishes: { forcing: invitational }
+      - id: nx_1m1H_3NT
+        call: 3NT
+        priority: 52
+        requires: { hcp: [13, 16], features: [ "stopper(H)" ], not: { suits: { S: [4, 13] } } }
+        shows: "13-16 with a heart stopper"
+        establishes: { forcing: sign_off }
+      - id: nx_1m1H_raise
+        call: 2$m
+        priority: 55
+        requires: { hcp: [6, 10], suits: { $m: [4, 13] }, not: { suits: { S: [4, 13] } } }
+        shows: "raise: 4+ $m, 6-10"
+        establishes: { forcing: non_forcing, agreed_suit: $m }
+      - id: nx_1m1H_cue
+        call: 2H
+        priority: 70
+        requires: { hcp: [10, 40], suits: { $m: [4, 13] } }
+        shows: "cue-bid: limit raise or better of $m"
+        establishes: { forcing: one_round, agreed_suit: $m }
+        alertable: true
+        convention: cue_raise
+      - id: nx_1m1H_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 5] }
+        shows: "nothing to say"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: resp_1m_over_1S
+    description: "Responder after 1m - (1S)"
+    expand: { m: [C, D] }
+    pattern: "1$m - 1S - ?"
+    rules:
+      - id: nx_1m1S_X
+        call: X
+        priority: 80
+        requires: { suits: { H: [4, 13] }, hcp: [6, 40], not: { suits: { H: [5, 13] }, hcp: [10, 40] } }
+        shows: "negative double: 4+ hearts, 6+ HCP"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: nx_1m1S_2H
+        call: 2H
+        priority: 78
+        requires: { suits: { H: [5, 13] }, hcp: [10, 40] }
+        shows: "5+ hearts, 10+ HCP, forcing"
+        establishes: { forcing: one_round }
+      - id: nx_1m1S_1NT
+        call: 1NT
+        priority: 50
+        requires: { hcp: [6, 10], features: [ "stopper(S)" ], not: { suits: { H: [4, 13] } } }
+        shows: "6-10 with a spade stopper"
+        establishes: { forcing: non_forcing }
+      - id: nx_1m1S_2NT
+        call: 2NT
+        priority: 51
+        requires: { hcp: [11, 12], features: [ "stopper(S)" ], not: { suits: { H: [4, 13] } } }
+        shows: "11-12 with a spade stopper"
+        establishes: { forcing: invitational }
+      - id: nx_1m1S_3NT
+        call: 3NT
+        priority: 52
+        requires: { hcp: [13, 16], features: [ "stopper(S)" ], not: { suits: { H: [4, 13] } } }
+        shows: "13-16 with a spade stopper"
+        establishes: { forcing: sign_off }
+      - id: nx_1m1S_raise
+        call: 2$m
+        priority: 55
+        requires: { hcp: [6, 10], suits: { $m: [4, 13] } }
+        shows: "raise: 4+ $m, 6-10"
+        establishes: { forcing: non_forcing, agreed_suit: $m }
+      - id: nx_1m1S_cue
+        call: 2S
+        priority: 70
+        requires: { hcp: [10, 40], suits: { $m: [4, 13] } }
+        shows: "cue-bid: limit raise or better of $m"
+        establishes: { forcing: one_round, agreed_suit: $m }
+        alertable: true
+        convention: cue_raise
+      - id: nx_1m1S_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 5] }
+        shows: "nothing to say"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: resp_1x_over_X
+    description: "Responder after 1x - (takeout X): redouble shows 10+"
+    expand: { o: [C, D, H, S] }
+    pattern: "1$o - X - ?"
+    rules:
+      - id: rdx_XX
+        call: XX
+        priority: 75
+        requires: { hcp: [10, 40] }
+        shows: "redouble: 10+ HCP, interest in penalizing"
+        establishes: { forcing: one_round }
+      - id: rdx_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 5] }
+        shows: "weak"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: resp_1M_over_X_jordan
+    description: "Jordan 2NT and raises after their takeout double of 1M"
+    expand: { M: [H, S] }
+    pattern: "1$M - X - ?"
+    rules:
+      - id: jordan_2NT
+        call: 2NT
+        priority: 80
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [10, 40] } }
+        shows: "Jordan 2NT: 4+ $M, limit raise or better"
+        establishes: { forcing: one_round, agreed_suit: $M }
+        alertable: true
+        convention: jordan_2nt
+      - id: jordan_raise
+        call: 2$M
+        priority: 60
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [5, 9] } }
+        shows: "single raise, slightly wider than uncontested"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: jordan_preempt
+        call: 3$M
+        priority: 62
+        requires: { suits: { $M: [4, 13] }, hcp: [3, 8] }
+        shows: "preemptive raise: 4+ trumps, weak"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+
+  # ===========================================================================
+  # RESPONSES AFTER INTERFERENCE OVER OUR MAJOR OPENING
+  # ===========================================================================
+
+  - id: resp_1H_over_1S
+    description: "Responder after 1H - (1S)"
+    pattern: "1H - 1S - ?"
+    rules:
+      - id: r1H1S_X
+        call: X
+        priority: 78
+        requires: { hcp: [6, 40], any_of: [ { suits: { C: [4, 13], D: [4, 13] } }, { suits: { C: [5, 13] } }, { suits: { D: [5, 13] } } ] , not: { suits: { H: [3, 13] } } }
+        shows: "negative double: both minors or a long minor, no heart fit"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: r1H1S_raise
+        call: 2H
+        priority: 70
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "single raise"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: r1H1S_cue
+        call: 2S
+        priority: 75
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [10, 40] } }
+        shows: "cue-bid raise: limit raise or better in hearts"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: cue_raise
+      - id: r1H1S_1NT
+        call: 1NT
+        priority: 50
+        requires: { hcp: [6, 10], features: [ "stopper(S)" ], not: { suits: { H: [3, 13] } } }
+        shows: "6-10 with a spade stopper"
+        establishes: { forcing: non_forcing }
+      - id: r1H1S_2NT
+        call: 2NT
+        priority: 51
+        requires: { hcp: [11, 12], features: [ "stopper(S)" ], not: { suits: { H: [3, 13] } } }
+        shows: "11-12 with a spade stopper"
+        establishes: { forcing: invitational }
+      - id: r1H1S_2m_C
+        call: 2C
+        priority: 60
+        requires: { suits: { C: [5, 13] }, hcp: [10, 40], not: { suits: { H: [3, 13] } } }
+        shows: "new suit: 5+ clubs, 10+, forcing"
+        establishes: { forcing: one_round }
+      - id: r1H1S_2m_D
+        call: 2D
+        priority: 59
+        requires: { suits: { D: [5, 13] }, hcp: [10, 40], not: { suits: { H: [3, 13] } } }
+        shows: "new suit: 5+ diamonds, 10+, forcing"
+        establishes: { forcing: one_round }
+      - id: r1H1S_preempt
+        call: 3H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, hcp: [3, 7] }
+        shows: "preemptive raise"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: r1H1S_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 5] }
+        shows: "nothing to say"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: resp_1M_over_2x
+    description: "Responder after 1M - (2-level overcall in a lower suit)"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+      - { M: S, x: H }
+    pattern: "1$M - 2$x - ?"
+    rules:
+      - id: r1M2x_X
+        call: X
+        priority: 75
+        requires: { hcp: [7, 40], not: { suits: { $M: [3, 13] } }, suits: { $oM: [4, 13] } }
+        shows: "negative double: 4+ cards in the other major, 7+"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: r1M2x_raise
+        call: 2$M
+        priority: 70
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "single raise in competition"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: r1M2x_cue
+        call: 3$x
+        priority: 74
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [10, 40] } }
+        shows: "cue-bid raise: limit or better in $M"
+        establishes: { forcing: one_round, agreed_suit: $M }
+        alertable: true
+        convention: cue_raise
+      - id: r1M2x_2NT
+        call: 2NT
+        priority: 55
+        requires: { hcp: [10, 12], features: [ "stopper($x)" ], not: { suits: { $M: [3, 13] } } }
+        shows: "10-12 with a stopper"
+        establishes: { forcing: invitational }
+      - id: r1M2x_3NT
+        call: 3NT
+        priority: 56
+        requires: { hcp: [13, 16], features: [ "stopper($x)" ], not: { suits: { $M: [3, 13] } } }
+        shows: "13-16 with a stopper"
+        establishes: { forcing: sign_off }
+      - id: r1M2x_preempt
+        call: 3$M
+        priority: 62
+        requires: { suits: { $M: [4, 13] }, hcp: [3, 7] }
+        shows: "preemptive raise"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: r1M2x_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 6] }
+        shows: "nothing to say"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: resp_1S_over_2H_2S
+    description: "Responder's 2S new-suit bid over 1H - (2C/2D) style auctions"
+    expand: { x: [C, D] }
+    pattern: "1H - 2$x - ?"
+    rules:
+      - id: r1H2x_2H_newS
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [5, 13] }, hcp: [10, 40], not: { suits: { H: [3, 13] } } }
+        shows: "new suit: 5+ spades, 10+, forcing"
+        establishes: { forcing: one_round }
+
+  # ===========================================================================
+  # DIRECT-SEAT COMPETITIVE: overcalls & takeout doubles of their 1-level opening
+  # (one context per opening suit so jump vs simple overcalls stay distinct)
+  # ===========================================================================
+
+  - id: overcalls_of_1C
+    description: "Overcalls of their 1C opening"
+    pattern: "1C - ?"
+    rules:
+      - id: oc1C_1NT
+        call: 1NT
+        priority: 82
+        requires: { hcp: [15, 18], balanced: true, features: [ "stopper(C)" ] }
+        shows: "1NT overcall: 15-18 balanced with a club stopper"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_X
+        call: X
+        priority: 72
+        requires:
+          any_of:
+            - hcp: [11, 16]
+              suits: { C: [0, 2], S: [3, 13], H: [3, 13], D: [3, 13] }
+            - hcp: [17, 40]
+        shows: "takeout double: opening values, short clubs, support for the other suits (or any 17+)"
+        establishes: { forcing: one_round }
+      - id: oc1C_1D
+        call: 1D
+        priority: 70
+        requires: { suits: { D: [5, 13] }, hcp: [8, 16], evals: { suit_quality(D): [1, 9] } }
+        shows: "overcall: 5+ diamonds, 8-16"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_1H
+        call: 1H
+        priority: 71
+        requires: { suits: { H: [5, 13] }, hcp: [8, 16], evals: { suit_quality(H): [1, 9] } }
+        shows: "overcall: 5+ hearts, 8-16"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_1S
+        call: 1S
+        priority: 71
+        requires: { suits: { S: [5, 13] }, hcp: [8, 16], evals: { suit_quality(S): [1, 9] } }
+        shows: "overcall: 5+ spades, 8-16"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_2D_jump
+        call: 2D
+        priority: 60
+        requires: { suits: { D: [6, 6] }, hcp: [5, 10], features: [ "good_suit(D)" ] }
+        shows: "weak jump overcall: 6 diamonds, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_2H_jump
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [6, 6] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
+        shows: "weak jump overcall: 6 hearts, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_2S_jump
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [6, 6] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
+        shows: "weak jump overcall: 6 spades, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_pass
+        call: P
+        priority: 25
+        requires: { hcp: [0, 12] }
+        shows: "nothing suitable over 1C"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: overcalls_of_1D
+    description: "Overcalls of their 1D opening"
+    pattern: "1D - ?"
+    rules:
+      - id: oc1D_1NT
+        call: 1NT
+        priority: 82
+        requires: { hcp: [15, 18], balanced: true, features: [ "stopper(D)" ] }
+        shows: "1NT overcall: 15-18 balanced with a diamond stopper"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_X
+        call: X
+        priority: 72
+        requires:
+          any_of:
+            - hcp: [11, 16]
+              suits: { D: [0, 2], S: [3, 13], H: [3, 13], C: [3, 13] }
+            - hcp: [17, 40]
+        shows: "takeout double: opening values, short diamonds (or any 17+)"
+        establishes: { forcing: one_round }
+      - id: oc1D_1H
+        call: 1H
+        priority: 71
+        requires: { suits: { H: [5, 13] }, hcp: [8, 16], evals: { suit_quality(H): [1, 9] } }
+        shows: "overcall: 5+ hearts, 8-16"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_1S
+        call: 1S
+        priority: 71
+        requires: { suits: { S: [5, 13] }, hcp: [8, 16], evals: { suit_quality(S): [1, 9] } }
+        shows: "overcall: 5+ spades, 8-16"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_2C
+        call: 2C
+        priority: 65
+        requires: { suits: { C: [5, 13] }, hcp: [11, 17], evals: { suit_quality(C): [1.5, 9] } }
+        shows: "2-level overcall: 5+ good clubs, 11-17"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_2H_jump
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [6, 6] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
+        shows: "weak jump overcall: 6 hearts, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_2S_jump
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [6, 6] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
+        shows: "weak jump overcall: 6 spades, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_3C_jump
+        call: 3C
+        priority: 59
+        requires: { suits: { C: [6, 13] }, hcp: [5, 10], features: [ "good_suit(C)" ] }
+        shows: "weak jump overcall: 6+ clubs, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_pass
+        call: P
+        priority: 25
+        requires: { hcp: [0, 12] }
+        shows: "nothing suitable over 1D"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: overcalls_of_1H
+    description: "Overcalls of their 1H opening"
+    pattern: "1H - ?"
+    rules:
+      - id: oc1H_1NT
+        call: 1NT
+        priority: 82
+        requires: { hcp: [15, 18], balanced: true, features: [ "stopper(H)" ] }
+        shows: "1NT overcall: 15-18 balanced with a heart stopper"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_X
+        call: X
+        priority: 72
+        requires:
+          any_of:
+            - hcp: [11, 16]
+              suits: { H: [0, 2], S: [3, 13], D: [3, 13], C: [3, 13] }
+            - hcp: [17, 40]
+        shows: "takeout double: opening values, short hearts (or any 17+)"
+        establishes: { forcing: one_round }
+      - id: oc1H_1S
+        call: 1S
+        priority: 71
+        requires: { suits: { S: [5, 13] }, hcp: [8, 16], evals: { suit_quality(S): [1, 9] } }
+        shows: "overcall: 5+ spades, 8-16"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_2C
+        call: 2C
+        priority: 65
+        requires: { suits: { C: [5, 13] }, hcp: [11, 17], evals: { suit_quality(C): [1.5, 9] } }
+        shows: "2-level overcall: 5+ good clubs, 11-17"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_2D
+        call: 2D
+        priority: 65
+        requires: { suits: { D: [5, 13] }, hcp: [11, 17], evals: { suit_quality(D): [1.5, 9] } }
+        shows: "2-level overcall: 5+ good diamonds, 11-17"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_2S_jump
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [6, 6] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
+        shows: "weak jump overcall: 6 spades, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_3m_jump
+        call: 3C
+        priority: 59
+        requires: { suits: { C: [6, 13] }, hcp: [5, 10], features: [ "good_suit(C)" ] }
+        shows: "weak jump overcall: 6+ clubs, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_3D_jump
+        call: 3D
+        priority: 59
+        requires: { suits: { D: [6, 13] }, hcp: [5, 10], features: [ "good_suit(D)" ] }
+        shows: "weak jump overcall: 6+ diamonds, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_pass
+        call: P
+        priority: 25
+        requires: { hcp: [0, 12] }
+        shows: "nothing suitable over 1H"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: overcalls_of_1S
+    description: "Overcalls of their 1S opening"
+    pattern: "1S - ?"
+    rules:
+      - id: oc1S_1NT
+        call: 1NT
+        priority: 82
+        requires: { hcp: [15, 18], balanced: true, features: [ "stopper(S)" ] }
+        shows: "1NT overcall: 15-18 balanced with a spade stopper"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_X
+        call: X
+        priority: 72
+        requires:
+          any_of:
+            - hcp: [11, 16]
+              suits: { S: [0, 2], H: [3, 13], D: [3, 13], C: [3, 13] }
+            - hcp: [17, 40]
+        shows: "takeout double: opening values, short spades (or any 17+)"
+        establishes: { forcing: one_round }
+      - id: oc1S_2C
+        call: 2C
+        priority: 65
+        requires: { suits: { C: [5, 13] }, hcp: [11, 17], evals: { suit_quality(C): [1.5, 9] } }
+        shows: "2-level overcall: 5+ good clubs, 11-17"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_2D
+        call: 2D
+        priority: 65
+        requires: { suits: { D: [5, 13] }, hcp: [11, 17], evals: { suit_quality(D): [1.5, 9] } }
+        shows: "2-level overcall: 5+ good diamonds, 11-17"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_2H
+        call: 2H
+        priority: 65
+        requires: { suits: { H: [5, 13] }, hcp: [11, 17], evals: { suit_quality(H): [1.5, 9] } }
+        shows: "2-level overcall: 5+ good hearts, 11-17"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_3m_jump
+        call: 3C
+        priority: 59
+        requires: { suits: { C: [6, 13] }, hcp: [5, 10], features: [ "good_suit(C)" ] }
+        shows: "weak jump overcall: 6+ clubs, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_3D_jump
+        call: 3D
+        priority: 59
+        requires: { suits: { D: [6, 13] }, hcp: [5, 10], features: [ "good_suit(D)" ] }
+        shows: "weak jump overcall: 6+ diamonds, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_3H_jump
+        call: 3H
+        priority: 59
+        requires: { suits: { H: [6, 13] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
+        shows: "weak jump overcall: 6+ hearts, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_pass
+        call: P
+        priority: 25
+        requires: { hcp: [0, 12] }
+        shows: "nothing suitable over 1S"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  # ===========================================================================
+  # ADVANCES OF PARTNER'S TAKEOUT DOUBLE  (their 1x - our X - pass - ?)
+  # ===========================================================================
+
+  - id: advance_takeout_double
+    description: "Advancing partner's takeout double of a 1-level opening"
+    expand: { o: [C, D, H, S] }
+    pattern: "1$o - X - P - ?"
+    rules:
+      - id: adv_cue
+        call: 2$o
+        priority: 75
+        requires: { hcp: [12, 40] }
+        shows: "cue-bid: game-forcing values, no clear direction"
+        establishes: { forcing: game_forcing }
+        alertable: true
+      - id: adv_1NT
+        call: 1NT
+        priority: 55
+        requires: { hcp: [6, 10], features: [ "stopper($o)" ] }
+        shows: "6-10 with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: adv_2NT
+        call: 2NT
+        priority: 56
+        requires: { hcp: [11, 12], features: [ "stopper($o)" ] }
+        shows: "11-12 with a stopper"
+        establishes: { forcing: invitational }
+      - id: adv_pass_penalty
+        call: P
+        priority: 30
+        requires: { suits: { $o: [5, 13] }, hcp: [9, 40], features: [ "two_of_top3($o)" ] }
+        shows: "penalty pass: long strong trumps behind the opener"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_takeout_double_suits_C
+    description: "Suit advances of the takeout double of 1C"
+    pattern: "1C - X - P - ?"
+    rules:
+      - id: advC_1D
+        call: 1D
+        priority: 52
+        requires: { suits: { D: [3, 13] }, hcp: [0, 8], evals: { "suit_diff(D,H)": [0, 13], "suit_diff(D,S)": [0, 13] } }
+        shows: "0-8, best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advC_1H
+        call: 1H
+        priority: 53
+        requires: { suits: { H: [3, 13] }, hcp: [0, 8], evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "0-8, hearts the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advC_1S
+        call: 1S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "0-8, spades the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advC_2H_jump
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [4, 13] }, hcp: [9, 11], evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "jump: 4+ hearts, 9-11, invitational"
+        establishes: { forcing: invitational }
+      - id: advC_2S_jump
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [4, 13] }, hcp: [9, 11], evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "jump: 4+ spades, 9-11, invitational"
+        establishes: { forcing: invitational }
+
+  - id: advance_takeout_double_suits_D
+    description: "Suit advances of the takeout double of 1D"
+    pattern: "1D - X - P - ?"
+    rules:
+      - id: advD_1H
+        call: 1H
+        priority: 53
+        requires: { suits: { H: [3, 13] }, hcp: [0, 8], evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "0-8, hearts the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advD_1S
+        call: 1S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "0-8, spades the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advD_2C
+        call: 2C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(C,H)": [1, 13], "suit_diff(C,S)": [1, 13] } }
+        shows: "0-8, clubs the only suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advD_2H_jump
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [4, 13] }, hcp: [9, 11], evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "jump: 4+ hearts, 9-11, invitational"
+        establishes: { forcing: invitational }
+      - id: advD_2S_jump
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [4, 13] }, hcp: [9, 11], evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "jump: 4+ spades, 9-11, invitational"
+        establishes: { forcing: invitational }
+
+  - id: advance_takeout_double_suits_H
+    description: "Suit advances of the takeout double of 1H"
+    pattern: "1H - X - P - ?"
+    rules:
+      - id: advH_1S
+        call: 1S
+        priority: 54
+        requires: { suits: { S: [3, 13] }, hcp: [0, 8] }
+        shows: "0-8, spades (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advH_2C
+        call: 2C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(C,S)": [1, 13], "suit_diff(C,D)": [0, 13] } }
+        shows: "0-8, clubs the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advH_2D
+        call: 2D
+        priority: 51
+        requires: { suits: { D: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(D,S)": [1, 13], "suit_diff(D,C)": [1, 13] } }
+        shows: "0-8, diamonds the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advH_2S_jump
+        call: 2S
+        priority: 60
+        requires: { suits: { S: [4, 13] }, hcp: [9, 11] }
+        shows: "jump: 4+ spades, 9-11, invitational"
+        establishes: { forcing: invitational }
+
+  - id: advance_takeout_double_suits_S
+    description: "Suit advances of the takeout double of 1S"
+    pattern: "1S - X - P - ?"
+    rules:
+      - id: advS_2H
+        call: 2H
+        priority: 54
+        requires: { suits: { H: [3, 13] }, hcp: [0, 8] }
+        shows: "0-8, hearts (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advS_2C
+        call: 2C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(C,H)": [1, 13], "suit_diff(C,D)": [0, 13] } }
+        shows: "0-8, clubs the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advS_2D
+        call: 2D
+        priority: 51
+        requires: { suits: { D: [4, 13] }, hcp: [0, 8], evals: { "suit_diff(D,H)": [1, 13], "suit_diff(D,C)": [1, 13] } }
+        shows: "0-8, diamonds the best suit (forced)"
+        establishes: { forcing: non_forcing }
+      - id: advS_3H_jump
+        call: 3H
+        priority: 60
+        requires: { suits: { H: [4, 13] }, hcp: [9, 11] }
+        shows: "jump: 4+ hearts, 9-11, invitational"
+        establishes: { forcing: invitational }
+
+  # ===========================================================================
+  # ADVANCES OF PARTNER'S OVERCALL (simple raise / new suit / cue raise)
+  # ===========================================================================
+
+  - id: advance_overcall
+    description: "Advancing partner's 1-level major overcall"
+    expand_pairs:
+      - { o: C, v: H }
+      - { o: C, v: S }
+      - { o: D, v: H }
+      - { o: D, v: S }
+      - { o: H, v: S }
+    pattern: "1$o - 1$v - P - ?"
+    rules:
+      - id: advo_raise
+        call: 2$v
+        priority: 60
+        requires: { suits: { $v: [3, 13] }, evals: { total_points: [6, 10] } }
+        shows: "raise of the overcall: 3+ support, 6-10"
+        establishes: { forcing: non_forcing, agreed_suit: $v }
+      - id: advo_cue
+        call: 2$o
+        priority: 70
+        requires: { suits: { $v: [3, 13] }, evals: { total_points: [11, 40] } }
+        shows: "cue-bid: good raise of the overcall (11+)"
+        establishes: { forcing: one_round, agreed_suit: $v }
+        alertable: true
+        convention: cue_raise
+      - id: advo_1NT
+        call: 1NT
+        priority: 55
+        requires: { hcp: [8, 11], features: [ "stopper($o)" ], not: { suits: { $v: [3, 13] } } }
+        shows: "8-11 with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+
+  # ===========================================================================
+  # DEFENSE TO THEIR 1NT (natural)
+  # ===========================================================================
+
+  - id: defense_vs_1NT
+    description: "Direct seat over their 1NT opening: natural defense"
+    pattern: "1NT - ?"
+    rules:
+      - id: v1NT_X
+        call: X
+        priority: 70
+        requires: { hcp: [15, 40] }
+        shows: "penalty double of 1NT: 15+"
+        establishes: { forcing: non_forcing }
+      - id: v1NT_2C
+        call: 2C
+        priority: 60
+        requires: { suits: { C: [6, 13] }, hcp: [8, 15], features: [ "good_suit(C)" ] }
+        shows: "natural: 6+ clubs, 8-15"
+        establishes: { forcing: non_forcing }
+      - id: v1NT_2D
+        call: 2D
+        priority: 60
+        requires: { suits: { D: [6, 13] }, hcp: [8, 15], features: [ "good_suit(D)" ] }
+        shows: "natural: 6+ diamonds, 8-15"
+        establishes: { forcing: non_forcing }
+      - id: v1NT_2H
+        call: 2H
+        priority: 61
+        requires: { suits: { H: [5, 13] }, hcp: [8, 15], features: [ "good_suit(H)" ] }
+        shows: "natural: 5+ hearts (usually 6), 8-15"
+        establishes: { forcing: non_forcing }
+      - id: v1NT_2S
+        call: 2S
+        priority: 61
+        requires: { suits: { S: [5, 13] }, hcp: [8, 15], features: [ "good_suit(S)" ] }
+        shows: "natural: 5+ spades (usually 6), 8-15"
+        establishes: { forcing: non_forcing }
+      - id: v1NT_pass
+        call: P
+        priority: 30
+        requires: { hcp: [0, 14] }
+        shows: "nothing suitable over 1NT"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  # ===========================================================================
+  # DEFENSE TO THEIR WEAK TWOS
+  # ===========================================================================
+
+  - id: defense_vs_weak2
+    description: "Direct seat over their weak two"
+    expand: { W: [D, H, S] }
+    pattern: "2$W - ?"
+    rules:
+      - id: vw2_X
+        call: X
+        priority: 70
+        requires:
+          any_of:
+            - hcp: [13, 16]
+              suits: { $W: [0, 2] }
+            - hcp: [17, 40]
+        shows: "takeout double of the weak two"
+        establishes: { forcing: one_round }
+      - id: vw2_2NT
+        call: 2NT
+        priority: 68
+        requires: { hcp: [15, 18], balanced: true, features: [ "stopper($W)" ] }
+        shows: "15-18 balanced with a stopper"
+        establishes: { forcing: non_forcing }
+      - id: vw2_pass
+        call: P
+        priority: 30
+        requires: { hcp: [0, 14] }
+        shows: "nothing to say over the preempt"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  # ===========================================================================
+  # SLAM MACHINERY: RKC Blackwood 1430 + quantitative 4NT
+  # ===========================================================================
+
+  - id: rkc_ask
+    description: "4NT is RKC 1430 once a suit is agreed in a game force"
+    pattern: "... - ?"
+    when: { agreed_suit: true, game_forced: true }
+    rules:
+      - id: rkc_4NT
+        call: 4NT
+        priority: 45
+        requires: { evals: { total_points: [17, 40], controls: [4, 12] } }
+        shows: "RKC Blackwood 1430 for the agreed suit"
+        establishes: { forcing: one_round, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+
+  - id: rkc_response
+    description: "Responses to RKC 1430"
+    pattern: "... - 4NT - P - ?"
+    when: { asking: keycards }
+    rules:
+      - id: rkc_5C
+        call: 5C
+        priority: 60
+        requires:
+          any_of:
+            - evals: { "keycards(agreed)": [1, 1] }
+            - evals: { "keycards(agreed)": [4, 4] }
+        shows: "1 or 4 keycards (1430)"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: rkc_1430
+      - id: rkc_5D
+        call: 5D
+        priority: 59
+        requires:
+          any_of:
+            - evals: { "keycards(agreed)": [0, 0] }
+            - evals: { "keycards(agreed)": [3, 3] }
+        shows: "0 or 3 keycards (1430)"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: rkc_1430
+      - id: rkc_5H
+        call: 5H
+        priority: 58
+        requires:
+          evals: { "keycards(agreed)": [2, 2], "trump_queen(agreed)": [0, 0] }
+        shows: "2 keycards without the trump queen"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: rkc_1430
+      - id: rkc_5S
+        call: 5S
+        priority: 57
+        requires:
+          evals: { "keycards(agreed)": [2, 2], "trump_queen(agreed)": [1, 1] }
+        shows: "2 keycards with the trump queen"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: rkc_1430
+
+  - id: rkc_continue_after_5C
+    description: "Asker's continuation after the 5C (1/4) reply"
+    expand: { A: [H, S] }
+    pattern: "... - 4NT - P - 5C - P - ?"
+    when: { agreed_suit: $A }
+    rules:
+      - id: rkc5C_slam
+        call: 6$A
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all/most keycards present: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+      - id: rkc5C_signoff
+        call: 5$A
+        priority: 55
+        requires: { evals: { "keycards(agreed)": [0, 2] } }
+        shows: "two keycards missing: signing off"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+
+  - id: rkc_continue_after_5D
+    description: "Asker's continuation after the 5D (0/3) reply"
+    expand: { A: [H, S] }
+    pattern: "... - 4NT - P - 5D - P - ?"
+    when: { agreed_suit: $A }
+    rules:
+      - id: rkc5D_slam
+        call: 6$A
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [2, 5], hcp: [18, 40] } }
+        shows: "assuming 3 keycards opposite: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+      - id: rkc5D_signoff
+        call: 5$A
+        priority: 55
+        requires: {}
+        shows: "signing off opposite a likely 0"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+
+  - id: rkc_continue_after_5H
+    description: "Asker's continuation after the 5H (2 no Q) reply"
+    expand: { A: [H, S] }
+    pattern: "... - 4NT - P - 5H - P - ?"
+    when: { agreed_suit: $A }
+    rules:
+      - id: rkc5H_slam
+        call: 6$A
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards held: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+      - id: rkc5H_signoff
+        call: 5$A
+        priority: 55
+        requires: { evals: { "keycards(agreed)": [0, 2] } }
+        shows: "a keycard missing: signing off"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+
+  - id: rkc_continue_after_5S
+    description: "Asker's continuation after the 5S (2 with Q) reply"
+    pattern: "... - 4NT - P - 5S - P - ?"
+    when: { agreed_suit: S }
+    rules:
+      - id: rkc5S_slam_S
+        call: 6S
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards + the queen: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: rkc5S_pass_signoff
+        call: P
+        priority: 40
+        requires: { evals: { "keycards(agreed)": [0, 2] } }
+        shows: "a keycard missing: passing the 5S reply"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_continue_after_5S_heartsagreed
+    description: "Asker's continuation after 5S when hearts are agreed"
+    pattern: "... - 4NT - P - 5S - P - ?"
+    when: { agreed_suit: H }
+    rules:
+      - id: rkc5S_slam_H
+        call: 6H
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards + the queen: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rkc5S_signoff_6H_missing
+        call: 6H
+        priority: 41
+        requires: { evals: { "keycards(agreed)": [0, 2] } }
+        shows: "forced to the six level; a keycard may be missing"
+        establishes: { forcing: sign_off, agreed_suit: H }
+
+  # ===========================================================================
+  # GENERIC GAME-FORCE LANDING SPOTS (least specific; consulted when nothing
+  # anchored matches)
+  # ===========================================================================
+
+  - id: gf_landing_major
+    description: "Generic: with a major agreed in a GF, bid/raise to game"
+    expand: { A: [H, S] }
+    pattern: "... - ?"
+    when: { agreed_suit: $A, game_forced: true }
+    rules:
+      - id: gf_game_4$A
+        call: 4$A
+        priority: 35
+        requires: { evals: { total_points: [0, 17] } }
+        shows: "signing off in the agreed major game"
+        establishes: { forcing: non_forcing, agreed_suit: $A }
+
+  - id: gf_landing_nt
+    description: "Generic: in a GF with no agreed suit, 3NT is the default game"
+    pattern: "... - ?"
+    when: { agreed_suit: false, game_forced: true }
+    rules:
+      - id: gf_3NT
+        call: 3NT
+        priority: 34
+        requires: { hcp: [0, 17], evals: { semi_balanced: [1, 1] } }
+        shows: "no fit found: choosing 3NT"
+        establishes: { forcing: non_forcing }
