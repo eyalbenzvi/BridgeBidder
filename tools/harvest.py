@@ -108,7 +108,8 @@ def harvest_board(system, deal, dealer, vul, dd) -> dict:
                   f"{prefix} -> {ann.call} vs replay {replayed}")
         # misbid: the hand badly fails its own call's interpretation
         if not ann.call.is_pass:
-            ctx = setup.eval_ctx
+            cand = next((c for c in setup.candidates if c.call == ann.call), None)
+            ctx = setup.candidate_ctx(cand) if cand else setup.eval_ctx
             fit = interp.constraint.fit(deal[seat], ctx)
             if fit < MISBID_FIT_THRESHOLD:
                 sig = f"misbid:{interp.source_rule_id}"
@@ -184,10 +185,14 @@ def harvest_board(system, deal, dealer, vul, dd) -> dict:
     # absurd contracts
     if contract is not None:
         need = 6 + contract.level
-        if contract.level >= 5 and contract.doubled and tricks <= need - 3:
+        decl_side = contract.declarer.side
+        decl_loss = (rec.get("par_loss_imps") or {}).get(decl_side, 0)
+        if contract.level >= 5 and contract.doubled and tricks <= need - 3 \
+                and decl_loss >= PAR_LOSS_FLAG_IMPS:
+            # ... but a doubled sacrifice that still beat par is good bridge
             issue("absurd_contract", "high_doubled_disaster",
-                  f"{contract} down {need - tricks} ({auction})",
-                  abs(imps(signed_score(contract, tricks, vul, 'NS'))))
+                  f"{contract} down {need - tricks}, {decl_loss} IMPs worse than par ({auction})",
+                  decl_loss)
         if contract.strain != "NT":
             decl_side = contract.declarer.side
             us = [s for s in Seat if s.side == decl_side]

@@ -157,8 +157,9 @@ def generate_fallbacks(
             )
             break  # cheapest level in this suit only
 
-    # ---- notrump ----
-    for level in (range(1, 8) if not quiet else []):
+    # ---- notrump (never invent a NATURAL notrump above 3NT: at the 4-level
+    # and beyond NT is conventional, so a fallback 4NT is always wrong) ----
+    for level in (range(1, 4) if not quiet else []):
         call = Call.bid(level, "NT")
         if call.bid_index <= floor:
             continue

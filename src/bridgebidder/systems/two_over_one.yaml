@@ -3422,3 +3422,529 @@ contexts:
         requires: { hcp: [15, 17], evals: { "stoppers(their)": [1, 9] }, not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
         shows: "no 4-card major, values in their suit (penalty-oriented)"
         establishes: { forcing: non_forcing }
+
+  # =========================================================================
+  # RESPONDER OVER THEIR TAKEOUT DOUBLE / ADVANCING A SANDWICH DOUBLE
+  # (both harvested as gaps in round 2)
+  # =========================================================================
+
+  - id: resp_over_double_C
+    description: "Responder's natural actions after their takeout double of 1C"
+    pattern: "1C - X - ?"
+    rules:
+      - id: rx_C_1D
+        call: 1D
+        priority: 62
+        requires: { suits: { D: [4, 13] }, hcp: [6, 9], evals: { "suit_quality(D)": [1, 9] } }
+        shows: "new suit over their double: 4+ D, 6-9, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_C_1H
+        call: 1H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, hcp: [6, 9], evals: { "suit_quality(H)": [1, 9] } }
+        shows: "new suit over their double: 4+ H, 6-9, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_C_1S
+        call: 1S
+        priority: 62
+        requires: { suits: { S: [4, 13] }, hcp: [6, 9], evals: { "suit_quality(S)": [1, 9] } }
+        shows: "new suit over their double: 4+ S, 6-9, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_C_1NT
+        call: 1NT
+        priority: 58
+        requires: { hcp: [6, 9], evals: { semi_balanced: [1, 1] } }
+        shows: "6-9 balanced over their takeout double"
+        establishes: { forcing: non_forcing }
+      - id: rx_C_raise
+        call: 2C
+        priority: 60
+        requires: { suits: { C: [4, 13] }, hcp: [5, 9] }
+        shows: "simple raise over their double: 4+ C, 5-9"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: rx_C_preempt
+        call: 3C
+        priority: 61
+        requires: { suits: { C: [5, 13] }, hcp: [3, 8] }
+        shows: "preemptive raise: 5+ C, weak"
+        establishes: { forcing: sign_off, agreed_suit: C }
+
+  - id: resp_over_double_D
+    description: "Responder's natural actions after their takeout double of 1D"
+    pattern: "1D - X - ?"
+    rules:
+      - id: rx_D_1H
+        call: 1H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, hcp: [6, 9], evals: { "suit_quality(H)": [1, 9] } }
+        shows: "new suit over their double: 4+ H, 6-9, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_D_1S
+        call: 1S
+        priority: 62
+        requires: { suits: { S: [4, 13] }, hcp: [6, 9], evals: { "suit_quality(S)": [1, 9] } }
+        shows: "new suit over their double: 4+ S, 6-9, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_D_1NT
+        call: 1NT
+        priority: 58
+        requires: { hcp: [6, 9], evals: { semi_balanced: [1, 1] } }
+        shows: "6-9 balanced over their takeout double"
+        establishes: { forcing: non_forcing }
+      - id: rx_D_raise
+        call: 2D
+        priority: 60
+        requires: { suits: { D: [4, 13] }, hcp: [5, 9] }
+        shows: "simple raise over their double: 4+ D, 5-9"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: rx_D_preempt
+        call: 3D
+        priority: 61
+        requires: { suits: { D: [5, 13] }, hcp: [3, 8] }
+        shows: "preemptive raise: 5+ D, weak"
+        establishes: { forcing: sign_off, agreed_suit: D }
+
+  - id: resp_over_double_H
+    description: "Responder's natural actions after their takeout double of 1H"
+    pattern: "1H - X - ?"
+    rules:
+      - id: rx_H_1S
+        call: 1S
+        priority: 62
+        requires: { suits: { S: [4, 13] }, hcp: [6, 9], evals: { "suit_quality(S)": [1, 9] } }
+        shows: "new suit over their double: 4+ S, 6-9, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_H_1NT
+        call: 1NT
+        priority: 58
+        requires: { hcp: [6, 9], evals: { semi_balanced: [1, 1] } }
+        shows: "6-9 balanced over their takeout double"
+        establishes: { forcing: non_forcing }
+
+  - id: resp_over_double_S
+    description: "Responder's natural actions after their takeout double of 1S"
+    pattern: "1S - X - ?"
+    rules:
+      - id: rx_S_2H
+        call: 2H
+        priority: 62
+        requires: { suits: { H: [5, 13] }, hcp: [9, 11], evals: { "suit_quality(H)": [1, 9] } }
+        shows: "new suit over their double: 5+ H, 9-11, non-forcing"
+        establishes: { forcing: non_forcing }
+      - id: rx_S_1NT
+        call: 1NT
+        priority: 58
+        requires: { hcp: [6, 9], evals: { semi_balanced: [1, 1] } }
+        shows: "6-9 balanced over their takeout double"
+        establishes: { forcing: non_forcing }
+
+  - id: advance_sandwich_C_1D
+    description: "Advancing partner's sandwich double after 1C - P - 1D - X - P"
+    pattern: "1C - P - 1D - X - P - ?"
+    rules:
+      - id: advsw_C1D_S
+        call: 1S
+        priority: 56
+        requires: { suits: { S: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (S), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_C1D_H
+        call: 1H
+        priority: 56
+        requires: { suits: { H: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (H), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_C1D_pass
+        call: P
+        priority: 40
+        requires: { suits: { D: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(D)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_C_1H
+    description: "Advancing partner's sandwich double after 1C - P - 1H - X - P"
+    pattern: "1C - P - 1H - X - P - ?"
+    rules:
+      - id: advsw_C1H_S
+        call: 1S
+        priority: 56
+        requires: { suits: { S: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (S), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_C1H_D
+        call: 2D
+        priority: 54
+        requires: { suits: { D: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (D), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_C1H_pass
+        call: P
+        priority: 40
+        requires: { suits: { H: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(H)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_C_1S
+    description: "Advancing partner's sandwich double after 1C - P - 1S - X - P"
+    pattern: "1C - P - 1S - X - P - ?"
+    rules:
+      - id: advsw_C1S_H
+        call: 2H
+        priority: 54
+        requires: { suits: { H: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (H), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_C1S_D
+        call: 2D
+        priority: 54
+        requires: { suits: { D: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (D), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_C1S_pass
+        call: P
+        priority: 40
+        requires: { suits: { S: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(S)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_D_1H
+    description: "Advancing partner's sandwich double after 1D - P - 1H - X - P"
+    pattern: "1D - P - 1H - X - P - ?"
+    rules:
+      - id: advsw_D1H_S
+        call: 1S
+        priority: 56
+        requires: { suits: { S: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (S), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_D1H_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (C), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_D1H_pass
+        call: P
+        priority: 40
+        requires: { suits: { H: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(H)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_D_1S
+    description: "Advancing partner's sandwich double after 1D - P - 1S - X - P"
+    pattern: "1D - P - 1S - X - P - ?"
+    rules:
+      - id: advsw_D1S_H
+        call: 2H
+        priority: 54
+        requires: { suits: { H: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (H), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_D1S_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (C), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_D1S_pass
+        call: P
+        priority: 40
+        requires: { suits: { S: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(S)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_H_1D
+    description: "Advancing partner's sandwich double after 1H - P - 1D - X - P"
+    pattern: "1H - P - 1D - X - P - ?"
+    rules:
+      - id: advsw_H1D_S
+        call: 1S
+        priority: 56
+        requires: { suits: { S: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (S), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_H1D_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (C), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_H1D_pass
+        call: P
+        priority: 40
+        requires: { suits: { D: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(D)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_H_1S
+    description: "Advancing partner's sandwich double after 1H - P - 1S - X - P"
+    pattern: "1H - P - 1S - X - P - ?"
+    rules:
+      - id: advsw_H1S_D
+        call: 2D
+        priority: 54
+        requires: { suits: { D: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (D), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_H1S_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (C), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_H1S_pass
+        call: P
+        priority: 40
+        requires: { suits: { S: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(S)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_S_1D
+    description: "Advancing partner's sandwich double after 1S - P - 1D - X - P"
+    pattern: "1S - P - 1D - X - P - ?"
+    rules:
+      - id: advsw_S1D_H
+        call: 1H
+        priority: 56
+        requires: { suits: { H: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (H), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_S1D_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (C), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_S1D_pass
+        call: P
+        priority: 40
+        requires: { suits: { D: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(D)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: advance_sandwich_S_1H
+    description: "Advancing partner's sandwich double after 1S - P - 1H - X - P"
+    pattern: "1S - P - 1H - X - P - ?"
+    rules:
+      - id: advsw_S1H_D
+        call: 2D
+        priority: 54
+        requires: { suits: { D: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (D), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_S1H_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [3, 13] }, hcp: [0, 10] }
+        shows: "advancing the takeout double: best unbid suit (C), 0-10"
+        establishes: { forcing: non_forcing }
+      - id: advsw_S1H_pass
+        call: P
+        priority: 40
+        requires: { suits: { H: [4, 13] }, hcp: [6, 40], evals: { "suit_quality(H)": [2, 9] } }
+        shows: "converting to penalties: strong holding in their suit"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  # =========================================================================
+  # ROUND-2 GAPS: forcing new suits over weak twos; responder opposite a
+  # two-suited opener
+  # =========================================================================
+
+  - id: resp_weak2_newsuit_D
+    description: "New-suit (forcing) responses to partner's weak two in D"
+    pattern: "2D - P - ?"
+    rules:
+      - id: rw2_new_D_C
+        call: 3C
+        priority: 63
+        requires:
+          suits: { C: [5, 13], D: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(C)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ C, 12+, forcing one round"
+        establishes: { forcing: one_round }
+      - id: rw2_new_D_H
+        call: 2H
+        priority: 63
+        requires:
+          suits: { H: [5, 13], D: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(H)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ H, 12+, forcing one round"
+        establishes: { forcing: one_round }
+      - id: rw2_new_D_S
+        call: 2S
+        priority: 63
+        requires:
+          suits: { S: [5, 13], D: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(S)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ S, 12+, forcing one round"
+        establishes: { forcing: one_round }
+
+  - id: resp_weak2_newsuit_H
+    description: "New-suit (forcing) responses to partner's weak two in H"
+    pattern: "2H - P - ?"
+    rules:
+      - id: rw2_new_H_C
+        call: 3C
+        priority: 63
+        requires:
+          suits: { C: [5, 13], H: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(C)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ C, 12+, forcing one round"
+        establishes: { forcing: one_round }
+      - id: rw2_new_H_D
+        call: 3D
+        priority: 63
+        requires:
+          suits: { D: [5, 13], H: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(D)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ D, 12+, forcing one round"
+        establishes: { forcing: one_round }
+      - id: rw2_new_H_S
+        call: 2S
+        priority: 63
+        requires:
+          suits: { S: [5, 13], H: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(S)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ S, 12+, forcing one round"
+        establishes: { forcing: one_round }
+
+  - id: resp_weak2_newsuit_S
+    description: "New-suit (forcing) responses to partner's weak two in S"
+    pattern: "2S - P - ?"
+    rules:
+      - id: rw2_new_S_C
+        call: 3C
+        priority: 63
+        requires:
+          suits: { C: [5, 13], S: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(C)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ C, 12+, forcing one round"
+        establishes: { forcing: one_round }
+      - id: rw2_new_S_D
+        call: 3D
+        priority: 63
+        requires:
+          suits: { D: [5, 13], S: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(D)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ D, 12+, forcing one round"
+        establishes: { forcing: one_round }
+      - id: rw2_new_S_H
+        call: 3H
+        priority: 63
+        requires:
+          suits: { H: [5, 13], S: [0, 2] }
+          hcp: [12, 40]
+          evals: { "suit_quality(H)": [2, 9] }
+        shows: "new suit opposite the weak two: 5+ H, 12+, forcing one round"
+        establishes: { forcing: one_round }
+
+  - id: responder_rebid_1H_1S_2C
+    description: "Responder's rebid after 1H - 1S - 2C (opener is two-suited)"
+    pattern: "1H - P - 1S - P - 2C - P - ?"
+    rules:
+      - id: rr1H1SC_2H
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [6, 10] } }
+        shows: "preference back to opener's hearts: 3+ hearts, minimum"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: rr1H1SC_3H
+        call: 3H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [11, 12] } }
+        shows: "invitational heart raise: 4+ hearts"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: rr1H1SC_4H
+        call: 4H
+        priority: 63
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [13, 40] } }
+        shows: "game in hearts: 4+ hearts, game values"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rr1H1SC_2S
+        call: 2S
+        priority: 55
+        requires: { suits: { S: [6, 13], H: [0, 2] }, evals: { total_points: [6, 10] } }
+        shows: "6+ spades, no heart fit, to play"
+        establishes: { forcing: sign_off }
+      - id: rr1H1SC_2NT
+        call: 2NT
+        priority: 54
+        requires: { hcp: [11, 12], suits: { H: [0, 2] } }
+        shows: "invitational, no fit"
+        establishes: { forcing: invitational }
+      - id: rr1H1SC_3NT
+        call: 3NT
+        priority: 56
+        requires: { hcp: [13, 17], suits: { H: [0, 2] } }
+        shows: "to play"
+        establishes: { forcing: sign_off }
+      - id: rr1H1SC_pass
+        call: P
+        priority: 45
+        requires: { suits: { C: [4, 13], H: [0, 2] }, evals: { total_points: [6, 9] } }
+        shows: "passing the second suit with a fit and no extras"
+        establishes: { forcing: sign_off }
+
+  - id: responder_rebid_1H_1S_2D
+    description: "Responder's rebid after 1H - 1S - 2D (opener is two-suited)"
+    pattern: "1H - P - 1S - P - 2D - P - ?"
+    rules:
+      - id: rr1H1SD_2H
+        call: 2H
+        priority: 60
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [6, 10] } }
+        shows: "preference back to opener's hearts: 3+ hearts, minimum"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: rr1H1SD_3H
+        call: 3H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [11, 12] } }
+        shows: "invitational heart raise: 4+ hearts"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: rr1H1SD_4H
+        call: 4H
+        priority: 63
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [13, 40] } }
+        shows: "game in hearts: 4+ hearts, game values"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rr1H1SD_2S
+        call: 2S
+        priority: 55
+        requires: { suits: { S: [6, 13], H: [0, 2] }, evals: { total_points: [6, 10] } }
+        shows: "6+ spades, no heart fit, to play"
+        establishes: { forcing: sign_off }
+      - id: rr1H1SD_2NT
+        call: 2NT
+        priority: 54
+        requires: { hcp: [11, 12], suits: { H: [0, 2] } }
+        shows: "invitational, no fit"
+        establishes: { forcing: invitational }
+      - id: rr1H1SD_3NT
+        call: 3NT
+        priority: 56
+        requires: { hcp: [13, 17], suits: { H: [0, 2] } }
+        shows: "to play"
+        establishes: { forcing: sign_off }
+      - id: rr1H1SD_pass
+        call: P
+        priority: 45
+        requires: { suits: { D: [4, 13], H: [0, 2] }, evals: { total_points: [6, 9] } }
+        shows: "passing the second suit with a fit and no extras"
+        establishes: { forcing: sign_off }

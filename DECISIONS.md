@@ -171,3 +171,25 @@ rationale. Bridge-style choices are exposed as config flags where noted.
 - Uncontested continuation gaps found by harvesting are now authored: replies
   to jump raises, 2NT jump rebids, minor rebids, 1S second suit, game tries,
   jump rebids, Stayman over interference and after 2NT, opener jump shifts.
+
+### Round 2 harvest decisions
+
+- **Never bid over your OWN last contract bid** (keyed on the seat, not the
+  side): pulling your own doubled contract is the single most expensive
+  self-play error. Partner's bid silences us only once game is reached, so
+  responder can still act after RHO doubles partner's opening - an earlier,
+  side-keyed version of this guard muted responder entirely.
+- **Fallback notrump never above 3NT**: at the 4-level and beyond NT is
+  conventional, so an invented natural 4NT is always wrong (one cost 1100).
+- **New suits over their takeout double need an honor** in the suit, so
+  equal-length choices go to the better suit rather than blindly up the line.
+- **New suits opposite a weak two are forcing** (RONF), 5+ cards and 12+ HCP
+  with a doubleton or shorter in partner's suit.
+- Content authored from harvested gaps: responder's natural actions over
+  their takeout double (new suits, 1NT, simple and preemptive raises),
+  advancing partner's sandwich double, and responder's rebid opposite a
+  two-suited opener (1H - 1S - 2m).
+- **Harvester detector fixes**: misbids are scored in the *candidate* context
+  (support points need the trump suit the call agrees, else every good raise
+  looked like a misbid), and a doubled contract that still beat par is scored
+  as a successful sacrifice, not a disaster.

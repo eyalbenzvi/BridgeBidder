@@ -116,3 +116,76 @@
   dealer: S
   calls: ["P", "P", "1D", "P", "1S", "P"]
   expect: { calls: ["3C", "2C"] }
+
+# --- round 2 -----------------------------------------------------------------
+
+# r2 s606b22: responder was silenced after RHO doubled partner's opening and
+# redoubled on 8 HCP; natural actions must exist (and pick the better suit)
+- name: r2_new_suit_over_their_double
+  hand: "QJT8.9732.T6.KQ4"
+  dealer: S
+  calls: ["P", "P", "1D", "X"]
+  expect: { call: "1S" }
+
+- name: r2_preemptive_raise_over_their_double
+  hand: "932.974.KT876.Q4"
+  dealer: S
+  calls: ["P", "P", "1D", "X"]
+  expect: { calls: ["3D", "2D"] }
+
+- name: r2_redouble_still_works_with_values
+  hand: "932.KQ72.T6.KQ54"
+  dealer: S
+  calls: ["P", "P", "1D", "X"]
+  expect: { call: "XX" }
+
+# r2 s606b22: a fallback natural 4NT over their 4-level contract cost 1100
+- name: r2_no_fallback_4NT_over_their_game
+  hand: "AK54.A4.AK4.J983"
+  dealer: S
+  calls: ["P","P","1D","X","XX","P","1H","1S","2H","P","P","2S","P","P","3H","3S","P","P","4H"]
+  expect: { calls: ["X", "P"] }
+
+# r2: never pull your own doubled contract (the seat that bid it must pass)
+- name: r2_no_self_pull_of_doubled_game
+  hand: "J6.AT7543.KQ4.KJ"
+  calls: ["1H", "P", "4H", "X", "P", "P"]
+  expect: { call: "P" }
+
+# r2: partner may still compete over their double at a low level
+- name: r2_partner_may_still_act_over_double
+  hand: "QJT8.9732.T6.KQ4"
+  dealer: S
+  calls: ["P", "P", "1D", "X"]
+  expect: { call: "1S" }
+
+# r2 s606b10: advancing partner's sandwich double is not optional
+- name: r2_advance_sandwich_double
+  hand: "843.T5.754.QT842"
+  dealer: S
+  calls: ["1D", "P", "1S", "X", "P"]
+  expect: { calls: ["2C", "1NT"] }
+
+# r2 s808b20: new suits opposite a weak two are forcing and must exist
+- name: r2_weak_two_new_suit_forcing
+  hand: ".A72.KQ8642.QJ62"
+  calls: ["2S", "P"]
+  expect: { call: "3D", forcing: one_round }
+
+- name: r2_weak_two_pass_with_junk
+  hand: "2.972.KJ8642.J62"
+  calls: ["2S", "P"]
+  expect: { call: "P" }
+
+# r2 s808b38: responder must take a preference/raise opposite a two-suited opener
+- name: r2_heart_game_opposite_two_suiter
+  hand: "QJT98.KT86.AT6.5"
+  dealer: S
+  calls: ["P", "P", "1H", "P", "1S", "P", "2C", "P"]
+  expect: { call: "4H", forcing: sign_off }
+
+- name: r2_simple_preference_opposite_two_suiter
+  hand: "QJT98.K86.T62.53"
+  dealer: S
+  calls: ["P", "P", "1H", "P", "1S", "P", "2C", "P"]
+  expect: { calls: ["2H", "P"] }

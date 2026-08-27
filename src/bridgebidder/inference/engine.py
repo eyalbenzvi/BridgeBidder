@@ -299,8 +299,16 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
             forcing == "non_forcing" and _game_reached(auction)
         )
         partner_forcing = forcing in ("one_round", "game_forcing")
+    # Never bid over your OWN last contract bid (that is what pulling your own
+    # doubled contract looks like); partner's bid only silences us once game
+    # is reached.  Keyed on the seat, so responder can still act after RHO
+    # doubles partner's opening.
     lb_info = auction.last_bid_info
-    we_hold_contract = lb_info is not None and auction.seat_of_call(lb_info[1]).side == seat.side
+    we_hold_contract = False
+    if lb_info is not None:
+        bidder = auction.seat_of_call(lb_info[1])
+        we_hold_contract = bidder == seat or (
+            bidder == seat.partner and _game_reached(auction))
     for fb in generate_fallbacks(
         auction, seat, partner_suits, their_suits,
         side.agreed_suit, side.game_forced, frozenset(covered), we_have_acted,
