@@ -36,11 +36,11 @@ class HandDescriptor:
             self.soft.append(constraint)
         if note:
             self.notes.append(note)
-        # record newly shown suits (4+ promised, or 3+ if it tightens support)
+        # record newly shown suits (3+ promised covers better-minor openings)
         b = constraint.box()
         for s in SUITS:
             lo = b.suit(s)[0]
-            if lo >= 4 and s not in self.shown_suits:
+            if lo >= 3 and s not in self.shown_suits:
                 self.shown_suits.append(s)
 
     @property
