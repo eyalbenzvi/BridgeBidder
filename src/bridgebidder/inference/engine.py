@@ -139,9 +139,45 @@ class DecisionSetup:
 # ---------------------------------------------------------------------------
 
 
-def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: BiddingSystem) -> bool:
+def we_hold_contract(auction: Auction, seat: Seat) -> bool:
+    """True when our own last contract bid stands: this seat made it, or
+    partner made it and game is already reached.  Bidding on from here is
+    bidding against ourselves."""
+    lb_info = auction.last_bid_info
+    if lb_info is None:
+        return False
+    bidder = auction.seat_of_call(lb_info[1])
+    return bidder == seat or (bidder == seat.partner and _game_reached(auction))
+
+
+def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: BiddingSystem,
+                     ctx: EvalContext | None = None, call: Call | None = None) -> bool:
     if cond.is_trivial:
         return True
+    if cond.cheapest_in_suit is not None and call is not None and call.is_bid:
+        lb = auction.last_bid
+        floor = lb.bid_index if lb else -1
+        cheapest = None
+        for level in range(1, 8):
+            c = Call.bid(level, call.strain)
+            if c.bid_index > floor:
+                cheapest = level
+                break
+        if (call.level == cheapest) != cond.cheapest_in_suit:
+            return False
+    # suit-role gates: these depend only on the auction, so they are hard
+    # conditions rather than soft hand features (a "raise partner's suit"
+    # rule must not fire in a suit partner never bid)
+    if cond.partner_suit is not None and ctx is not None:
+        shown = set(ctx.partner_suits) | ({ctx.agreed_suit} if ctx.agreed_suit else set())
+        if cond.partner_suit not in shown:
+            return False
+    if cond.unbid_suit is not None and ctx is not None:
+        shown = set(ctx.partner_suits) | set(ctx.their_suits)
+        if ctx.agreed_suit:
+            shown.add(ctx.agreed_suit)
+        if cond.unbid_suit in shown:
+            return False
     if cond.opening_seat is not None:
         if auction.opener_index() is not None:
             return False  # opening-seat conditions only apply before any bid
@@ -154,16 +190,20 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         return False
     if cond.they_vulnerable is not None and vul.is_vulnerable(seat.lho) != cond.they_vulnerable:
         return False
+    if cond.we_hold_contract is not None and we_hold_contract(auction, seat) != cond.we_hold_contract:
+        return False
     for flag, want in cond.config.items():
         if system.config.get(flag) != want:
             return False
     return True
 
 
-def _context_when_holds(ctx: Context, side: SideState) -> bool:
+def _context_when_holds(ctx: Context, side: SideState, auction: Auction, seat: Seat) -> bool:
     w = ctx.when
     if w.is_trivial:
         return True
+    if w.we_hold_contract is not None and we_hold_contract(auction, seat) != w.we_hold_contract:
+        return False
     if w.agreed_suit is not None:
         if w.agreed_suit is True and side.agreed_suit is None:
             return False
@@ -258,16 +298,18 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
     calls so far."""
     seat = auction.next_seat
     side = analysis.sides[seat.side]
+    eval_ctx = build_eval_ctx(analysis, auction, seat)
     stripped = _stripped_calls(auction)
     contexts = [
         c for c in match_all_contexts(system.contexts, stripped)
-        if _context_when_holds(c, side)
+        if _context_when_holds(c, side, auction, seat)
     ]
     context_rules: list[tuple[Context, list[BidRule]]] = []
     for ctx in contexts:
         rules = [
             r for r in ctx.rules
-            if auction.is_legal(r.call) and _conditions_hold(r.when, auction, seat, system)
+            if auction.is_legal(r.call)
+            and _conditions_hold(r.when, auction, seat, system, eval_ctx, r.call)
         ]
         if rules:
             context_rules.append((ctx, rules))
@@ -282,7 +324,6 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
             candidates.append(Candidate(call=r.call, rule=r))
         covered |= ctx_calls
 
-    eval_ctx = build_eval_ctx(analysis, auction, seat)
     partner_suits = eval_ctx.partner_suits
     their_suits = eval_ctx.their_suits
     we_have_acted = any(
@@ -303,16 +344,12 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
     # doubled contract looks like); partner's bid only silences us once game
     # is reached.  Keyed on the seat, so responder can still act after RHO
     # doubles partner's opening.
-    lb_info = auction.last_bid_info
-    we_hold_contract = False
-    if lb_info is not None:
-        bidder = auction.seat_of_call(lb_info[1])
-        we_hold_contract = bidder == seat or (
-            bidder == seat.partner and _game_reached(auction))
+    pass_forbidden = _pass_forbidden(auction, seat, analysis)
     for fb in generate_fallbacks(
         auction, seat, partner_suits, their_suits,
         side.agreed_suit, side.game_forced, frozenset(covered), we_have_acted,
-        partner_signed_off, we_hold_contract, partner_forcing,
+        partner_signed_off, we_hold_contract(auction, seat), partner_forcing,
+        pass_forbidden,
     ):
         candidates.append(Candidate(call=fb.call, fallback=fb))
 
@@ -324,7 +361,7 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
         context_rules=context_rules,
         candidates=candidates,
         eval_ctx=eval_ctx,
-        pass_forbidden=_pass_forbidden(auction, seat, analysis),
+        pass_forbidden=pass_forbidden,
         pass_forbidden_hard=side.game_forced,
     )
 

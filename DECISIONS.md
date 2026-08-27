@@ -232,3 +232,44 @@ rationale. Bridge-style choices are exposed as config flags where noted.
   preempt (forcing new suit, game, pass) and the preemptor's rebid; opener's
   answer to the 2NT feature ask over a weak two; and a full defense to their
   3-level preempts (takeout double, natural 3NT, 6+ suit overcalls).
+
+### Round 5: general agreements as data (200-board batch)
+
+The goal of this round was to drive the *undiscussed* (fallback) call rate
+toward zero. Grouping 200 boards' fallbacks by structural family showed 60%
+were ordinary competitive positions and 24% ordinary uncontested
+continuations - not exotic gaps, just the generic toolkit every partnership
+plays without discussion. That toolkit is now system DATA:
+
+- **Three auction-relative suit predicates** (`is_partner_suit`,
+  `is_their_suit`, `is_unbid_suit`) let the DSL say "raise partner's suit" or
+  "bid a natural unbid suit" without naming a concrete suit.
+- **Suit role and level are hard `when:` gates, not soft hand features.**
+  A first draft expressed them as `features:`, which the fit model treats as a
+  soft 0.2 penalty - so "raise partner's suit" fired in suits partner never
+  bid, including the opponents'. Because these are facts about the auction and
+  not about the hand, they belong in `when:`: new conditions `partner_suit`,
+  `unbid_suit`, `cheapest_in_suit` and `we_hold_contract`.
+- **`cheapest_in_suit`** reproduces in data the fallback layer's rule that only
+  the lowest available bid in a suit is offered; without it the engine invented
+  4-level "natural" bids when the 2-level was free.
+- **The general pass is permissive** (any hand, priority below the general
+  bids). This mirrors what the fallback layer actually did and is what keeps
+  the engine from acting on hands no bid describes: a general bid must fit
+  essentially perfectly to beat pass, while a specific rule still wins on a
+  partial fit.
+- **`we_hold_contract: false`** gates all five general contexts, so the
+  discipline against bidding over our own contract survives the move from code
+  into data.
+
+Result on the same 200 boards: undiscussed calls fell from 2.30 to 0.26 per
+board (-89%), average IMPs lost against par improved from 6.91 to 6.24, and
+absurd contracts fell from 7 to 4.
+
+**Harvester detector fix (important for reading earlier rounds):** the
+`par_loss` back-stop flag was suppressed whenever a board carried *any* other
+issue - including purely informational `fallback` entries. Boards with an
+undiscussed call therefore never reported a par loss, so the headline
+"actionable issue" rate in rounds 1-4 was understated and moved whenever the
+fallback rate moved. The flag now ignores fallback entries. Re-scored
+consistently, the same 200 boards read 52% before this round and 47% after.

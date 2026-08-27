@@ -198,6 +198,13 @@ ask), `alertable`, `announce`, `convention`, `negative_inference_weight`
 (strong|soft) and `when` conditions (opening seat, passed hand,
 vulnerability, config flags).
 
+Rule conditions (`when:`) cover auction facts rather than hand facts:
+`opening_seat`, `passed_hand`, `we_vulnerable`, `they_vulnerable`,
+`we_hold_contract`, `partner_suit`, `unbid_suit`, `cheapest_in_suit` and
+`config` flags. Use them for anything decided by the auction — a soft
+`requires:` feature would only *discourage* a structurally wrong call, while a
+`when:` gate rules it out.
+
 **Add an evaluator** — zero engine changes:
 
 ```python

@@ -36,7 +36,7 @@ CASES = [
     ("takeout_double", ["1H"], "X"),
     ("jordan_2NT", ["1S", "X"], "2NT"),
     ("rkc_response_5C", ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P"], "5C"),
-    ("undiscussed_fallback_deep_sequence", ["1C", "P", "1H", "P", "1S", "P", "2D", "P"], "2NT"),
+    ("general_agreement_2NT_deep", ["1C", "P", "1H", "P", "1S", "P", "2D", "P"], "2NT"),
     ("opener_1NT_rebid", ["1D", "P", "1S", "P"], "1NT"),
 ]
 

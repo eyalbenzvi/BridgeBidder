@@ -177,7 +177,11 @@ def harvest_board(system, deal, dealer, vul, dd) -> dict:
                       us_loss)
         # outliers, any auction type
         big = max(loss_ns, loss_ew)
-        if big >= PAR_LOSS_FLAG_IMPS and not rec["issues"]:
+        # only a last-resort flag: skip when a real detector already fired.
+        # (fallback entries are informational and must NOT suppress it, or the
+        # flag rate moves whenever the fallback rate does)
+        already = [i for i in rec["issues"] if i["kind"] != "fallback"]
+        if big >= PAR_LOSS_FLAG_IMPS and not already:
             side = "NS" if loss_ns >= loss_ew else "EW"
             issue("par_loss", f"par_loss:{side}",
                   f"{side} lost {big} IMPs vs par {par_ns:+d}: {contract} ({auction})", big)

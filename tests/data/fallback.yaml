@@ -8,16 +8,18 @@
   calls: ["3C"]
   expect: { calls: ["X", "3S"], fallback: false }
 
-- name: undiscussed_deep_sequence
+# the general agreements (round 5) cover ordinary deep sequences too: this
+# used to be an undiscussed fallback and is now an explained systemic raise
+- name: deep_sequence_is_systemic
   hand: "AQ52.6.KQ94.KQ32"
   calls: ["1C", "P", "1H", "P", "1S", "P", "2D", "P"]
-  expect: { fallback: true, calls: ["2NT", "3NT", "3C", "3D", "4D", "P"] }
+  expect: { fallback: false, calls: ["4D", "3D", "3NT", "2NT"] }
 
-- name: undiscussed_pass_over_their_game
+- name: pass_over_their_game_is_systemic
   hand: "852.864.94.QJ432"
   dealer: E
   calls: ["4S"]
-  expect: { call: "P", fallback: true }
+  expect: { call: "P", fallback: false }
 
 - name: gf_landing_3NT_no_fit
   hand: "K52.86.AQ4.KQ932"

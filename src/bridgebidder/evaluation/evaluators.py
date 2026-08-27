@@ -316,3 +316,38 @@ def aces(hand: Hand, ctx: EvalContext) -> float:
 @register_evaluator("kings")
 def kings(hand: Hand, ctx: EvalContext) -> float:
     return float(sum(1 for c in hand.cards if c.rank == 13))
+
+
+# --------------------------------------------------------------------------
+# auction-relative suit predicates
+#
+# These let the DSL express *general agreements* ("raise partner's suit",
+# "bid a natural unbid suit") without naming a concrete suit, so the generic
+# competitive and continuation toolkit lives in the system file as data
+# instead of in engine code.
+# --------------------------------------------------------------------------
+
+@register_evaluator("is_partner_suit")
+def is_partner_suit(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    s = _resolve_suit(suit, ctx)
+    if s is None:
+        return 0.0
+    return 1.0 if (s == ctx.agreed_suit or s in ctx.partner_suits) else 0.0
+
+
+@register_evaluator("is_their_suit")
+def is_their_suit(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    s = _resolve_suit(suit, ctx)
+    return 1.0 if (s is not None and s in ctx.their_suits) else 0.0
+
+
+@register_evaluator("is_unbid_suit")
+def is_unbid_suit(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    """True when neither partner nor the opponents have shown this suit."""
+    s = _resolve_suit(suit, ctx)
+    if s is None:
+        return 0.0
+    shown = set(ctx.partner_suits) | set(ctx.their_suits)
+    if ctx.agreed_suit:
+        shown.add(ctx.agreed_suit)
+    return 0.0 if s in shown else 1.0

@@ -63,6 +63,10 @@ class Conditions:
     passed_hand: bool | None = None
     we_vulnerable: bool | None = None
     they_vulnerable: bool | None = None
+    we_hold_contract: bool | None = None           # our own last bid stands
+    partner_suit: str | None = None                # this suit is partner's
+    unbid_suit: str | None = None                  # nobody has shown this suit
+    cheapest_in_suit: bool | None = None           # this call is the lowest bid available in its suit
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -73,6 +77,10 @@ class Conditions:
             passed_hand=d.pop("passed_hand", None),
             we_vulnerable=d.pop("we_vulnerable", None),
             they_vulnerable=d.pop("they_vulnerable", None),
+            we_hold_contract=d.pop("we_hold_contract", None),
+            partner_suit=d.pop("partner_suit", None),
+            unbid_suit=d.pop("unbid_suit", None),
+            cheapest_in_suit=d.pop("cheapest_in_suit", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -86,6 +94,10 @@ class Conditions:
             and self.passed_hand is None
             and self.we_vulnerable is None
             and self.they_vulnerable is None
+            and self.we_hold_contract is None
+            and self.partner_suit is None
+            and self.unbid_suit is None
+            and self.cheapest_in_suit is None
             and not self.config
         )
 
@@ -145,6 +157,7 @@ class ContextWhen:
     agreed_suit: bool | str | None = None   # True = some suit agreed; "H" = hearts agreed
     game_forced: bool | None = None
     asking: str | None = None               # active ask, e.g. "keycards"
+    we_hold_contract: bool | None = None    # our own last bid still stands
 
     @staticmethod
     def from_dict(d: dict | None) -> "ContextWhen":
@@ -153,6 +166,7 @@ class ContextWhen:
             agreed_suit=d.pop("agreed_suit", None),
             game_forced=d.pop("game_forced", None),
             asking=d.pop("asking", None),
+            we_hold_contract=d.pop("we_hold_contract", None),
         )
         if d:
             raise ValueError(f"Unknown context-when keys: {sorted(d)}")
@@ -160,7 +174,8 @@ class ContextWhen:
 
     @property
     def is_trivial(self) -> bool:
-        return self.agreed_suit is None and self.game_forced is None and self.asking is None
+        return (self.agreed_suit is None and self.game_forced is None
+                and self.asking is None and self.we_hold_contract is None)
 
 
 @dataclass(frozen=True)

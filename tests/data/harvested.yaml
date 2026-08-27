@@ -103,7 +103,9 @@
   calls: ["2NT", "P", "3C", "P", "3S", "P"]
   expect: { call: "4S" }
 
-# round 2: advancer of a forced one-round double may pass with nothing to say
+# round 2: advancer of a forced one-round double may pass with nothing to say.
+# Round 5 note: a draft of the general agreements briefly bid 2S here, which is
+# the OPPONENTS' suit - the hard partner_suit gate is what keeps pass correct.
 - name: r2_forced_advance_escape
   hand: "AJ873.Q8.532.985"
   dealer: W
@@ -307,3 +309,41 @@
   hand: "8.84.92.KQJ87532"
   calls: ["3C", "P", "3S", "P"]
   expect: { calls: ["3NT", "4C", "4S"], fallback: false }
+
+# --- round 5 (general agreements) --------------------------------------------
+
+# The generic competitive toolkit is now system DATA, so ordinary competitive
+# positions produce an explained call instead of an undiscussed fallback.
+- name: r5_competitive_raise_is_systemic
+  hand: "K952.86.QJ42.932"
+  dealer: N
+  calls: ["1S", "2C"]
+  expect: { call: "2S", fallback: false }
+
+- name: r5_balancing_action_is_systemic
+  hand: "K5.86.AQJ942.932"
+  dealer: N
+  calls: ["1S", "P", "P"]
+  expect: { calls: ["X", "2D"], fallback: false }
+
+# suit roles are HARD gates: never "raise partner's suit" in a suit partner
+# never bid, and never in the opponents' suit
+- name: r5_no_raise_of_opponents_suit
+  hand: "AJ873.Q8.532.985"
+  dealer: W
+  calls: ["1S", "P", "1NT", "X", "P"]
+  expect: { call: "P" }
+
+# cheapest-level discipline: with 3H available the engine must not invent 4H
+- name: r5_cheapest_level_only
+  hand: "6.KQ8654.AJ.Q986"
+  dealer: N
+  calls: ["1D", "P", "2D", "P"]
+  expect: { calls: ["2H", "3H", "P", "2NT", "3D"] }
+
+# a permissive general pass: with no bid that fits, pass rather than invent one
+- name: r5_pass_when_nothing_fits
+  hand: "QJ32.J43.Q65.J54"
+  dealer: N
+  calls: ["1S", "2C", "P", "P"]
+  expect: { call: "P" }

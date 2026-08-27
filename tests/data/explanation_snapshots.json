@@ -89,6 +89,174 @@
   },
   "source_rule_id": "r1H1S_cue"
  },
+ "general_agreement_2NT_deep": {
+  "alertable": false,
+  "announce": null,
+  "call": "2NT",
+  "constraint": {
+   "evals": {
+    "semi_balanced": [
+     1,
+     1
+    ]
+   },
+   "hcp": [
+    11,
+    12
+   ]
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "lott_total_trumps": [
+        9,
+        26
+       ],
+       "total_points": [
+        13,
+        40
+       ]
+      },
+      "suits": {
+       "D": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "uc_raise_D4",
+    "text": "not: raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "lott_total_trumps": [
+        9,
+        26
+       ],
+       "total_points": [
+        13,
+        40
+       ]
+      },
+      "suits": {
+       "H": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "uc_raise_H4",
+    "text": "not: raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "lott_total_trumps": [
+        8,
+        26
+       ],
+       "total_points": [
+        10,
+        12
+       ]
+      },
+      "suits": {
+       "D": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "uc_raise_D3",
+    "text": "not: raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "lott_total_trumps": [
+        7,
+        26
+       ],
+       "total_points": [
+        6,
+        9
+       ]
+      },
+      "suits": {
+       "H": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "uc_raise_H2",
+    "text": "not: raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "semi_balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       13,
+       17
+      ]
+     }
+    },
+    "derived_from_rule": "uc_nt3",
+    "text": "not: natural 3NT: 13-17 balanced",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    11,
+    12
+   ],
+   "suits": {
+    "C": [
+     2,
+     6
+    ],
+    "D": [
+     2,
+     6
+    ],
+    "H": [
+     2,
+     6
+    ],
+    "S": [
+     2,
+     6
+    ]
+   },
+   "text": "natural 2NT: 11-12 balanced"
+  },
+  "source_rule_id": "uc_nt2"
+ },
  "jacoby_transfer": {
   "alertable": false,
   "announce": "transfer",
@@ -2248,53 +2416,5 @@
    "text": "takeout double: opening values, short hearts (or any 17+)"
   },
   "source_rule_id": "oc1H_X"
- },
- "undiscussed_fallback_deep_sequence": {
-  "alertable": false,
-  "announce": null,
-  "call": "2NT",
-  "constraint": {
-   "evals": {
-    "semi_balanced": [
-     1,
-     1
-    ]
-   },
-   "hcp": [
-    11,
-    14
-   ]
-  },
-  "convention": null,
-  "denies": [],
-  "forcing_status": "non_forcing",
-  "is_undiscussed_fallback": true,
-  "shows": {
-   "features": [],
-   "hcp": [
-    11,
-    14
-   ],
-   "suits": {
-    "C": [
-     2,
-     6
-    ],
-    "D": [
-     2,
-     6
-    ],
-    "H": [
-     2,
-     6
-    ],
-    "S": [
-     2,
-     6
-    ]
-   },
-   "text": "natural NT, 11-14 HCP, stoppers in their suit(s) (undiscussed)"
-  },
-  "source_rule_id": "fallback"
  }
 }

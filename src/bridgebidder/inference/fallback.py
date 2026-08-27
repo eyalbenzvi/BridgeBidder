@@ -52,6 +52,7 @@ def generate_fallbacks(
     partner_signed_off: bool = False,
     we_hold_contract: bool = False,
     partner_forcing: bool = False,
+    pass_forbidden: bool = False,
 ) -> list[FallbackMeaning]:
     """Generate generic candidates for calls NOT covered by system rules."""
     out: list[FallbackMeaning] = []
@@ -189,9 +190,10 @@ def generate_fallbacks(
             add(DOUBLE, _c(hcp=[12, 40], suits=shorts),
                 "takeout-flavored cooperative double (undiscussed)", "non_forcing", 9.0)
 
-    # ---- ultimate backstop: cheapest legal bid, unconstrained (only for
-    # positions where something may force us to keep bidding) ----
-    if not quiet and not any(m.call.is_bid for m in out):
+    # ---- ultimate backstop: cheapest legal bid, unconstrained.  Only when
+    # passing is actually illegal - otherwise its unconstrained fit (1.0)
+    # outscores a poorly-fitting pass and the engine bids on forever. ----
+    if pass_forbidden and not any(m.call.is_bid for m in out):
         for b in auction.legal_calls():
             if b.is_bid:
                 add(b, HandConstraint(), "forced continuation (undiscussed)", "non_forcing", 1.0)

@@ -4837,3 +4837,1324 @@ contexts:
         shows: "nothing suitable over their preempt"
         establishes: { forcing: non_forcing }
         negative_inference_weight: soft
+
+  # =========================================================================
+  # GENERAL AGREEMENTS (round-5 harvest)
+  #
+  # The competitive and constructive toolkit every partnership plays without
+  # discussion, expressed as DATA.  Suit role ("partner's suit", "an unbid
+  # suit") and level ("the cheapest bid available in this suit") are auction
+  # facts, so they are hard `when:` gates rather than soft hand features.
+  # Priorities are low, so any specific context above always wins; these
+  # exist so ordinary positions produce an explained systemic call instead of
+  # an undiscussed fallback.
+  # =========================================================================
+
+  - id: general_competitive_low
+    description: "General competitive agreements after their 1- or 2-level bid"
+    pattern: "... - bid<3C - ?"
+    when: { we_hold_contract: false }
+    rules:
+      - id: cl_takeout_X
+        call: X
+        priority: 36
+        requires:
+          hcp: [12, 40]
+          evals: { "suit_length(their)": [0, 2] }
+        shows: "takeout-flavoured double: opening values, short in their suit"
+        establishes: { forcing: one_round }
+      - id: cl_raise_C2
+        call: 2C
+        priority: 30
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: cl_raise_C3
+        call: 3C
+        priority: 31
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: cl_raise_C4
+        call: 4C
+        priority: 32
+        when: { partner_suit: C }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: cl_raise_D2
+        call: 2D
+        priority: 30
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: cl_raise_D3
+        call: 3D
+        priority: 31
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: cl_raise_D4
+        call: 4D
+        priority: 32
+        when: { partner_suit: D }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: cl_raise_H2
+        call: 2H
+        priority: 30
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: cl_raise_H3
+        call: 3H
+        priority: 31
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: cl_raise_H4
+        call: 4H
+        priority: 32
+        when: { partner_suit: H }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: cl_raise_S2
+        call: 2S
+        priority: 30
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: cl_raise_S3
+        call: 3S
+        priority: 31
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: cl_raise_S4
+        call: 4S
+        priority: 32
+        when: { partner_suit: S }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: cl_new_C1
+        call: 1C
+        priority: 25
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_C2
+        call: 2C
+        priority: 26
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_C3
+        call: 3C
+        priority: 27
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_D1
+        call: 1D
+        priority: 25
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_D2
+        call: 2D
+        priority: 26
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_D3
+        call: 3D
+        priority: 27
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_H1
+        call: 1H
+        priority: 25
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_H2
+        call: 2H
+        priority: 26
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_H3
+        call: 3H
+        priority: 27
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_S1
+        call: 1S
+        priority: 25
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_S2
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_S3
+        call: 3S
+        priority: 27
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: cl_nt1
+        call: 1NT
+        priority: 27
+        requires:
+          hcp: [6, 10]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 1NT: 6-10 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: cl_nt2
+        call: 2NT
+        priority: 28
+        requires:
+          hcp: [11, 12]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: cl_nt3
+        call: 3NT
+        priority: 29
+        requires:
+          hcp: [13, 17]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        establishes: { forcing: sign_off }
+      - id: cl_pass
+        call: P
+        priority: 20
+        requires: {}
+        shows: "no bid describes this hand: passing is the general agreement"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: general_competitive_high
+    description: "General competitive agreements after their 3-level-or-higher bid"
+    pattern: "... - bid>=3C - ?"
+    when: { we_hold_contract: false }
+    rules:
+      - id: ch_penalty_X
+        call: X
+        priority: 38
+        requires:
+          hcp: [15, 40]
+          evals: { quick_tricks: [3, 12], "suit_length(their)": [0, 2] }
+        shows: "values double of their high contract: defensive tricks, no fit for them"
+        establishes: { forcing: non_forcing }
+      - id: ch_raise_C2
+        call: 2C
+        priority: 30
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: ch_raise_C3
+        call: 3C
+        priority: 31
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: ch_raise_C4
+        call: 4C
+        priority: 32
+        when: { partner_suit: C }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: ch_raise_D2
+        call: 2D
+        priority: 30
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ch_raise_D3
+        call: 3D
+        priority: 31
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ch_raise_D4
+        call: 4D
+        priority: 32
+        when: { partner_suit: D }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ch_raise_H2
+        call: 2H
+        priority: 30
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_raise_H3
+        call: 3H
+        priority: 31
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_raise_H4
+        call: 4H
+        priority: 32
+        when: { partner_suit: H }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_raise_S2
+        call: 2S
+        priority: 30
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ch_raise_S3
+        call: 3S
+        priority: 31
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ch_raise_S4
+        call: 4S
+        priority: 32
+        when: { partner_suit: S }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ch_new_C1
+        call: 1C
+        priority: 25
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_C2
+        call: 2C
+        priority: 26
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_C3
+        call: 3C
+        priority: 27
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_D1
+        call: 1D
+        priority: 25
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_D2
+        call: 2D
+        priority: 26
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_D3
+        call: 3D
+        priority: 27
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_H1
+        call: 1H
+        priority: 25
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_H2
+        call: 2H
+        priority: 26
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_H3
+        call: 3H
+        priority: 27
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_S1
+        call: 1S
+        priority: 25
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_S2
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_S3
+        call: 3S
+        priority: 27
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_nt1
+        call: 1NT
+        priority: 27
+        requires:
+          hcp: [6, 10]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 1NT: 6-10 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: ch_nt2
+        call: 2NT
+        priority: 28
+        requires:
+          hcp: [11, 12]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: ch_nt3
+        call: 3NT
+        priority: 29
+        requires:
+          hcp: [13, 17]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        establishes: { forcing: sign_off }
+      - id: ch_pass
+        call: P
+        priority: 22
+        requires: {}
+        shows: "no bid describes this hand over their high-level contract"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: general_balancing_low
+    description: "General balancing agreements after their bid is passed round"
+    pattern: "... - bid<3C - P - P - ?"
+    when: { we_hold_contract: false }
+    rules:
+      - id: ballow_X
+        call: X
+        priority: 40
+        requires:
+          hcp: [11, 40]
+          evals: { "suit_length(their)": [0, 2] }
+        shows: "balancing double: values are marked opposite a passing partner"
+        establishes: { forcing: one_round }
+      - id: ballow_raise_C2
+        call: 2C
+        priority: 30
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: ballow_raise_C3
+        call: 3C
+        priority: 31
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: ballow_raise_C4
+        call: 4C
+        priority: 32
+        when: { partner_suit: C }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: ballow_raise_D2
+        call: 2D
+        priority: 30
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ballow_raise_D3
+        call: 3D
+        priority: 31
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ballow_raise_D4
+        call: 4D
+        priority: 32
+        when: { partner_suit: D }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ballow_raise_H2
+        call: 2H
+        priority: 30
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ballow_raise_H3
+        call: 3H
+        priority: 31
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ballow_raise_H4
+        call: 4H
+        priority: 32
+        when: { partner_suit: H }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ballow_raise_S2
+        call: 2S
+        priority: 30
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ballow_raise_S3
+        call: 3S
+        priority: 31
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ballow_raise_S4
+        call: 4S
+        priority: 32
+        when: { partner_suit: S }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ballow_new_C1
+        call: 1C
+        priority: 25
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_C2
+        call: 2C
+        priority: 26
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_C3
+        call: 3C
+        priority: 27
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_D1
+        call: 1D
+        priority: 25
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_D2
+        call: 2D
+        priority: 26
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_D3
+        call: 3D
+        priority: 27
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_H1
+        call: 1H
+        priority: 25
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_H2
+        call: 2H
+        priority: 26
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_H3
+        call: 3H
+        priority: 27
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_S1
+        call: 1S
+        priority: 25
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_S2
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_new_S3
+        call: 3S
+        priority: 27
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ballow_nt1
+        call: 1NT
+        priority: 27
+        requires:
+          hcp: [6, 10]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 1NT: 6-10 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: ballow_nt2
+        call: 2NT
+        priority: 28
+        requires:
+          hcp: [11, 12]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: ballow_nt3
+        call: 3NT
+        priority: 29
+        requires:
+          hcp: [13, 17]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        establishes: { forcing: sign_off }
+      - id: ballow_pass
+        call: P
+        priority: 21
+        requires: {}
+        shows: "nothing worth reopening on: passing it out"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: general_balancing_high
+    description: "General balancing agreements after their bid is passed round"
+    pattern: "... - bid>=3C - P - P - ?"
+    when: { we_hold_contract: false }
+    rules:
+      - id: balhigh_X
+        call: X
+        priority: 40
+        requires:
+          hcp: [14, 40]
+          evals: { "suit_length(their)": [0, 2] }
+        shows: "balancing double: values are marked opposite a passing partner"
+        establishes: { forcing: one_round }
+      - id: balhigh_raise_C2
+        call: 2C
+        priority: 30
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: balhigh_raise_C3
+        call: 3C
+        priority: 31
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: balhigh_raise_C4
+        call: 4C
+        priority: 32
+        when: { partner_suit: C }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's C: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: balhigh_raise_D2
+        call: 2D
+        priority: 30
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: balhigh_raise_D3
+        call: 3D
+        priority: 31
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: balhigh_raise_D4
+        call: 4D
+        priority: 32
+        when: { partner_suit: D }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: balhigh_raise_H2
+        call: 2H
+        priority: 30
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: balhigh_raise_H3
+        call: 3H
+        priority: 31
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: balhigh_raise_H4
+        call: 4H
+        priority: 32
+        when: { partner_suit: H }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: balhigh_raise_S2
+        call: 2S
+        priority: 30
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: balhigh_raise_S3
+        call: 3S
+        priority: 31
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: balhigh_raise_S4
+        call: 4S
+        priority: 32
+        when: { partner_suit: S }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "competitive raise of partner's S: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: balhigh_new_C1
+        call: 1C
+        priority: 25
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_C2
+        call: 2C
+        priority: 26
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_C3
+        call: 3C
+        priority: 27
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_D1
+        call: 1D
+        priority: 25
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_D2
+        call: 2D
+        priority: 26
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_D3
+        call: 3D
+        priority: 27
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_H1
+        call: 1H
+        priority: 25
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_H2
+        call: 2H
+        priority: 26
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_H3
+        call: 3H
+        priority: 27
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_S1
+        call: 1S
+        priority: 25
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_S2
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_S3
+        call: 3S
+        priority: 27
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_nt1
+        call: 1NT
+        priority: 27
+        requires:
+          hcp: [6, 10]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 1NT: 6-10 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_nt2
+        call: 2NT
+        priority: 28
+        requires:
+          hcp: [11, 12]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_nt3
+        call: 3NT
+        priority: 29
+        requires:
+          hcp: [13, 17]
+          evals: { semi_balanced: [1, 1] }
+          features: [ "stopper(their)" ]
+        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        establishes: { forcing: sign_off }
+      - id: balhigh_pass
+        call: P
+        priority: 21
+        requires: {}
+        shows: "nothing worth reopening on: passing it out"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: general_uncontested_continuation
+    description: "General constructive agreements in an uncontested auction"
+    pattern: "... - P - ?"
+    when: { we_hold_contract: false }
+    rules:
+      - id: uc_raise_C2
+        call: 2C
+        priority: 30
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: uc_raise_C3
+        call: 3C
+        priority: 31
+        when: { partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's C: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: uc_raise_C4
+        call: 4C
+        priority: 32
+        when: { partner_suit: C }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "raise of partner's C: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: uc_raise_D2
+        call: 2D
+        priority: 30
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: uc_raise_D3
+        call: 3D
+        priority: 31
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: uc_raise_D4
+        call: 4D
+        priority: 32
+        when: { partner_suit: D }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: uc_raise_H2
+        call: 2H
+        priority: 30
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_raise_H3
+        call: 3H
+        priority: 31
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's H: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_raise_H4
+        call: 4H
+        priority: 32
+        when: { partner_suit: H }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_raise_S2
+        call: 2S
+        priority: 30
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: uc_raise_S3
+        call: 3S
+        priority: 31
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 12], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's S: 3+ trumps, 10-12 support points, 8+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: uc_raise_S4
+        call: 4S
+        priority: 32
+        when: { partner_suit: S }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [13, 40], lott_total_trumps: [9, 26] }
+        shows: "raise of partner's S: 3+ trumps, 13+ support points, 9+ combined trumps"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: uc_new_C1
+        call: 1C
+        priority: 25
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_C2
+        call: 2C
+        priority: 26
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_C3
+        call: 3C
+        priority: 27
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_D1
+        call: 1D
+        priority: 25
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_D2
+        call: 2D
+        priority: 26
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_D3
+        call: 3D
+        priority: 27
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_H1
+        call: 1H
+        priority: 25
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_H2
+        call: 2H
+        priority: 26
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_H3
+        call: 3H
+        priority: 27
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_S1
+        call: 1S
+        priority: 25
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [6, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 4+ cards, 6+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_S2
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_new_S3
+        call: 3S
+        priority: 27
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: uc_nt1
+        call: 1NT
+        priority: 27
+        requires:
+          hcp: [6, 10]
+          evals: { semi_balanced: [1, 1] }
+        shows: "natural 1NT: 6-10 balanced"
+        establishes: { forcing: non_forcing }
+      - id: uc_nt2
+        call: 2NT
+        priority: 28
+        requires:
+          hcp: [11, 12]
+          evals: { semi_balanced: [1, 1] }
+        shows: "natural 2NT: 11-12 balanced"
+        establishes: { forcing: non_forcing }
+      - id: uc_nt3
+        call: 3NT
+        priority: 29
+        requires:
+          hcp: [13, 17]
+          evals: { semi_balanced: [1, 1] }
+        shows: "natural 3NT: 13-17 balanced"
+        establishes: { forcing: sign_off }
+      - id: uc_pass
+        call: P
+        priority: 18
+        requires: {}
+        shows: "no bid describes this hand: nothing further to show"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
