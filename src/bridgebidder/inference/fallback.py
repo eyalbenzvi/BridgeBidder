@@ -49,6 +49,7 @@ def generate_fallbacks(
     game_forced: bool,
     covered_calls: frozenset[str],
     we_have_acted: bool = False,
+    partner_signed_off: bool = False,
 ) -> list[FallbackMeaning]:
     """Generate generic candidates for calls NOT covered by system rules."""
     out: list[FallbackMeaning] = []
@@ -71,8 +72,9 @@ def generate_fallbacks(
         add(PASS, _c(hcp=[0, 11]), "nothing suitable to say (undiscussed)", "sign_off", 8.0)
 
     # ---- raises of partner's suit(s) ----
+    # (never bid on over partner's undisturbed sign-off: he placed the contract)
     raise_suits = [s for s in ([agreed_suit] if agreed_suit else partner_suits) if s]
-    for s in raise_suits:
+    for s in raise_suits if not partner_signed_off else []:
         for level in range(1, 8):
             call = Call.bid(level, s)
             if call.bid_index <= floor:
@@ -91,7 +93,7 @@ def generate_fallbacks(
 
     # ---- new suits / rebids of own suits (only through the 3-level: above
     # that, raises / NT / pass are the sane undiscussed actions) ----
-    for s in SUITS:
+    for s in SUITS if not partner_signed_off else []:
         for level in range(1, 4):
             call = Call.bid(level, s)
             if call.bid_index <= floor:
@@ -134,9 +136,11 @@ def generate_fallbacks(
             add(DOUBLE, _c(hcp=[13, 40], evals={"stoppers(their)": [0.5, 99]}),
                 "penalty-oriented double (undiscussed)", "non_forcing", 9.0)
         else:
+            # cooperative, NOT forcing: an invented forcing meaning could trap
+            # partner into a hopeless forced bid
             shorts = {s: [0, 2] for s in their_suits[:1]}
             add(DOUBLE, _c(hcp=[12, 40], suits=shorts),
-                "takeout-flavored double (undiscussed)", "one_round", 9.0)
+                "takeout-flavored cooperative double (undiscussed)", "non_forcing", 9.0)
 
     # ---- ultimate backstop: cheapest legal bid, unconstrained ----
     if not any(m.call.is_bid for m in out):

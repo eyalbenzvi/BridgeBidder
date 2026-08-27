@@ -287,9 +287,15 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
     we_have_acted = any(
         not a.call.is_pass and a.seat.side == seat.side for a in analysis.annotations
     )
+    # partner signed off with no intervention since: don't invent further action
+    partner_signed_off = False
+    non_pass = [a for a in analysis.annotations if not a.call.is_pass]
+    if non_pass and non_pass[-1].seat == seat.partner:
+        partner_signed_off = non_pass[-1].interpretation.establishes.forcing == "sign_off"
     for fb in generate_fallbacks(
         auction, seat, partner_suits, their_suits,
         side.agreed_suit, side.game_forced, frozenset(covered), we_have_acted,
+        partner_signed_off,
     ):
         candidates.append(Candidate(call=fb.call, fallback=fb))
 

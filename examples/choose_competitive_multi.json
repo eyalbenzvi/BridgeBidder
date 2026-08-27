@@ -1,0 +1,24 @@
+{
+  "hand": "AQ752.KJ64.4.A32",
+  "auction_state": {
+    "dealer": "N",
+    "vulnerability": "NS",
+    "seat": "S",
+    "calls": [
+      {"call": "1H"},
+      {
+        "call": "2D",
+        "explanation": {
+          "text": "Multi: weak two in one major",
+          "constraints": {
+            "hcp": [4, 10],
+            "any_of": [
+              {"suits": {"H": [6, 6]}},
+              {"suits": {"S": [6, 6]}}
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

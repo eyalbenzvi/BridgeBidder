@@ -1,0 +1,9 @@
+{
+  "auction_state": {
+    "dealer": "N",
+    "vulnerability": "None",
+    "seat": "N",
+    "calls": ["1D", "P", "1S", "2C"]
+  },
+  "candidate": "2D"
+}
