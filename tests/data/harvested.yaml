@@ -347,3 +347,54 @@
   dealer: N
   calls: ["1S", "2C", "P", "P"]
   expect: { call: "P" }
+
+# --- round 6 -----------------------------------------------------------------
+
+# r6 b55/b56: responder transferred over 2NT and then PASSED the completion
+# with a game-going hand - the continuation did not exist
+- name: r6_game_after_2NT_transfer
+  hand: "JT976.Q94.Q854.2"
+  dealer: W
+  calls: ["P", "2NT", "P", "3H", "P", "3S", "P"]
+  expect: { call: "4S", forcing: sign_off }
+
+- name: r6_game_after_2NT_transfer_long_suit
+  hand: "KJ97.KT75432.94."
+  calls: ["2NT", "P", "3D", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+- name: r6_pass_2NT_transfer_with_bust
+  hand: "JT976.94.8542.32"
+  dealer: W
+  calls: ["P", "2NT", "P", "3H", "P", "3S", "P"]
+  expect: { call: "P" }
+
+# r6 b18: opener had no action over responder's competitive invitational 2NT
+- name: r6_opener_bids_game_over_competitive_2NT
+  hand: ".AK9742.7654.A95"
+  calls: ["1H", "1S", "2NT", "P"]
+  expect: { call: "4H" }
+
+- name: r6_opener_declines_competitive_2NT
+  hand: "K5.AQ742.J65.Q95"
+  calls: ["1H", "1S", "2NT", "P"]
+  expect: { calls: ["P", "3NT", "3H"] }
+
+# r6: general raises are partner-aware (rule_of_26), so game is bid opposite a
+# cue-bid raise but NOT opposite a preemptive one
+- name: r6_game_opposite_cue_raise
+  hand: "AJ654.A.K874.K73"
+  calls: ["1S", "2C", "3C", "P"]
+  expect: { call: "4S" }
+
+- name: r6_no_game_opposite_preemptive_raise
+  hand: "AKJ8752.A5.K7.94"
+  dealer: N
+  calls: ["P", "P", "1S", "X", "3S", "P"]
+  expect: { calls: ["P", "3S"] }
+
+# r6: with a minor fit the game is 3NT, not four of the minor
+- name: r6_3NT_preferred_to_minor_game_raise
+  hand: "K52.86.AQ4.KQ932"
+  calls: ["1H", "P", "2C", "P", "2D", "P"]
+  expect: { call: "3NT" }

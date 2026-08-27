@@ -254,6 +254,7 @@ def build_eval_ctx(analysis: Analysis, auction: Auction, seat: Seat) -> EvalCont
         is_passed_hand=auction.is_passed_hand(seat),
         partner_min_hcp=pbox.hcp[0],
         partner_max_hcp=pbox.hcp[1],
+        partner_min_points=partner_desc.min_total_points,
         partner_min_length={s: int(pbox.suit(s)[0]) for s in SUITS},
     )
 

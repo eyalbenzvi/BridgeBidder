@@ -44,6 +44,11 @@ class HandDescriptor:
                 self.shown_suits.append(s)
 
     @property
+    def min_total_points(self) -> float:
+        """Strongest lower bound on total points across hard knowledge."""
+        return max((c.min_total_points() for c in self.strong), default=0.0)
+
+    @property
     def box(self) -> Box:
         if self._box is None:
             b = Box()

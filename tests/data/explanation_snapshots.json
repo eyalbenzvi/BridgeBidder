@@ -111,37 +111,12 @@
     "constraint": {
      "not": {
       "evals": {
-       "lott_total_trumps": [
-        9,
-        26
+       "rule_of_26": [
+        25,
+        99
        ],
        "total_points": [
-        13,
-        40
-       ]
-      },
-      "suits": {
-       "D": [
-        3,
-        13
-       ]
-      }
-     }
-    },
-    "derived_from_rule": "uc_raise_D4",
-    "text": "not: raise of partner's D: 3+ trumps, 13+ support points, 9+ combined trumps",
-    "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "lott_total_trumps": [
-        9,
-        26
-       ],
-       "total_points": [
-        13,
+        11,
         40
        ]
       },
@@ -154,7 +129,7 @@
      }
     },
     "derived_from_rule": "uc_raise_H4",
-    "text": "not: raise of partner's H: 3+ trumps, 13+ support points, 9+ combined trumps",
+    "text": "not: raise of partner's H: 3+ trumps, 13+ support points opposite partner's shown range",
     "weight": "strong"
    },
    {
@@ -164,6 +139,10 @@
        "lott_total_trumps": [
         8,
         26
+       ],
+       "rule_of_26": [
+        22,
+        99
        ],
        "total_points": [
         10,

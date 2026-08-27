@@ -384,6 +384,25 @@ class HandConstraint:
             return Box(hcp=iv)
         return Box(suits={suit: iv})
 
+    def min_total_points(self) -> float:
+        """Sound lower bound on `total_points` implied by this constraint.
+
+        Partner's strength is frequently stated in support points rather than
+        HCP, so the partner model needs this alongside the HCP box.  A
+        conjunction takes the strongest bound; a disjunction the weakest.
+        """
+        best = 0.0
+        for spec, iv in self.evals.items():
+            if spec.split("(")[0].strip() == "total_points":
+                best = max(best, float(iv[0]))
+        if self.hcp:  # total_points >= hcp
+            best = max(best, float(self.hcp[0]))
+        for c in self.all_of:
+            best = max(best, c.min_total_points())
+        if self.any_of:
+            best = max(best, min(c.min_total_points() for c in self.any_of))
+        return best
+
     def describe(self) -> str:
         """Short human-readable rendering (for explanations)."""
         bits: list[str] = []

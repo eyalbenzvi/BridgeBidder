@@ -273,3 +273,27 @@ undiscussed call therefore never reported a par loss, so the headline
 "actionable issue" rate in rounds 1-4 was understated and moved whenever the
 fallback rate moved. The flag now ignores fallback entries. Re-scored
 consistently, the same 200 boards read 52% before this round and 47% after.
+
+### Round 6: partner-aware raises (200-board batch)
+
+- **General raises are partner-aware.** The level-3 and game-level general
+  raises now gate on `rule_of_26` (my total points plus partner's shown range)
+  instead of a fixed support-point band. A fixed band bid game opposite a
+  *preemptive* raise (3-8 HCP) and equally failed to bid it opposite a
+  cue-bid raise, so this one change fixed both the overbidding and the
+  underbidding halves of the par-loss residue.
+- **The Law of Total Tricks gates competitive raises only, not game raises.**
+  Requiring nine combined trumps for a game raise suppressed normal 5-3 major
+  games; the Law is a competitive-judgment tool, not a constructive one.
+- **Partner's strength is tracked in support points as well as HCP.** 145 of
+  the system's rules state strength as `total_points` rather than `hcp`, so
+  the partner model's HCP box read zero for them and `rule_of_26` was blind.
+  `HandConstraint.min_total_points()` now derives a sound lower bound
+  (conjunction takes the strongest, disjunction the weakest), the descriptor
+  exposes it, and `rule_of_26` uses whichever bound is more informative.
+- **With a minor fit the game is 3NT**: general game-level raises in a minor
+  rank below the natural 3NT rule.
+- Content authored from this batch: responder's continuations after a 2NT
+  opening transfer is completed (this position had no rules at all, so
+  responder passed 3-of-a-major holding a game-going hand), and opener's
+  action over responder's competitive invitational 2NT.

@@ -105,7 +105,10 @@ def rule_of_15(hand: Hand, ctx: EvalContext) -> float:
 def rule_of_26(hand: Hand, ctx: EvalContext) -> float:
     """Combined-values game test: my total points + midpoint of partner's
     shown HCP range (>= 26 suggests game)."""
-    partner_mid = (ctx.partner_min_hcp + min(ctx.partner_max_hcp, ctx.partner_min_hcp + 4)) / 2
+    # partner's strength may have been shown in HCP or in support points;
+    # take whichever bound is more informative
+    floor = max(ctx.partner_min_hcp, ctx.partner_min_points)
+    partner_mid = (floor + min(max(ctx.partner_max_hcp, floor), floor + 4)) / 2
     return total_points(hand, ctx) + partner_mid
 
 
