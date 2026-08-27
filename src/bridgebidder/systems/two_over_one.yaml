@@ -2928,3 +2928,37 @@ contexts:
         shows: "nothing to say over the jump"
         establishes: { forcing: non_forcing }
         negative_inference_weight: soft
+
+  - id: responder_preference_after_1M_1NT_2m
+    description: "Simple preference / invitation after 1M - 1NT - 2m"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+    pattern: "1$M - P - 1NT - P - 2$x - P - ?"
+    rules:
+      - id: pref_pass
+        call: P
+        priority: 52
+        requires: { suits: { $x: [4, 13] }, hcp: [6, 9] }
+        shows: "happy with the second suit"
+        establishes: { forcing: sign_off }
+      - id: pref_2$M
+        call: 2$M
+        priority: 55
+        requires: { suits: { $M: [2, 3] }, hcp: [6, 9] }
+        shows: "simple preference: doubleton or tripleton $M, no game interest"
+        establishes: { forcing: sign_off }
+      - id: pref_2NT
+        call: 2NT
+        priority: 54
+        requires: { hcp: [10, 11], not: { suits: { $M: [3, 13] } } }
+        shows: "invitational, 10-11 (a maximum for the 1NT response)"
+        establishes: { forcing: invitational }
+      - id: pref_3M_limit
+        call: 3$M
+        priority: 56
+        requires: { suits: { $M: [3, 3] }, evals: { total_points: [10, 12] } }
+        shows: "3-card limit raise routed through 1NT"
+        establishes: { forcing: invitational, agreed_suit: $M }

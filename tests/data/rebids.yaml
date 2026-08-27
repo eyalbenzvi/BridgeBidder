@@ -139,3 +139,18 @@
   hand: "K64.A832.KQ5.Q42"
   calls: ["1H", "P", "2NT", "P", "4H", "P"]
   expect: { call: "P" }
+
+- name: simple_preference_2H
+  hand: "9852.K6.Q842.Q32"
+  calls: ["1H", "P", "1NT", "P", "2C", "P"]
+  expect: { call: "2H", forcing: sign_off }
+
+- name: stay_in_second_suit
+  hand: "9852.6.Q842.QJ32"
+  calls: ["1H", "P", "1NT", "P", "2C", "P"]
+  expect: { call: "P" }
+
+- name: three_card_limit_raise_via_1NT
+  hand: "985.K64.A842.Q32"
+  calls: ["1H", "P", "1NT", "P", "2C", "P"]
+  expect: { calls: ["3H", "2H"] }

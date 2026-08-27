@@ -121,14 +121,24 @@ def arbitrate(
         mean <= SIGNIFICANCE_T * stderr or mean < MIN_OVERTURN_IMP
     ):
         best_name = str(baseline.call)  # not significant: prefer the more descriptive fast pick
-    # final tie-breaker among near-equal candidates: prefer higher rule priority
+    # final tie-breakers among near-equal candidates: prefer the more
+    # descriptive bid (higher rule priority, then the tighter descriptor -
+    # the call partner will read most accurately)
     best_mean = stats[best_name][0]
     near = [
         sc for sc in contenders
         if best_mean - stats[str(sc.call)][0] <= 0.15
     ]
     if len(near) > 1:
-        best_name = str(max(near, key=lambda sc: (sc.candidate.priority, sc.fit)).call)
+        def descriptor_entropy(sc: ScoredCandidate) -> float:
+            box = sc.candidate.constraint.box()
+            hcp_width = box.hcp[1] - box.hcp[0]
+            suit_width = sum(box.suit(s)[1] - box.suit(s)[0] for s in "SHDC")
+            return hcp_width + suit_width
+        best_name = str(max(
+            near,
+            key=lambda sc: (sc.candidate.priority, -descriptor_entropy(sc), sc.fit),
+        ).call)
     result["winner"] = best_name
     result["stats"] = {k: {"mean_imp": round(m, 2), "stderr": round(se, 2)} for k, (m, se) in stats.items()}
     return result

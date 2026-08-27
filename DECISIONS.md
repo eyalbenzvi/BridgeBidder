@@ -66,6 +66,8 @@ rationale. Bridge-style choices are exposed as config flags where noted.
   5D = 0/3, 5H = 2 no Q, 5S = 2 + Q); 4NT is quantitative over NT openings
   and when no suit is agreed. Continuations: signoff at 5M missing two
   keycards, slam with the pool holding 4+.
+- **Simple preference after 1M - 1NT - 2m**: 2M = 2-3 trumps 6-9, pass with
+  a fit for the second suit, 2NT = 10-11, 3M = 3-card limit raise.
 - **No Drury, no new-minor-forcing, no 4th-suit-forcing, no Smolen, no
   minor-suit Stayman**: scoped out; undiscussed continuations fall back to
   natural rules and are flagged `is_undiscussed_fallback`.
@@ -108,7 +110,9 @@ rationale. Bridge-style choices are exposed as config flags where noted.
   simulated.
 - **Arbitration overturns the fast pick only when statistically clear**
   (mean IMP gain > 1.5 stderr AND >= 0.4 IMPs), preferring the more
-  descriptive bid otherwise; near-ties break toward higher rule priority.
+  descriptive bid otherwise; near-ties break toward higher rule priority and
+  then the tighter descriptor box (the reading partner decodes most
+  accurately - a cheap entropy proxy).
 - **Sampler design**: partner's calls are verified by exact engine replay
   (this enforces all negative inference automatically); opponents' hands are
   checked against their descriptors (explanations + natural readings) since
