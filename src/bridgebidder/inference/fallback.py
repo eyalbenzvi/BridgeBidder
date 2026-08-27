@@ -99,7 +99,9 @@ def generate_fallbacks(
             if call.bid_index > floor:
                 cheapest = level
                 break
-        if cheapest is None:
+        # never invent a slam raise: above game the auction needs real system
+        # machinery (control bids / keycards), not a generic point count
+        if cheapest is None or cheapest > game_level:
             continue
         lo = _RAISE_MIN_PTS.get(cheapest, 20)
         # uncontested: banded so stronger hands route to the game raise;
@@ -119,12 +121,11 @@ def generate_fallbacks(
             12.0,
             agreed=s,
         )
-        # a jump-to-game raise needs real extras (partner may hold a bare
-        # 6-count), and only belongs where the raise ladder itself is
-        # undiscussed (rules own it otherwise) or a game force is running
+        # the game raise picks up exactly where the cheap band ends, so no
+        # support range is left without a bid
         if cheapest < game_level and str(Call.bid(cheapest, s)) not in covered_calls \
                 and not game_forced:
-            glo = _RAISE_MIN_PTS.get(game_level, 20) + 6
+            glo = hi + 1 if hi < 40 else _RAISE_MIN_PTS.get(game_level, 20)
             add(
                 Call.bid(game_level, s),
                 _c(suits={s: [3, 13]}, evals={"total_points": [glo, 40]}),

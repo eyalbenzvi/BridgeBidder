@@ -193,3 +193,23 @@ rationale. Bridge-style choices are exposed as config flags where noted.
   (support points need the trump suit the call agrees, else every good raise
   looked like a misbid), and a doubled contract that still beat par is scored
   as a successful sacrifice, not a disaster.
+
+### Round 3 harvest decisions
+
+- **RKC requires partnership slam values** (`rule_of_26 >= 31`), not just a
+  big hand of my own: a 22-count opposite an uninformative waiting bid was
+  driving to a 27-point slam.
+- **Fallback raises never above the game level**: slam raises need real
+  machinery (control bids, keycards), never a generic point count.
+- **Fallback raise bands are contiguous**: an earlier "jump to game needs
+  extras" tweak left 12-17 support points with no bid, so hands in the hole
+  jumped to game on a poor fit score. The game raise now starts exactly where
+  the cheap band ends.
+- **Weak-two game raises need 3+ trumps** (and 17+ points on the point-count
+  branch): 14 HCP with a doubleton was raising 2H to 4H.
+- **Opener may be too strong to invite**: with a 6+ card major and 20+
+  playing strength, opener bids game rather than making an invitational jump
+  rebid that responder can pass with 7 points.
+- Content authored from harvested gaps: opener's answers to Stayman and
+  transfers after 2C - 2D - 2NT (systems on) and the placements after them;
+  responder over opener's invitational jump rebid after any 1-level response.

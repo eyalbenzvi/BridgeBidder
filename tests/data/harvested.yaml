@@ -189,3 +189,58 @@
   dealer: S
   calls: ["P", "P", "1H", "P", "1S", "P", "2C", "P"]
   expect: { calls: ["2H", "P"] }
+
+# --- round 3 -----------------------------------------------------------------
+
+# r3 s1111b13: after 2C - 2D - 2NT the NT structure must continue (Stayman was
+# answered by a fallback and the auction died in 3S)
+- name: r3_2C_2NT_stayman_reply
+  hand: "AK83.AK6.KJ.AJ98"
+  dealer: E
+  calls: ["P","P","P","2C","P","2D","P","2NT","P","3C","P"]
+  expect: { call: "3S", fallback: false }
+
+- name: r3_2C_2NT_place_game
+  hand: "9.JT97.A975.T762"
+  dealer: E
+  calls: ["P","P","P","2C","P","2D","P","2NT","P","3C","P","3H","P"]
+  expect: { call: "4H" }
+
+# r3 s1313b4: responder must accept opener's invitational jump rebid
+- name: r3_accept_jump_rebid_after_1S
+  hand: "7642.4.KQT52.KJ3"
+  calls: ["1H","P","1S","P","3H","P"]
+  expect: { call: "4H" }
+
+- name: r3_decline_jump_rebid_with_bust
+  hand: "7642.4.QT52.J863"
+  calls: ["1H","P","1S","P","3H","P"]
+  expect: { call: "P" }
+
+# r3 s1313b4: 19 HCP with 7 hearts is too strong to merely invite
+- name: r3_opener_too_strong_to_invite
+  hand: "AQJ.AKQT965.J.64"
+  calls: ["1H","P","1S","P"]
+  expect: { call: "4H" }
+
+# r3 s1111b13: RKC needs partnership slam values, not just a big hand
+- name: r3_no_rkc_without_partnership_values
+  hand: "AK83.AK6.KJ.AJ98"
+  dealer: E
+  calls: ["P","P","P","2C","P","2D","P","2NT","P","3C","P","3S","P","4H","P"]
+  expect: { call: "P" }
+
+# r3 s1212b9: fallback raise bands must be contiguous (12-17 support points
+# previously had no home and forced a bad-fit jump)
+- name: r3_contiguous_raise_bands
+  hand: "9732.AQ942.K76.Q"
+  dealer: E
+  calls: ["1C","P","1H","P","1S","P"]
+  expect: { calls: ["4S", "3S"] }
+
+# r3 s1212b6: never invent a slam-level raise
+- name: r3_no_fallback_slam_raise
+  hand: "2.AK432.J4.KQ985"
+  dealer: S
+  calls: ["P","1H","P","2C","2S","3C","P","P","4S","P","P"]
+  expect: { calls: ["P", "X", "5C"] }

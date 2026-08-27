@@ -1179,9 +1179,9 @@ contexts:
         call: 4$W
         priority: 65
         requires:
-          suits: { $W: [2, 13] }
+          suits: { $W: [3, 13] }
           any_of:
-            - evals: { total_points: [16, 40] }
+            - evals: { total_points: [17, 40] }
             - suits: { $W: [4, 13] }
               hcp: [4, 12]
         shows: "to play: values for game or a further preempt"
@@ -1422,9 +1422,20 @@ contexts:
       - id: ob_1M1NT_3$M
         call: 3$M
         priority: 50
-        requires: { suits: { $M: [6, 13] }, hcp: [16, 18], features: [ "good_suit($M)" ] }
-        shows: "jump rebid: 6+ good $M, 16-18"
+        requires:
+          suits: { $M: [6, 13] }
+          evals: { total_points: [16, 19] }
+          features: [ "good_suit($M)" ]
+        shows: "jump rebid: 6+ good $M, 16-19 playing strength"
         establishes: { forcing: invitational }
+      - id: ob_1M1NT_4$M
+        call: 4$M
+        priority: 51
+        requires:
+          suits: { $M: [6, 13] }
+          evals: { total_points: [20, 40] }
+        shows: "too strong to invite: bidding game opposite 6-11"
+        establishes: { forcing: sign_off, agreed_suit: $M }
 
   - id: opener_rebid_1S_2H
     description: "Opener's rebid after the 1S - 2H game force"
@@ -1731,7 +1742,7 @@ contexts:
       - id: jac_rkc
         call: 4NT
         priority: 45
-        requires: { evals: { total_points: [17, 40], controls: [4, 12] } }
+        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99] } }
         shows: "RKC 1430 for $M"
         establishes: { forcing: one_round, asking: keycards }
         alertable: true
@@ -2671,7 +2682,7 @@ contexts:
       - id: rkc_4NT
         call: 4NT
         priority: 45
-        requires: { evals: { total_points: [17, 40], controls: [4, 12] } }
+        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99] } }
         shows: "RKC Blackwood 1430 for the agreed suit"
         establishes: { forcing: one_round, asking: keycards }
         alertable: true
@@ -3874,8 +3885,8 @@ contexts:
       - id: rr1H1SC_4H
         call: 4H
         priority: 63
-        requires: { suits: { H: [4, 13] }, evals: { total_points: [13, 40] } }
-        shows: "game in hearts: 4+ hearts, game values"
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "game in hearts: 3+ hearts opposite a 5-card suit, game values"
         establishes: { forcing: sign_off, agreed_suit: H }
       - id: rr1H1SC_2S
         call: 2S
@@ -3921,8 +3932,8 @@ contexts:
       - id: rr1H1SD_4H
         call: 4H
         priority: 63
-        requires: { suits: { H: [4, 13] }, evals: { total_points: [13, 40] } }
-        shows: "game in hearts: 4+ hearts, game values"
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "game in hearts: 3+ hearts opposite a 5-card suit, game values"
         establishes: { forcing: sign_off, agreed_suit: H }
       - id: rr1H1SD_2S
         call: 2S
@@ -3947,4 +3958,138 @@ contexts:
         priority: 45
         requires: { suits: { D: [4, 13], H: [0, 2] }, evals: { total_points: [6, 9] } }
         shows: "passing the second suit with a fit and no extras"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # ROUND-3 GAPS: opener's answers with systems on after 2C - 2D - 2NT, and
+  # responder over opener's invitational jump rebid
+  # ===========================================================================
+
+  - id: r2c_2NT_stayman_reply
+    description: "Opener answers 3C Stayman after 2C - 2D - 2NT"
+    pattern: "2C - P - 2D - P - 2NT - P - 3C - P - ?"
+    rules:
+      - id: r2c_stm_3H
+        call: 3H
+        priority: 70
+        requires: { suits: { H: [4, 5] } }
+        shows: "4+ hearts"
+        establishes: { forcing: game_forcing }
+      - id: r2c_stm_3S
+        call: 3S
+        priority: 60
+        requires: { suits: { S: [4, 5] } }
+        shows: "4+ spades, denies 4 hearts"
+        establishes: { forcing: game_forcing }
+      - id: r2c_stm_3D
+        call: 3D
+        priority: 50
+        requires:
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "no 4-card major"
+        establishes: { forcing: game_forcing }
+
+  - id: r2c_2NT_transfer_reply
+    description: "Opener completes the transfer after 2C - 2D - 2NT"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "2C - P - 2D - P - 2NT - P - 3$T - P - ?"
+    rules:
+      - id: r2c_tr_accept
+        call: 3$M
+        priority: 55
+        requires: {}
+        shows: "completing the transfer (forced)"
+        establishes: { forcing: game_forcing }
+
+  - id: r2c_after_stayman_reply
+    description: "Responder places the game after opener's Stayman answer"
+    pattern: "2C - P - 2D - P - 2NT - P - 3C - P - 3(D|H|S) - P - ?"
+    rules:
+      - id: r2c_place_4H
+        call: 4H
+        priority: 62
+        requires: { suits: { H: [4, 13] } }
+        shows: "game with the heart fit opposite 22-24"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: r2c_place_4S
+        call: 4S
+        priority: 61
+        requires: { suits: { S: [4, 13] } }
+        shows: "game with the spade fit opposite 22-24"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: r2c_place_3NT
+        call: 3NT
+        priority: 55
+        requires: {}
+        shows: "no major fit: 3NT opposite 22-24"
+        establishes: { forcing: sign_off }
+
+  - id: r2c_after_transfer_completed
+    description: "Responder after the completed 3-level transfer (2C - 2D - 2NT)"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "2C - P - 2D - P - 2NT - P - 3$T - P - 3$M - P - ?"
+    rules:
+      - id: r2c_tr_4M
+        call: 4$M
+        priority: 60
+        requires: { suits: { $M: [5, 13] } }
+        shows: "game in $M opposite 22-24"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: r2c_tr_3NT
+        call: 3NT
+        priority: 50
+        requires: { suits: { $M: [5, 5] }, hcp: [0, 4] }
+        shows: "offering 3NT with exactly 5 $M"
+        establishes: { forcing: sign_off }
+
+  - id: responder_over_jump_rebid_1NT
+    description: "Responder over opener's invitational jump rebid 1M - 1NT - 3M"
+    expand: { M: [H, S] }
+    pattern: "1$M - P - 1NT - P - 3$M - P - ?"
+    rules:
+      - id: rjr1nt_game
+        call: 4$M
+        priority: 58
+        requires: { evals: { total_points: [8, 40] } }
+        shows: "accepting the invitation opposite 16-18 with a 6-card suit"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: rjr1nt_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [0, 7] } }
+        shows: "declining: a minimum 1NT response"
+        establishes: { forcing: sign_off }
+
+  - id: opener_too_strong_to_invite_1H_1S
+    description: "1H - 1S: opener too strong for the invitational jump rebid"
+    pattern: "1H - P - 1S - P - ?"
+    rules:
+      - id: ob_1H1S_4H
+        call: 4H
+        priority: 53
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [20, 40] }
+          not: { suits: { S: [4, 13] } }
+        shows: "too strong to invite: 6+ hearts, bidding game opposite 6+"
+        establishes: { forcing: sign_off, agreed_suit: H }
+
+  - id: responder_over_jump_rebid_suit
+    description: "Responder over opener's jump rebid after a 1-level suit response"
+    expand_pairs:
+      - { M: H, R: 1S }
+      - { M: S, R: 1NT }
+    pattern: "1$M - P - $R - P - 3$M - P - ?"
+    rules:
+      - id: rjrs_game
+        call: 4$M
+        priority: 58
+        requires: { evals: { total_points: [8, 40] } }
+        shows: "accepting the invitation opposite a 16-19 jump rebid"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: rjrs_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [0, 7] } }
+        shows: "declining: a bare minimum response"
         establishes: { forcing: sign_off }
