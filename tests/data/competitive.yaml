@@ -1,0 +1,181 @@
+# Competitive auctions: overcalls, takeout doubles, negative doubles, advances.
+
+- name: simple_1S_overcall
+  hand: "KQJ52.A64.84.932"
+  dealer: E
+  calls: ["1D"]
+  expect: { call: "1S", forcing: non_forcing }
+
+- name: overcall_1NT_15_18
+  hand: "KQ52.KJ4.AQ9.J32"
+  dealer: E
+  calls: ["1H"]
+  expect: { call: "1NT" }
+
+- name: takeout_double_of_1H
+  hand: "KQ52.4.AJ94.K932"
+  dealer: E
+  calls: ["1H"]
+  expect: { call: "X", forcing: one_round }
+
+- name: takeout_double_big_hand_any_shape
+  hand: "AQ52.KQ4.AQ94.K3"
+  dealer: E
+  calls: ["1H"]
+  expect: { call: "X" }
+
+- name: weak_jump_overcall_2S
+  hand: "KQJ852.64.84.932"
+  dealer: E
+  calls: ["1D"]
+  expect: { call: "2S" }
+
+- name: two_level_overcall_2C
+  hand: "84.A64.93.AKQJ32"
+  dealer: E
+  calls: ["1S"]
+  expect: { call: "2C" }
+
+- name: pass_flat_11_over_their_opening
+  hand: "KQ52.864.KJ9.J32"
+  dealer: E
+  calls: ["1H"]
+  expect: { call: "P" }
+
+- name: negative_double_exactly_4_spades
+  hand: "KQ52.864.A94.932"
+  dealer: S
+  calls: ["1C", "1H"]
+  expect: { call: "X", convention: negative_double, forcing: one_round }
+
+- name: bid_1S_with_5_after_overcall
+  hand: "KQ852.86.A94.932"
+  dealer: S
+  calls: ["1C", "1H"]
+  expect: { call: "1S" }
+
+- name: negative_double_hearts_over_1S
+  hand: "86.KQ52.A94.9432"
+  dealer: S
+  calls: ["1C", "1S"]
+  expect: { call: "X", convention: negative_double }
+
+- name: two_hearts_forcing_with_5_and_10
+  hand: "86.KQJ52.A94.932"
+  dealer: S
+  calls: ["1C", "1S"]
+  expect: { call: "2H", forcing: one_round }
+
+- name: cue_bid_limit_raise_of_minor
+  hand: "86.A52.KQ94.Q932"
+  dealer: S
+  calls: ["1D", "1S"]
+  expect: { call: "2S", convention: cue_raise, alertable: true }
+
+- name: competitive_raise_of_minor
+  hand: "86.852.KQ942.Q32"
+  dealer: S
+  calls: ["1D", "1S"]
+  expect: { call: "2D" }
+
+- name: one_nt_with_stopper_over_overcall
+  hand: "K86.A52.Q94.9432"
+  dealer: S
+  calls: ["1D", "1S"]
+  expect: { call: "1NT" }
+
+- name: jordan_2NT_over_double
+  hand: "8.KQ52.A942.9432"
+  dealer: S
+  calls: ["1H", "X"]
+  expect: { call: "2NT", convention: jordan_2nt, alertable: true }
+
+- name: redouble_10_plus
+  hand: "K52.A64.J94.KJ32"
+  dealer: S
+  calls: ["1S", "X"]
+  expect: { call: "XX" }
+
+- name: preemptive_jump_raise_over_double
+  hand: "K852.6.J942.9432"
+  dealer: S
+  calls: ["1S", "X"]
+  expect: { call: "3S", forcing: sign_off }
+
+- name: negative_double_of_2C_over_1S
+  hand: "86.KQ52.A942.932"
+  dealer: S
+  calls: ["1S", "2C"]
+  expect: { call: "X", convention: negative_double }
+
+- name: cue_raise_after_2C_overcall
+  hand: "K86.A52.942.Q932"
+  dealer: S
+  calls: ["1S", "2C"]
+  expect: { calls: ["3C", "2S"] }
+
+- name: negative_double_through_3S
+  hand: "86.KQ52.A942.932"
+  dealer: S
+  calls: ["1S", "3D"]
+  expect: { call: "X", convention: negative_double }
+
+- name: advance_of_takeout_double_cheapest
+  hand: "K852.864.94.9432"
+  dealer: E
+  calls: ["1D", "X", "P"]
+  expect: { call: "1S" }
+
+- name: advance_jump_invitational
+  hand: "KQ52.864.94.A432"
+  dealer: E
+  calls: ["1D", "X", "P"]
+  expect: { call: "2S", forcing: invitational }
+
+- name: advance_cue_game_forcing
+  hand: "KQ52.A64.94.AJ32"
+  dealer: E
+  calls: ["1D", "X", "P"]
+  expect: { call: "2D", forcing: game_forcing }
+
+- name: advance_1NT_with_stopper
+  hand: "K52.864.QJ94.K32"
+  dealer: E
+  calls: ["1D", "X", "P"]
+  expect: { call: "1NT" }
+
+- name: raise_partners_overcall
+  hand: "K52.8642.94.KJ32"
+  dealer: E
+  calls: ["1D", "1S", "P"]
+  expect: { call: "2S" }
+
+- name: cue_raise_of_overcall
+  hand: "K52.A642.94.KJ32"
+  dealer: E
+  calls: ["1D", "1S", "P"]
+  expect: { call: "2D", convention: cue_raise }
+
+- name: penalty_double_of_their_1NT
+  hand: "AQ52.K64.AQ94.32"
+  dealer: E
+  calls: ["1NT"]
+  expect: { call: "X" }
+
+- name: natural_2S_over_their_1NT
+  hand: "KQJ852.64.84.A32"
+  dealer: E
+  calls: ["1NT"]
+  expect: { call: "2S" }
+
+- name: takeout_double_of_weak_two
+  hand: "4.KQ52.AJ94.KQ32"
+  dealer: E
+  calls: ["2S"]
+  expect: { call: "X" }
+
+- name: two_nt_over_weak_two
+  hand: "KQ5.A64.AQ94.J32"
+  dealer: E
+  calls: ["2H"]
+  expect: { call: "2NT" }

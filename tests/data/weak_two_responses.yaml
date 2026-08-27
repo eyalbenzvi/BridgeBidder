@@ -1,0 +1,27 @@
+# Responding to partner's weak twos and preempts.
+
+- name: raise_weak_two_ronf
+  hand: "K52.8642.94.Q432"
+  calls: ["2S", "P"]
+  expect: { call: "3S", forcing: sign_off }
+
+- name: feature_ask_2NT
+  hand: "AQ5.KQ64.A94.K32"
+  calls: ["2S", "P"]
+  expect: { call: "2NT", alertable: true, convention: feature_ask }
+
+- name: raise_weak_two_to_game
+  hand: "K52.A64.AKQ94.32"
+  calls: ["2S", "P"]
+  expect: { calls: ["4S", "2NT"] }
+
+- name: pass_weak_two_misfit
+  hand: "52.K642.J94.Q432"
+  calls: ["2S", "P"]
+  expect: { call: "P" }
+
+- name: furthering_the_preempt_4S
+  hand: "K852.6.J9432.432"
+  vulnerability: EW
+  calls: ["2S", "P"]
+  expect: { calls: ["4S", "3S"] }

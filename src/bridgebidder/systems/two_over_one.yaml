@@ -953,7 +953,7 @@ contexts:
       - id: r1H_2D
         call: 2D
         priority: 76
-        requires: { hcp: [12, 40], suits: { D: [4, 13] }, not: { suits: { H: [4, 13] } } }
+        requires: { hcp: [12, 40], suits: { D: [4, 13] }, evals: { "suit_diff(D,C)": [1, 13] }, not: { suits: { H: [4, 13] } } }
         shows: "2/1 game forcing: 4+ diamonds, 12+ HCP"
         establishes: { forcing: game_forcing }
         when: { passed_hand: false }
@@ -1080,7 +1080,7 @@ contexts:
       - id: r1S_2D
         call: 2D
         priority: 76
-        requires: { hcp: [12, 40], suits: { D: [4, 13] }, not: { suits: { S: [4, 13] } } }
+        requires: { hcp: [12, 40], suits: { D: [4, 13] }, evals: { "suit_diff(D,C)": [1, 13] }, not: { suits: { S: [4, 13] } } }
         shows: "2/1 game forcing: 4+ diamonds, 12+ HCP"
         establishes: { forcing: game_forcing }
         when: { passed_hand: false }
@@ -1764,6 +1764,12 @@ contexts:
         priority: 54
         requires: { hcp: [12, 14], balanced: true, features: [ "stopper(their)" ] }
         shows: "12-14 balanced with a stopper, fewer than 3 $M"
+        establishes: { forcing: non_forcing }
+      - id: sd_2NT
+        call: 2NT
+        priority: 53
+        requires: { hcp: [15, 18], evals: { semi_balanced: [1, 1] }, features: [ "stopper(their)" ], not: { suits: { $M: [3, 13] } } }
+        shows: "15-18 balanced with a stopper, fewer than 3 $M"
         establishes: { forcing: non_forcing }
       - id: sd_pass
         call: P
@@ -2827,3 +2833,98 @@ contexts:
         requires: { hcp: [0, 17], evals: { semi_balanced: [1, 1] } }
         shows: "no fit found: choosing 3NT"
         establishes: { forcing: non_forcing }
+
+  # ===========================================================================
+  # LATE ADDITIONS (kept at file end; pattern specificity governs matching)
+  # ===========================================================================
+
+  - id: resp_1C_1D
+    description: "1D response to 1C (no 4-card major, Walsh-lite)"
+    pattern: "1C - P - ?"
+    rules:
+      - id: r1C_1D
+        call: 1D
+        priority: 74
+        requires:
+          hcp: [6, 40]
+          suits: { D: [4, 13] }
+          any_of: [ { suits: { D: [5, 13] } }, { evals: { balanced: [0, 0] } } ]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "4+ diamonds (5+ or unbalanced), 6+ HCP, no 4-card major (Walsh style)"
+        establishes: { forcing: one_round }
+
+  - id: gf_landing_nt_2nt
+    description: "Generic: natural forcing 2NT in a game force with no fit"
+    pattern: "... - ?"
+    when: { agreed_suit: false, game_forced: true }
+    rules:
+      - id: gf_2NT_natural
+        call: 2NT
+        priority: 33
+        requires: { evals: { stoppers(their): [0.5, 99] } }
+        shows: "natural, no fit yet (game force continues)"
+        establishes: { forcing: game_forcing }
+
+  - id: neg_double_3level_M
+    description: "Negative doubles through 3S: their 3-level overcall of our 1M"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+      - { M: S, x: H }
+    pattern: "1$M - 3$x - ?"
+    rules:
+      - id: nx3_negx
+        call: X
+        priority: 70
+        requires: { hcp: [8, 40], suits: { $oM: [4, 13] }, not: { suits: { $M: [3, 13] } } }
+        shows: "negative double through 3S: 4+ cards in the other major, 8+ HCP"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: nx3_raise
+        call: 3$M
+        priority: 68
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [6, 10] } }
+        shows: "competitive raise"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: nx3_3NT
+        call: 3NT
+        priority: 60
+        requires: { hcp: [13, 18], features: [ "stopper($x)" ], not: { suits: { $M: [3, 13] } } }
+        shows: "to play, stopper in their suit"
+        establishes: { forcing: sign_off }
+      - id: nx3_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 7] }
+        shows: "nothing to say over the preempt"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: neg_double_3level_m
+    description: "Negative doubles through 3S: their weak jump over our 1m"
+    expand_pairs:
+      - { m: C, j: 2H }
+      - { m: C, j: 2S }
+      - { m: D, j: 2H }
+      - { m: D, j: 2S }
+      - { m: C, j: 3H }
+      - { m: C, j: 3S }
+      - { m: D, j: 3S }
+    pattern: "1$m - $j - ?"
+    rules:
+      - id: nxj_X
+        call: X
+        priority: 70
+        requires: { hcp: [8, 40] }
+        shows: "negative double of the jump overcall: support for unbid suits"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: nxj_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 7] }
+        shows: "nothing to say over the jump"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft

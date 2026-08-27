@@ -1,0 +1,158 @@
+# Opening-bid scenarios: routine, borderline, seat- and vulnerability-sensitive.
+
+- name: open_1S_routine
+  hand: "AKJ72.K84.Q92.87"
+  calls: []
+  expect: { call: "1S", rule: open_1S, forcing: non_forcing }
+
+- name: open_1H_routine
+  hand: "K84.AKJ72.Q92.87"
+  calls: []
+  expect: { call: "1H", rule: open_1H }
+
+- name: open_longer_major_first
+  hand: "AQJ85.KQJ854.2.3"
+  calls: []
+  expect: { call: "1H" }
+
+- name: open_1S_with_5_5_majors
+  hand: "AQJ85.KQJ85.32.3"
+  calls: []
+  expect: { call: "1S" }
+
+- name: open_1D_four_diamonds
+  hand: "AQ52.K84.QJ92.87"
+  calls: []
+  expect: { call: "1D", rule: open_1D }
+
+- name: open_1D_three_three_means_1C_no_wait_this_is_4432
+  hand: "AQ52.KJ84.Q92.87"
+  calls: []
+  expect: { call: "1D" }
+
+- name: open_1C_with_3_3_minors
+  hand: "AQ5.KJ84.987.KJ2"
+  calls: []
+  expect: { call: "1C", rule: open_1C }
+
+- name: open_1C_long_clubs
+  hand: "A2.K84.Q92.AJT87"
+  calls: []
+  expect: { call: "1C" }
+
+- name: open_1NT_16_balanced
+  hand: "AQ52.KJ4.QT9.KJ7"
+  calls: []
+  expect: { call: "1NT", rule: open_1NT }
+
+- name: open_1NT_with_5_card_major_allowed
+  hand: "AQJ52.KJ4.QT9.K7"
+  calls: []
+  expect: { call: "1NT" }
+
+- name: open_2NT_21_balanced
+  hand: "AQ52.KJ4.AQ9.KQ7"
+  calls: []
+  expect: { call: "2NT", rule: open_2NT }
+
+- name: open_2C_24_hcp
+  hand: "AKQ52.AKJ4.A9.K7"
+  calls: []
+  expect: { call: "2C", rule: open_2C, alertable: true, convention: strong_2C }
+
+- name: open_2C_19_hcp_strong_playing_hand
+  hand: "AKQJ752.AKQ.2.87"
+  calls: []
+  expect: { call: "2C" }
+
+- name: open_2C_22_balanced
+  hand: "AQ5.KJ4.AQ42.AK2"
+  calls: []
+  expect: { call: "2C" }
+
+- name: weak_two_spades_nonvul
+  hand: "KQJ852.84.92.873"
+  calls: []
+  expect: { call: "2S", rule: open_weak_2S }
+
+- name: weak_two_hearts_nonvul
+  hand: "84.KQJ852.92.873"
+  calls: []
+  expect: { call: "2H" }
+
+- name: weak_two_diamonds_nonvul
+  hand: "84.92.KQJ852.873"
+  calls: []
+  expect: { call: "2D" }
+
+- name: weak_two_spades_vulnerable_good_suit
+  hand: "KQJ852.A4.92.873"
+  vulnerability: NS
+  calls: []
+  expect: { call: "2S" }
+
+- name: weak_two_vulnerable_bad_suit_passes
+  hand: "KJ8752.84.92.873"
+  vulnerability: NS
+  calls: []
+  expect: { call: "P" }
+
+- name: no_weak_two_with_4_card_other_major
+  hand: "KQJ852.T843.9.87"
+  calls: []
+  expect: { call: "P" }
+
+- name: preempt_3C
+  hand: "8.84.92.KQJ87532"
+  calls: []
+  expect: { call: "3C", rule: open_3C }
+
+- name: preempt_3S
+  hand: "KQJ8752.84.92.87"
+  calls: []
+  expect: { call: "3S" }
+
+- name: rule_of_20_light_1S
+  hand: "AQJ75.KT64.4.J32"
+  calls: []
+  expect: { call: "1S", rule: open_1S }
+
+- name: rule_of_20_fails_borderline_11
+  hand: "AQ752.K64.Q4.T32"
+  calls: []
+  expect: { calls: ["P", "1S"] }
+
+- name: rule_of_15_fourth_seat_opens
+  hand: "AQ752.K64.Q42.32"
+  calls: ["P", "P", "P"]
+  expect: { call: "1S", rule: open_1S }
+
+- name: rule_of_15_fourth_seat_passes_out
+  hand: "2.AQ752.K642.Q32"
+  calls: ["P", "P", "P"]
+  expect: { call: "P", rule: open_pass_4th }
+
+- name: rule_of_20_not_in_third_seat
+  hand: "AQJ75.KT64.4.J32"
+  calls: ["P", "P"]
+  expect: { calls: ["P", "1S"] }
+
+- name: routine_pass_4_hcp
+  hand: "Q752.864.Q42.932"
+  calls: []
+  expect: { call: "P", rule: open_pass }
+
+- name: open_1D_4441
+  hand: "AQ52.2.KQ92.J872"
+  calls: []
+  expect: { call: "1D" }
+
+- name: open_4th_seat_13_balanced
+  hand: "AQ52.K64.KJ42.32"
+  calls: ["P", "P", "P"]
+  expect: { call: "1D" }
+
+- name: open_1S_5422_15_hcp_not_1NT
+  hand: "AQJ52.KJ42.A9.87"
+  calls: []
+  expect: { call: "1S" }

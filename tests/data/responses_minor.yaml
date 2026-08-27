@@ -1,0 +1,61 @@
+# Responses to 1C / 1D openings (uncontested).
+
+- name: up_the_line_1H_with_44_majors
+  hand: "KQ52.A864.842.32"
+  calls: ["1C", "P"]
+  expect: { call: "1H", forcing: one_round }
+
+- name: bid_1S_with_5S_4H
+  hand: "KQ752.A864.84.32"
+  calls: ["1C", "P"]
+  expect: { call: "1S" }
+
+- name: bid_1H_with_5H_4S
+  hand: "KQ52.A8642.84.32"
+  calls: ["1C", "P"]
+  expect: { call: "1H" }
+
+- name: respond_1D_to_1C_no_major
+  hand: "K98.64.AQ842.932"
+  calls: ["1C", "P"]
+  expect: { call: "1D", rule: r1C_1D }
+
+- name: two_clubs_gf_over_1D
+  hand: "A5.K64.842.AQJ32"
+  calls: ["1D", "P"]
+  expect: { call: "2C", forcing: game_forcing }
+
+- name: one_nt_response_6_10
+  hand: "K98.Q64.Q842.Q32"
+  calls: ["1C", "P"]
+  expect: { call: "1NT", forcing: non_forcing }
+
+- name: single_raise_2D
+  hand: "985.64.KQ842.Q32"
+  calls: ["1D", "P"]
+  expect: { call: "2D", forcing: non_forcing }
+
+- name: limit_raise_3D
+  hand: "985.64.KQ842.KQ3"
+  calls: ["1D", "P"]
+  expect: { call: "3D", forcing: invitational }
+
+- name: invitational_2NT_11_12
+  hand: "K98.Q64.KQ84.Q32"
+  calls: ["1C", "P"]
+  expect: { call: "2NT", forcing: invitational }
+
+- name: direct_3NT_13_15
+  hand: "K98.QJ4.KQ84.QJ2"
+  calls: ["1C", "P"]
+  expect: { call: "3NT" }
+
+- name: pass_hopeless
+  hand: "9852.J64.T842.32"
+  calls: ["1C", "P"]
+  expect: { call: "P" }
+
+- name: major_before_minor_raise
+  hand: "KQ52.64.QT842.32"
+  calls: ["1D", "P"]
+  expect: { call: "1S" }

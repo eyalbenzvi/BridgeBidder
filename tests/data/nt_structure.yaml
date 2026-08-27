@@ -1,0 +1,156 @@
+# 1NT / 2NT / 2C opening structures: Stayman, transfers, invitational sequences.
+
+- name: stayman_with_both_majors
+  hand: "KQ52.A864.842.32"
+  calls: ["1NT", "P"]
+  expect: { call: "2C", convention: stayman, forcing: one_round }
+
+- name: transfer_to_hearts
+  hand: "52.KJ864.842.Q32"
+  calls: ["1NT", "P"]
+  expect: { call: "2D", convention: jacoby_transfer }
+
+- name: transfer_to_spades_weak
+  hand: "KJ864.52.842.Q32"
+  calls: ["1NT", "P"]
+  expect: { call: "2H", convention: jacoby_transfer }
+
+- name: invitational_2NT
+  hand: "K95.Q64.QJ84.J32"
+  calls: ["1NT", "P"]
+  expect: { call: "2NT", forcing: invitational }
+
+- name: raise_to_3NT
+  hand: "K95.Q64.KQ84.Q32"
+  calls: ["1NT", "P"]
+  expect: { call: "3NT" }
+
+- name: quantitative_4NT
+  hand: "AQ5.K64.KQ84.Q32"
+  calls: ["1NT", "P"]
+  expect: { call: "4NT", alertable: true, forcing: invitational }
+
+- name: pass_weak_no_major
+  hand: "952.J64.T842.Q32"
+  calls: ["1NT", "P"]
+  expect: { call: "P" }
+
+- name: stayman_rebid_2H_with_both
+  hand: "AQ52.KJ64.Q42.A2"
+  calls: ["1NT", "P", "2C", "P"]
+  expect: { call: "2H" }
+
+- name: stayman_rebid_2S_denies_hearts
+  hand: "AQ52.KJ6.Q42.A32"
+  calls: ["1NT", "P", "2C", "P"]
+  expect: { call: "2S", denies_contains: "hearts" }
+
+- name: stayman_rebid_2D_no_major
+  hand: "AQ5.KJ6.Q432.A32"
+  calls: ["1NT", "P", "2C", "P"]
+  expect: { call: "2D" }
+
+- name: after_stayman_denial_3NT
+  hand: "KQ52.A864.A42.32"
+  calls: ["1NT", "P", "2C", "P", "2D", "P"]
+  expect: { call: "3NT" }
+
+- name: after_stayman_fit_4H
+  hand: "KQ52.A864.A42.32"
+  calls: ["1NT", "P", "2C", "P", "2H", "P"]
+  expect: { call: "4H" }
+
+- name: after_stayman_fit_invite_3H
+  hand: "KQ52.A864.842.32"
+  calls: ["1NT", "P", "2C", "P", "2H", "P"]
+  expect: { call: "3H", forcing: invitational }
+
+- name: transfer_completion
+  hand: "AQ52.KJ6.Q42.A32"
+  calls: ["1NT", "P", "2D", "P"]
+  expect: { call: "2H" }
+
+- name: transfer_super_accept
+  hand: "AQ5.KJ64.Q42.AJ2"
+  calls: ["1NT", "P", "2D", "P"]
+  expect: { call: "3H" }
+
+- name: signoff_after_transfer
+  hand: "52.KJ864.842.Q32"
+  calls: ["1NT", "P", "2D", "P", "2H", "P"]
+  expect: { call: "P" }
+
+- name: invite_after_transfer_2NT
+  hand: "A2.KJ864.842.Q32"
+  calls: ["1NT", "P", "2D", "P", "2H", "P"]
+  expect: { calls: ["2NT", "3NT"] }
+
+- name: choice_of_games_3NT_after_transfer
+  hand: "A2.KJ864.842.QJ2"
+  calls: ["1NT", "P", "2D", "P", "2H", "P"]
+  expect: { call: "3NT" }
+
+- name: opener_corrects_to_4H_with_fit
+  hand: "AQ52.KJ6.Q42.A32"
+  calls: ["1NT", "P", "2D", "P", "2H", "P", "3NT", "P"]
+  expect: { call: "4H" }
+
+- name: opener_passes_3NT_with_doubleton
+  hand: "AQ52.KJ.Q432.A32"
+  calls: ["1NT", "P", "2D", "P", "2H", "P", "3NT", "P"]
+  expect: { call: "P" }
+
+- name: opener_accepts_invite
+  hand: "AQ52.KJ4.Q42.AJ2"
+  calls: ["1NT", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+- name: opener_declines_invite
+  hand: "AQ52.KJ4.Q42.K32"
+  calls: ["1NT", "P", "2NT", "P"]
+  expect: { call: "P" }
+
+- name: quantitative_decline
+  hand: "AQ52.KJ4.Q42.K32"
+  calls: ["1NT", "P", "4NT", "P"]
+  expect: { call: "P" }
+
+- name: quantitative_accept_6NT
+  hand: "AQ52.KJ4.Q42.KQ2"
+  calls: ["1NT", "P", "4NT", "P"]
+  expect: { call: "6NT" }
+
+- name: stayman_over_2NT
+  hand: "KQ52.864.842.J32"
+  calls: ["2NT", "P"]
+  expect: { call: "3C", convention: stayman }
+
+- name: transfer_over_2NT
+  hand: "52.J8642.842.J32"
+  calls: ["2NT", "P"]
+  expect: { call: "3D", convention: jacoby_transfer }
+
+- name: raise_2NT_to_game
+  hand: "K95.Q64.Q842.J32"
+  calls: ["2NT", "P"]
+  expect: { call: "3NT" }
+
+- name: waiting_2D_over_2C
+  hand: "952.J64.T842.Q32"
+  calls: ["2C", "P"]
+  expect: { call: "2D", alertable: true, convention: waiting_2D, forcing: one_round }
+
+- name: positive_2H_over_2C
+  hand: "52.AKJ64.842.Q32"
+  calls: ["2C", "P"]
+  expect: { call: "2H", forcing: game_forcing }
+
+- name: rebid_2NT_22_24
+  hand: "AQ5.KJ4.AQ42.AK2"
+  calls: ["2C", "P", "2D", "P"]
+  expect: { call: "2NT" }
+
+- name: transfer_after_2C_2D_2NT
+  hand: "52.J8642.842.J32"
+  calls: ["2C", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "3D", convention: jacoby_transfer }

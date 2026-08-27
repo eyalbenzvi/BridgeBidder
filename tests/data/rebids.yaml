@@ -1,0 +1,141 @@
+# Opener and responder rebids (uncontested main lines).
+
+- name: opener_raises_1H_response
+  hand: "A52.KJ64.Q4.A932"
+  calls: ["1C", "P", "1H", "P"]
+  expect: { call: "2H", forcing: non_forcing }
+
+- name: opener_jump_raise_1H_response
+  hand: "A52.KJ64.4.AQ932"
+  calls: ["1C", "P", "1H", "P"]
+  expect: { call: "3H", forcing: invitational }
+
+- name: opener_1NT_rebid_12_14
+  hand: "A52.KJ6.Q642.A93"
+  calls: ["1D", "P", "1S", "P"]
+  expect: { call: "1NT", forcing: non_forcing }
+
+- name: opener_2NT_jump_18_19
+  hand: "A52.KJ6.AQ64.A93"
+  calls: ["1D", "P", "1S", "P"]
+  expect: { call: "2NT" }
+
+- name: opener_second_suit_2C
+  hand: "5.KJ6.AQ642.A932"
+  calls: ["1D", "P", "1S", "P"]
+  expect: { call: "2C" }
+
+- name: opener_reverse_2H
+  hand: "5.KQJ6.AQJ642.A9"
+  calls: ["1D", "P", "1S", "P"]
+  expect: { call: "2H", forcing: one_round }
+
+- name: opener_shows_spades_after_1H
+  hand: "AQ52.J6.Q42.AK93"
+  calls: ["1C", "P", "1H", "P"]
+  expect: { call: "1S" }
+
+- name: opener_passes_semiforcing_1NT
+  hand: "A52.KJ642.Q42.A9"
+  calls: ["1H", "P", "1NT", "P"]
+  expect: { call: "P" }
+
+- name: opener_2C_over_forcing_1NT
+  hand: "A5.KJ642.42.AQ93"
+  calls: ["1H", "P", "1NT", "P"]
+  expect: { call: "2C" }
+
+- name: opener_rebids_6_card_major
+  hand: "A5.KJ8642.42.A93"
+  calls: ["1H", "P", "1NT", "P"]
+  expect: { call: "2H" }
+
+- name: opener_2NT_18_19_over_1NT_response
+  hand: "A52.KJ642.AQ.A93"
+  calls: ["1H", "P", "1NT", "P"]
+  expect: { call: "2NT" }
+
+- name: opener_raises_2H_gf
+  hand: "AQ752.KJ6.4.A932"
+  calls: ["1S", "P", "2H", "P"]
+  expect: { call: "3H", forcing: game_forcing }
+
+- name: opener_rebids_spades_in_gf
+  hand: "AQJ752.6.A42.K93"
+  calls: ["1S", "P", "2H", "P"]
+  expect: { call: "2S", forcing: game_forcing }
+
+- name: opener_raises_2over1_minor
+  hand: "AQ752.K6.42.KQ93"
+  calls: ["1S", "P", "2C", "P"]
+  expect: { call: "3C", forcing: game_forcing }
+
+- name: opener_2NT_balanced_min_in_gf
+  hand: "AQ752.K64.Q4.K93"
+  calls: ["1S", "P", "2C", "P"]
+  expect: { call: "2NT", forcing: game_forcing }
+
+- name: opener_second_suit_2D_in_gf
+  hand: "AQ752.6.AJ42.K93"
+  calls: ["1S", "P", "2C", "P"]
+  expect: { calls: ["2D", "2NT"] }
+
+- name: responder_invites_2NT_after_1NT_rebid
+  hand: "A52.KQ64.Q42.J93"
+  calls: ["1C", "P", "1H", "P", "1NT", "P"]
+  expect: { call: "2NT", forcing: invitational }
+
+- name: responder_bids_3NT_after_1NT_rebid
+  hand: "A52.KQ64.QJ2.J93"
+  calls: ["1C", "P", "1H", "P", "1NT", "P"]
+  expect: { call: "3NT" }
+
+- name: responder_passes_after_raise
+  hand: "952.KQ64.Q42.J93"
+  calls: ["1C", "P", "1H", "P", "2H", "P"]
+  expect: { call: "P" }
+
+- name: responder_bids_game_after_raise
+  hand: "A52.KQ64.42.KJ93"
+  calls: ["1C", "P", "1H", "P", "2H", "P"]
+  expect: { call: "4H" }
+
+- name: opener_game_try_after_single_raise
+  hand: "AQJ752.A64.K42.9"
+  calls: ["1S", "P", "2S", "P"]
+  expect: { call: "3S", forcing: invitational }
+
+- name: opener_bids_game_after_single_raise
+  hand: "AQJ752.A6.AK42.9"
+  calls: ["1S", "P", "2S", "P"]
+  expect: { call: "4S" }
+
+- name: opener_accepts_limit_raise
+  hand: "A52.KQJ64.42.A93"
+  calls: ["1H", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+- name: opener_declines_limit_raise
+  hand: "K52.KQJ64.842.K9"
+  calls: ["1H", "P", "3H", "P"]
+  expect: { call: "P" }
+
+- name: jacoby_rebid_shortness_3D
+  hand: "A52.KQJ64.4.A932"
+  calls: ["1H", "P", "2NT", "P"]
+  expect: { call: "3D", alertable: true }
+
+- name: jacoby_rebid_minimum_4H
+  hand: "A52.KQJ64.42.K93"
+  calls: ["1H", "P", "2NT", "P"]
+  expect: { call: "4H" }
+
+- name: jacoby_rebid_extras_3H
+  hand: "AQ5.KQJ64.A2.A93"
+  calls: ["1H", "P", "2NT", "P"]
+  expect: { call: "3H" }
+
+- name: responder_signs_off_after_jacoby_minimum
+  hand: "K64.A832.KQ5.Q42"
+  calls: ["1H", "P", "2NT", "P", "4H", "P"]
+  expect: { call: "P" }

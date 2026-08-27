@@ -1,0 +1,103 @@
+# Responses to 1H / 1S openings (uncontested).
+
+- name: single_raise_2H
+  hand: "752.K64.A842.932"
+  calls: ["1H", "P"]
+  expect: { call: "2H", rule: r1H_single_raise, forcing: non_forcing }
+
+- name: limit_raise_3H
+  hand: "75.KJ64.A842.K32"
+  calls: ["1H", "P"]
+  expect: { call: "3H", rule: r1H_limit_raise, forcing: invitational }
+
+- name: jacoby_2NT_over_1H
+  hand: "A5.KQ64.A842.K32"
+  calls: ["1H", "P"]
+  expect: { call: "2NT", convention: jacoby_2nt, alertable: true, forcing: game_forcing }
+
+- name: splinter_4C_over_1H
+  hand: "A752.KQ64.A842.3"
+  calls: ["1H", "P"]
+  expect: { call: "4C", convention: splinter, alertable: true, forcing: game_forcing }
+
+- name: splinter_3S_over_1H
+  hand: "3.KQ64.A842.A752"
+  calls: ["1H", "P"]
+  expect: { call: "3S", convention: splinter }
+
+- name: one_spade_over_1H
+  hand: "KQ85.64.A842.932"
+  calls: ["1H", "P"]
+  expect: { call: "1S", forcing: one_round }
+
+- name: two_clubs_gf_over_1H
+  hand: "A5.64.K842.AKJ32"
+  calls: ["1H", "P"]
+  expect: { call: "2C", forcing: game_forcing }
+
+- name: two_diamonds_gf_over_1H
+  hand: "A5.64.AKJ42.K632"
+  calls: ["1H", "P"]
+  expect: { call: "2D", forcing: game_forcing }
+
+- name: semi_forcing_1NT_over_1H
+  hand: "K98.64.Q8542.Q32"
+  calls: ["1H", "P"]
+  expect: { call: "1NT", rule: r1H_1NT, forcing: non_forcing }
+
+- name: pass_hopeless_hand
+  hand: "9852.64.Q842.932"
+  calls: ["1H", "P"]
+  expect: { call: "P" }
+
+- name: preemptive_4H
+  hand: "5.KT864.Q8542.32"
+  calls: ["1H", "P"]
+  expect: { call: "4H", forcing: sign_off }
+
+- name: limit_raise_3S
+  hand: "KJ64.75.A842.K32"
+  calls: ["1S", "P"]
+  expect: { call: "3S", forcing: invitational }
+
+- name: two_hearts_gf_over_1S
+  hand: "A5.KQJ64.842.K32"
+  calls: ["1S", "P"]
+  expect: { call: "2H", forcing: game_forcing }
+
+- name: jacoby_2NT_over_1S
+  hand: "KQ64.A5.A842.K32"
+  calls: ["1S", "P"]
+  expect: { call: "2NT", convention: jacoby_2nt }
+
+- name: splinter_4H_over_1S
+  hand: "KQ64.5.A842.K632"
+  calls: ["1S", "P"]
+  expect: { call: "4H", convention: splinter }
+
+- name: passed_hand_limit_raise_still_available
+  hand: "A5.KQ64.8642.Q32"
+  dealer: S
+  calls: ["P", "P", "1H", "P"]
+  expect: { call: "3H" }
+
+- name: passed_hand_no_2over1
+  hand: "A5.64.Q842.KQT32"
+  dealer: S
+  calls: ["P", "P", "1H", "P"]
+  expect: { call: "1NT" }
+
+- name: single_raise_prefers_support_over_1NT
+  hand: "752.K64.A842.Q32"
+  calls: ["1H", "P"]
+  expect: { call: "2H" }
+
+- name: gf_2C_with_3_clubs_config
+  hand: "A5.64.K842.AKJ32"
+  calls: ["1S", "P"]
+  expect: { call: "2C", forcing: game_forcing }
+
+- name: respond_1S_with_6_hcp
+  hand: "KQ85.64.842.Q932"
+  calls: ["1H", "P"]
+  expect: { call: "1S" }

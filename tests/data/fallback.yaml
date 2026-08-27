@@ -1,0 +1,30 @@
+# Undiscussed situations: the engine must still produce something sensible.
+
+- name: undiscussed_new_suit_over_preempt
+  hand: "AKQ52.K64.A94.32"
+  dealer: E
+  calls: ["3C"]
+  expect: { calls: ["3S", "X"], fallback: true }
+
+- name: undiscussed_pass_over_their_game
+  hand: "852.864.94.QJ432"
+  dealer: E
+  calls: ["4S"]
+  expect: { call: "P", fallback: true }
+
+- name: gf_landing_3NT_no_fit
+  hand: "K52.86.AQ4.KQ932"
+  calls: ["1H", "P", "2C", "P", "2D", "P"]
+  expect: { call: "3NT" }
+
+- name: never_stranded_forced_continuation
+  hand: "852.864.94.QJ432"
+  dealer: E
+  calls: ["1C", "P", "1H"]
+  expect: { call: "P" }
+
+- name: balancing_seat_reopening
+  hand: "KQ52.A864.94.A32"
+  dealer: E
+  calls: ["1D", "P", "P"]
+  expect: { calls: ["X", "1S", "1H"] }

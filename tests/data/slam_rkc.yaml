@@ -1,0 +1,44 @@
+# Slam bidding: RKC Blackwood 1430 sequences (hearts/spades agreed via Jacoby).
+
+- name: rkc_response_2_with_queen
+  hand: "AQ752.KQ64.A42.3"
+  calls: ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P"]
+  expect: { call: "5S", convention: rkc_1430, alertable: true }
+
+- name: rkc_response_1_keycard
+  hand: "A9752.KQ64.K42.3"
+  calls: ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P"]
+  expect: { call: "5C", convention: rkc_1430 }
+
+- name: rkc_response_0_keycards
+  hand: "Q9752.KQ64.KQ4.3"
+  calls: ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P"]
+  expect: { call: "5D", convention: rkc_1430 }
+
+- name: rkc_response_2_no_queen
+  hand: "AK752.Q642.K42.3"
+  calls: ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P"]
+  expect: { call: "5H", convention: rkc_1430 }
+
+- name: asker_signs_off_missing_two
+  hand: "QJ64.A5.AK42.Q32"
+  dealer: N
+  calls: ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P", "5C", "P"]
+  expect: { call: "5S", forcing: sign_off }
+
+- name: asker_bids_slam_with_all_keycards
+  hand: "KQ64.A5.AK42.A32"
+  dealer: N
+  calls: ["1S", "P", "2NT", "P", "3C", "P", "4NT", "P", "5S", "P"]
+  expect: { call: "6S" }
+
+- name: rkc_ask_from_jacoby_continuation
+  hand: "KQ64.A5.AK42.A32"
+  dealer: N
+  calls: ["1S", "P", "2NT", "P", "3H", "P"]
+  expect: { calls: ["4NT", "4S"] }
+
+- name: quantitative_not_rkc_without_agreement
+  hand: "AQ5.K64.KQ84.Q32"
+  calls: ["1NT", "P"]
+  expect: { call: "4NT", forcing: invitational }

@@ -264,7 +264,9 @@ class HandConstraint:
         if self.any_of:
             f *= max(c.fit(hand, ctx) for c in self.any_of)
         if self.not_ is not None:
-            f *= 1.0 - self.not_.fit(hand, ctx)
+            # negation is sharp: nearly-matching the denied condition is fine,
+            # actually matching it is a hard miss
+            f *= 0.1 if self.not_.satisfied(hand, ctx) else 1.0
         return max(0.0, min(1.0, f))
 
     # ------------------------------------------------------------- algebra

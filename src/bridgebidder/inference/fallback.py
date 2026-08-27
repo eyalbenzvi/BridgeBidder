@@ -97,9 +97,10 @@ def generate_fallbacks(
                 continue
             if str(call) in covered_calls or s in raise_suits:
                 break
+            if s in their_suits:
+                break  # never invent cue-bids: those need explicit system rules
             lo = _NEW_SUIT_MIN_PTS.get(level, 20)
-            is_new = s not in their_suits
-            forcing = "one_round" if (is_new and not game_forced and partner_suits and level <= 2) else (
+            forcing = "one_round" if (not game_forced and partner_suits and level <= 2) else (
                 "game_forcing" if game_forced else "non_forcing")
             add(
                 call,

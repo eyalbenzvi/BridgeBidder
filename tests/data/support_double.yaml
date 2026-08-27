@@ -1,0 +1,41 @@
+# Support doubles / redoubles: the canonical negative-inference machinery.
+
+- name: support_double_with_exactly_3
+  hand: "KQ4.A72.AQJ84.94"
+  calls: ["1D", "P", "1S", "2C"]
+  expect: { call: "X", convention: support_double, alertable: true, forcing: one_round }
+
+- name: raise_with_4_denies_exactly_3
+  hand: "KQ42.972.AQJ84.9"
+  calls: ["1D", "P", "1S", "2C"]
+  expect: { call: "2S", denies_contains: "support double" }
+
+- name: rebid_2D_denies_3_spades
+  hand: "K4.A72.AQJ842.94"
+  calls: ["1D", "P", "1S", "2C"]
+  expect: { call: "2D", denies_contains: "support double" }
+
+- name: pass_denies_3_spades_too
+  hand: "K4.A72.AQJ84.942"
+  calls: ["1D", "P", "1S", "2C"]
+  expect: { call: "P", denies_contains: "support double" }
+
+- name: support_redouble_over_takeout_x
+  hand: "K42.A72.AQJ84.94"
+  calls: ["1D", "P", "1H", "X"]
+  expect: { call: "XX", convention: support_redouble, alertable: true }
+
+- name: support_double_after_1C_1H_1S
+  hand: "A72.K42.94.AQJ84"
+  calls: ["1C", "P", "1H", "1S"]
+  expect: { call: "X", convention: support_double }
+
+- name: support_double_2NT_without_3
+  hand: "K4.AQ2.QJ84.KJ42"
+  calls: ["1D", "P", "1S", "2C"]
+  expect: { call: "2NT", denies_contains: "support double" }
+
+- name: support_double_applies_below_2_of_major_only
+  hand: "KQ4.A72.AQJ84.94"
+  calls: ["1D", "P", "1S", "3C"]
+  expect: { calls: ["P", "3D", "X"] }
