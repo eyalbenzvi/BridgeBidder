@@ -845,7 +845,7 @@ contexts:
         call: 3NT
         priority: 55
         requires:
-          hcp: [13, 15]
+          hcp: [13, 17]
           balanced: true
           not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
         shows: "13-15 balanced, no 4-card major"
@@ -1229,7 +1229,7 @@ contexts:
       - id: ob_rebid_2$m
         call: 2$m
         priority: 50
-        requires: { suits: { $m: [5, 13] }, hcp: [12, 15], not: { suits: { $M: [4, 13] } } }
+        requires: { suits: { $m: [5, 13] }, hcp: [10, 15], not: { suits: { $M: [4, 13] } } }
         shows: "rebid: 5+ (usually 6) $m, minimum"
         establishes: { forcing: non_forcing }
       - id: ob_rebid_3$m
@@ -1361,7 +1361,7 @@ contexts:
       - id: ob_1H1S_2H
         call: 2H
         priority: 52
-        requires: { suits: { H: [6, 13] }, hcp: [12, 15], not: { suits: { S: [4, 13] } } }
+        requires: { suits: { H: [6, 13] }, hcp: [10, 15], not: { suits: { S: [4, 13] } } }
         shows: "rebid: 6+ hearts, minimum"
         establishes: { forcing: non_forcing }
       - id: ob_1H1S_3H
@@ -1410,7 +1410,7 @@ contexts:
       - id: ob_1M1NT_2$M
         call: 2$M
         priority: 54
-        requires: { suits: { $M: [6, 13] }, hcp: [12, 15] }
+        requires: { suits: { $M: [6, 13] }, hcp: [10, 15] }
         shows: "6+ $M, minimum"
         establishes: { forcing: non_forcing }
       - id: ob_1M1NT_2NT
@@ -2911,6 +2911,12 @@ contexts:
         requires: { suits: { $M: [3, 13] }, evals: { total_points: [6, 10] } }
         shows: "competitive raise"
         establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: nx3_game_raise
+        call: 4$M
+        priority: 69
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [11, 40] } }
+        shows: "game raise over their preemptive overcall"
+        establishes: { forcing: sign_off, agreed_suit: $M }
       - id: nx3_3NT
         call: 3NT
         priority: 60
@@ -4093,3 +4099,741 @@ contexts:
         requires: { evals: { total_points: [0, 7] } }
         shows: "declining: a bare minimum response"
         establishes: { forcing: sign_off }
+
+  # =========================================================================
+  # ROUND-4 GAPS: preempt responses and rebids, the weak-two feature answer,
+  # and defense to their 3-level preempts
+  # =========================================================================
+
+  - id: weak2_feature_answer_D
+    description: "Opener answers the 2NT feature ask over a weak 2D"
+    pattern: "2D - P - 2NT - P - ?"
+    rules:
+      - id: feat_D_C
+        call: 3C
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(C)" ] }
+        shows: "feature (ace or king) in C, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_D_H
+        call: 3H
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(H)" ] }
+        shows: "feature (ace or king) in H, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_D_S
+        call: 3S
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(S)" ] }
+        shows: "feature (ace or king) in S, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_D_min
+        call: 3D
+        priority: 55
+        requires: { hcp: [5, 7] }
+        shows: "minimum weak two, no outside feature"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: feat_D_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [9, 10], evals: { "suit_quality(D)": [3, 9] } }
+        shows: "solid suit, maximum"
+        establishes: { forcing: non_forcing }
+
+  - id: weak2_feature_answer_H
+    description: "Opener answers the 2NT feature ask over a weak 2H"
+    pattern: "2H - P - 2NT - P - ?"
+    rules:
+      - id: feat_H_C
+        call: 3C
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(C)" ] }
+        shows: "feature (ace or king) in C, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_H_D
+        call: 3D
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(D)" ] }
+        shows: "feature (ace or king) in D, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_H_S
+        call: 3S
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(S)" ] }
+        shows: "feature (ace or king) in S, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_H_min
+        call: 3H
+        priority: 55
+        requires: { hcp: [5, 7] }
+        shows: "minimum weak two, no outside feature"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: feat_H_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [9, 10], evals: { "suit_quality(H)": [3, 9] } }
+        shows: "solid suit, maximum"
+        establishes: { forcing: non_forcing }
+
+  - id: weak2_feature_answer_S
+    description: "Opener answers the 2NT feature ask over a weak 2S"
+    pattern: "2S - P - 2NT - P - ?"
+    rules:
+      - id: feat_S_C
+        call: 3C
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(C)" ] }
+        shows: "feature (ace or king) in C, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_S_D
+        call: 3D
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(D)" ] }
+        shows: "feature (ace or king) in D, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_S_H
+        call: 3H
+        priority: 60
+        requires: { hcp: [8, 10], features: [ "two_of_top3(H)" ] }
+        shows: "feature (ace or king) in H, maximum for the weak two"
+        establishes: { forcing: one_round }
+      - id: feat_S_min
+        call: 3S
+        priority: 55
+        requires: { hcp: [5, 7] }
+        shows: "minimum weak two, no outside feature"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: feat_S_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [9, 10], evals: { "suit_quality(S)": [3, 9] } }
+        shows: "solid suit, maximum"
+        establishes: { forcing: non_forcing }
+
+  - id: resp_preempt_C
+    description: "Responses to partner's 3C preempt"
+    pattern: "3C - P - ?"
+    rules:
+      - id: rp3_C_D
+        call: 3D
+        priority: 62
+        requires:
+          suits: { D: [5, 13], C: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ D, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_C_H
+        call: 3H
+        priority: 62
+        requires:
+          suits: { H: [5, 13], C: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ H, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_C_S
+        call: 3S
+        priority: 62
+        requires:
+          suits: { S: [5, 13], C: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ S, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_C_game
+        call: 3NT
+        priority: 64
+        requires: { evals: { total_points: [15, 40] }, features: [ "stopper(partner)" ] }
+        shows: "bidding game opposite the preempt"
+        establishes: { forcing: sign_off }
+      - id: rp3_C_pass
+        call: P
+        priority: 40
+        requires: { evals: { total_points: [0, 14] } }
+        shows: "no game opposite a preempt"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: resp_preempt_D
+    description: "Responses to partner's 3D preempt"
+    pattern: "3D - P - ?"
+    rules:
+      - id: rp3_D_C
+        call: 4C
+        priority: 62
+        requires:
+          suits: { C: [5, 13], D: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ C, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_D_H
+        call: 3H
+        priority: 62
+        requires:
+          suits: { H: [5, 13], D: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ H, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_D_S
+        call: 3S
+        priority: 62
+        requires:
+          suits: { S: [5, 13], D: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ S, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_D_game
+        call: 3NT
+        priority: 64
+        requires: { evals: { total_points: [15, 40] }, features: [ "stopper(partner)" ] }
+        shows: "bidding game opposite the preempt"
+        establishes: { forcing: sign_off }
+      - id: rp3_D_pass
+        call: P
+        priority: 40
+        requires: { evals: { total_points: [0, 14] } }
+        shows: "no game opposite a preempt"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: resp_preempt_H
+    description: "Responses to partner's 3H preempt"
+    pattern: "3H - P - ?"
+    rules:
+      - id: rp3_H_C
+        call: 4C
+        priority: 62
+        requires:
+          suits: { C: [5, 13], H: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ C, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_H_D
+        call: 4D
+        priority: 62
+        requires:
+          suits: { D: [5, 13], H: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ D, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_H_S
+        call: 3S
+        priority: 62
+        requires:
+          suits: { S: [5, 13], H: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ S, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_H_game
+        call: 4H
+        priority: 64
+        requires: { evals: { total_points: [15, 40] }, features: [ "stopper(partner)" ] }
+        shows: "bidding game opposite the preempt"
+        establishes: { forcing: sign_off }
+      - id: rp3_H_pass
+        call: P
+        priority: 40
+        requires: { evals: { total_points: [0, 14] } }
+        shows: "no game opposite a preempt"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: resp_preempt_S
+    description: "Responses to partner's 3S preempt"
+    pattern: "3S - P - ?"
+    rules:
+      - id: rp3_S_C
+        call: 4C
+        priority: 62
+        requires:
+          suits: { C: [5, 13], S: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ C, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_S_D
+        call: 4D
+        priority: 62
+        requires:
+          suits: { D: [5, 13], S: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ D, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_S_H
+        call: 4H
+        priority: 62
+        requires:
+          suits: { H: [5, 13], S: [0, 2] }
+          hcp: [15, 40]
+        shows: "new suit opposite the preempt: 5+ H, 15+, forcing"
+        establishes: { forcing: one_round }
+      - id: rp3_S_game
+        call: 4S
+        priority: 64
+        requires: { evals: { total_points: [15, 40] }, features: [ "stopper(partner)" ] }
+        shows: "bidding game opposite the preempt"
+        establishes: { forcing: sign_off }
+      - id: rp3_S_pass
+        call: P
+        priority: 40
+        requires: { evals: { total_points: [0, 14] } }
+        shows: "no game opposite a preempt"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: preempt_rebid_C_D
+    description: "Preemptor's rebid after 3C - 3D (forcing)"
+    pattern: "3C - P - 3D - P - ?"
+    rules:
+      - id: pr_CD_raise
+        call: 4D
+        priority: 60
+        requires: { suits: { D: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: pr_CD_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { D: [0, 2] }, features: [ "good_suit(C)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_CD_rebid
+        call: 4C
+        priority: 50
+        requires: { suits: { D: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+
+  - id: preempt_rebid_C_H
+    description: "Preemptor's rebid after 3C - 3H (forcing)"
+    pattern: "3C - P - 3H - P - ?"
+    rules:
+      - id: pr_CH_raise
+        call: 4H
+        priority: 60
+        requires: { suits: { H: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: pr_CH_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { H: [0, 2] }, features: [ "good_suit(C)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_CH_rebid
+        call: 4C
+        priority: 50
+        requires: { suits: { H: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+
+  - id: preempt_rebid_C_S
+    description: "Preemptor's rebid after 3C - 3S (forcing)"
+    pattern: "3C - P - 3S - P - ?"
+    rules:
+      - id: pr_CS_raise
+        call: 4S
+        priority: 60
+        requires: { suits: { S: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: pr_CS_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { S: [0, 2] }, features: [ "good_suit(C)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_CS_rebid
+        call: 4C
+        priority: 50
+        requires: { suits: { S: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+
+  - id: preempt_rebid_D_C
+    description: "Preemptor's rebid after 3D - 4C (forcing)"
+    pattern: "3D - P - 4C - P - ?"
+    rules:
+      - id: pr_DC_raise
+        call: 5C
+        priority: 60
+        requires: { suits: { C: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: pr_DC_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { C: [0, 2] }, features: [ "good_suit(D)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_DC_rebid
+        call: 4D
+        priority: 50
+        requires: { suits: { C: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+
+  - id: preempt_rebid_D_H
+    description: "Preemptor's rebid after 3D - 3H (forcing)"
+    pattern: "3D - P - 3H - P - ?"
+    rules:
+      - id: pr_DH_raise
+        call: 4H
+        priority: 60
+        requires: { suits: { H: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: pr_DH_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { H: [0, 2] }, features: [ "good_suit(D)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_DH_rebid
+        call: 4D
+        priority: 50
+        requires: { suits: { H: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+
+  - id: preempt_rebid_D_S
+    description: "Preemptor's rebid after 3D - 3S (forcing)"
+    pattern: "3D - P - 3S - P - ?"
+    rules:
+      - id: pr_DS_raise
+        call: 4S
+        priority: 60
+        requires: { suits: { S: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: pr_DS_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { S: [0, 2] }, features: [ "good_suit(D)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_DS_rebid
+        call: 4D
+        priority: 50
+        requires: { suits: { S: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+
+  - id: preempt_rebid_H_C
+    description: "Preemptor's rebid after 3H - 4C (forcing)"
+    pattern: "3H - P - 4C - P - ?"
+    rules:
+      - id: pr_HC_raise
+        call: 5C
+        priority: 60
+        requires: { suits: { C: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: pr_HC_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { C: [0, 2] }, features: [ "good_suit(H)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_HC_rebid
+        call: 4H
+        priority: 50
+        requires: { suits: { C: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+
+  - id: preempt_rebid_H_D
+    description: "Preemptor's rebid after 3H - 4D (forcing)"
+    pattern: "3H - P - 4D - P - ?"
+    rules:
+      - id: pr_HD_raise
+        call: 5D
+        priority: 60
+        requires: { suits: { D: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: pr_HD_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { D: [0, 2] }, features: [ "good_suit(H)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_HD_rebid
+        call: 4H
+        priority: 50
+        requires: { suits: { D: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+
+  - id: preempt_rebid_H_S
+    description: "Preemptor's rebid after 3H - 3S (forcing)"
+    pattern: "3H - P - 3S - P - ?"
+    rules:
+      - id: pr_HS_raise
+        call: 4S
+        priority: 60
+        requires: { suits: { S: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: pr_HS_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { S: [0, 2] }, features: [ "good_suit(H)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_HS_rebid
+        call: 4H
+        priority: 50
+        requires: { suits: { S: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+
+  - id: preempt_rebid_S_C
+    description: "Preemptor's rebid after 3S - 4C (forcing)"
+    pattern: "3S - P - 4C - P - ?"
+    rules:
+      - id: pr_SC_raise
+        call: 5C
+        priority: 60
+        requires: { suits: { C: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: pr_SC_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { C: [0, 2] }, features: [ "good_suit(S)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_SC_rebid
+        call: 4S
+        priority: 50
+        requires: { suits: { C: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+
+  - id: preempt_rebid_S_D
+    description: "Preemptor's rebid after 3S - 4D (forcing)"
+    pattern: "3S - P - 4D - P - ?"
+    rules:
+      - id: pr_SD_raise
+        call: 5D
+        priority: 60
+        requires: { suits: { D: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: pr_SD_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { D: [0, 2] }, features: [ "good_suit(S)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_SD_rebid
+        call: 4S
+        priority: 50
+        requires: { suits: { D: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+
+  - id: preempt_rebid_S_H
+    description: "Preemptor's rebid after 3S - 4H (forcing)"
+    pattern: "3S - P - 4H - P - ?"
+    rules:
+      - id: pr_SH_raise
+        call: 4H
+        priority: 60
+        requires: { suits: { H: [3, 13] } }
+        shows: "support for partner's suit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: pr_SH_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { H: [0, 2] }, features: [ "good_suit(S)" ] }
+        shows: "no fit: offering 3NT on the running suit"
+        establishes: { forcing: sign_off }
+      - id: pr_SH_rebid
+        call: 4S
+        priority: 50
+        requires: { suits: { H: [0, 2] } }
+        shows: "no fit for partner's suit, rebidding my own"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+
+  - id: defense_vs_preempt_C
+    description: "Direct seat over their 3C preempt"
+    pattern: "3C - ?"
+    rules:
+      - id: v3_C_X
+        call: X
+        priority: 70
+        requires:
+          any_of:
+            - hcp: [14, 17]
+              suits: { C: [0, 3] }
+            - hcp: [18, 40]
+        shows: "takeout double of the 3-level preempt"
+        establishes: { forcing: one_round }
+      - id: v3_C_3NT
+        call: 3NT
+        priority: 66
+        requires: { hcp: [16, 21], features: [ "stopper(C)" ], evals: { semi_balanced: [1, 1] } }
+        shows: "to play: 16-21 with a stopper"
+        establishes: { forcing: sign_off }
+      - id: v3_C_D
+        call: 3D
+        priority: 64
+        requires: { suits: { D: [6, 13] }, hcp: [13, 40], features: [ "good_suit(D)" ] }
+        shows: "overcalling the preempt: good 6+ D, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_C_H
+        call: 3H
+        priority: 64
+        requires: { suits: { H: [6, 13] }, hcp: [13, 40], features: [ "good_suit(H)" ] }
+        shows: "overcalling the preempt: good 6+ H, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_C_S
+        call: 3S
+        priority: 64
+        requires: { suits: { S: [6, 13] }, hcp: [13, 40], features: [ "good_suit(S)" ] }
+        shows: "overcalling the preempt: good 6+ S, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_C_pass
+        call: P
+        priority: 30
+        requires: { hcp: [0, 15] }
+        shows: "nothing suitable over their preempt"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: defense_vs_preempt_D
+    description: "Direct seat over their 3D preempt"
+    pattern: "3D - ?"
+    rules:
+      - id: v3_D_X
+        call: X
+        priority: 70
+        requires:
+          any_of:
+            - hcp: [14, 17]
+              suits: { D: [0, 3] }
+            - hcp: [18, 40]
+        shows: "takeout double of the 3-level preempt"
+        establishes: { forcing: one_round }
+      - id: v3_D_3NT
+        call: 3NT
+        priority: 66
+        requires: { hcp: [16, 21], features: [ "stopper(D)" ], evals: { semi_balanced: [1, 1] } }
+        shows: "to play: 16-21 with a stopper"
+        establishes: { forcing: sign_off }
+      - id: v3_D_C
+        call: 4C
+        priority: 64
+        requires: { suits: { C: [6, 13] }, hcp: [13, 40], features: [ "good_suit(C)" ] }
+        shows: "overcalling the preempt: good 6+ C, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_D_H
+        call: 3H
+        priority: 64
+        requires: { suits: { H: [6, 13] }, hcp: [13, 40], features: [ "good_suit(H)" ] }
+        shows: "overcalling the preempt: good 6+ H, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_D_S
+        call: 3S
+        priority: 64
+        requires: { suits: { S: [6, 13] }, hcp: [13, 40], features: [ "good_suit(S)" ] }
+        shows: "overcalling the preempt: good 6+ S, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_D_pass
+        call: P
+        priority: 30
+        requires: { hcp: [0, 15] }
+        shows: "nothing suitable over their preempt"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: defense_vs_preempt_H
+    description: "Direct seat over their 3H preempt"
+    pattern: "3H - ?"
+    rules:
+      - id: v3_H_X
+        call: X
+        priority: 70
+        requires:
+          any_of:
+            - hcp: [14, 17]
+              suits: { H: [0, 3] }
+            - hcp: [18, 40]
+        shows: "takeout double of the 3-level preempt"
+        establishes: { forcing: one_round }
+      - id: v3_H_3NT
+        call: 3NT
+        priority: 66
+        requires: { hcp: [16, 21], features: [ "stopper(H)" ], evals: { semi_balanced: [1, 1] } }
+        shows: "to play: 16-21 with a stopper"
+        establishes: { forcing: sign_off }
+      - id: v3_H_C
+        call: 4C
+        priority: 64
+        requires: { suits: { C: [6, 13] }, hcp: [13, 40], features: [ "good_suit(C)" ] }
+        shows: "overcalling the preempt: good 6+ C, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_H_D
+        call: 4D
+        priority: 64
+        requires: { suits: { D: [6, 13] }, hcp: [13, 40], features: [ "good_suit(D)" ] }
+        shows: "overcalling the preempt: good 6+ D, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_H_S
+        call: 3S
+        priority: 64
+        requires: { suits: { S: [6, 13] }, hcp: [13, 40], features: [ "good_suit(S)" ] }
+        shows: "overcalling the preempt: good 6+ S, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_H_pass
+        call: P
+        priority: 30
+        requires: { hcp: [0, 15] }
+        shows: "nothing suitable over their preempt"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  - id: defense_vs_preempt_S
+    description: "Direct seat over their 3S preempt"
+    pattern: "3S - ?"
+    rules:
+      - id: v3_S_X
+        call: X
+        priority: 70
+        requires:
+          any_of:
+            - hcp: [14, 17]
+              suits: { S: [0, 3] }
+            - hcp: [18, 40]
+        shows: "takeout double of the 3-level preempt"
+        establishes: { forcing: one_round }
+      - id: v3_S_3NT
+        call: 3NT
+        priority: 66
+        requires: { hcp: [16, 21], features: [ "stopper(S)" ], evals: { semi_balanced: [1, 1] } }
+        shows: "to play: 16-21 with a stopper"
+        establishes: { forcing: sign_off }
+      - id: v3_S_C
+        call: 4C
+        priority: 64
+        requires: { suits: { C: [6, 13] }, hcp: [13, 40], features: [ "good_suit(C)" ] }
+        shows: "overcalling the preempt: good 6+ C, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_S_D
+        call: 4D
+        priority: 64
+        requires: { suits: { D: [6, 13] }, hcp: [13, 40], features: [ "good_suit(D)" ] }
+        shows: "overcalling the preempt: good 6+ D, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_S_H
+        call: 4H
+        priority: 64
+        requires: { suits: { H: [6, 13] }, hcp: [13, 40], features: [ "good_suit(H)" ] }
+        shows: "overcalling the preempt: good 6+ H, 13+"
+        establishes: { forcing: non_forcing }
+      - id: v3_S_pass
+        call: P
+        priority: 30
+        requires: { hcp: [0, 15] }
+        shows: "nothing suitable over their preempt"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft

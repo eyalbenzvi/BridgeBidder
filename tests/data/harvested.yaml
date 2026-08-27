@@ -244,3 +244,66 @@
   dealer: S
   calls: ["P","1H","P","2C","2S","3C","P","P","4S","P","P"]
   expect: { calls: ["P", "X", "5C"] }
+
+# --- round 4 (200-board batch) -----------------------------------------------
+
+# r4 b118: a fallback "game raise" in a minor jumped to 5C, doubled, down 3
+- name: r4_no_five_level_minor_fallback_raise
+  hand: "952.J64.KQ42.Q32"
+  calls: ["1H", "P", "1NT", "P", "2C", "P"]
+  expect: { calls: ["2H", "P", "3C", "2NT"] }
+
+# r4 b4: opener's minimum rebids must accept rule-of-20 light openings
+- name: r4_light_opener_can_rebid_its_suit
+  hand: "AJT8763.94.KQ9.4"
+  calls: ["1S", "P", "1NT", "P"]
+  expect: { call: "2S" }
+
+# r4 b20: a game-going hand over their preemptive overcall had no bid
+- name: r4_game_raise_over_preemptive_overcall
+  hand: "AQ65.9.654.KJT32"
+  dealer: N
+  calls: ["P", "1S", "3H"]
+  expect: { call: "4S" }
+
+# r4 b124: 1m - 3NT covers 13-17 balanced
+- name: r4_strong_balanced_3NT_response
+  hand: "QJ7.K52.AK75.A54"
+  dealer: N
+  calls: ["P", "1C", "P"]
+  expect: { call: "3NT" }
+
+# r4 b35: their 3-level preempt needed a defense
+- name: r4_takeout_double_of_preempt
+  hand: "A75.4.AKJ2.AT753"
+  dealer: W
+  calls: ["3S"]
+  expect: { call: "X", forcing: one_round }
+
+- name: r4_pass_over_preempt_with_junk
+  hand: "A75.42.KJ2.T7532"
+  dealer: W
+  calls: ["3S"]
+  expect: { call: "P" }
+
+# r4 b113: the 2NT feature ask had no answer
+- name: r4_weak_two_feature_answer
+  hand: "KQJ852.A4.92.873"
+  calls: ["2S", "P", "2NT", "P"]
+  expect: { calls: ["3H", "3NT", "3S"], fallback: false }
+
+- name: r4_weak_two_minimum_answer
+  hand: "KQJ852.74.92.873"
+  calls: ["2S", "P", "2NT", "P"]
+  expect: { call: "3S" }
+
+# r4 b55: a new suit opposite a 3-level preempt is forcing and must be answered
+- name: r4_new_suit_over_preempt_forcing
+  hand: "AK952.A4.AQ92.87"
+  calls: ["3C", "P"]
+  expect: { call: "3S", forcing: one_round }
+
+- name: r4_preemptor_answers_the_force
+  hand: "8.84.92.KQJ87532"
+  calls: ["3C", "P", "3S", "P"]
+  expect: { calls: ["3NT", "4C", "4S"], fallback: false }

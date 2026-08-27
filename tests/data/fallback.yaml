@@ -1,10 +1,17 @@
 # Undiscussed situations: the engine must still produce something sensible.
 
-- name: undiscussed_new_suit_over_preempt
+# their 3-level preempt is now real system content (round-4 harvest), so the
+# undiscussed check moved to a genuinely unauthored deep sequence
+- name: preempt_defense_is_systemic
   hand: "AKQ52.K64.A94.32"
   dealer: E
   calls: ["3C"]
-  expect: { calls: ["3S", "X"], fallback: true }
+  expect: { calls: ["X", "3S"], fallback: false }
+
+- name: undiscussed_deep_sequence
+  hand: "AQ52.6.KQ94.KQ32"
+  calls: ["1C", "P", "1H", "P", "1S", "P", "2D", "P"]
+  expect: { fallback: true, calls: ["2NT", "3NT", "3C", "3D", "4D", "P"] }
 
 - name: undiscussed_pass_over_their_game
   hand: "852.864.94.QJ432"

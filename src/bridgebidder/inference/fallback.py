@@ -92,7 +92,9 @@ def generate_fallbacks(
     # game-level raise so strong hands are not trapped in the cheap band ----
     raise_suits = [s for s in ([agreed_suit] if agreed_suit else partner_suits) if s]
     for s in raise_suits if not quiet else []:
-        game_level = 4 if s in ("H", "S") else 5
+        # with a minor fit the game is 3NT, never a fallback 5m: cap the
+        # invented raise ladder at the 4-level for every suit
+        game_level = 4
         cheapest = None
         for level in range(1, 8):
             call = Call.bid(level, s)

@@ -2249,23 +2249,21 @@
   },
   "source_rule_id": "oc1H_X"
  },
- "undiscussed_fallback_3S_over_3C": {
+ "undiscussed_fallback_deep_sequence": {
   "alertable": false,
   "announce": null,
-  "call": "3S",
+  "call": "2NT",
   "constraint": {
    "evals": {
-    "total_points": [
-     12,
-     40
+    "semi_balanced": [
+     1,
+     1
     ]
    },
-   "suits": {
-    "S": [
-     4,
-     13
-    ]
-   }
+   "hcp": [
+    11,
+    14
+   ]
   },
   "convention": null,
   "denies": [],
@@ -2274,16 +2272,28 @@
   "shows": {
    "features": [],
    "hcp": [
-    0,
-    99
+    11,
+    14
    ],
    "suits": {
+    "C": [
+     2,
+     6
+    ],
+    "D": [
+     2,
+     6
+    ],
+    "H": [
+     2,
+     6
+    ],
     "S": [
-     4,
-     13
+     2,
+     6
     ]
    },
-   "text": "natural, 4+ S, 12+ points (undiscussed)"
+   "text": "natural NT, 11-14 HCP, stoppers in their suit(s) (undiscussed)"
   },
   "source_rule_id": "fallback"
  }

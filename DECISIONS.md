@@ -213,3 +213,22 @@ rationale. Bridge-style choices are exposed as config flags where noted.
 - Content authored from harvested gaps: opener's answers to Stayman and
   transfers after 2C - 2D - 2NT (systems on) and the placements after them;
   responder over opener's invitational jump rebid after any 1-level response.
+
+### Round 4 harvest decisions (200-board batch)
+
+- **Fallback raises cap at the 4-level for every suit**: with a minor fit the
+  game is 3NT, so an invented 5m "game raise" is always wrong (one went for
+  500 doubled). Slam raises still need real machinery.
+- **Opener's minimum rebids accept light openings** (10-15, not 12-15): a
+  rule-of-20 opening with 10 HCP previously had no honest rebid.
+- **1m - 3NT covers 13-17 balanced** (mainstream range), so a 17-count is not
+  forced into a call that shows less.
+- **Takeout doubles of a 3-level preempt tolerate three small** in their suit
+  (14-17, or any 18+): requiring a doubleton left classic takeout shapes with
+  no bid.
+- **Weak-two game raises and competitive raises** got the missing top of the
+  ladder: a game raise over their preemptive overcall (11+ support points).
+- Whole structures authored from this batch: responses to partner's 3-level
+  preempt (forcing new suit, game, pass) and the preemptor's rebid; opener's
+  answer to the 2NT feature ask over a weak two; and a full defense to their
+  3-level preempts (takeout double, natural 3NT, 6+ suit overcalls).
