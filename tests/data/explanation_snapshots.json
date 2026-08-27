@@ -1,0 +1,2290 @@
+{
+ "cue_raise": {
+  "alertable": true,
+  "announce": null,
+  "call": "2S",
+  "constraint": {
+   "evals": {
+    "total_points": [
+     10,
+     40
+    ]
+   },
+   "suits": {
+    "H": [
+     3,
+     13
+    ]
+   }
+  },
+  "convention": "cue_raise",
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "suits": {
+         "C": [
+          4,
+          13
+         ],
+         "D": [
+          4,
+          13
+         ]
+        }
+       },
+       {
+        "suits": {
+         "C": [
+          5,
+          13
+         ]
+        }
+       },
+       {
+        "suits": {
+         "D": [
+          5,
+          13
+         ]
+        }
+       }
+      ],
+      "hcp": [
+       6,
+       40
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         3,
+         13
+        ]
+       }
+      }
+     }
+    },
+    "derived_from_rule": "r1H1S_X",
+    "text": "not: negative double: both minors or a long minor, no heart fit",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    0,
+    99
+   ],
+   "suits": {
+    "H": [
+     3,
+     13
+    ]
+   },
+   "text": "cue-bid raise: limit raise or better in hearts"
+  },
+  "source_rule_id": "r1H1S_cue"
+ },
+ "jacoby_transfer": {
+  "alertable": false,
+  "announce": "transfer",
+  "call": "2D",
+  "constraint": {
+   "suits": {
+    "H": [
+     5,
+     13
+    ]
+   }
+  },
+  "convention": "jacoby_transfer",
+  "denies": [],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    0,
+    99
+   ],
+   "suits": {
+    "H": [
+     5,
+     13
+    ]
+   },
+   "text": "Jacoby transfer to hearts (5+ hearts, any strength)"
+  },
+  "source_rule_id": "nt_transfer_H"
+ },
+ "jordan_2NT": {
+  "alertable": true,
+  "announce": null,
+  "call": "2NT",
+  "constraint": {
+   "evals": {
+    "total_points": [
+     10,
+     40
+    ]
+   },
+   "suits": {
+    "S": [
+     4,
+     13
+    ]
+   }
+  },
+  "convention": "jordan_2nt",
+  "denies": [],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    0,
+    99
+   ],
+   "suits": {
+    "S": [
+     4,
+     13
+    ]
+   },
+   "text": "Jordan 2NT: 4+ S, limit raise or better"
+  },
+  "source_rule_id": "jordan_2NT"
+ },
+ "negative_double": {
+  "alertable": false,
+  "announce": null,
+  "call": "X",
+  "constraint": {
+   "hcp": [
+    6,
+    40
+   ],
+   "suits": {
+    "S": [
+     4,
+     4
+    ]
+   }
+  },
+  "convention": "negative_double",
+  "denies": [],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    6,
+    99
+   ],
+   "suits": {
+    "S": [
+     4,
+     4
+    ]
+   },
+   "text": "negative double: exactly 4 spades, 6+ HCP"
+  },
+  "source_rule_id": "nx_1m1H_X"
+ },
+ "open_1NT": {
+  "alertable": false,
+  "announce": null,
+  "call": "1NT",
+  "constraint": {
+   "evals": {
+    "balanced": [
+     1,
+     1
+    ]
+   },
+   "hcp": [
+    15,
+    17
+   ]
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "hcp": [
+         22,
+         40
+        ]
+       },
+       {
+        "evals": {
+         "ltc": [
+          0,
+          3.5
+         ]
+        },
+        "hcp": [
+         18,
+         21
+        ]
+       }
+      ]
+     }
+    },
+    "derived_from_rule": "open_2C",
+    "text": "not: strong artificial: 22+ HCP or equivalent playing strength",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       20,
+       21
+      ]
+     }
+    },
+    "derived_from_rule": "open_2NT",
+    "text": "not: 20-21 balanced",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    15,
+    17
+   ],
+   "suits": {
+    "C": [
+     2,
+     5
+    ],
+    "D": [
+     2,
+     5
+    ],
+    "H": [
+     2,
+     5
+    ],
+    "S": [
+     2,
+     5
+    ]
+   },
+   "text": "15-17 balanced (may contain a 5-card major)"
+  },
+  "source_rule_id": "open_1NT"
+ },
+ "open_1S": {
+  "alertable": false,
+  "announce": null,
+  "call": "1S",
+  "constraint": {
+   "any_of": [
+    {
+     "evals": {
+      "suit_diff(S,H)": [
+       0,
+       13
+      ]
+     },
+     "hcp": [
+      12,
+      21
+     ],
+     "suits": {
+      "S": [
+       5,
+       13
+      ]
+     }
+    },
+    {
+     "evals": {
+      "rule_of_20": [
+       20,
+       33
+      ],
+      "suit_diff(S,H)": [
+       0,
+       13
+      ],
+      "suit_quality(S)": [
+       1.5,
+       9
+      ]
+     },
+     "hcp": [
+      10,
+      11
+     ],
+     "suits": {
+      "S": [
+       5,
+       13
+      ]
+     }
+    }
+   ]
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "hcp": [
+         22,
+         40
+        ]
+       },
+       {
+        "evals": {
+         "ltc": [
+          0,
+          3.5
+         ]
+        },
+        "hcp": [
+         18,
+         21
+        ]
+       }
+      ]
+     }
+    },
+    "derived_from_rule": "open_2C",
+    "text": "not: strong artificial: 22+ HCP or equivalent playing strength",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       20,
+       21
+      ]
+     }
+    },
+    "derived_from_rule": "open_2NT",
+    "text": "not: 20-21 balanced",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       15,
+       17
+      ]
+     }
+    },
+    "derived_from_rule": "open_1NT",
+    "text": "not: 15-17 balanced (may contain a 5-card major)",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    10,
+    21
+   ],
+   "suits": {
+    "S": [
+     5,
+     13
+    ]
+   },
+   "text": "5+ spades, 12-21 HCP"
+  },
+  "source_rule_id": "open_1S"
+ },
+ "open_2C": {
+  "alertable": true,
+  "announce": null,
+  "call": "2C",
+  "constraint": {
+   "any_of": [
+    {
+     "hcp": [
+      22,
+      40
+     ]
+    },
+    {
+     "evals": {
+      "ltc": [
+       0,
+       3.5
+      ]
+     },
+     "hcp": [
+      18,
+      21
+     ]
+    }
+   ]
+  },
+  "convention": "strong_2C",
+  "denies": [],
+  "forcing_status": "game_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    18,
+    99
+   ],
+   "suits": {},
+   "text": "strong artificial: 22+ HCP or equivalent playing strength"
+  },
+  "source_rule_id": "open_2C"
+ },
+ "open_weak_2H": {
+  "alertable": false,
+  "announce": null,
+  "call": "2H",
+  "constraint": {
+   "features": [
+    "good_suit(H)"
+   ],
+   "hcp": [
+    5,
+    10
+   ],
+   "suits": {
+    "H": [
+     6,
+     6
+    ],
+    "S": [
+     0,
+     3
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "hcp": [
+         22,
+         40
+        ]
+       },
+       {
+        "evals": {
+         "ltc": [
+          0,
+          3.5
+         ]
+        },
+        "hcp": [
+         18,
+         21
+        ]
+       }
+      ]
+     }
+    },
+    "derived_from_rule": "open_2C",
+    "text": "not: strong artificial: 22+ HCP or equivalent playing strength",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       20,
+       21
+      ]
+     }
+    },
+    "derived_from_rule": "open_2NT",
+    "text": "not: 20-21 balanced",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       15,
+       17
+      ]
+     }
+    },
+    "derived_from_rule": "open_1NT",
+    "text": "not: 15-17 balanced (may contain a 5-card major)",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(S,H)": [
+        0,
+        13
+       ]
+      },
+      "hcp": [
+       12,
+       21
+      ],
+      "suits": {
+       "S": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1S",
+    "text": "not: 5+ spades, 12-21 HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(H,S)": [
+        1,
+        13
+       ]
+      },
+      "hcp": [
+       12,
+       21
+      ],
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1H",
+    "text": "not: 5+ hearts, 12-21 HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "rule_of_20": [
+        20,
+        33
+       ],
+       "suit_diff(S,H)": [
+        0,
+        13
+       ],
+       "suit_quality(S)": [
+        1.5,
+        9
+       ]
+      },
+      "hcp": [
+       10,
+       11
+      ],
+      "suits": {
+       "S": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1S_rule20",
+    "text": "not: 5+ spades, light opening satisfying the rule of 20",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "rule_of_20": [
+        20,
+        33
+       ],
+       "suit_diff(H,S)": [
+        1,
+        13
+       ],
+       "suit_quality(H)": [
+        1.5,
+        9
+       ]
+      },
+      "hcp": [
+       10,
+       11
+      ],
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1H_rule20",
+    "text": "not: 5+ hearts, light opening satisfying the rule of 20",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "evals": {
+         "suit_diff(D,C)": [
+          0,
+          13
+         ]
+        },
+        "suits": {
+         "D": [
+          4,
+          13
+         ]
+        }
+       },
+       {
+        "suits": {
+         "C": [
+          0,
+          2
+         ],
+         "D": [
+          3,
+          3
+         ]
+        }
+       }
+      ],
+      "hcp": [
+       12,
+       21
+      ],
+      "not": {
+       "any_of": [
+        {
+         "suits": {
+          "H": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "S": [
+           5,
+           13
+          ]
+         }
+        }
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1D",
+    "text": "not: opening, 3+ diamonds (better minor), no 5-card major, 12-21 HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "evals": {
+         "suit_diff(C,D)": [
+          1,
+          13
+         ]
+        },
+        "suits": {
+         "C": [
+          4,
+          13
+         ]
+        }
+       },
+       {
+        "suits": {
+         "C": [
+          3,
+          3
+         ],
+         "D": [
+          0,
+          3
+         ]
+        }
+       }
+      ],
+      "hcp": [
+       12,
+       21
+      ],
+      "not": {
+       "any_of": [
+        {
+         "suits": {
+          "H": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "S": [
+           5,
+           13
+          ]
+         }
+        }
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1C",
+    "text": "not: opening, 3+ clubs (better minor), no 5-card major, 12-21 HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "rule_of_20": [
+        20,
+        33
+       ],
+       "suit_diff(D,C)": [
+        0,
+        13
+       ]
+      },
+      "hcp": [
+       10,
+       11
+      ],
+      "not": {
+       "any_of": [
+        {
+         "suits": {
+          "H": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "S": [
+           5,
+           13
+          ]
+         }
+        }
+       ]
+      },
+      "suits": {
+       "D": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1m_rule20",
+    "text": "not: 5+ diamonds, light opening satisfying the rule of 20",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "rule_of_20": [
+        20,
+        33
+       ],
+       "suit_diff(C,D)": [
+        1,
+        13
+       ]
+      },
+      "hcp": [
+       10,
+       11
+      ],
+      "not": {
+       "any_of": [
+        {
+         "suits": {
+          "H": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "S": [
+           5,
+           13
+          ]
+         }
+        }
+       ]
+      },
+      "suits": {
+       "C": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_1C_rule20",
+    "text": "not: 5+ clubs, light opening satisfying the rule of 20",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "features": [
+       "good_suit(S)"
+      ],
+      "hcp": [
+       5,
+       10
+      ],
+      "suits": {
+       "H": [
+        0,
+        3
+       ],
+       "S": [
+        6,
+        6
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "open_weak_2S_nv",
+    "text": "not: weak two: 6 spades, 5-10 HCP",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [
+    "good_suit(H)"
+   ],
+   "hcp": [
+    5,
+    10
+   ],
+   "suits": {
+    "H": [
+     6,
+     6
+    ],
+    "S": [
+     0,
+     3
+    ]
+   },
+   "text": "weak two: 6 hearts, 5-10 HCP"
+  },
+  "source_rule_id": "open_weak_2H_nv"
+ },
+ "opener_1NT_rebid": {
+  "alertable": false,
+  "announce": null,
+  "call": "1NT",
+  "constraint": {
+   "evals": {
+    "balanced": [
+     1,
+     1
+    ]
+   },
+   "hcp": [
+    12,
+    14
+   ],
+   "not": {
+    "suits": {
+     "S": [
+      4,
+      13
+     ]
+    }
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "total_points": [
+        12,
+        15
+       ]
+      },
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "ob_raise_2S",
+    "text": "not: raise: 4 S support, minimum (12-15)",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "total_points": [
+        16,
+        18
+       ]
+      },
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "ob_raise_3S",
+    "text": "not: jump raise: 4 S support, invitational (16-18)",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "total_points": [
+        19,
+        40
+       ]
+      },
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "ob_raise_4S",
+    "text": "not: game raise: 4 S support, 19+ support points",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "hcp": [
+       18,
+       19
+      ],
+      "not": {
+       "suits": {
+        "S": [
+         4,
+         13
+        ]
+       }
+      }
+     }
+    },
+    "derived_from_rule": "ob_2NT",
+    "text": "not: jump: balanced 18-19, no fit",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    12,
+    14
+   ],
+   "suits": {
+    "C": [
+     2,
+     5
+    ],
+    "D": [
+     2,
+     5
+    ],
+    "H": [
+     2,
+     5
+    ],
+    "S": [
+     2,
+     3
+    ]
+   },
+   "text": "balanced minimum 12-14, no fit"
+  },
+  "source_rule_id": "ob_1NT"
+ },
+ "quantitative_4NT": {
+  "alertable": true,
+  "announce": null,
+  "call": "4NT",
+  "constraint": {
+   "hcp": [
+    16,
+    17
+   ],
+   "not": {
+    "any_of": [
+     {
+      "suits": {
+       "H": [
+        4,
+        13
+       ]
+      }
+     },
+     {
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "nt_transfer_H",
+    "text": "not: Jacoby transfer to hearts (5+ hearts, any strength)",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(S,H)": [
+        0,
+        13
+       ]
+      },
+      "suits": {
+       "S": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "nt_transfer_S",
+    "text": "not: Jacoby transfer to spades (5+ spades, any strength)",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "suits": {
+         "H": [
+          4,
+          4
+         ]
+        }
+       },
+       {
+        "suits": {
+         "S": [
+          4,
+          4
+         ]
+        }
+       }
+      ],
+      "hcp": [
+       8,
+       40
+      ],
+      "not": {
+       "any_of": [
+        {
+         "suits": {
+          "H": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "S": [
+           5,
+           13
+          ]
+         }
+        }
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "nt_stayman",
+    "text": "not: Stayman: at least one 4-card major, invitational+ values",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "invitational",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    16,
+    17
+   ],
+   "suits": {},
+   "text": "quantitative slam invitation, 16-17 HCP (not Blackwood)"
+  },
+  "source_rule_id": "nt_4NT_quant"
+ },
+ "resp_2over1_2C": {
+  "alertable": false,
+  "announce": null,
+  "call": "2C",
+  "constraint": {
+   "hcp": [
+    12,
+    40
+   ],
+   "not": {
+    "suits": {
+     "S": [
+      4,
+      13
+     ]
+    }
+   },
+   "suits": {
+    "C": [
+     3,
+     13
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "singleton_or_void": [
+        0,
+        0
+       ],
+       "total_points": [
+        13,
+        40
+       ]
+      },
+      "hcp": [
+       11,
+       40
+      ],
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1S_jacoby_2NT",
+    "text": "not: Jacoby 2NT: 4+ spades, game-forcing raise, no shortness",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       12,
+       40
+      ],
+      "not": {
+       "suits": {
+        "S": [
+         4,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1S_2H",
+    "text": "not: 2/1 game forcing: 5+ hearts, 12+ HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(D,C)": [
+        1,
+        13
+       ]
+      },
+      "hcp": [
+       12,
+       40
+      ],
+      "not": {
+       "suits": {
+        "S": [
+         4,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "D": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1S_2D",
+    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "game_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    12,
+    99
+   ],
+   "suits": {
+    "C": [
+     3,
+     13
+    ],
+    "S": [
+     0,
+     3
+    ]
+   },
+   "text": "2/1 game forcing: 3+ clubs, 12+ HCP"
+  },
+  "source_rule_id": "r1S_2C"
+ },
+ "resp_jacoby_2NT": {
+  "alertable": true,
+  "announce": null,
+  "call": "2NT",
+  "constraint": {
+   "evals": {
+    "singleton_or_void": [
+     0,
+     0
+    ],
+    "total_points": [
+     13,
+     40
+    ]
+   },
+   "hcp": [
+    11,
+    40
+   ],
+   "suits": {
+    "S": [
+     4,
+     13
+    ]
+   }
+  },
+  "convention": "jacoby_2nt",
+  "denies": [],
+  "forcing_status": "game_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    11,
+    99
+   ],
+   "suits": {
+    "S": [
+     4,
+     13
+    ]
+   },
+   "text": "Jacoby 2NT: 4+ spades, game-forcing raise, no shortness"
+  },
+  "source_rule_id": "r1S_jacoby_2NT"
+ },
+ "resp_limit_raise": {
+  "alertable": false,
+  "announce": null,
+  "call": "3H",
+  "constraint": {
+   "evals": {
+    "total_points": [
+     10,
+     12
+    ]
+   },
+   "hcp": [
+    8,
+    11
+   ],
+   "suits": {
+    "H": [
+     3,
+     13
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "singleton_or_void": [
+        0,
+        0
+       ],
+       "total_points": [
+        13,
+        40
+       ]
+      },
+      "hcp": [
+       11,
+       40
+      ],
+      "suits": {
+       "H": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_jacoby_2NT",
+    "text": "not: Jacoby 2NT: 4+ hearts, game-forcing raise, no shortness",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(D,C)": [
+        1,
+        13
+       ]
+      },
+      "hcp": [
+       12,
+       40
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         4,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "D": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_2D",
+    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       12,
+       40
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         4,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "C": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_2C",
+    "text": "not: 2/1 game forcing: 3+ clubs, 12+ HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       6,
+       40
+      ],
+      "not": {
+       "hcp": [
+        5,
+        9
+       ],
+       "suits": {
+        "H": [
+         3,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_1S",
+    "text": "not: 4+ spades, 6+ HCP, forcing one round",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "features": [
+       "singleton_or_void(any)"
+      ],
+      "hcp": [
+       2,
+       9
+      ],
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_game_raise_preempt",
+    "text": "not: preemptive game raise: 5+ hearts, weak with shortness",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "invitational",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    8,
+    11
+   ],
+   "suits": {
+    "H": [
+     3,
+     13
+    ]
+   },
+   "text": "limit raise: 3+ hearts, 10-12 support points"
+  },
+  "source_rule_id": "r1H_limit_raise"
+ },
+ "resp_semiforcing_1NT": {
+  "alertable": false,
+  "announce": "semi-forcing",
+  "call": "1NT",
+  "constraint": {
+   "hcp": [
+    6,
+    11
+   ],
+   "not": {
+    "any_of": [
+     {
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     },
+     {
+      "evals": {
+       "total_points": [
+        6,
+        9
+       ]
+      },
+      "suits": {
+       "H": [
+        3,
+        13
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "singleton_or_void": [
+        0,
+        0
+       ],
+       "total_points": [
+        13,
+        40
+       ]
+      },
+      "hcp": [
+       11,
+       40
+      ],
+      "suits": {
+       "H": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_jacoby_2NT",
+    "text": "not: Jacoby 2NT: 4+ hearts, game-forcing raise, no shortness",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(D,C)": [
+        1,
+        13
+       ]
+      },
+      "hcp": [
+       12,
+       40
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         4,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "D": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_2D",
+    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       12,
+       40
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         4,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "C": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_2C",
+    "text": "not: 2/1 game forcing: 3+ clubs, 12+ HCP",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       6,
+       40
+      ],
+      "not": {
+       "hcp": [
+        5,
+        9
+       ],
+       "suits": {
+        "H": [
+         3,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_1S",
+    "text": "not: 4+ spades, 6+ HCP, forcing one round",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "features": [
+       "singleton_or_void(any)"
+      ],
+      "hcp": [
+       2,
+       9
+      ],
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_game_raise_preempt",
+    "text": "not: preemptive game raise: 5+ hearts, weak with shortness",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "total_points": [
+        10,
+        12
+       ]
+      },
+      "hcp": [
+       8,
+       11
+      ],
+      "suits": {
+       "H": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_limit_raise",
+    "text": "not: limit raise: 3+ hearts, 10-12 support points",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "total_points": [
+        6,
+        9
+       ]
+      },
+      "suits": {
+       "H": [
+        3,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H_single_raise",
+    "text": "not: single raise: 3+ hearts, 6-9 support points",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    6,
+    11
+   ],
+   "suits": {},
+   "text": "1NT response: 6-11 HCP, denies 4 spades and a simple raise (semi-forcing)"
+  },
+  "source_rule_id": "r1H_1NT"
+ },
+ "resp_splinter_4C": {
+  "alertable": true,
+  "announce": null,
+  "call": "4C",
+  "constraint": {
+   "hcp": [
+    9,
+    13
+   ],
+   "suits": {
+    "C": [
+     0,
+     1
+    ],
+    "S": [
+     4,
+     13
+    ]
+   }
+  },
+  "convention": "splinter",
+  "denies": [],
+  "forcing_status": "game_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    9,
+    13
+   ],
+   "suits": {
+    "C": [
+     0,
+     1
+    ],
+    "S": [
+     4,
+     13
+    ]
+   },
+   "text": "splinter: 4+ spades, singleton/void in clubs, game-going raise"
+  },
+  "source_rule_id": "r1S_splinter_4C"
+ },
+ "rkc_response_5C": {
+  "alertable": true,
+  "announce": null,
+  "call": "5C",
+  "constraint": {
+   "any_of": [
+    {
+     "evals": {
+      "keycards(agreed)": [
+       1,
+       1
+      ]
+     }
+    },
+    {
+     "evals": {
+      "keycards(agreed)": [
+       4,
+       4
+      ]
+     }
+    }
+   ]
+  },
+  "convention": "rkc_1430",
+  "denies": [],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    0,
+    99
+   ],
+   "suits": {},
+   "text": "1 or 4 keycards (1430)"
+  },
+  "source_rule_id": "rkc_5C"
+ },
+ "stayman": {
+  "alertable": false,
+  "announce": null,
+  "call": "2C",
+  "constraint": {
+   "any_of": [
+    {
+     "suits": {
+      "H": [
+       4,
+       4
+      ]
+     }
+    },
+    {
+     "suits": {
+      "S": [
+       4,
+       4
+      ]
+     }
+    }
+   ],
+   "hcp": [
+    8,
+    40
+   ],
+   "not": {
+    "any_of": [
+     {
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     },
+     {
+      "suits": {
+       "S": [
+        5,
+        13
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "convention": "stayman",
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "suits": {
+       "H": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "nt_transfer_H",
+    "text": "not: Jacoby transfer to hearts (5+ hearts, any strength)",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_diff(S,H)": [
+        0,
+        13
+       ]
+      },
+      "suits": {
+       "S": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "nt_transfer_S",
+    "text": "not: Jacoby transfer to spades (5+ spades, any strength)",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    8,
+    99
+   ],
+   "suits": {},
+   "text": "Stayman: at least one 4-card major, invitational+ values"
+  },
+  "source_rule_id": "nt_stayman"
+ },
+ "support_double": {
+  "alertable": true,
+  "announce": null,
+  "call": "X",
+  "constraint": {
+   "hcp": [
+    12,
+    21
+   ],
+   "suits": {
+    "S": [
+     3,
+     3
+    ]
+   }
+  },
+  "convention": "support_double",
+  "denies": [],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    12,
+    21
+   ],
+   "suits": {
+    "S": [
+     3,
+     3
+    ]
+   },
+   "text": "support double: exactly 3-card S support, any strength"
+  },
+  "source_rule_id": "sd_double"
+ },
+ "support_double_denied_by_2D": {
+  "alertable": false,
+  "announce": null,
+  "call": "2D",
+  "constraint": {
+   "hcp": [
+    12,
+    15
+   ],
+   "suits": {
+    "D": [
+     6,
+     13
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       12,
+       21
+      ],
+      "suits": {
+       "S": [
+        3,
+        3
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "sd_double",
+    "text": "not: support double: exactly 3-card S support, any strength",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "total_points": [
+        12,
+        15
+       ]
+      },
+      "suits": {
+       "S": [
+        4,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "sd_raise",
+    "text": "not: raise: 4+ S support (support double would show exactly 3)",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    12,
+    15
+   ],
+   "suits": {
+    "D": [
+     6,
+     13
+    ]
+   },
+   "text": "6+ D, minimum, fewer than 3 S"
+  },
+  "source_rule_id": "sd_rebid_2D"
+ },
+ "support_redouble": {
+  "alertable": true,
+  "announce": null,
+  "call": "XX",
+  "constraint": {
+   "hcp": [
+    12,
+    21
+   ],
+   "suits": {
+    "H": [
+     3,
+     3
+    ]
+   }
+  },
+  "convention": "support_redouble",
+  "denies": [],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    12,
+    21
+   ],
+   "suits": {
+    "H": [
+     3,
+     3
+    ]
+   },
+   "text": "support redouble: exactly 3-card H support"
+  },
+  "source_rule_id": "srd_redouble"
+ },
+ "takeout_double": {
+  "alertable": false,
+  "announce": null,
+  "call": "X",
+  "constraint": {
+   "any_of": [
+    {
+     "hcp": [
+      11,
+      16
+     ],
+     "suits": {
+      "C": [
+       3,
+       13
+      ],
+      "D": [
+       3,
+       13
+      ],
+      "H": [
+       0,
+       2
+      ],
+      "S": [
+       3,
+       13
+      ]
+     }
+    },
+    {
+     "hcp": [
+      17,
+      40
+     ]
+    }
+   ]
+  },
+  "convention": null,
+  "denies": [
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "balanced": [
+        1,
+        1
+       ]
+      },
+      "features": [
+       "stopper(H)"
+      ],
+      "hcp": [
+       15,
+       18
+      ]
+     }
+    },
+    "derived_from_rule": "oc1H_1NT",
+    "text": "not: 1NT overcall: 15-18 balanced with a heart stopper",
+    "weight": "strong"
+   }
+  ],
+  "forcing_status": "one_round",
+  "is_undiscussed_fallback": false,
+  "shows": {
+   "features": [],
+   "hcp": [
+    11,
+    99
+   ],
+   "suits": {},
+   "text": "takeout double: opening values, short hearts (or any 17+)"
+  },
+  "source_rule_id": "oc1H_X"
+ },
+ "undiscussed_fallback_3S_over_3C": {
+  "alertable": false,
+  "announce": null,
+  "call": "3S",
+  "constraint": {
+   "evals": {
+    "total_points": [
+     12,
+     40
+    ]
+   },
+   "suits": {
+    "S": [
+     4,
+     13
+    ]
+   }
+  },
+  "convention": null,
+  "denies": [],
+  "forcing_status": "non_forcing",
+  "is_undiscussed_fallback": true,
+  "shows": {
+   "features": [],
+   "hcp": [
+    0,
+    99
+   ],
+   "suits": {
+    "S": [
+     4,
+     13
+    ]
+   },
+   "text": "natural, 4+ S, 12+ points (undiscussed)"
+  },
+  "source_rule_id": "fallback"
+ }
+}

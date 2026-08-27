@@ -229,7 +229,7 @@ def stoppers(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
     """1.0 = full stopper (A / Kx / QJx / Qxx / JTxx), 0.5 = partial (Qx / Jxx), 0 = none."""
     s = _resolve_suit(suit, ctx)
     if s is None:
-        return 0.0
+        return 1.0  # vacuously stopped: nobody has shown a suit to stop
     ranks = hand.suit_ranks(s)
     n = len(ranks)
     if 14 in ranks:
@@ -249,7 +249,7 @@ def stoppers(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
 
 @register_evaluator("stopper")
 def stopper(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
-    """Boolean: full stopper in suit."""
+    """Boolean: full stopper in suit (vacuously true if the suit is unresolved)."""
     return 1.0 if stoppers(hand, ctx, suit) >= 1.0 else 0.0
 
 

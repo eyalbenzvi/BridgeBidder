@@ -89,9 +89,10 @@ def generate_fallbacks(
             )
             break  # cheapest raise only; higher raises come from real rules
 
-    # ---- new suits / rebids of own suits ----
+    # ---- new suits / rebids of own suits (only through the 3-level: above
+    # that, raises / NT / pass are the sane undiscussed actions) ----
     for s in SUITS:
-        for level in range(1, 8):
+        for level in range(1, 4):
             call = Call.bid(level, s)
             if call.bid_index <= floor:
                 continue

@@ -2830,7 +2830,7 @@ contexts:
       - id: gf_3NT
         call: 3NT
         priority: 34
-        requires: { hcp: [0, 17], evals: { semi_balanced: [1, 1] } }
+        requires: { hcp: [0, 17], features: [ "stopper(their)" ] }
         shows: "no fit found: choosing 3NT"
         establishes: { forcing: non_forcing }
 
