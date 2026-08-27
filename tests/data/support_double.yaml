@@ -38,4 +38,4 @@
 - name: support_double_applies_below_2_of_major_only
   hand: "KQ4.A72.AQJ84.94"
   calls: ["1D", "P", "1S", "3C"]
-  expect: { calls: ["P", "3D", "X"] }
+  expect: { calls: ["P", "3D", "X", "3S"] }

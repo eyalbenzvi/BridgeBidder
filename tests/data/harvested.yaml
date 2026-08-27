@@ -1,0 +1,118 @@
+# Scenarios distilled from harvested self-play failures (tools/harvest.py).
+# Each one is a real dealt board that exposed a bug; the fix is locked here.
+
+# round 1, board 16: engine pulled its own doubled 4S to 5S/6S (-500 vs par +140)
+- name: r1b16_no_self_pull_of_doubled_contract
+  hand: "AJ654.A.K874.K73"
+  dealer: N
+  calls: ["1S", "2C", "3C", "P", "4S", "X", "P", "P"]
+  expect: { call: "P" }
+
+# round 1, board 16 (earlier turn): with 18 support points opposite a cue
+# raise, bid the game instead of a random second suit
+- name: r1b16_bid_game_over_cue_raise
+  hand: "AJ654.A.K874.K73"
+  dealer: N
+  calls: ["1S", "2C", "3C", "P"]
+  expect: { calls: ["4S", "3S"] }
+
+# round 1: sandwich seat now has real actions
+- name: r1_sandwich_takeout_double
+  hand: "KQ52.4.KQ94.A932"
+  dealer: E
+  calls: ["1H", "P", "1NT"]
+  expect: { call: "X", forcing: one_round }
+
+- name: r1_sandwich_overcall_1S
+  hand: "KQJ52.86.A94.932"
+  dealer: E
+  calls: ["1C", "P", "1H"]
+  expect: { call: "1S" }
+
+- name: r1_sandwich_pass_flat
+  hand: "K752.Q64.KJ9.J32"
+  dealer: E
+  calls: ["1C", "P", "1H"]
+  expect: { call: "P" }
+
+# round 1: balancing seat reopens light
+- name: r1_balancing_double_light
+  hand: "KQ52.A864.9.J932"
+  dealer: E
+  calls: ["1D", "P", "P"]
+  expect: { call: "X" }
+
+- name: r1_balancing_1NT_11_14
+  hand: "KQ5.A86.KJ94.932"
+  dealer: E
+  calls: ["1H", "P", "P"]
+  expect: { call: "1NT" }
+
+- name: r1_balancing_suit_light
+  hand: "KQJ52.864.94.Q32"
+  dealer: E
+  calls: ["1D", "P", "P"]
+  expect: { calls: ["1S", "X"] }
+
+- name: r1_balancing_pass_bust
+  hand: "9752.864.94.J932"
+  dealer: E
+  calls: ["1H", "P", "P"]
+  expect: { call: "P" }
+
+# round 1: opener's 2D second suit after 1S - 2C is now systemic, not fallback
+- name: r1_opener_2D_after_1S_2C
+  hand: "AQ752.6.AJ42.K93"
+  calls: ["1S", "P", "2C", "P"]
+  expect: { call: "2D", forcing: game_forcing, fallback: false }
+
+# round 2: sandwich double needs shortness in opener's suit
+- name: r2_sandwich_x_needs_shortness
+  hand: "KQ52.Q64.K94.Q32"
+  dealer: E
+  calls: ["1H", "P", "1NT"]
+  expect: { call: "P" }
+
+# round 2: responder accepts opener's jump raise with a fair hand
+- name: r2_accept_jump_raise
+  hand: "75.KQ64.A842.932"
+  calls: ["1D", "P", "1H", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+# round 2: responder bids game over the 18-19 2NT jump rebid
+- name: r2_game_over_2NT_jump
+  hand: "K952.QT64.94.Q32"
+  calls: ["1D", "P", "1H", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# round 2: responder invites over opener's minor rebid
+- name: r2_invite_over_minor_rebid
+  hand: "K95.QT64.A4.Q932"
+  calls: ["1C", "P", "1H", "P", "2C", "P"]
+  expect: { calls: ["2NT", "3NT", "3C"] }
+
+# round 2: opener's game try after a single raise gets accepted on a maximum
+- name: r2_accept_game_try
+  hand: "952.KQ64.A842.92"
+  calls: ["1H", "P", "2H", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+# round 2: stayman placement after 2NT opening
+- name: r2_stayman_placement_over_2NT
+  hand: "KQ52.864.842.J32"
+  calls: ["2NT", "P", "3C", "P", "3S", "P"]
+  expect: { call: "4S" }
+
+# round 2: advancer of a forced one-round double may pass with nothing to say
+- name: r2_forced_advance_escape
+  hand: "AJ873.Q8.532.985"
+  dealer: W
+  calls: ["1S", "P", "1NT", "X", "P"]
+  expect: { call: "P" }
+
+# round 2: opener jump-shifts with 18+ and a second suit
+- name: r2_opener_jump_shift
+  hand: "Q5.K6.AKJT5.AQ82"
+  dealer: S
+  calls: ["P", "P", "1D", "P", "1S", "P"]
+  expect: { calls: ["3C", "2C"] }

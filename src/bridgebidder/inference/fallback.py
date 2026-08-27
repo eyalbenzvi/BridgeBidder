@@ -50,11 +50,28 @@ def generate_fallbacks(
     covered_calls: frozenset[str],
     we_have_acted: bool = False,
     partner_signed_off: bool = False,
+    we_hold_contract: bool = False,
+    partner_forcing: bool = False,
 ) -> list[FallbackMeaning]:
     """Generate generic candidates for calls NOT covered by system rules."""
     out: list[FallbackMeaning] = []
     lb = auction.last_bid
     floor = lb.bid_index if lb else -1
+    # When our own side holds the current contract in a COMPETITIVE auction
+    # (or with game already reached) and nothing forces us, there is nothing
+    # to compete over: never invent a higher bid (this stops the engine from
+    # pulling its own doubled contracts).  Uncontested constructive auctions
+    # keep their fallback continuations (invites must stay biddable).
+    if lb is not None:
+        game_reached = (lb.strain == "NT" and lb.level >= 3) or \
+                       (lb.strain in ("H", "S") and lb.level >= 4) or \
+                       (lb.strain in ("C", "D") and lb.level >= 5)
+    else:
+        game_reached = False
+    quiet = partner_signed_off or (
+        we_hold_contract and not partner_forcing and not game_forced
+        and (auction.is_competitive or game_reached)
+    )
 
     def add(call: Call, constraint: HandConstraint, shows: str, forcing: str = "non_forcing",
             priority: float = 10.0, agreed: str | None = None) -> None:
@@ -71,29 +88,55 @@ def generate_fallbacks(
     else:
         add(PASS, _c(hcp=[0, 11]), "nothing suitable to say (undiscussed)", "sign_off", 8.0)
 
-    # ---- raises of partner's suit(s) ----
-    # (never bid on over partner's undisturbed sign-off: he placed the contract)
+    # ---- raises of partner's suit(s): cheapest raise (banded) plus a
+    # game-level raise so strong hands are not trapped in the cheap band ----
     raise_suits = [s for s in ([agreed_suit] if agreed_suit else partner_suits) if s]
-    for s in raise_suits if not partner_signed_off else []:
+    for s in raise_suits if not quiet else []:
+        game_level = 4 if s in ("H", "S") else 5
+        cheapest = None
         for level in range(1, 8):
             call = Call.bid(level, s)
-            if call.bid_index <= floor:
-                continue
-            lo = _RAISE_MIN_PTS.get(level, 20)
-            hi = lo + 4 if level < 4 else 40
+            if call.bid_index > floor:
+                cheapest = level
+                break
+        if cheapest is None:
+            continue
+        lo = _RAISE_MIN_PTS.get(cheapest, 20)
+        # uncontested: banded so stronger hands route to the game raise;
+        # in competition the cheap raise is the full competitive range
+        hi = 40 if (auction.is_competitive or cheapest >= game_level) \
+            else (_RAISE_MIN_PTS.get(cheapest + 1, 40) - 1)
+        evals = {"total_points": [lo, hi]}
+        if cheapest >= 5:
+            # Law of Total Tricks: an 11-trick competitive raise needs the
+            # combined trumps to be there
+            evals["lott_total_trumps"] = [cheapest + 5, 26]
+        add(
+            Call.bid(cheapest, s),
+            _c(suits={s: [3, 13]}, evals=evals),
+            f"raise: 3+ {s}, about {lo}-{hi if hi < 40 else '+'} support points",
+            "non_forcing",
+            12.0,
+            agreed=s,
+        )
+        # a jump-to-game raise needs real extras (partner may hold a bare
+        # 6-count), and only belongs where the raise ladder itself is
+        # undiscussed (rules own it otherwise) or a game force is running
+        if cheapest < game_level and str(Call.bid(cheapest, s)) not in covered_calls \
+                and not game_forced:
+            glo = _RAISE_MIN_PTS.get(game_level, 20) + 6
             add(
-                call,
-                _c(suits={s: [3, 13]}, evals={"total_points": [lo, hi]}),
-                f"raise: 3+ {s}, about {lo}-{hi if hi < 40 else '+'} support points",
+                Call.bid(game_level, s),
+                _c(suits={s: [3, 13]}, evals={"total_points": [glo, 40]}),
+                f"raise to game: 3+ {s}, {glo}+ support points",
                 "non_forcing",
                 12.0,
                 agreed=s,
             )
-            break  # cheapest raise only; higher raises come from real rules
 
     # ---- new suits / rebids of own suits (only through the 3-level: above
     # that, raises / NT / pass are the sane undiscussed actions) ----
-    for s in SUITS if not partner_signed_off else []:
+    for s in (SUITS if not (quiet or agreed_suit) else []):
         for level in range(1, 4):
             call = Call.bid(level, s)
             if call.bid_index <= floor:
@@ -115,7 +158,7 @@ def generate_fallbacks(
             break  # cheapest level in this suit only
 
     # ---- notrump ----
-    for level in range(1, 8):
+    for level in (range(1, 8) if not quiet else []):
         call = Call.bid(level, "NT")
         if call.bid_index <= floor:
             continue
@@ -133,7 +176,7 @@ def generate_fallbacks(
     # ---- double ----
     if auction.is_legal(DOUBLE) and lb is not None:
         if lb.bid_index >= Call.parse("4S").bid_index or game_forced:
-            add(DOUBLE, _c(hcp=[13, 40], evals={"stoppers(their)": [0.5, 99]}),
+            add(DOUBLE, _c(hcp=[10, 40], evals={"quick_tricks": [2, 9]}),
                 "penalty-oriented double (undiscussed)", "non_forcing", 9.0)
         else:
             # cooperative, NOT forcing: an invented forcing meaning could trap
@@ -142,8 +185,9 @@ def generate_fallbacks(
             add(DOUBLE, _c(hcp=[12, 40], suits=shorts),
                 "takeout-flavored cooperative double (undiscussed)", "non_forcing", 9.0)
 
-    # ---- ultimate backstop: cheapest legal bid, unconstrained ----
-    if not any(m.call.is_bid for m in out):
+    # ---- ultimate backstop: cheapest legal bid, unconstrained (only for
+    # positions where something may force us to keep bidding) ----
+    if not quiet and not any(m.call.is_bid for m in out):
         for b in auction.legal_calls():
             if b.is_bid:
                 add(b, HandConstraint(), "forced continuation (undiscussed)", "non_forcing", 1.0)

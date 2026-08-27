@@ -46,19 +46,29 @@ def _sort_key(sc: ScoredCandidate) -> tuple:
     return (-sc.score, -sc.candidate.priority, call_rank)
 
 
+FORCED_BID_MIN_FIT = 0.3  # below this, a mere one-round force may be passed
+
+
 def score_candidates(setup: DecisionSetup, hand: Hand) -> list[ScoredCandidate]:
     """Soft-score every candidate for this hand; sorted best-first."""
     out: list[ScoredCandidate] = []
+    passes: list[ScoredCandidate] = []
     for cand in setup.candidates:
-        if cand.call.is_pass and setup.pass_forbidden:
-            continue
         if not setup.auction.is_legal(cand.call):
             continue
         ctx = setup.candidate_ctx(cand)
         fit = cand.constraint.fit(hand, ctx)
         pnorm = max(0.0, min(cand.priority, 100.0)) / 100.0
         score = fit * (0.7 + 0.3 * pnorm)
-        out.append(ScoredCandidate(candidate=cand, fit=fit, score=score))
+        sc = ScoredCandidate(candidate=cand, fit=fit, score=score)
+        (passes if cand.call.is_pass else out).append(sc)
+    if not setup.pass_forbidden:
+        out.extend(passes)
+    elif not setup.pass_forbidden_hard and not any(sc.fit >= FORCED_BID_MIN_FIT for sc in out):
+        # a one-round force with no bid that remotely fits: passing (e.g.
+        # converting partner's takeout double) beats inventing a call.
+        # A game force is never passed below game.
+        out.extend(passes)
     out.sort(key=_sort_key)
     return out
 

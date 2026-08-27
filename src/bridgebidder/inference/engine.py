@@ -123,6 +123,7 @@ class DecisionSetup:
     candidates: list[Candidate]
     eval_ctx: EvalContext
     pass_forbidden: bool = False
+    pass_forbidden_hard: bool = False  # True when a game force is running
 
     def candidate_ctx(self, cand: Candidate) -> EvalContext:
         """Per-candidate eval context (support points need the trump suit
@@ -241,7 +242,7 @@ def _pass_forbidden(auction: Auction, seat: Seat, analysis: Analysis) -> bool:
     partner_last_is_live = bool(partner_ann) and all(
         a.call.is_pass for a in analysis.annotations[partner_ann[-1].index + 1:])
     if partner_forcing and partner_last_is_live and rho_passed:
-        return True
+        return True  # may be relaxed by the decision layer for one-round forces
     if side.game_forced and not _game_reached(auction):
         would_end = auction.child(PASS).is_complete if auction.is_legal(PASS) else False
         if would_end:
@@ -290,16 +291,20 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
     # partner signed off with no intervention since: don't invent further action
     # (an explicit sign-off, or any non-forcing call once game is reached)
     partner_signed_off = False
+    partner_forcing = False
     non_pass = [a for a in analysis.annotations if not a.call.is_pass]
     if non_pass and non_pass[-1].seat == seat.partner:
         forcing = non_pass[-1].interpretation.establishes.forcing
         partner_signed_off = forcing == "sign_off" or (
             forcing == "non_forcing" and _game_reached(auction)
         )
+        partner_forcing = forcing in ("one_round", "game_forcing")
+    lb_info = auction.last_bid_info
+    we_hold_contract = lb_info is not None and auction.seat_of_call(lb_info[1]).side == seat.side
     for fb in generate_fallbacks(
         auction, seat, partner_suits, their_suits,
         side.agreed_suit, side.game_forced, frozenset(covered), we_have_acted,
-        partner_signed_off,
+        partner_signed_off, we_hold_contract, partner_forcing,
     ):
         candidates.append(Candidate(call=fb.call, fallback=fb))
 
@@ -312,6 +317,7 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
         candidates=candidates,
         eval_ctx=eval_ctx,
         pass_forbidden=_pass_forbidden(auction, seat, analysis),
+        pass_forbidden_hard=side.game_forced,
     )
 
 

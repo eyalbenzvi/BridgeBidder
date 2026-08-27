@@ -148,3 +148,26 @@ rationale. Bridge-style choices are exposed as config flags where noted.
 - **Opponents' unexplained passes** are read through our pass rules
   (positive constraint only, e.g. < opening values before any bid). Slightly
   aggressive but the standard practical assumption for sampling.
+
+## Harvest-loop decisions (tools/harvest.py fix rounds)
+
+- **Par-based oracle with a slam discount**: boards are scored against
+  double-dummy par; par slams on freak shape (par >= 900 with modest HCP) are
+  logged but deferred - chasing DD-only slams would make the system reckless.
+- **Never bid over your own side's undisturbed contract** in a competitive
+  auction (or once game is reached): stops the engine pulling its own doubled
+  contracts. Uncontested constructive auctions keep fallback continuations so
+  invitations stay biddable.
+- **Fallback raises**: banded to the next raise level when uncontested (with a
+  separate jump-to-game raise needing real extras), full-range in competition,
+  and 5-level+ competitive raises require Law-of-Total-Tricks trumps.
+- **A one-round force may be passed when nothing fits at all** (fit < 0.3 on
+  every bid): converting partner's takeout double beats inventing a call. A
+  game force is still never passed below game.
+- **Sandwich-seat actions authored** (X = shortness in opener's suit 12-16 or
+  any 17+; natural overcalls) and **balancing-seat reopenings** (a king light).
+- **Pass-rule ranges widened** where self-play produced self-contradictory
+  descriptors (e.g. a 13-count with no suitable action passing over 1S).
+- Uncontested continuation gaps found by harvesting are now authored: replies
+  to jump raises, 2NT jump rebids, minor rebids, 1S second suit, game tries,
+  jump rebids, Stayman over interference and after 2NT, opener jump shifts.
