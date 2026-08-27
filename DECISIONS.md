@@ -318,3 +318,62 @@ consistently, the same 200 boards read 52% before this round and 47% after.
   a nine-card fit. The limit raise now spans 10-13 support points.
 - **Show a five-card major over opener's 18-19 2NT jump** (and opener picks the
   5-3 fit with three-card support), instead of raising straight to 3NT.
+
+## Phase 3: threshold calibration - a negative result
+
+`tools/tune.py` searches the system's point thresholds by coordinate descent
+against a 400-board training corpus and re-checks every accepted move on a
+400-board held-out corpus.  (Double-dummy tables depend on the deal, not the
+system, so they are cached once; each candidate setting then costs ~10s
+instead of ~2 minutes.)
+
+The search reported a train gap of 5.63 -> 5.33 and a test gap of 5.91 ->
+5.73, which looked like a win.  It was not:
+
+- **Two of the five chosen values broke the regression suite.** The search
+  lowered the game-raise threshold until the engine bid game opposite a
+  *preemptive* raise - the exact bug fixed in round 6 - and dropped the
+  1m-3NT threshold so an invitational 12-count jumped to game.  The tests
+  encode bridge correctness the double-dummy metric cannot see, so those two
+  values were rejected outright.
+- **The remaining three were statistically indistinguishable from zero.** A
+  paired before/after comparison on the same boards gives a held-out gap
+  change of **-0.025 +/- 0.062 IMPs**; even on the training boards it is only
+  -0.17 +/- 0.12.  The apparent gain was noise plus the two rejected knobs.
+
+The whole tuning was therefore **reverted**.  The finding is worth keeping:
+the textbook thresholds are already close to optimal, and the level gap is not
+a threshold problem.  It is an information problem - with limited bidding
+space the engine often cannot know enough about partner's hand to place the
+contract exactly - and no amount of tuning the numbers will address that.
+
+Method note: report *paired* statistics when comparing two systems on the same
+boards.  Unpaired means on 400 boards have a standard error near 0.3 IMPs,
+which is larger than any effect being chased here.
+
+## Phase 4: arbitration audit
+
+Self-play runs fast-path-only, so the simulation arbitration path had never
+been measured end to end.  On 120 held-out boards:
+
+- Only **3.1% of decisions** are unclear enough to invoke it, and it overturns
+  the fast path on about a third of those - 11 decisions in 120 boards.
+- Replaying the *real* deal from those positions, arbitration's choice is worth
+  **+0.82 +/- 1.24 IMPs** per overturned decision: the right sign, not
+  significant, and about +0.08 IMPs/board over a whole corpus.
+- Its own simulation predicted 2-11 IMP gains for those same choices, so the
+  self-evaluation is substantially optimistic.  This is expected - the rollouts
+  assume partner reads every call exactly as the rule intends - and it is why
+  arbitration only overturns the fast pick on a clear statistical margin.
+
+Arbitration is correct, stays inside its time budget and does no harm; it is
+simply not a scoring lever.  `tests/test_arbitration.py` now covers it
+end to end so the subsystem cannot rot unnoticed.
+
+## Corpus quality gate
+
+`tests/test_corpus_gate.py` fixes a 120-board seeded corpus with hard ceilings
+(par loss, undiscussed calls, misbid rate) plus full legality, termination and
+replay-determinism checks.  Achieved at the time of writing: par 5.78 (ceiling
+7.5), undiscussed 0.23/board (0.60), misbid rate 0.012 (0.030).  Tighten the
+ceilings when the engine improves; never loosen them to make a change pass.
