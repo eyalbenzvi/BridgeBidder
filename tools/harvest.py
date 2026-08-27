@@ -35,7 +35,7 @@ from bridgebidder.domain.cards import FULL_DECK, Hand
 from bridgebidder.domain.types import Seat, Vulnerability
 from bridgebidder.engine.decision import decide_fast
 from bridgebidder.engine.dd import get_dd
-from bridgebidder.engine.scoring import imps, signed_score
+from bridgebidder.engine.scoring import contract_score, imps, signed_score
 from bridgebidder.engine.selfplay import self_play
 from bridgebidder.inference.engine import analyze, prepare_decision
 from bridgebidder.system.dsl import load_system
@@ -61,6 +61,32 @@ def _par_score_ns(deal: dict, vul: Vulnerability, dealer: Seat) -> int | None:
         return int(par(table, vmap[vul], pmap[dealer]).score)
     except Exception:
         return None
+
+
+STRAINS = ("C", "D", "H", "S", "NT")
+
+
+def _best_score_for_side(deal: dict, side: str, vul: Vulnerability, dd,
+                         strain: str | None = None) -> int:
+    """Best score this side could reach on this deal, choosing declarer,
+    strain and level freely (no interference).  With `strain` given, the best
+    score available *in that strain*.
+
+    This is the yardstick for CONSTRUCTIVE bidding: unlike par it contains no
+    assumption about the opponents' sacrifices or our defence, so the whole
+    gap is attributable to our own bidding.
+    """
+    from bridgebidder.domain.auction import Contract
+
+    best = -10000
+    strains = (strain,) if strain else STRAINS
+    for declarer in [s for s in Seat if s.side == side]:
+        for st in strains:
+            tricks = dd.tricks(deal, declarer, st)
+            for level in range(1, 8):
+                c = Contract(level=level, strain=st, declarer=declarer, doubled=0)
+                best = max(best, contract_score(c, tricks, vul))
+    return best
 
 
 def _game_reached(auction: Auction) -> bool:
@@ -186,6 +212,22 @@ def harvest_board(system, deal, dealer, vul, dd) -> dict:
             issue("par_loss", f"par_loss:{side}",
                   f"{side} lost {big} IMPs vs par {par_ns:+d}: {contract} ({auction})", big)
 
+    # ---- constructive gap: uncontested auctions only, so the whole gap is
+    # our own bidding rather than their sacrifices or our defence ----
+    if contract is not None and not auction.is_competitive:
+        side = contract.declarer.side
+        actual = contract_score(contract, tricks, vul)
+        best_any = _best_score_for_side(deal, side, vul, dd)
+        best_same_strain = _best_score_for_side(deal, side, vul, dd, contract.strain)
+        rec["constructive"] = {
+            "actual": actual,
+            "best": best_any,
+            "gap_imps": max(0, imps(best_any - actual)),
+            "level_gap_imps": max(0, imps(best_same_strain - actual)),
+            "strain_gap_imps": max(0, imps(best_any - best_same_strain)),
+            "best_strain_beats_ours": best_any > best_same_strain,
+        }
+
     # absurd contracts
     if contract is not None:
         need = 6 + contract.level
@@ -249,6 +291,13 @@ def report(path: Path) -> None:
     boards_with_issues = sum(1 for r in recs if any(i["kind"] != "fallback" for i in r["issues"]))
     fallback_rate = sum(1 for r in recs for c in r.get("calls", []) if c["fallback"] and c["call"] != "P")
 
+    con = [r["constructive"] for r in recs if r.get("constructive")]
+    if con:
+        g = sum(c["gap_imps"] for c in con) / len(con)
+        lg = sum(c["level_gap_imps"] for c in con) / len(con)
+        sg = sum(c["strain_gap_imps"] for c in con) / len(con)
+        print(f"constructive gap (uncontested, n={len(con)}): {g:.2f} IMPs/board "
+              f"(level {lg:.2f}, strain {sg:.2f})")
     print(f"boards: {n} | boards with real issues: {boards_with_issues} "
           f"({100 * boards_with_issues / n:.0f}%)")
     print(f"total IMPs lost vs par: NS {total_loss['NS']}, EW {total_loss['EW']} "

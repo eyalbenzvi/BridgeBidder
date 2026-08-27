@@ -398,3 +398,34 @@
   hand: "K52.86.AQ4.KQ932"
   calls: ["1H", "P", "2C", "P", "2D", "P"]
   expect: { call: "3NT" }
+
+# --- phase 2 (strain selection) ----------------------------------------------
+
+# p1 b6: a 9-card heart fit was played in 1NT. A shapely 4-trump hand worth 13
+# support points but only 10 HCP was too good for the limit raise and too weak
+# for Jacoby 2NT, so it had no raise at all and bid 1NT
+- name: p2_shapely_raise_has_a_home
+  hand: "3.KQ87.J82.KJ652"
+  dealer: N
+  calls: ["P", "P", "1H", "P"]
+  expect: { call: "3H", forcing: invitational }
+
+# p1 b65: an 8-card heart fit was buried in 3NT because responder had no way to
+# show exactly five cards over opener's 18-19 jump
+- name: p2_show_five_card_major_over_2NT_jump
+  hand: "KQ52.AKT43.8.963"
+  dealer: N
+  calls: ["P", "1D", "P", "1H", "P", "2NT", "P"]
+  expect: { call: "3H", forcing: one_round }
+
+- name: p2_opener_takes_the_5_3_fit
+  hand: "A97.752.AKQJ.A75"
+  dealer: N
+  calls: ["P", "1D", "P", "1H", "P", "2NT", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+- name: p2_opener_stays_in_3NT_without_support
+  hand: "A97.72.AKQJ5.A75"
+  dealer: N
+  calls: ["P", "1D", "P", "1H", "P", "2NT", "P", "3H", "P"]
+  expect: { call: "3NT" }

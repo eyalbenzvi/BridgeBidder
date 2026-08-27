@@ -966,8 +966,8 @@ contexts:
       - id: r1H_limit_raise
         call: 3H
         priority: 62
-        requires: { suits: { H: [3, 13] }, evals: { total_points: [10, 12] }, hcp: [8, 11] }
-        shows: "limit raise: 3+ hearts, 10-12 support points"
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [10, 13] }, hcp: [8, 11] }
+        shows: "limit raise: 3+ hearts, 10-13 support points (a shapely 4-trump hand may hold 13)"
         establishes: { forcing: invitational, agreed_suit: H }
       - id: r1H_single_raise
         call: 2H
@@ -1094,8 +1094,8 @@ contexts:
       - id: r1S_limit_raise
         call: 3S
         priority: 62
-        requires: { suits: { S: [3, 13] }, evals: { total_points: [10, 12] }, hcp: [8, 11] }
-        shows: "limit raise: 3+ spades, 10-12 support points"
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [10, 13] }, hcp: [8, 11] }
+        shows: "limit raise: 3+ spades, 10-13 support points (a shapely 4-trump hand may hold 13)"
         establishes: { forcing: invitational, agreed_suit: S }
       - id: r1S_single_raise
         call: 2S
@@ -3225,11 +3225,17 @@ contexts:
     expand: { m: [C, D], M: [H, S] }
     pattern: "1$m - P - 1$M - P - 2NT - P - ?"
     rules:
+      - id: r2ntj_3$M
+        call: 3$M
+        priority: 57
+        requires: { hcp: [6, 13], suits: { $M: [5, 5] } }
+        shows: "5 $M opposite 18-19: offering the major before 3NT"
+        establishes: { forcing: one_round }
       - id: r2ntj_3NT
         call: 3NT
         priority: 55
-        requires: { hcp: [6, 13], not: { suits: { $M: [6, 13] } } }
-        shows: "game opposite 18-19"
+        requires: { hcp: [6, 13], not: { suits: { $M: [5, 13] } } }
+        shows: "game opposite 18-19, no 5-card major"
         establishes: { forcing: sign_off }
       - id: r2ntj_4M
         call: 4$M
@@ -6232,4 +6238,22 @@ contexts:
           hcp: [12, 13]
           not: { suits: { $M: [6, 13] } }
         shows: "minimum: declining the invitation"
+        establishes: { forcing: sign_off }
+
+  - id: opener_choice_after_2NT_jump_3M
+    description: "Opener chooses the game after responder shows 5 cards over the 2NT jump"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 2NT - P - 3$M - P - ?"
+    rules:
+      - id: o2ntj_4$M
+        call: 4$M
+        priority: 60
+        requires: { suits: { $M: [3, 13] } }
+        shows: "3-card support: playing game in the 5-3 major fit"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: o2ntj_3NT
+        call: 3NT
+        priority: 55
+        requires: { suits: { $M: [0, 2] } }
+        shows: "no 3-card support: 3NT it is"
         establishes: { forcing: sign_off }

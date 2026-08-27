@@ -1571,7 +1571,7 @@
    "evals": {
     "total_points": [
      10,
-     12
+     13
     ]
    },
    "hcp": [
@@ -1744,7 +1744,7 @@
      13
     ]
    },
-   "text": "limit raise: 3+ hearts, 10-12 support points"
+   "text": "limit raise: 3+ hearts, 10-13 support points (a shapely 4-trump hand may hold 13)"
   },
   "source_rule_id": "r1H_limit_raise"
  },
@@ -1934,7 +1934,7 @@
       "evals": {
        "total_points": [
         10,
-        12
+        13
        ]
       },
       "hcp": [
@@ -1950,7 +1950,7 @@
      }
     },
     "derived_from_rule": "r1H_limit_raise",
-    "text": "not: limit raise: 3+ hearts, 10-12 support points",
+    "text": "not: limit raise: 3+ hearts, 10-13 support points (a shapely 4-trump hand may hold 13)",
     "weight": "strong"
    },
    {

@@ -297,3 +297,24 @@ consistently, the same 200 boards read 52% before this round and 47% after.
   opening transfer is completed (this position had no rules at all, so
   responder passed 3-of-a-major holding a game-going hand), and opener's
   action over responder's competitive invitational 2NT.
+
+## Phase 1-2: an attributable yardstick, and strain selection
+
+- **Par is the wrong optimisation target on its own.** It bakes in the
+  opponents' double-dummy sacrifices and perfect defence, neither of which our
+  bidding controls, which is why the par gap plateaus no matter what is fixed.
+  The harvester now also reports a **constructive gap**: on *uncontested*
+  auctions only, our score against the best contract available to our own side
+  on that deal, split into a **level gap** (right strain, wrong level) and a
+  **strain gap** (a different strain scored better). The whole of that number
+  is attributable to our bidding, so it can genuinely be driven down.
+- **Not every strain gap is a bug.** Bidding 3NT rather than five of a minor
+  is correct percentage bridge even on the deals where double-dummy prefers
+  the minor; chasing those would make the engine worse in real play. Only the
+  cases where a *major* fit was buried were treated as defects.
+- **A shapely raise needs a home**: a 4-trump hand worth 13 support points but
+  under 11 HCP was too good for the limit raise (10-12) and too weak for
+  Jacoby 2NT (11+ HCP), so it had no raise at all and responded 1NT - burying
+  a nine-card fit. The limit raise now spans 10-13 support points.
+- **Show a five-card major over opener's 18-19 2NT jump** (and opener picks the
+  5-3 fit with three-card support), instead of raising straight to 3NT.
