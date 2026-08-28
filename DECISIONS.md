@@ -1221,3 +1221,75 @@ Measured: same 100 boards **-128 -> +30 (+158 paired; 20 up, 4 down)**;
 held-out fixed corpus seed 828282 **-1058 -> -982 (+76 paired)** - the
 first reading below one IMP per board.  Like-for-like series since
 head-to-head play began: -1.474 -> -0.982.
+
+## Round 4: the TRIAGED thousand (seed 303030)
+
+Scaling the expert loop from 100 to 1000 deals meant 368 losing boards -
+too many to read one by one, and most of them variance.  The answer was
+triage (`tools/triage_match.py`): cluster the losses by the rule that
+made our last bid at the table where we did worse against par, then hand
+two expert reviewers the twenty biggest clusters (with example boards and
+the full member list) plus the thirty worst singles - about 100 boards of
+reading covering the great majority of the recoverable IMPs.  Verdict
+documents: docs/EXPERT_REVIEW_303030_{A,B}.md.
+
+The clustering earns its keep by making the *nothing-wrong* verdict
+reliable: with 43 boards in the "all-pass" cluster the reviewer could see
+that the family is a defensive long tail, not a defect, and say so.  Both
+reviewers reproduced their diagnoses through `choose_bid` (~55 decisions
+between them) before prescribing.
+
+What the round found and fixed:
+
+- **A generic pull/sit floor under EVERY takeout double.**  Three reviews
+  running have hit the same species from different angles: a sound double
+  answered by an advancer with no matching rule, who "sat" it with two
+  small trumps.  Authored ladders kept covering one pattern at a time;
+  this is the floor beneath all of them.  Sitting is now a positive
+  decision (a real trump stack behind the bid), pulling to a 4+ card suit
+  the default.  Two supporting changes: the new sharp
+  `standing_suit_length` evaluator (`suit_length(their)` reads their
+  FIRST suit, so a double of 4H was gated on club length), and a
+  decision-layer relaxation - an AUTHORED pass rule that fits now
+  survives the forcing-pass filter, because converting partner's double
+  is a positive action and the old "nothing fits anywhere" escape could
+  never reach it (some four-card-suit pull always soft-fits).
+- **"Our artificial call got doubled", twice more**: doubled Jacoby
+  transfers and the strong 2C under interference (which had no contexts
+  at all - a 23-count defended their two-level contract).  Plus the
+  fallback invariant recommended a review ago and never implemented:
+  never pass out our own doubled artificial call.
+- **A real interpretation bug**: over 1C the call 2C was defined twice in
+  one context (the 6-10 raise and the 2/1), so the readings merged into a
+  disjunction and a nine-count raise was read as possibly GAME FORCING.
+- **Slam machinery**: the 5H/5S keycard replies are exact counts (2+2
+  with the queen is six - the same arithmetic the 5D rewrite got two
+  rounds ago); `gf_3NT` gated on stoppers and shape (at priority 34 it
+  was beating fit-1.0 natural rebids with six-card suits); `rjr_game`
+  lowered below the keycard ask; counting claims moved to a new sharp
+  `rule_of_26_sharp`.
+- The competitive-raise seam at 10-11 support points, the Jordan 2NT
+  reply ladder, Stayman placement reading WHICH major opener showed, and
+  ten authored continuation contexts.
+
+**A cost of scale worth recording.**  The class-wide invariant broke a
+position no board in the dossier covered: with the fallback pass withheld
+and doubled Stayman entirely unauthored, a seat could end up with ZERO
+candidates and the match aborted on `no legal candidate`.  The repair is
+two-part and general - the forced-continuation backstop now also fires
+when the pass is withheld, and a final safety net restores the pass if
+nothing else could be generated - plus the authored Stayman escape.  A
+fix that changes a whole class needs a floor for the whole class, not for
+the boards that motivated it.
+
+Measured: the same 1000 boards **-1117 -> -808 (+309 paired; 80 boards
+up, 59 down)**, and the held-out fixed corpus **-982 -> -826 (+156
+paired)** - the largest held-out gain of any round so far.  Like-for-like
+since head-to-head play began: **-1.474 -> -0.826 IMPs/board.**
+
+On method: the triaged thousand cost roughly twice a 100-board round
+(two experts, ~480k agent tokens, four 1000-board matches) and returned
++156 held-out against the +76 and +132 of the two 100-board rounds.  Its
+real advantage is not volume but *confidence*: a defect seen in eight
+boards is diagnosed correctly, and a variance board seen once is
+correctly left alone.
