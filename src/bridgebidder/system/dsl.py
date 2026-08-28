@@ -75,6 +75,7 @@ class Conditions:
     standing_bid_strain: tuple[str, ...] | None = None  # strain of the standing contract bid
     my_suit: str | None = None                     # I have bid this suit myself
     partner_last_suit: str | None = None           # partner's most recent suit bid is this suit
+    i_preempted: bool | None = None                # my first call was a preempt (weak 2+/jump overcall)
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -99,6 +100,7 @@ class Conditions:
                                  if "standing_bid_strain" in d else None),
             my_suit=d.pop("my_suit", None),
             partner_last_suit=d.pop("partner_last_suit", None),
+            i_preempted=d.pop("i_preempted", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -124,6 +126,7 @@ class Conditions:
             and self.standing_bid_strain is None
             and self.my_suit is None
             and self.partner_last_suit is None
+            and self.i_preempted is None
             and not self.config
         )
 

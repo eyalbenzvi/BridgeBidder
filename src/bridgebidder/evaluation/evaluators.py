@@ -160,6 +160,31 @@ def quick_tricks(hand: Hand, ctx: EvalContext) -> float:
     return qt
 
 
+@register_evaluator("quick_tricks_outside")
+def quick_tricks_outside(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    """Quick tricks excluding the named suit - the preempt-veto measure.
+    AK inside your own seven-bagger is offence, not defence; what vetoes a
+    preempt is fast DEFENSIVE tricks in the other three suits."""
+    s = _resolve_suit(suit, ctx)
+    qt = 0.0
+    for other in SUITS:
+        if other == s:
+            continue
+        ranks = set(hand.suit_ranks(other))
+        n = hand.suit_length(other)
+        if 14 in ranks and 13 in ranks:
+            qt += 2.0
+        elif 14 in ranks and 12 in ranks:
+            qt += 1.5
+        elif 14 in ranks:
+            qt += 1.0
+        elif 13 in ranks and 12 in ranks:
+            qt += 1.0
+        elif 13 in ranks and n >= 2:
+            qt += 0.5
+    return qt
+
+
 @register_evaluator("lott_total_trumps")
 def lott_total_trumps(hand: Hand, ctx: EvalContext, suit: str = "") -> float:
     """Law of Total Tricks support: our side's known combined trumps
@@ -291,6 +316,40 @@ def weakest_their_stopper(hand: Hand, ctx: EvalContext) -> float:
     for s in set(ctx.their_suits):
         worst = min(worst, stoppers(hand, ctx, s))
     return worst
+
+
+@register_evaluator("wasted_in_partner_shortness")
+def wasted_in_partner_shortness(hand: Hand, ctx: EvalContext) -> float:
+    """Duplication detector: K/Q/J points held in a suit partner has shown
+    shortness in (max length <= 1 - a splinter, or a Jacoby shortness
+    reply).  Kings and queens opposite a singleton are wasted paper; ACES
+    are not counted, because an ace works opposite anything.  Zero when
+    partner has shown no shortness, so gates on this only ever fire once
+    shortness is actually on the table."""
+    pts = 0.0
+    for s, mx in ctx.partner_max_length.items():
+        if mx > 1:
+            continue
+        for r in hand.suit_ranks(s):
+            if r == 13:
+                pts += 3
+            elif r == 12:
+                pts += 2
+            elif r == 11:
+                pts += 1
+    return pts
+
+
+@register_evaluator("worthless_doubleton")
+def worthless_doubleton(hand: Hand, ctx: EvalContext) -> float:
+    """1.0 if the hand holds a doubleton headed by nothing better than the
+    jack (xx / Jx) - the classic Blackwood veto: two fast losers that no
+    keycard answer can diagnose."""
+    for s in SUITS:
+        ranks = hand.suit_ranks(s)
+        if len(ranks) == 2 and max(ranks) < 12:
+            return 1.0
+    return 0.0
 
 
 @register_evaluator("void")

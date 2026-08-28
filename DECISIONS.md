@@ -1018,3 +1018,43 @@ against tuning it).  `stoppers(their)` still reads only their first suit
 everywhere except the two generic notrump rules now gated on
 `weakest_their_stopper`; sweeping the remaining uses is safe-looking but
 unmeasured, so it was left alone.
+
+## The bidding-tips round: the expert canon as gates
+
+A 138-item list of codeable judgment rules (Bergen, Kantar, Klinger,
+Woolsey and standard practice) was audited tip by tip against the system;
+the full disposition of every tip lives in docs/BIDDING_TIPS_AUDIT.md.
+Sixty-three were already implemented, ten were added, the rest are
+partial, deferred (mostly evaluation-model re-weightings that would touch
+every measured rule at once), or inapplicable (matchpoints modes,
+probability estimates the engine expresses through simulation instead).
+
+Added, all test-verified and match-UNMEASURED (no-more-deals instruction;
+the next session should re-run seed 828282, last measured at -1248):
+
+- **Rule of 22**: the rule-of-20 light openings also demand two quick
+  tricks, so a queen-jack collection stays closed.
+- **Preempt vetoes**: 2.5+ quick tricks OUTSIDE the suit veto every
+  preempt (16 rules); the 3-level preempts also deny a side 4-card major.
+- **Third-seat light openings** (9-11, good 5-7 card major): part
+  obstruction, part lead direction, gated on a lead-worthy suit.
+- **Preempt once**: a new `i_preempted` engine condition (first call was
+  a 2+-level opening or a jump overcall) drives a discipline pass above
+  the generic toolkit; forcing continuations and authored rebids are
+  unaffected.  This is the honest version of the maxim whose crude
+  10-HCP-floor form was measured at -10 IMPs and reverted.
+- **Blackwood prerequisites**: no direct 4NT ask with a void anywhere;
+  no ask with a worthless doubleton where the cue-bid floor exists.
+- **Duplication shutdown**: a new `wasted_in_partner_shortness`
+  evaluator (K/Q/J points opposite shown shortness, aces exempt) signs
+  off in game over Jacoby shortness replies and splinters.
+
+Two textbook-vs-corpus conflicts were settled for the corpus, and the
+adjustment is the round's real lesson.  The strict all-suits quick-trick
+veto killed two MEASURED preempt scenarios (a ragged seven-bagger with
+AK tight, a vulnerable weak two with KQJ-and-an-ace); AK inside your own
+suit is offence, so the veto counts outside tricks only and allows
+exactly two.  And the worthless-doubleton Blackwood veto, applied
+naively to every ask, deleted measured slams in the positions that have
+no cue-bid floor to fall back on - a tip that names an alternative tool
+is only sound where that tool exists.

@@ -34,6 +34,7 @@ class EvalContext:
     partner_max_hcp: float = 40.0
     partner_min_points: float = 0.0   # partner's shown minimum TOTAL points
     partner_min_length: dict[str, int] = field(default_factory=dict)
+    partner_max_length: dict[str, int] = field(default_factory=dict)
 
     @property
     def we_vulnerable(self) -> bool:

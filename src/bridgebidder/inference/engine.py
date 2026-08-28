@@ -213,6 +213,30 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                 if c.is_bid and auction.seat_of_call(i) == seat}
         if cond.my_suit not in mine:
             return False
+    if cond.i_preempted is not None:
+        # my FIRST non-pass call was a preempt: an opening bid at the two
+        # level or higher (2C excluded - that is the strong opening), or a
+        # jump overcall (a bid that skipped at least one whole level over
+        # the standing bid).  "Preempt once": the bid told partner the whole
+        # hand, so discipline rules can key on this to keep the preemptor
+        # from acting again on values partner already knows about.
+        preempted = False
+        standing = None  # bid_index of the last bid before my first call
+        for i, c in enumerate(auction.calls):
+            mine = auction.seat_of_call(i) == seat
+            if mine and not c.is_pass:
+                if c.is_bid and c.level >= 2 and not (c.level == 2 and c.strain == "C"):
+                    if standing is None:
+                        preempted = True  # opening at the 2+ level
+                    else:
+                        # jump overcall: skipped a full level or more
+                        cheapest = standing + 1
+                        preempted = c.bid_index >= cheapest + 5
+                break
+            if c.is_bid:
+                standing = c.bid_index
+        if preempted != cond.i_preempted:
+            return False
     if cond.partner_last_suit is not None:
         # partner's most recent SUIT bid (notrump bids and doubles skipped):
         # when partner has shown several suits, the last one bid is the live
@@ -327,6 +351,7 @@ def build_eval_ctx(analysis: Analysis, auction: Auction, seat: Seat) -> EvalCont
         partner_max_hcp=pbox.hcp[1],
         partner_min_points=partner_desc.min_total_points,
         partner_min_length={s: int(pbox.suit(s)[0]) for s in SUITS},
+        partner_max_length={s: int(pbox.suit(s)[1]) for s in SUITS},
     )
 
 

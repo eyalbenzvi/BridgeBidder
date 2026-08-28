@@ -345,6 +345,10 @@
     },
     {
      "evals": {
+      "quick_tricks": [
+       2,
+       12
+      ],
       "rule_of_20": [
        20,
        33
@@ -506,6 +510,10 @@
   "call": "2H",
   "constraint": {
    "evals": {
+    "quick_tricks_outside(H)": [
+     0,
+     2
+    ],
     "suit_quality(H)": [
      1,
      9
@@ -649,6 +657,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "quick_tricks": [
+        2,
+        12
+       ],
        "rule_of_20": [
         20,
         33
@@ -682,6 +694,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "quick_tricks": [
+        2,
+        12
+       ],
        "rule_of_20": [
         20,
         33
@@ -837,6 +853,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "quick_tricks": [
+        2,
+        12
+       ],
        "rule_of_20": [
         20,
         33
@@ -886,6 +906,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "quick_tricks": [
+        2,
+        12
+       ],
        "rule_of_20": [
         20,
         33
@@ -935,6 +959,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "quick_tricks_outside(S)": [
+        0,
+        2
+       ],
        "suit_quality(S)": [
         1,
         9

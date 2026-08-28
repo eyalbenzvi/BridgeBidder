@@ -860,11 +860,14 @@
   calls: ["1S", "P", "2C", "P", "2S", "P"]
   expect: { call: "4S" }
 
+# with the worthless 85 doubleton Blackwood is banned (no reply diagnoses
+# two fast club losers); the cue-bid floor is the tool, and the machinery
+# still reaches slam: partner cues or signs off over 4D
 - name: r21_opener_asks_keycards_over_the_set
   hand: "AQJ853.KQ6.A4.85"
   dealer: N
   calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P"]
-  expect: { call: "4NT", convention: rkc_1430 }
+  expect: { call: "4D", convention: cue_bid }
 
 - name: r21_opener_signs_off_minimum_over_the_set
   hand: "AQ9853.K76.84.Q5"
@@ -1016,3 +1019,64 @@
   dealer: N
   calls: ["P", "P", "P", "1C", "P", "1H", "P", "4H", "P", "4NT", "P", "5D", "P"]
   expect: { call: "5H" }
+
+# =====================================================================
+# The bidding-tips round: judgment rules from the expert canon (Bergen,
+# Kantar, Klinger, Woolsey) added as gates and agreements.  Each is
+# locked by the scenario that shows the judgment, not just the mechanics.
+# =====================================================================
+
+# rule of 22: a rule-of-20 shape with queen-jack soup does not open
+- name: tips_rule22_qj_soup_passes
+  hand: "QJT85.QJT94.A2.3"
+  expect: { call: "P" }
+
+- name: tips_rule22_two_quick_tricks_opens
+  hand: "AKT85.QJT94.42.3"
+  expect: { call: "1S" }
+
+# preempt veto: 2.5+ fast defensive tricks outside the suit is an opening
+# hand's defense - no preempt (AK inside the long suit stays offence)
+- name: tips_preempt_veto_outside_defense
+  hand: "QJT8652.A4.K2.A3"
+  expect: { calls: ["P", "1S"] }
+
+# 3-level preempt veto: no side 4-card major
+- name: tips_preempt_no_side_major
+  hand: "QT84.2.3.QJT8652"
+  expect: { call: "P" }
+
+# third seat light opening needs a lead-worthy suit
+- name: tips_third_seat_light_good_suit
+  hand: "KQJ85.964.A52.83"
+  calls: ["P", "P"]
+  expect: { call: "1S" }
+
+- name: tips_third_seat_light_bad_suit_passes
+  hand: "K7642.A96.Q52.83"
+  calls: ["P", "P"]
+  expect: { call: "P" }
+
+# preempt once: the preemptor never bids again voluntarily
+- name: tips_preemptor_stays_silent
+  hand: "QJT865.A42.853.7"
+  calls: ["2S", "3H", "P", "P"]
+  expect: { call: "P" }
+
+# Blackwood veto: a void hand may not ask (the reply cannot say which ace)
+- name: tips_no_blackwood_with_void
+  hand: "KQJ5.KQT65.AKJ3."
+  dealer: E
+  calls: ["1C", "P", "1H", "P", "2H", "P"]
+  expect: { calls: ["3D", "4H", "3H"] }
+
+# duplication shutdown: KQ opposite partner's shown shortness signs off
+- name: tips_jacoby_wasted_signoff
+  hand: "KQ84.A63.KQ5.KQ4"
+  calls: ["1S", "P", "2NT", "P", "3C", "P"]
+  expect: { call: "4S" }
+
+- name: tips_splinter_wasted_signoff
+  hand: "KQ5.AQJ74.K52.83"
+  calls: ["1H", "P", "3S", "P"]
+  expect: { call: "4H" }

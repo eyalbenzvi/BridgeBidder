@@ -92,13 +92,15 @@ contexts:
         establishes: { forcing: non_forcing }
 
       # rule-of-20 light openings, 1st/2nd seat only
+      # rule-of-22 refinement: the rule-of-20 shape must also carry two
+      # quick tricks, so a queen-jack collection does not open light
       - id: open_1S_rule20
         call: 1S
         priority: 79
         requires:
           suits: { S: [5, 13] }
           hcp: [10, 11]
-          evals: { rule_of_20: [20, 33], "suit_diff(S,H)": [0, 13], suit_quality(S): [1.5, 9] }
+          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(S,H)": [0, 13], suit_quality(S): [1.5, 9] }
         shows: "5+ spades, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2] }
@@ -109,10 +111,37 @@ contexts:
         requires:
           suits: { H: [5, 13] }
           hcp: [10, 11]
-          evals: { rule_of_20: [20, 33], "suit_diff(H,S)": [1, 13], suit_quality(H): [1.5, 9] }
+          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(H,S)": [1, 13], suit_quality(H): [1.5, 9] }
         shows: "5+ hearts, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2] }
+
+      # Third-seat light opening: partner has passed, so the bid is part
+      # obstruction, part lead direction - and it is allowed ONLY with a
+      # suit worth leading (two-plus of the top honours).  A bad suit light
+      # third-seat opening helps the defence more than the offence.
+      - id: open_1S_third_light
+        call: 1S
+        priority: 76
+        requires:
+          # capped at 7 cards: an 8-bagger is a 4-level preempt, not a 1-bid
+          suits: { S: [5, 7] }
+          hcp: [9, 11]
+          evals: { "suit_quality(S)": [2.5, 9] }
+        shows: "third-seat light opening: 5+ good spades, 9-11"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [3] }
+      - id: open_1H_third_light
+        call: 1H
+        priority: 75
+        requires:
+          # capped at 7 cards: an 8-bagger is a 4-level preempt, not a 1-bid
+          suits: { H: [5, 7] }
+          hcp: [9, 11]
+          evals: { "suit_quality(H)": [2.5, 9], "suit_diff(H,S)": [1, 13] }
+        shows: "third-seat light opening: 5+ good hearts, 9-11"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [3] }
 
       # 4th seat: rule of 15
       - id: open_1S_rule15
@@ -158,7 +187,7 @@ contexts:
         requires:
           hcp: [10, 11]
           suits: { D: [5, 13] }
-          evals: { rule_of_20: [20, 33], "suit_diff(D,C)": [0, 13] }
+          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(D,C)": [0, 13] }
           not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
         shows: "5+ diamonds, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
@@ -170,20 +199,23 @@ contexts:
         requires:
           hcp: [10, 11]
           suits: { C: [5, 13] }
-          evals: { rule_of_20: [20, 33], "suit_diff(C,D)": [1, 13] }
+          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(C,D)": [1, 13] }
           not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
         shows: "5+ clubs, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2] }
 
-      # weak twos: 6-card suit, 5-10 HCP, suit quality tightens when vulnerable
+      # weak twos: 6-card suit, 5-10 HCP, suit quality tightens when vulnerable.
+      # Preempt veto: fast defensive tricks OUTSIDE the suit veto the
+      # preempt (2.5+; AK inside your own seven-bagger is offence, and the
+      # measured corpus keeps preempts holding exactly two outside).
       - id: open_weak_2S_nv
         call: 2S
         priority: 66
         requires:
           suits: { S: [6, 6], H: [0, 3] }
           hcp: [5, 10]
-          evals: { "suit_quality(S)": [1, 9] }
+          evals: { "suit_quality(S)": [1, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "weak two: 6 spades, 5-10 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -193,7 +225,7 @@ contexts:
         requires:
           suits: { S: [6, 6], H: [0, 3] }
           hcp: [7, 10]
-          evals: { "suit_quality(S)": [1.5, 9] }
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "weak two: 6 decent spades, 7-10 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -203,7 +235,7 @@ contexts:
         requires:
           suits: { H: [6, 6], S: [0, 3] }
           hcp: [5, 10]
-          evals: { "suit_quality(H)": [1, 9] }
+          evals: { "suit_quality(H)": [1, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "weak two: 6 hearts, 5-10 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -213,7 +245,7 @@ contexts:
         requires:
           suits: { H: [6, 6], S: [0, 3] }
           hcp: [7, 10]
-          evals: { "suit_quality(H)": [1.5, 9] }
+          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "weak two: 6 decent hearts, 7-10 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -223,7 +255,7 @@ contexts:
         requires:
           suits: { D: [6, 6], H: [0, 3], S: [0, 3] }
           hcp: [5, 10]
-          evals: { "suit_quality(D)": [1, 9] }
+          evals: { "suit_quality(D)": [1, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "weak two: 6 diamonds, 5-10 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -233,12 +265,13 @@ contexts:
         requires:
           suits: { D: [6, 6], H: [0, 3], S: [0, 3] }
           hcp: [7, 10]
-          evals: { "suit_quality(D)": [1.5, 9] }
+          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "weak two: 6 decent diamonds, 7-10 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
 
-      # 3-level preempts: 7-card suit, seats 1-3
+      # 3-level preempts: 7-card suit, seats 1-3, no 4-card major on the
+      # side (the major belongs in the auction, not buried under a preempt)
       # A seven-card suit is the preempt; `good_suit` (two of the top three)
       # was refusing to preempt on KJ9xxxx and QJTxxxx, which is most of
       # them.  Quality is a matter of degree and of vulnerability instead:
@@ -248,9 +281,9 @@ contexts:
         call: 3C
         priority: 60
         requires:
-          suits: { C: [7, 13] }
+          suits: { C: [7, 13], H: [0, 3], S: [0, 3] }
           hcp: [3, 9]
-          evals: { "suit_quality(C)": [1, 9] }
+          evals: { "suit_quality(C)": [1, 9], "quick_tricks_outside(C)": [0, 2] }
         shows: "preempt: 7+ clubs, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -258,9 +291,9 @@ contexts:
         call: 3C
         priority: 60
         requires:
-          suits: { C: [7, 13] }
+          suits: { C: [7, 13], H: [0, 3], S: [0, 3] }
           hcp: [5, 9]
-          evals: { "suit_quality(C)": [1.5, 9] }
+          evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
         shows: "preempt: 7+ decent clubs, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -268,9 +301,9 @@ contexts:
         call: 3D
         priority: 60
         requires:
-          suits: { D: [7, 13] }
+          suits: { D: [7, 13], H: [0, 3], S: [0, 3] }
           hcp: [3, 9]
-          evals: { "suit_quality(D)": [1, 9] }
+          evals: { "suit_quality(D)": [1, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "preempt: 7+ diamonds, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -278,9 +311,9 @@ contexts:
         call: 3D
         priority: 60
         requires:
-          suits: { D: [7, 13] }
+          suits: { D: [7, 13], H: [0, 3], S: [0, 3] }
           hcp: [5, 9]
-          evals: { "suit_quality(D)": [1.5, 9] }
+          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "preempt: 7+ decent diamonds, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -288,9 +321,9 @@ contexts:
         call: 3H
         priority: 60
         requires:
-          suits: { H: [7, 13] }
+          suits: { H: [7, 13], S: [0, 3] }
           hcp: [3, 9]
-          evals: { "suit_quality(H)": [1, 9] }
+          evals: { "suit_quality(H)": [1, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 7+ hearts, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -298,9 +331,9 @@ contexts:
         call: 3H
         priority: 60
         requires:
-          suits: { H: [7, 13] }
+          suits: { H: [7, 13], S: [0, 3] }
           hcp: [5, 9]
-          evals: { "suit_quality(H)": [1.5, 9] }
+          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 7+ decent hearts, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -308,9 +341,9 @@ contexts:
         call: 3S
         priority: 60
         requires:
-          suits: { S: [7, 13] }
+          suits: { S: [7, 13], H: [0, 3] }
           hcp: [3, 9]
-          evals: { "suit_quality(S)": [1, 9] }
+          evals: { "suit_quality(S)": [1, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 7+ spades, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -318,9 +351,9 @@ contexts:
         call: 3S
         priority: 60
         requires:
-          suits: { S: [7, 13] }
+          suits: { S: [7, 13], H: [0, 3] }
           hcp: [5, 9]
-          evals: { "suit_quality(S)": [1.5, 9] }
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 7+ decent spades, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -333,6 +366,7 @@ contexts:
         requires:
           suits: { H: [8, 13] }
           hcp: [3, 10]
+          evals: { "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 8+ hearts, 3-10 HCP"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2, 3] }
@@ -342,6 +376,7 @@ contexts:
         requires:
           suits: { S: [8, 13] }
           hcp: [3, 10]
+          evals: { "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 8+ spades, 3-10 HCP"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2, 3] }
@@ -2019,6 +2054,28 @@ contexts:
         shows: "declining the limit raise (dead minimum)"
         establishes: { forcing: sign_off }
 
+  - id: opener_after_splinter_wasted
+    description: "Opener over responder's splinter: duplication check"
+    expand_pairs:
+      - { M: H, J: 3S }
+      - { M: H, J: 4C }
+      - { M: H, J: 4D }
+      - { M: S, J: 4C }
+      - { M: S, J: 4D }
+      - { M: S, J: 4H }
+    pattern: "1$M - P - $J - P - ?"
+    rules:
+      # The splinter shows shortness where responder bid; K/Q/J there are
+      # wasted, and the classic rule is: wasted values sign off, working
+      # values (aces, small cards) cooperate.  With no waste the existing
+      # cue and keycard rules take over - this context only adds the brake.
+      - id: spl_wasted_4$M
+        call: 4$M
+        priority: 47
+        requires: { evals: { wasted_in_partner_shortness: [4, 40] } }
+        shows: "wasted honors opposite the splinter shortness: minimum game"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+
   - id: opener_after_jacoby
     description: "Opener's rebid over Jacoby 2NT"
     expand: { M: [H, S] }
@@ -2086,6 +2143,17 @@ contexts:
     expand: { M: [H, S] }
     pattern: "1$M - P - 2NT - P - bid - P - ?"
     rules:
+      # Duplication shutdown (the oldest slam maxim): K/Q/J opposite the
+      # shortness partner just showed are wasted paper, so the hand is worth
+      # far less than its point count - sign off in game whatever the range.
+      # Aces are exempt (an ace works opposite anything); with working cards
+      # instead the cue and keycard rules below stay live as before.
+      - id: jac_wasted_signoff
+        call: 4$M
+        priority: 47
+        requires: { evals: { wasted_in_partner_shortness: [4, 40] } }
+        shows: "wasted honors opposite the shown shortness: signing off in game"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
       - id: jac_place_4$M
         call: 4$M
         priority: 40
@@ -2095,7 +2163,8 @@ contexts:
       - id: jac_rkc
         call: 4NT
         priority: 45
-        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99] } }
+        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "void(any)": [0, 0], worthless_doubleton: [0, 0] } }
         shows: "RKC 1430 for $M"
         establishes: { forcing: one_round, asking: keycards }
         alertable: true
@@ -3047,6 +3116,13 @@ contexts:
   # SLAM MACHINERY: RKC Blackwood 1430 + quantitative 4NT
   # ===========================================================================
 
+  # Blackwood prerequisites: no void on ANY direct 4NT ask - the answer
+  # cannot say WHICH ace partner holds, and an ace facing the void is a
+  # wasted card.  The worthless-doubleton veto (xx/Jx: two fast losers no
+  # keycard reply can diagnose) applies only HERE and to the Jacoby ask,
+  # where the auction is game-forced with a suit agreed and the cue-bid
+  # floor exists as the better tool; in the general slam-try positions no
+  # cue floor exists, and the veto measurably deleted slams there.
   - id: rkc_ask
     description: "4NT is RKC 1430 once a suit is agreed in a game force"
     pattern: "... - ?"
@@ -3055,7 +3131,8 @@ contexts:
       - id: rkc_4NT
         call: 4NT
         priority: 45
-        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99] } }
+        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "void(any)": [0, 0], worthless_doubleton: [0, 0] } }
         shows: "RKC Blackwood 1430 for the agreed suit"
         establishes: { forcing: one_round, asking: keycards }
         alertable: true
@@ -3430,6 +3507,28 @@ contexts:
   # one of those wrecked boards correctly.  Hence the partner_last_suit gate.
   # ===========================================================================
 
+  - id: preemptor_discipline
+    description: "Preempt once: the preemptor does not act again voluntarily"
+    pattern: "... - ?"
+    rules:
+      # An earlier attempt at this maxim (a 10-HCP floor on generic suit
+      # rebids) silenced nine-count OVERCALLERS and lost a measured 10 IMPs;
+      # the i_preempted condition keys on the actual preempt, so only the
+      # hand that already told partner everything is silenced.  Priority 45:
+      # above the generic toolkit (a preemptor gets no generic second bid),
+      # below every authored continuation (feature-ask answers, RONF
+      # rebids), which fire from specific contexts as before.  we_bid_last
+      # false keeps it off partner's forcing continuations, which arrive
+      # with our side holding the standing bid.
+      - id: preemptor_pass
+        call: P
+        priority: 45
+        when: { i_preempted: true, we_bid_last: false, we_hold_contract: false }
+        requires: {}
+        shows: "the preempt said it all: no voluntary second bid"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
   - id: general_slam_try
     description: "RKC 1430 when partner has shown a suit and we hold slam values"
     pattern: "... - ?"
@@ -3441,7 +3540,8 @@ contexts:
         requires:
           suits: { C: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(C)": [8, 26] }
+                    "lott_total_trumps(C)": [8, 26],
+                    "void(any)": [0, 0] }
         shows: "RKC Blackwood 1430 for C: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: C, asking: keycards }
         alertable: true
@@ -3453,7 +3553,8 @@ contexts:
         requires:
           suits: { D: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(D)": [8, 26] }
+                    "lott_total_trumps(D)": [8, 26],
+                    "void(any)": [0, 0] }
         shows: "RKC Blackwood 1430 for D: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: D, asking: keycards }
         alertable: true
@@ -3465,7 +3566,8 @@ contexts:
         requires:
           suits: { H: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(H)": [8, 26] }
+                    "lott_total_trumps(H)": [8, 26],
+                    "void(any)": [0, 0] }
         shows: "RKC Blackwood 1430 for H: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
         alertable: true
@@ -3477,7 +3579,8 @@ contexts:
         requires:
           suits: { S: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(S)": [8, 26] }
+                    "lott_total_trumps(S)": [8, 26],
+                    "void(any)": [0, 0] }
         shows: "RKC Blackwood 1430 for S: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: S, asking: keycards }
         alertable: true
@@ -4528,7 +4631,8 @@ contexts:
       - id: rj4_rkc
         call: 4NT
         priority: 60
-        requires: { evals: { total_points: [12, 40], controls: [4, 12], rule_of_26: [31, 99] } }
+        requires: { evals: { total_points: [12, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "void(any)": [0, 0] } }
         shows: "RKC 1430 for $M: slam values opposite the 19+ game raise"
         establishes: { forcing: one_round, asking: keycards, agreed_suit: $M }
         alertable: true
