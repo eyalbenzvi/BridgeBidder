@@ -57,7 +57,7 @@ def test_discrete_gates_are_sharp(contexts):
 
 def test_collide_lint_catches_a_known_collision():
     """The detector is not vacuous: it finds the real historical bug."""
-    fixture = ROOT / "tests" / "data" / "lint_collision_fixture.yaml"
+    fixture = ROOT / "tests" / "fixtures" / "lint_collision_fixture.yaml"
     system = load_system(str(fixture))
     findings = L.lint_collide(list(system.contexts))
     assert any("2C" in f and "game-forcing and non-forcing" in f for f in findings), findings

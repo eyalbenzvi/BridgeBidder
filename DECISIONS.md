@@ -1329,4 +1329,4 @@ output nobody reads is worse than no lint, so `floor` was narrowed to the
 one verifiable shape (a context where every rule is gated and no pass is
 offered, so it can produce nothing) and is advisory, not enforced.  The
 second: a detector that cannot be shown to catch its motivating bug is not
-evidence of anything - hence the fixture in `tests/data/`.
+evidence of anything - hence the fixture in `tests/fixtures/`.
