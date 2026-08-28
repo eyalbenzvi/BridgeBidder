@@ -92,15 +92,17 @@ contexts:
         establishes: { forcing: non_forcing }
 
       # rule-of-20 light openings, 1st/2nd seat only
-      # rule-of-22 refinement: the rule-of-20 shape must also carry two
-      # quick tricks, so a queen-jack collection does not open light
+      # rule-of-22 refinement, split by suit: the majors open on 1.5 quick
+      # tricks (a shapely 5-5 or good 6-card major is an opening bid in any
+      # expert's book - a flat 2.0 gate measurably passed those), while the
+      # minors keep the full 2.0 so quacky collections stay closed
       - id: open_1S_rule20
         call: 1S
         priority: 79
         requires:
           suits: { S: [5, 13] }
           hcp: [10, 11]
-          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(S,H)": [0, 13], suit_quality(S): [1.5, 9] }
+          evals: { rule_of_20: [20, 33], quick_tricks: [1.5, 12], "suit_diff(S,H)": [0, 13], suit_quality(S): [1.5, 9] }
         shows: "5+ spades, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2] }
@@ -111,7 +113,7 @@ contexts:
         requires:
           suits: { H: [5, 13] }
           hcp: [10, 11]
-          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(H,S)": [1, 13], suit_quality(H): [1.5, 9] }
+          evals: { rule_of_20: [20, 33], quick_tricks: [1.5, 12], "suit_diff(H,S)": [1, 13], suit_quality(H): [1.5, 9] }
         shows: "5+ hearts, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2] }
@@ -126,6 +128,12 @@ contexts:
         requires:
           # capped at 7 cards: an 8-bagger is a 4-level preempt, not a 1-bid
           suits: { S: [5, 7] }
+          # a 6-7 card suit at 9-10 HCP is a weak two / preempt, which is
+          # both more descriptive and more obstructive; the light 1-bid is
+          # for the 5-card hands, and for 11-counts too strong to preempt
+          any_of:
+            - suits: { S: [5, 5] }
+            - hcp: [11, 11]
           hcp: [9, 11]
           evals: { "suit_quality(S)": [2.5, 9] }
         shows: "third-seat light opening: 5+ good spades, 9-11"
@@ -137,6 +145,12 @@ contexts:
         requires:
           # capped at 7 cards: an 8-bagger is a 4-level preempt, not a 1-bid
           suits: { H: [5, 7] }
+          # a 6-7 card suit at 9-10 HCP is a weak two / preempt, which is
+          # both more descriptive and more obstructive; the light 1-bid is
+          # for the 5-card hands, and for 11-counts too strong to preempt
+          any_of:
+            - suits: { H: [5, 5] }
+            - hcp: [11, 11]
           hcp: [9, 11]
           evals: { "suit_quality(H)": [2.5, 9], "suit_diff(H,S)": [1, 13] }
         shows: "third-seat light opening: 5+ good hearts, 9-11"
@@ -187,7 +201,11 @@ contexts:
         requires:
           hcp: [10, 11]
           suits: { D: [5, 13] }
-          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(D,C)": [0, 13] }
+          evals: { rule_of_20: [20, 33], "suit_diff(D,C)": [0, 13] }
+          # 2 quick tricks, waived for a 7+ card suit: the hand must open SOMETHING
+          any_of:
+            - evals: { quick_tricks: [2, 12] }
+            - suits: { D: [7, 13] }
           not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
         shows: "5+ diamonds, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
@@ -199,7 +217,11 @@ contexts:
         requires:
           hcp: [10, 11]
           suits: { C: [5, 13] }
-          evals: { rule_of_20: [20, 33], quick_tricks: [2, 12], "suit_diff(C,D)": [1, 13] }
+          evals: { rule_of_20: [20, 33], "suit_diff(C,D)": [1, 13] }
+          # 2 quick tricks, waived for a 7+ card suit: the hand must open SOMETHING
+          any_of:
+            - evals: { quick_tricks: [2, 12] }
+            - suits: { C: [7, 13] }
           not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
         shows: "5+ clubs, light opening satisfying the rule of 20"
         establishes: { forcing: non_forcing }
@@ -270,8 +292,10 @@ contexts:
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
 
-      # 3-level preempts: 7-card suit, seats 1-3, no 4-card major on the
-      # side (the major belongs in the auction, not buried under a preempt)
+      # 3-level preempts: 7-card suit, seats 1-3.  A side major vetoes the
+      # preempt only when it is a REAL suit (4+ cards with 1.5+ quality):
+      # the maxim protects a biddable major fit, and Q9xxx or T8xx is not
+      # a suit worth passing a seven-bagger for.
       # A seven-card suit is the preempt; `good_suit` (two of the top three)
       # was refusing to preempt on KJ9xxxx and QJTxxxx, which is most of
       # them.  Quality is a matter of degree and of vulnerability instead:
@@ -281,7 +305,13 @@ contexts:
         call: 3C
         priority: 60
         requires:
-          suits: { C: [7, 13], H: [0, 3], S: [0, 3] }
+          suits: { C: [7, 13] }
+          not:
+            any_of:
+              - suits: { H: [4, 13] }
+                evals: { "suit_quality(H)": [1.5, 9] }
+              - suits: { S: [4, 13] }
+                evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [3, 9]
           evals: { "suit_quality(C)": [1, 9], "quick_tricks_outside(C)": [0, 2] }
         shows: "preempt: 7+ clubs, 3-9 HCP"
@@ -291,7 +321,13 @@ contexts:
         call: 3C
         priority: 60
         requires:
-          suits: { C: [7, 13], H: [0, 3], S: [0, 3] }
+          suits: { C: [7, 13] }
+          not:
+            any_of:
+              - suits: { H: [4, 13] }
+                evals: { "suit_quality(H)": [1.5, 9] }
+              - suits: { S: [4, 13] }
+                evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [5, 9]
           evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
         shows: "preempt: 7+ decent clubs, 5-9 HCP (vulnerable)"
@@ -301,7 +337,13 @@ contexts:
         call: 3D
         priority: 60
         requires:
-          suits: { D: [7, 13], H: [0, 3], S: [0, 3] }
+          suits: { D: [7, 13] }
+          not:
+            any_of:
+              - suits: { H: [4, 13] }
+                evals: { "suit_quality(H)": [1.5, 9] }
+              - suits: { S: [4, 13] }
+                evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [3, 9]
           evals: { "suit_quality(D)": [1, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "preempt: 7+ diamonds, 3-9 HCP"
@@ -311,7 +353,13 @@ contexts:
         call: 3D
         priority: 60
         requires:
-          suits: { D: [7, 13], H: [0, 3], S: [0, 3] }
+          suits: { D: [7, 13] }
+          not:
+            any_of:
+              - suits: { H: [4, 13] }
+                evals: { "suit_quality(H)": [1.5, 9] }
+              - suits: { S: [4, 13] }
+                evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [5, 9]
           evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "preempt: 7+ decent diamonds, 5-9 HCP (vulnerable)"
@@ -321,7 +369,8 @@ contexts:
         call: 3H
         priority: 60
         requires:
-          suits: { H: [7, 13], S: [0, 3] }
+          suits: { H: [7, 13] }
+          not: { suits: { S: [4, 13] }, evals: { "suit_quality(S)": [1.5, 9] } }
           hcp: [3, 9]
           evals: { "suit_quality(H)": [1, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 7+ hearts, 3-9 HCP"
@@ -331,7 +380,8 @@ contexts:
         call: 3H
         priority: 60
         requires:
-          suits: { H: [7, 13], S: [0, 3] }
+          suits: { H: [7, 13] }
+          not: { suits: { S: [4, 13] }, evals: { "suit_quality(S)": [1.5, 9] } }
           hcp: [5, 9]
           evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 7+ decent hearts, 5-9 HCP (vulnerable)"
@@ -341,7 +391,8 @@ contexts:
         call: 3S
         priority: 60
         requires:
-          suits: { S: [7, 13], H: [0, 3] }
+          suits: { S: [7, 13] }
+          not: { suits: { H: [4, 13] }, evals: { "suit_quality(H)": [1.5, 9] } }
           hcp: [3, 9]
           evals: { "suit_quality(S)": [1, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 7+ spades, 3-9 HCP"
@@ -351,7 +402,8 @@ contexts:
         call: 3S
         priority: 60
         requires:
-          suits: { S: [7, 13], H: [0, 3] }
+          suits: { S: [7, 13] }
+          not: { suits: { H: [4, 13] }, evals: { "suit_quality(H)": [1.5, 9] } }
           hcp: [5, 9]
           evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 7+ decent spades, 5-9 HCP (vulnerable)"
@@ -1164,6 +1216,13 @@ contexts:
         requires: { hcp: [6, 40], suits: { S: [4, 13] }, not: { suits: { H: [3, 13] }, hcp: [5, 9] } }
         shows: "4+ spades, 6+ HCP, forcing one round"
         establishes: { forcing: one_round }
+      - id: r1H_raise_passed
+        call: 2H
+        priority: 63
+        when: { passed_hand: true }
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [10, 11] } }
+        shows: "passed-hand raise: 10-11 kept LOW opposite a possibly light 3rd/4th-seat opening"
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: r1H_limit_raise
         call: 3H
         priority: 62
@@ -1292,6 +1351,13 @@ contexts:
         shows: "2/1 game forcing: 5+ hearts, 12+ HCP"
         establishes: { forcing: game_forcing }
         when: { passed_hand: false }
+      - id: r1S_raise_passed
+        call: 2S
+        priority: 63
+        when: { passed_hand: true }
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [10, 11] } }
+        shows: "passed-hand raise: 10-11 kept LOW opposite a possibly light 3rd/4th-seat opening"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: r1S_limit_raise
         call: 3S
         priority: 62
@@ -2075,6 +2141,16 @@ contexts:
         requires: { evals: { wasted_in_partner_shortness: [4, 40] } }
         shows: "wasted honors opposite the splinter shortness: minimum game"
         establishes: { forcing: non_forcing, agreed_suit: $M }
+      # the floor: a context that defines a call must never delete it.  This
+      # context claimed 4$M and thereby shadowed the generic game sign-off;
+      # a softly-vetoed 4NT then won by default and a 4H+1 became 6H-1.
+      - id: spl_signoff_4$M
+        call: 4$M
+        priority: 34
+        requires: {}
+        shows: "signing off in the agreed game over the splinter"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+        negative_inference_weight: soft
 
   - id: opener_after_jacoby
     description: "Opener's rebid over Jacoby 2NT"
@@ -2163,8 +2239,11 @@ contexts:
       - id: jac_rkc
         call: 4NT
         priority: 45
-        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "void(any)": [0, 0], worthless_doubleton: [0, 0] } }
+        requires:
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99] }
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards(agreed)": [3, 5] }
         shows: "RKC 1430 for $M"
         establishes: { forcing: one_round, asking: keycards }
         alertable: true
@@ -3131,8 +3210,14 @@ contexts:
       - id: rkc_4NT
         call: 4NT
         priority: 45
-        requires: { evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "void(any)": [0, 0], worthless_doubleton: [0, 0] } }
+        requires:
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99] }
+          # the veto pair is waived for a hand holding 3+ keycards itself:
+          # such a hand does not need to identify which cards partner holds,
+          # so no void or small doubleton can make the answer ambiguous
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards(agreed)": [3, 5] }
         shows: "RKC Blackwood 1430 for the agreed suit"
         establishes: { forcing: one_round, asking: keycards }
         alertable: true
@@ -3372,12 +3457,22 @@ contexts:
               evals: { "keycards(agreed)": [2, 2], rule_of_26: [28, 99] }
         shows: "the count says at most one keycard is missing: bidding the slam"
         establishes: { forcing: sign_off, agreed_suit: C }
-      - id: rkc5D_signoff_C
+      # The escape ordering is the whole game here: with two keycards
+      # missing the least-worst exit is 6C in the known fit (bounded -50 or
+      # -100), and 5NT is playable only by a notrump-shaped hand - a
+      # two-suiter's 5NT went for -500 on a board where 6C was one down.
+      - id: rkc5D_signoff_nt_C
         call: 5NT
+        priority: 56
+        requires: { evals: { singleton_or_void: [0, 0], worthless_doubleton: [0, 0] } }
+        shows: "keycards missing: 5NT, notrump-shaped"
+        establishes: { forcing: sign_off }
+      - id: rkc5D_signoff_C
+        call: 6C
         priority: 55
         requires: {}
-        shows: "keycards missing: stopping below slam"
-        establishes: { forcing: sign_off }
+        shows: "keycards missing but no playable 5-level spot: six of the fit"
+        establishes: { forcing: sign_off, agreed_suit: C }
 
   - id: rkc_minor_after_5D_D
     description: "Asker's continuation after the 5D reply with D agreed"
@@ -3414,12 +3509,18 @@ contexts:
         requires: { evals: { "keycards(agreed)": [3, 5] } }
         shows: "all five keycards held: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: C }
-      - id: rkc5H_signoff_C
+      - id: rkc5H_signoff_C_nt
         call: 5NT
+        priority: 56
+        requires: { evals: { singleton_or_void: [0, 0], worthless_doubleton: [0, 0] } }
+        shows: "keycards missing: 5NT, notrump-shaped"
+        establishes: { forcing: sign_off }
+      - id: rkc5H_signoff_C
+        call: 6C
         priority: 55
         requires: {}
-        shows: "keycards missing: stopping below slam"
-        establishes: { forcing: sign_off }
+        shows: "keycards missing but no playable 5-level spot: six of the fit"
+        establishes: { forcing: sign_off, agreed_suit: C }
 
   - id: rkc_minor_after_5H_D
     description: "Asker's continuation after the 5H reply with D agreed"
@@ -3432,12 +3533,18 @@ contexts:
         requires: { evals: { "keycards(agreed)": [3, 5] } }
         shows: "all five keycards held: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: D }
-      - id: rkc5H_signoff_D
+      - id: rkc5H_signoff_D_nt
         call: 5NT
+        priority: 56
+        requires: { evals: { singleton_or_void: [0, 0], worthless_doubleton: [0, 0] } }
+        shows: "keycards missing: 5NT, notrump-shaped"
+        establishes: { forcing: sign_off }
+      - id: rkc5H_signoff_D
+        call: 6D
         priority: 55
         requires: {}
-        shows: "keycards missing: stopping below slam"
-        establishes: { forcing: sign_off }
+        shows: "keycards missing but no playable 5-level spot: six of the fit"
+        establishes: { forcing: sign_off, agreed_suit: D }
 
   - id: rkc_minor_after_5S_C
     description: "Asker's continuation after the 5S reply with C agreed"
@@ -3450,12 +3557,18 @@ contexts:
         requires: { evals: { "keycards(agreed)": [3, 5] } }
         shows: "all five keycards and the queen: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: C }
-      - id: rkc5S_signoff_C
+      - id: rkc5S_signoff_C_nt
         call: 5NT
+        priority: 56
+        requires: { evals: { singleton_or_void: [0, 0], worthless_doubleton: [0, 0] } }
+        shows: "keycards missing: 5NT, notrump-shaped"
+        establishes: { forcing: sign_off }
+      - id: rkc5S_signoff_C
+        call: 6C
         priority: 55
         requires: {}
-        shows: "keycards missing: stopping below slam"
-        establishes: { forcing: sign_off }
+        shows: "keycards missing but no playable 5-level spot: six of the fit"
+        establishes: { forcing: sign_off, agreed_suit: C }
 
   - id: rkc_minor_after_5S_D
     description: "Asker's continuation after the 5S reply with D agreed"
@@ -3468,12 +3581,18 @@ contexts:
         requires: { evals: { "keycards(agreed)": [3, 5] } }
         shows: "all five keycards and the queen: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: D }
-      - id: rkc5S_signoff_D
+      - id: rkc5S_signoff_D_nt
         call: 5NT
+        priority: 56
+        requires: { evals: { singleton_or_void: [0, 0], worthless_doubleton: [0, 0] } }
+        shows: "keycards missing: 5NT, notrump-shaped"
+        establishes: { forcing: sign_off }
+      - id: rkc5S_signoff_D
+        call: 6D
         priority: 55
         requires: {}
-        shows: "keycards missing: stopping below slam"
-        establishes: { forcing: sign_off }
+        shows: "keycards missing but no playable 5-level spot: six of the fit"
+        establishes: { forcing: sign_off, agreed_suit: D }
 
   # ===========================================================================
   # SLAM TRY IN AN ORDINARY AUCTION
@@ -3540,8 +3659,10 @@ contexts:
         requires:
           suits: { C: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(C)": [8, 26],
-                    "void(any)": [0, 0] }
+                    "lott_total_trumps(C)": [8, 26] }
+          any_of:
+            - evals: { "void(any)": [0, 0] }
+            - evals: { "keycards(C)": [3, 5] }
         shows: "RKC Blackwood 1430 for C: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: C, asking: keycards }
         alertable: true
@@ -3553,8 +3674,10 @@ contexts:
         requires:
           suits: { D: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(D)": [8, 26],
-                    "void(any)": [0, 0] }
+                    "lott_total_trumps(D)": [8, 26] }
+          any_of:
+            - evals: { "void(any)": [0, 0] }
+            - evals: { "keycards(D)": [3, 5] }
         shows: "RKC Blackwood 1430 for D: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: D, asking: keycards }
         alertable: true
@@ -3566,8 +3689,10 @@ contexts:
         requires:
           suits: { H: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(H)": [8, 26],
-                    "void(any)": [0, 0] }
+                    "lott_total_trumps(H)": [8, 26] }
+          any_of:
+            - evals: { "void(any)": [0, 0] }
+            - evals: { "keycards(H)": [3, 5] }
         shows: "RKC Blackwood 1430 for H: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
         alertable: true
@@ -3579,8 +3704,10 @@ contexts:
         requires:
           suits: { S: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "lott_total_trumps(S)": [8, 26],
-                    "void(any)": [0, 0] }
+                    "lott_total_trumps(S)": [8, 26] }
+          any_of:
+            - evals: { "void(any)": [0, 0] }
+            - evals: { "keycards(S)": [3, 5] }
         shows: "RKC Blackwood 1430 for S: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: S, asking: keycards }
         alertable: true
@@ -4631,8 +4758,11 @@ contexts:
       - id: rj4_rkc
         call: 4NT
         priority: 60
-        requires: { evals: { total_points: [12, 40], controls: [4, 12], rule_of_26: [31, 99],
-                    "void(any)": [0, 0] } }
+        requires:
+          evals: { total_points: [12, 40], controls: [4, 12], rule_of_26: [31, 99] }
+          any_of:
+            - evals: { "void(any)": [0, 0] }
+            - evals: { "keycards($M)": [3, 5] }
         shows: "RKC 1430 for $M: slam values opposite the 19+ game raise"
         establishes: { forcing: one_round, asking: keycards, agreed_suit: $M }
         alertable: true
@@ -8221,6 +8351,28 @@ contexts:
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
+      - id: uc_minor_game_5C
+        call: 5C
+        priority: 28
+        # no cheapest_in_suit gate: the game acceptance is a jump past the
+        # invitational level by design
+        when: { partner_suit: C, we_hold_contract: false }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [17, 40], "lott_total_trumps(C)": [8, 26] }
+        shows: "accepting to game in the raised minor: 17+ opposite the raise"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: uc_minor_game_5D
+        call: 5D
+        priority: 28
+        # no cheapest_in_suit gate: the game acceptance is a jump past the
+        # invitational level by design
+        when: { partner_suit: D, we_hold_contract: false }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [17, 40], "lott_total_trumps(D)": [8, 26] }
+        shows: "accepting to game in the raised minor: 17+ opposite the raise"
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: uc_pass
         call: P
         priority: 18

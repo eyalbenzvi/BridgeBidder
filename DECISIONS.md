@@ -1058,3 +1058,49 @@ exactly two.  And the worthless-doubleton Blackwood veto, applied
 naively to every ask, deleted measured slams in the positions that have
 no cue-bid floor to fall back on - a tip that names an alternative tool
 is only sound where that tool exists.
+
+## The expert review: every losing board adjudicated
+
+The maxim round's -46 was handed, board by board, to an external bridge
+expert (a fresh-eyes reviewer with no stake in the rules as written; the
+full verdict document is docs/EXPERT_REVIEW_MAXIM_ROUND.md).  Every board
+with a negative delta got one of four verdicts - implementation bug,
+needs exception, delete the rule, nothing wrong - and the verdicts were
+implemented mechanically.  What the expert found:
+
+- **The keycard waiver (the centerpiece, ~-38 of the -46).**  The
+  Blackwood prerequisites protect an asker who needs to identify WHICH
+  cards partner holds; a hand holding 3+ keycards itself gets an
+  unambiguous answer and may ask with a void or a small doubleton.  On
+  every losing veto board the asker held 3-4 keycards; on the veto's one
+  winning board, exactly 2.  The waiver separates the data perfectly and
+  is textbook, not curve-fitting.
+- **Rule of 22 split by suit.**  Every losing quick-trick pass held a 5+
+  major or 5-5 majors; every winning pass was a quacky minor hand.  The
+  majors now open on 1.5 quick tricks, the minors keep 2.0, and a 7+
+  card suit waives the gate entirely (an 11-count with an 8-bagger had
+  NO legal opening - a hole found by a board the gate happened to WIN).
+- **Vetoes need quality gates and floors.**  The preempt side-major veto
+  now fires only for a REAL major (4+ cards, 1.5+ quality) - it was
+  passing seven-baggers to protect Q9874.  The third-seat light opening
+  no longer swallows weak-two hands (5-card suits or 11-counts only) and
+  passed-hand raises stay at two opposite it.  A context that defines a
+  call must carry a floor rule for it (the splinter-wasted context had
+  shadowed the generic 4M sign-off into oblivion), boolean vetoes are
+  sharp now (a 0.8 soft-match against [0,0] bought a vetoed 4NT), the
+  worthless-doubleton evaluator exempts suits partner bid naturally, and
+  the minor RKC escape is 6m in the fit, never an unstopped 5NT (-500 on
+  a board where 6C was -100).  A hand strong enough for a (vetoed) slam
+  ask never ends below game: the raised-minor game acceptance covers the
+  floor beneath the gst vetoes.
+- **Nothing-wrong boards (~-20) were left alone**: sound openings that
+  woke the opponents into their par game, quacky passes that lost to an
+  opponent error.  Chasing variance is how rules rot.
+
+Measured on seed 828282: **-1294 -> -1190**, and against the last
+pre-maxim measured state **-1248 -> -1190 (+58)** - the best fixed-corpus
+reading the engine has recorded.  35 boards changed, 12 up, 10 down
+against the pre-maxim state.  The round's meta-lesson: a maxim imported
+from the canon is a hypothesis, not a rule; the corpus convicts or
+acquits, and an expert reading the convictions finds the CAVEAT the
+textbook stated one paragraph below the maxim.

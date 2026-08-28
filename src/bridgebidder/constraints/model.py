@@ -47,6 +47,10 @@ _EVAL_S2 = {
     "void": 0.05,
     "singleton_or_void": 0.05,
     "control_in": 0.05,
+    # boolean vetoes must veto: a 0.8 soft-match against a [0,0] gate bought
+    # a vetoed 4NT on a real board once its sane alternative was shadowed
+    "worthless_doubleton": 0.05,
+    "quick_tricks_outside": 0.9,
 }
 
 _FEATURE_MISS_FIT = 0.2

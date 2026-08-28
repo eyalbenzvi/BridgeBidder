@@ -1080,3 +1080,82 @@
   hand: "KQ5.AQJ74.K52.83"
   calls: ["1H", "P", "3S", "P"]
   expect: { call: "4H" }
+
+# =====================================================================
+# Expert-review round: an external bridge expert read every board the
+# maxim round lost and delivered per-rule verdicts (see DECISIONS.md).
+# The keycard waiver is the centerpiece: the Blackwood prerequisites
+# protect an asker who needs to identify WHICH cards partner holds - a
+# hand with 3+ keycards gets an unambiguous answer and may always ask.
+# =====================================================================
+
+- name: expert_waiver_ask_with_own_three_keycards
+  hand: "AQ6.AKQ873.K6.95"
+  calls: ["1H", "P", "2C", "P", "3H", "P", "4H", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+- name: expert_waiver_void_hand_asks_over_limit_raise
+  hand: "A9876..A4.AK8742"
+  calls: ["1S", "P", "3S", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+# only 2 keycards: the void veto holds (this exact shape won its board)
+- name: expert_veto_holds_with_two_keycards
+  hand: "KQJ5.KQT65.AKJ3."
+  dealer: E
+  calls: ["1C", "P", "1H", "P", "2H", "P"]
+  expect: { calls: ["3D", "4H", "3H"] }
+
+# the splinter context now carries its own floor: a no-waste hand with a
+# genuinely worthless doubleton signs off in game, never a vetoed 4NT
+- name: expert_splinter_floor_signoff
+  hand: "AJ.AKT64.84.A874"
+  dealer: N
+  calls: ["P", "1H", "P", "4C", "P"]
+  expect: { call: "4H" }
+
+# minor RKC escape: unbalanced asker exits in six of the fit, never 5NT
+- name: expert_minor_escape_is_6m_not_5NT
+  hand: "KJ.3.AKT72.AKQ75"
+  dealer: N
+  calls: ["P","2C","P","2D","P","3C","P","4C","P","4NT","P","5D","P"]
+  expect: { call: "6C" }
+
+# rule of 22 split: majors open on 1.5 quick tricks, minors keep 2.0
+- name: expert_major_shape_opens_on_1_5_qt
+  hand: "5.QJT965.KJ43.A2"
+  expect: { call: "1H" }
+
+- name: expert_quacky_minor_still_passes
+  hand: "74.K9.QJ6.KQ9843"
+  expect: { call: "P" }
+
+# an 11-count with a 7+ card minor must open SOMETHING (the QT gate is waived)
+- name: expert_eight_bagger_always_opens
+  hand: "Q3.Q.63.AQJ96432"
+  expect: { calls: ["1C", "3C", "4C"] }
+
+# side-major preempt veto is quality-scoped: Q9874 does not stop a preempt
+- name: expert_preempt_despite_ratty_side_major
+  hand: "J.Q9874.KQJ6543."
+  vulnerability: Both
+  expect: { call: "3D" }
+
+# third-seat light 1M no longer swallows weak-two hands
+- name: expert_third_seat_6card_still_preempts
+  hand: "Q8.KQJT84.J872.6"
+  calls: ["P", "P"]
+  expect: { call: "2H" }
+
+# passed-hand raises stay low opposite a possibly light 3rd-seat opening
+- name: expert_passed_hand_damped_raise
+  hand: "A53.75.T843.KQ76"
+  calls: ["P", "P", "1S", "P"]
+  expect: { call: "2S" }
+
+# a hand strong enough for a (vetoed) slam ask never ends below game
+- name: expert_seventeen_accepts_minor_game
+  hand: "KT983.AQ4.AJ942."
+  dealer: N
+  calls: ["P", "1S", "2C", "X", "P", "2D", "P", "3D", "P"]
+  expect: { calls: ["5D", "3NT"] }

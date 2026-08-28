@@ -344,8 +344,12 @@ def wasted_in_partner_shortness(hand: Hand, ctx: EvalContext) -> float:
 def worthless_doubleton(hand: Hand, ctx: EvalContext) -> float:
     """1.0 if the hand holds a doubleton headed by nothing better than the
     jack (xx / Jx) - the classic Blackwood veto: two fast losers that no
-    keycard answer can diagnose."""
+    keycard answer can diagnose.  Suits partner has bid naturally (shown
+    4+ cards) and the agreed trump suit are exempt: xx under partner's
+    known length is covered from the other side of the table, not a flaw."""
     for s in SUITS:
+        if ctx.partner_min_length.get(s, 0) >= 4 or s == ctx.agreed_suit:
+            continue
         ranks = hand.suit_ranks(s)
         if len(ranks) == 2 and max(ranks) < 12:
             return 1.0
