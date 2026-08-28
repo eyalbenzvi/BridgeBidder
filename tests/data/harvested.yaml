@@ -944,3 +944,46 @@
   dealer: N
   calls: ["P", "1C", "P", "1H", "P", "2D", "P", "2H", "P", "3H", "P"]
   expect: { call: "4NT", convention: rkc_1430 }
+
+# =====================================================================
+# Notrump discipline round: the generic 2NT/3NT need THEIR suits stopped
+# (all of them - stoppers(their) read only the first), and the invite
+# positions that the generic 13-19 3NT was "accepting" on any opener now
+# have real accept/decline rules.
+# =====================================================================
+
+# a wide-open overcalled suit bars the generic 3NT
+- name: no_competitive_3NT_without_stopper
+  hand: "65.AQ64.K642.AQ4"
+  dealer: E
+  calls: ["1H", "2S", "P", "P", "X", "P", "3C", "P"]
+  expect: { calls: ["P", "3H", "4C"] }
+
+# Stayman invite: 15 declines, 16-17 accepts
+- name: stayman_invite_declined_on_15
+  hand: "KQ84.A63.KJ5.Q84"
+  calls: ["1NT", "P", "2C", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "P" }
+
+- name: stayman_invite_accepted_on_17
+  hand: "KQ84.A63.KJ5.A84"
+  calls: ["1NT", "P", "2C", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# over the 2H reply responder's 2NT marks exactly four spades, so opener's
+# four spades are a known 4-4 fit worth offering
+- name: stayman_invite_offers_known_spade_fit
+  hand: "KQ84.AQ63.KJ5.84"
+  calls: ["1NT", "P", "2C", "P", "2H", "P", "2NT", "P"]
+  expect: { call: "3S" }
+
+# opener over the 10-11 preference invite: 12-13 declines, 14+ accepts
+- name: pref_invite_declined_on_minimum
+  hand: "AQ985.K76.84.Q53"
+  calls: ["1S", "P", "1NT", "P", "2C", "P", "2NT", "P"]
+  expect: { call: "P" }
+
+- name: pref_invite_accepted_on_14
+  hand: "AQ985.K76.A4.Q53"
+  calls: ["1S", "P", "1NT", "P", "2C", "P", "2NT", "P"]
+  expect: { call: "3NT" }

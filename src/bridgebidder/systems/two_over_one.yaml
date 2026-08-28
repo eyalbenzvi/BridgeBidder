@@ -518,6 +518,76 @@ contexts:
         shows: "to play, no fit for the major (opener may correct with the other major)"
         establishes: { forcing: sign_off }
 
+  # Opener's answers to the invitational 2NT after Stayman: 15 declines,
+  # 16-17 accepts.  Before these existed the generic 13-19 3NT accepted the
+  # invite on any opener, so every 15-opposite-8 played a hopeless game.
+  # Over the 2H reply the auction carries an extra inference: responder's
+  # Stayman promised a four-card major and 2NT denied four hearts, so
+  # responder holds exactly four SPADES and opener's four-card spade suit
+  # is a known 4-4 fit worth showing on the way.
+  - id: stayman_invite_accept_2D
+    description: "Opener over 2NT after 1NT - 2C - 2D"
+    pattern: "1NT - P - 2C - P - 2D - P - 2NT - P - ?"
+    rules:
+      - id: stmi_2D_pass
+        call: P
+        priority: 60
+        requires: { hcp: [15, 15] }
+        shows: "declining the invite: minimum 1NT opener"
+        establishes: { forcing: sign_off }
+      - id: stmi_2D_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [16, 17] }
+        shows: "accepting the invite: 16-17"
+        establishes: { forcing: sign_off }
+
+  - id: stayman_invite_accept_2H
+    description: "Opener over 2NT after 1NT - 2C - 2H (responder marked with 4 spades)"
+    pattern: "1NT - P - 2C - P - 2H - P - 2NT - P - ?"
+    rules:
+      - id: stmi_2H_3S
+        call: 3S
+        priority: 62
+        requires: { suits: { S: [4, 4] }, hcp: [15, 15] }
+        shows: "4 spades, minimum: offering the known 4-4 fit below game"
+        establishes: { forcing: invitational, agreed_suit: S }
+      - id: stmi_2H_4S
+        call: 4S
+        priority: 61
+        requires: { suits: { S: [4, 4] }, hcp: [16, 17] }
+        shows: "4 spades, maximum: game in the known 4-4 fit"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: stmi_2H_pass
+        call: P
+        priority: 60
+        requires: { hcp: [15, 15], suits: { S: [0, 3] } }
+        shows: "declining the invite: minimum 1NT opener"
+        establishes: { forcing: sign_off }
+      - id: stmi_2H_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [16, 17], suits: { S: [0, 3] } }
+        shows: "accepting the invite: 16-17"
+        establishes: { forcing: sign_off }
+
+  - id: stayman_invite_accept_2S
+    description: "Opener over 2NT after 1NT - 2C - 2S (no second fit possible)"
+    pattern: "1NT - P - 2C - P - 2S - P - 2NT - P - ?"
+    rules:
+      - id: stmi_2S_pass
+        call: P
+        priority: 60
+        requires: { hcp: [15, 15] }
+        shows: "declining the invite: minimum 1NT opener"
+        establishes: { forcing: sign_off }
+      - id: stmi_2S_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [16, 17] }
+        shows: "accepting the invite: 16-17"
+        establishes: { forcing: sign_off }
+
   - id: nt_transfer_accept_H
     description: "Opener completes the hearts transfer"
     pattern: "1NT - P - 2D - P - ?"
@@ -3828,6 +3898,45 @@ contexts:
         requires: { suits: { $M: [3, 3] }, evals: { total_points: [10, 12] } }
         shows: "3-card limit raise routed through 1NT"
         establishes: { forcing: invitational, agreed_suit: $M }
+
+  # Opener's answer to the invitational 2NT above.  This position had no
+  # rules at all, so the generic 13-19 3NT "accepted" with any opening -
+  # a 12-count facing 10 played hopeless games all corpus long.  Opposite
+  # the shown 10-11: pass 12-13, game 14+, and a 6+ card major re-offers
+  # itself at the matching level (2NT denied 3-card support).
+  - id: opener_over_pref_2NT
+    description: "Opener over responder's invitational 2NT after 1M - 1NT - 2m"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+    pattern: "1$M - P - 1NT - P - 2$x - P - 2NT - P - ?"
+    rules:
+      - id: opn_pass
+        call: P
+        priority: 60
+        requires: { hcp: [12, 13], not: { suits: { $M: [6, 13] } } }
+        shows: "declining the invite: minimum opener"
+        establishes: { forcing: sign_off }
+      - id: opn_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [14, 18], not: { suits: { $M: [6, 13] } } }
+        shows: "accepting the invite: 14+"
+        establishes: { forcing: sign_off }
+      - id: opn_3$M
+        call: 3$M
+        priority: 59
+        requires: { suits: { $M: [6, 13] }, hcp: [12, 13] }
+        shows: "6+ $M, minimum: re-offering the suit below game"
+        establishes: { forcing: sign_off }
+      - id: opn_4$M
+        call: 4$M
+        priority: 57
+        requires: { suits: { $M: [6, 13] }, hcp: [14, 18] }
+        shows: "6+ $M, accepting: game in the long suit"
+        establishes: { forcing: sign_off, agreed_suit: $M }
 
   - id: opener_rebid_1S_2C_2D
     description: "1S - 2C: opener's 4+ diamond second suit (GF)"
@@ -7843,17 +7952,22 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
-        shows: "natural 2NT: 11-12 balanced"
+          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1], weakest_their_stopper: [0.9, 9] }
+        shows: "natural 2NT: 11-12 balanced, their suits stopped"
         establishes: { forcing: non_forcing }
+      # weakest_their_stopper: nine tricks in notrump start with holding
+      # their suit(s) - the corpus showed this rule bidding 3NT into a
+      # wide-open overcalled suit (down 4 was available to the defence on
+      # one) because no stopper was ever asked for.  Vacuously satisfied
+      # in uncontested auctions, so constructive sequences are unaffected.
       - id: uc_nt3
         call: 3NT
         priority: 29
         when: { side_has_acted: true }
         requires:
           hcp: [13, 19]
-          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
-        shows: "natural 3NT: 13-19 balanced"
+          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1], weakest_their_stopper: [0.9, 9] }
+        shows: "natural 3NT: 13-19 balanced, their suits stopped"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the

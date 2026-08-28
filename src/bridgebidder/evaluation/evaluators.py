@@ -280,6 +280,19 @@ def weakest_unshown_stopper(hand: Hand, ctx: EvalContext) -> float:
     return worst
 
 
+@register_evaluator("weakest_their_stopper")
+def weakest_their_stopper(hand: Hand, ctx: EvalContext) -> float:
+    """The worst stopper among ALL the suits the opponents have shown - the
+    competitive-3NT question.  `stoppers(their)` reads only their first
+    suit (the same trap lott_total_trumps fell into), so a two-suited
+    opposition left 3NT ungated in the second suit.  Vacuously 1.0 when
+    they have shown nothing."""
+    worst = 1.0
+    for s in set(ctx.their_suits):
+        worst = min(worst, stoppers(hand, ctx, s))
+    return worst
+
+
 @register_evaluator("void")
 def void(hand: Hand, ctx: EvalContext, suit: str = "any") -> float:
     if suit == "any":

@@ -941,3 +941,36 @@ corpus.
 
 Hold-out check (seed 606060, never used for any fitting): -1.215/board,
 in line with the fixed corpus - the resliced bands broke nothing broad.
+
+## Notrump discipline: stoppers asked for, invites answered
+
+Re-ranking rules by par cost after the trump-setting round left `uc_nt3`
+(the generic natural 3NT) on top again: -377 IMPs over 70 uses.  The last
+time this rule topped the list, raising its strength gate did nothing -
+the rule is a symptom.  Reading its eighteen losing boards found three real
+diseases upstream, none of them about strength:
+
+- **The generic 2NT/3NT never asked for a stopper.**  In competitive
+  auctions they bid 3NT with the overcalled suit wide open.  The gate is a
+  new `weakest_their_stopper` evaluator: `stoppers(their)` reads only their
+  FIRST suit - the same trap `lott_total_trumps` fell into - so a
+  two-suited opposition left the second suit ungated.  Vacuously satisfied
+  when they have shown nothing, so constructive auctions are untouched.
+- **Stayman-invite acceptance did not exist** (`1NT - 2C - 2D - 2NT - ?`).
+  The generic 13-19 3NT covered the position and "accepted" with any
+  opener, so 15-facing-8 played hopeless games.  Now 15 declines and 16-17
+  accepts - and over the 2H reply the auction carries a free inference:
+  Stayman promised a four-card major and 2NT denied hearts, so responder
+  holds exactly four spades and opener's four spades are a known 4-4 fit,
+  offered via 3S/4S on the way.
+- **Opener's answer to the 10-11 preference invite** (`1M - 1NT - 2m -
+  2NT - ?`) was the same hole: pass 12-13, 3NT on 14+, and a 6+ major
+  re-offers itself at the matching level.
+
+Fixed corpus, paired: **-1262 -> -1248 (+14)**; 15 boards changed, 8 up,
+4 down.  The two biggest "losses" are windfalls correctly given back: a
+23-combined 3NT we used to blast that happened to make, and a
+stopper-less 3NT that partner's hand happened to cover.  Both are bets
+the odds say not to take.
+
+Session so far on the fixed corpus: -1281 -> -1248.
