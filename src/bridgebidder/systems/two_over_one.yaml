@@ -5859,10 +5859,10 @@ contexts:
         priority: 29
         when: { side_has_acted: true }
         requires:
-          hcp: [13, 17]
+          hcp: [13, 19]
           evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
-        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        shows: "natural 3NT: 13-19 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
@@ -6255,10 +6255,10 @@ contexts:
         priority: 29
         when: { side_has_acted: true }
         requires:
-          hcp: [13, 17]
+          hcp: [13, 19]
           evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
-        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        shows: "natural 3NT: 13-19 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
@@ -6690,10 +6690,10 @@ contexts:
         priority: 29
         when: { side_has_acted: true }
         requires:
-          hcp: [13, 17]
+          hcp: [13, 19]
           evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
-        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        shows: "natural 3NT: 13-19 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
@@ -7087,10 +7087,10 @@ contexts:
         priority: 29
         when: { side_has_acted: true }
         requires:
-          hcp: [13, 17]
+          hcp: [13, 19]
           evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
-        shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
+        shows: "natural 3NT: 13-19 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
@@ -7514,9 +7514,9 @@ contexts:
         priority: 29
         when: { side_has_acted: true }
         requires:
-          hcp: [13, 17]
+          hcp: [13, 19]
           evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
-        shows: "natural 3NT: 13-17 balanced"
+        shows: "natural 3NT: 13-19 balanced"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
