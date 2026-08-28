@@ -811,6 +811,24 @@ contexts:
         shows: "natural, 5+ diamonds, game forcing"
         establishes: { forcing: game_forcing }
 
+  - id: opener_after_2C_positive
+    description: "The 2C opener over a positive suit response"
+    expand: { M: [H, S] }
+    pattern: "2C - P - 2$M - P - ?"
+    rules:
+      # A positive response opposite a 2C opening is slam territory by
+      # definition (22+ facing 8+), so the raise is THREE, not four: it
+      # agrees trumps at the level where the cue-bid and keycard machinery
+      # lives.  The generic four-level raise was firing here, partner read
+      # it as fast arrival, and a 24-count played in game with twelve
+      # tricks on top.
+      - id: o2cp_raise_3$M
+        call: 3$M
+        priority: 72
+        requires: { suits: { $M: [3, 13] } }
+        shows: "raise of the positive response: 3+ trumps, slam interest by definition"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+
   - id: r2c_after_2NT
     description: "Responder after 2C - 2D - 2NT (systems on)"
     pattern: "2C - P - 2D - P - 2NT - P - ?"
@@ -3332,7 +3350,9 @@ contexts:
         priority: 40
         requires:
           hcp: [16, 40]
-          evals: { rule_of_26: [33, 99], semi_balanced: [1, 1] }
+          # controls too: 33 combined with two aces missing is off two tricks
+          # at notrump, and the corpus produced exactly that 6NT
+          evals: { rule_of_26: [33, 99], semi_balanced: [1, 1], controls: [5, 12] }
         shows: "raising partner's 3NT to slam: 33+ combined points"
         establishes: { forcing: sign_off }
       # 33 combined is invisible when it splits 17/16: neither hand can count
@@ -3881,8 +3901,25 @@ contexts:
       - id: r2ntj_3NT
         call: 3NT
         priority: 55
-        requires: { hcp: [6, 13], not: { suits: { $M: [5, 13] } } }
+        requires: { hcp: [6, 12], not: { suits: { $M: [5, 13] } } }
         shows: "game opposite 18-19, no 5-card major"
+        establishes: { forcing: sign_off }
+      # opposite a shown 18-19 the arithmetic is known exactly: 15+ makes 33
+      # combined (slam), 13-14 makes 31-32 (invite it, opener accepts on 19).
+      # The old cap of 13 left every strong responder with no rule at all -
+      # 3NT was bid on 35 combined while BEN bid the making 6NT.
+      - id: r2ntj_4NT_quant
+        call: 4NT
+        priority: 56
+        requires: { hcp: [13, 14], evals: { semi_balanced: [1, 1] } }
+        shows: "quantitative: 31-32 combined, opener bids slam with 19"
+        establishes: { forcing: non_forcing }
+        alertable: true
+      - id: r2ntj_6NT
+        call: 6NT
+        priority: 57
+        requires: { hcp: [15, 40], evals: { controls: [5, 12] } }
+        shows: "33+ combined and the controls to match: bidding the slam"
         establishes: { forcing: sign_off }
       - id: r2ntj_4M
         call: 4$M
@@ -3896,6 +3933,25 @@ contexts:
         requires: { hcp: [0, 5] }
         shows: "bust: even 18-19 opposite may not make 3NT"
         establishes: { forcing: sign_off }
+
+  - id: opener_accepts_quant_over_2NT_jump
+    description: "Opener over responder's quantitative 4NT (after the 18-19 2NT jump)"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 2NT - P - 4NT - P - ?"
+    rules:
+      - id: q2ntj_6NT
+        call: 6NT
+        priority: 60
+        requires: { hcp: [19, 40] }
+        shows: "accepting with the top of 18-19"
+        establishes: { forcing: sign_off }
+      - id: q2ntj_pass
+        call: P
+        priority: 50
+        requires: {}
+        shows: "declining with 18"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
 
   - id: responder_after_minor_rebid
     description: "Responder over opener's simple 2m rebid (6+ suit, 12-15)"

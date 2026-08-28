@@ -808,3 +808,33 @@
   dealer: N
   calls: ["2S", "P", "P", "3C", "P", "P"]
   expect: { call: "P" }
+
+# --- 10k-match round ------------------------------------------------------------
+
+# opposite the 18-19 jump rebid the arithmetic is exact, and the old cap of
+# 13 HCP left every strong responder with no rule: 3NT was bid on 35 combined
+- name: slam_6NT_over_the_2NT_jump
+  hand: "AK98.982.AJ4.KJ8"
+  dealer: N
+  calls: ["P", "1C", "P", "1S", "P", "2NT", "P"]
+  expect: { call: "6NT", rule: "r2ntj_6NT" }
+
+- name: slam_quant_invite_over_the_2NT_jump
+  hand: "AQ98.982.QJ4.KJ8"
+  dealer: N
+  calls: ["P", "1C", "P", "1S", "P", "2NT", "P"]
+  expect: { call: "4NT", rule: "r2ntj_4NT_quant" }
+
+- name: game_only_over_the_2NT_jump
+  hand: "QT98.982.QJ4.KJ8"
+  dealer: N
+  calls: ["P", "1C", "P", "1S", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# a positive response to 2C is slam territory by definition: the raise is
+# THREE, keeping the cue/keycard floor, never a fast-arrival four
+- name: slam_2C_positive_raised_to_three
+  hand: "AKQ52.AT2.AQ.QJ2"
+  dealer: N
+  calls: ["2C", "P", "2H", "P"]
+  expect: { call: "3H", rule: "o2cp_raise_3H", forcing: game_forcing }
