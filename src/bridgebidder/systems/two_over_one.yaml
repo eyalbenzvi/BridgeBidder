@@ -3132,11 +3132,30 @@ contexts:
     pattern: "... - 4NT - P - 5D - P - ?"
     when: { agreed_suit: $A }
     rules:
+      # The 0-or-3 reply is disambiguated by COUNTING, not by a strength
+      # proxy.  Only five keycards exist: holding three or more myself,
+      # partner's "0 or 3" can only be 0 - two are missing, sign off,
+      # whatever my point count says (the old hcp-18 gate would have bid a
+      # slam missing two aces off an 18-count).  Holding four, the missing
+      # count is at most one: bid it.  Holding exactly two, the reply is
+      # genuinely ambiguous and partner's shown strength decides: opposite
+      # a sound raise or extras (28 combined here counting my own hand),
+      # zero keycards is not credible and the total is five; opposite a
+      # bare game force it may truly be zero, so stay low.  The corpus had
+      # both mistakes: making slams signed off opposite 3 (a Jacoby auction
+      # with 33 combined), and the hcp gate one point from bidding a slam
+      # missing two.
       - id: rkc5D_slam
         call: 6$A
         priority: 60
-        requires: { evals: { "keycards(agreed)": [2, 5], hcp: [18, 40] } }
-        shows: "assuming 3 keycards opposite: bidding the small slam"
+        requires:
+          any_of:
+            # four in hand: partner's 0-or-3 is 0 and at most one is missing
+            - evals: { "keycards(agreed)": [4, 5] }
+            # two in hand: opposite shown values the reply can only be 3
+            - hcp: [12, 40]
+              evals: { "keycards(agreed)": [2, 2], rule_of_26: [28, 99] }
+        shows: "the count says at most one keycard is missing: bidding the slam"
         establishes: { forcing: sign_off, agreed_suit: $A }
       - id: rkc5D_signoff
         call: 5$A
@@ -3267,8 +3286,14 @@ contexts:
       - id: rkc5D_slam_C
         call: 6C
         priority: 60
-        requires: { evals: { "keycards(agreed)": [2, 5], hcp: [18, 40] } }
-        shows: "assuming three keycards opposite: bidding the small slam"
+        requires:
+          any_of:
+            # four in hand: partner's 0-or-3 is 0 and at most one is missing
+            - evals: { "keycards(agreed)": [4, 5] }
+            # two in hand: opposite shown values the reply can only be 3
+            - hcp: [12, 40]
+              evals: { "keycards(agreed)": [2, 2], rule_of_26: [28, 99] }
+        shows: "the count says at most one keycard is missing: bidding the slam"
         establishes: { forcing: sign_off, agreed_suit: C }
       - id: rkc5D_signoff_C
         call: 5NT
@@ -3285,8 +3310,14 @@ contexts:
       - id: rkc5D_slam_D
         call: 6D
         priority: 60
-        requires: { evals: { "keycards(agreed)": [2, 5], hcp: [18, 40] } }
-        shows: "assuming three keycards opposite: bidding the small slam"
+        requires:
+          any_of:
+            # four in hand: partner's 0-or-3 is 0 and at most one is missing
+            - evals: { "keycards(agreed)": [4, 5] }
+            # two in hand: opposite shown values the reply can only be 3
+            - hcp: [12, 40]
+              evals: { "keycards(agreed)": [2, 2], rule_of_26: [28, 99] }
+        shows: "the count says at most one keycard is missing: bidding the slam"
         establishes: { forcing: sign_off, agreed_suit: D }
       - id: rkc5D_signoff_D
         call: P
