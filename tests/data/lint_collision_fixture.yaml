@@ -1,0 +1,31 @@
+# A minimal system reproducing the historical 1C/2C collision: one context
+# defines the call 2C both as a game-forcing 2/1 and as a 6-10 raise, so the
+# engine merges the readings and partner cannot tell which he is facing.
+# Used by tests/test_lints.py to prove the collide detector is not vacuous.
+system:
+  name: lint-collision-fixture
+  config: {}
+
+contexts:
+  - id: resp_1m
+    description: "Responses to 1C (with the historical collision)"
+    pattern: "1C - P - ?"
+    rules:
+      - id: r1m_2over1
+        call: 2C
+        priority: 75
+        requires: { hcp: [12, 40], suits: { C: [3, 13] } }
+        shows: "2/1 game forcing"
+        establishes: { forcing: game_forcing }
+      - id: r1m_raise2
+        call: 2C
+        priority: 50
+        requires: { hcp: [6, 10], suits: { C: [4, 13] } }
+        shows: "simple raise"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: r1m_pass
+        call: P
+        priority: 15
+        requires: { hcp: [0, 5] }
+        shows: "too weak"
+        establishes: { forcing: sign_off }

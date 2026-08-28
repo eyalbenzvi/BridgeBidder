@@ -1293,3 +1293,40 @@ On method: the triaged thousand cost roughly twice a 100-board round
 real advantage is not volume but *confidence*: a defect seen in eight
 boards is diagnosed correctly, and a variance board seen once is
 correctly left alone.
+
+## The lint suite: stop rediscovering the same four defects
+
+Three consecutive expert reviews found the same defect species by hand.
+Reviewer attention is the scarce resource in this loop, so those species
+are now machine-detected (`tools/lint_system.py`, `tools/fuzz_decisions.py`,
+locked by `tests/test_lints.py`):
+
+- **collide** - one context defining a call two incompatible ways.  Same-call
+  rules merge into a disjunction, so the reading partner decodes is the
+  union: over 1C the 2C response was both the 2/1 and a 6-10 raise, and a
+  nine-count drove to five of a minor.  The detector is validated against
+  the pre-fix system, where it rediscovers that exact bug in a second.
+- **gap** - an interior strength band no rule in a band-laddered context
+  covers.  "Range with no rule" is the most recurring defect in the
+  project's history and it is silent, because the permissive pass floor
+  swallows the hole.
+- **soft** - a boolean or counting evaluator used as a gate without a sharp
+  tolerance registered.  This found a live bug immediately: `two_of_top3`
+  was gating twenty-four rules - every "two of the top three" penalty pass,
+  every chunky-major double denial - and a hand WITHOUT the honours scored
+  0.8 against the [1,1] gate, so none of those gates actually gated.
+  Sharpened, along with `three_of_top5` and `good_suit`.
+- **fuzz** - random self-play auctions looking for a seat with ZERO
+  candidates (the doubled-Stayman abort that killed a twelve-minute match)
+  and for anchored contexts whose hands fall through to an invented
+  fallback.  3,000 decisions run clean in about a minute.
+
+Two lessons from building them.  The first drafts of `floor` and `gap`
+reported 1605 and 4 findings, all noise: static shadow analysis per call is
+hopeless because the generic toolkit defines nearly every call, and a
+strength band stated across `any_of` branches is not a gap.  A lint whose
+output nobody reads is worse than no lint, so `floor` was narrowed to the
+one verifiable shape (a context where every rule is gated and no pass is
+offered, so it can produce nothing) and is advisory, not enforced.  The
+second: a detector that cannot be shown to catch its motivating bug is not
+evidence of anything - hence the fixture in `tests/data/`.
