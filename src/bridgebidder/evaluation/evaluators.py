@@ -316,6 +316,23 @@ def trump_queen(hand: Hand, ctx: EvalContext, suit: str = "agreed") -> float:
     return 1.0 if (s and 12 in hand.suit_ranks(s)) else 0.0
 
 
+@register_evaluator("control_in")
+def control_in(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    """Controls held in one suit: 2 = first round (ace or void),
+    1 = second round (king or singleton), 0 = none.  The currency of
+    cue-bidding: a slam needs first-round control of every side suit."""
+    s = _resolve_suit(suit, ctx)
+    if s is None:
+        return 0.0
+    ranks = hand.suit_ranks(s)
+    n = len(ranks)
+    if n == 0 or 14 in ranks:
+        return 2.0
+    if n == 1 or 13 in ranks:
+        return 1.0
+    return 0.0
+
+
 @register_evaluator("aces")
 def aces(hand: Hand, ctx: EvalContext) -> float:
     return float(sum(1 for c in hand.cards if c.rank == 14))

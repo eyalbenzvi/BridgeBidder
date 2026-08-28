@@ -3130,8 +3130,8 @@ contexts:
   #
   # So the ask is available here too, in the same position as the game raise
   # and ranked above it, on the values that justify hearing the answer: a
-  # nine-card fit, seventeen points of my own, two aces or the equivalent,
-  # and thirty counting what partner has actually shown.  The auction has to
+  # eight-card fit, seventeen points of my own, two aces or the equivalent,
+  # and thirty-one counting what partner has actually shown.  The auction has to
   # be at the two level or higher first - 4NT over a one-level bid is a
   # guess, not a question.
   #
@@ -3151,8 +3151,8 @@ contexts:
         when: { partner_suit: C, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { C: [4, 13] }
-          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
-                    "lott_total_trumps(C)": [9, 26] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "lott_total_trumps(C)": [8, 26] }
         shows: "RKC Blackwood 1430 for C: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: C, asking: keycards }
         alertable: true
@@ -3163,8 +3163,8 @@ contexts:
         when: { partner_suit: D, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { D: [4, 13] }
-          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
-                    "lott_total_trumps(D)": [9, 26] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "lott_total_trumps(D)": [8, 26] }
         shows: "RKC Blackwood 1430 for D: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: D, asking: keycards }
         alertable: true
@@ -3175,8 +3175,8 @@ contexts:
         when: { partner_suit: H, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { H: [4, 13] }
-          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
-                    "lott_total_trumps(H)": [9, 26] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "lott_total_trumps(H)": [8, 26] }
         shows: "RKC Blackwood 1430 for H: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
         alertable: true
@@ -3187,12 +3187,185 @@ contexts:
         when: { partner_suit: S, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { S: [4, 13] }
-          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
-                    "lott_total_trumps(S)": [9, 26] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+                    "lott_total_trumps(S)": [8, 26] }
         shows: "RKC Blackwood 1430 for S: slam values opposite partner's shown range"
         establishes: { forcing: one_round, agreed_suit: S, asking: keycards }
         alertable: true
         convention: rkc_1430
+
+  # ===========================================================================
+  # CUE BIDS: THE FLOOR BETWEEN GAME AND BLACKWOOD
+  #
+  # The head-to-head match showed the engine's only route to slam was a blind
+  # 4NT: with a suit agreed in a game force it either met the stiff RKC gate
+  # or gave up and bid game, and there was nothing in between.  Real slam
+  # auctions live in that gap.  A cue bid is a new suit below game once trumps
+  # are agreed: it shows FIRST-round control there (ace or void) and slam
+  # interest, and asks partner to cooperate.
+  #
+  # The negative inference does the heavy lifting, and it is the whole reason
+  # this encodes so naturally: the cues are priority-ordered cheapest first,
+  # so bidding 4D over 3S having skipped 4C *denies* first-round club control
+  # - and returning to game denies whatever was still cheap enough to show.
+  # Partner reads the denials from the machinery, the same as a human would.
+  #
+  # Gates: cues live only when the agreement stands at the three level (the
+  # classic slam-try position - any higher and there is no room, any lower
+  # and the calls have natural meanings), and only below game in the agreed
+  # major, so a cue chain can never push past 4M: over 3S the cues are
+  # 4C/4D/4H and the next player is back to signing off or asking.  (The
+  # standing bid may be at the FOUR level too - that is what answering
+  # partner's own four-level cue looks like - but never higher.)  A cue
+  # shows 14+ points opposite the shown range; that feeds the partner model,
+  # raises rule_of_26, and thereby unlocks the existing RKC gate for a
+  # partner who could not have asked directly - the machinery composes.
+  # ===========================================================================
+
+  - id: cue_bidding_S
+    description: "Control-showing cue bids with spades agreed in a game force"
+    # "... - P - ?" rather than "... - ?": one token of specificity, so these
+    # rules tie with the generic toolkit's contexts and win on file order -
+    # otherwise "raise partner's club suit" shadows the 4C cue whenever the
+    # cue suit happens to be one partner once bid naturally.
+    pattern: "... - P - ?"
+    when: { agreed_suit: S, game_forced: true }
+    rules:
+      - id: cue_S_C
+        call: 4C
+        priority: 44
+        when: { standing_bid_level: [3, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          evals: { "control_in(C)": [2, 2], total_points: [14, 40], rule_of_26: [28, 99] }
+        shows: "cue bid: first-round club control (ace or void), slam interest for spades"
+        establishes: { forcing: one_round, agreed_suit: S }
+        alertable: true
+        convention: cue_bid
+      - id: cue_S_D
+        call: 4D
+        priority: 43.5
+        when: { standing_bid_level: [3, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          evals: { "control_in(D)": [2, 2], total_points: [14, 40], rule_of_26: [28, 99] }
+        shows: "cue bid: first-round diamond control (ace or void), slam interest for spades"
+        establishes: { forcing: one_round, agreed_suit: S }
+        alertable: true
+        convention: cue_bid
+      - id: cue_S_H
+        call: 4H
+        priority: 43
+        when: { standing_bid_level: [3, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          evals: { "control_in(H)": [2, 2], total_points: [14, 40], rule_of_26: [28, 99] }
+        shows: "cue bid: first-round heart control (ace or void), slam interest for spades"
+        establishes: { forcing: one_round, agreed_suit: S }
+        alertable: true
+        convention: cue_bid
+      # partner's cue forces one round; with nothing left to show, game.
+      # Choosing this over an available cue denies the skipped controls.
+      - id: cue_S_signoff
+        call: 4S
+        priority: 34
+        requires: {}
+        shows: "no control worth showing: back to the agreed game"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+        negative_inference_weight: soft
+
+  - id: cue_bidding_H
+    description: "Control-showing cue bids with hearts agreed in a game force"
+    # "... - P - ?" rather than "... - ?": one token of specificity, so these
+    # rules tie with the generic toolkit's contexts and win on file order -
+    # otherwise "raise partner's club suit" shadows the 4C cue whenever the
+    # cue suit happens to be one partner once bid naturally.
+    pattern: "... - P - ?"
+    when: { agreed_suit: H, game_forced: true }
+    rules:
+      - id: cue_H_S
+        call: 3S
+        priority: 44
+        when: { standing_bid_level: [3, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          evals: { "control_in(S)": [2, 2], total_points: [14, 40], rule_of_26: [28, 99] }
+        shows: "cue bid: first-round spade control (ace or void), slam interest for hearts"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: cue_bid
+      - id: cue_H_C
+        call: 4C
+        priority: 43.5
+        when: { standing_bid_level: [3, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          evals: { "control_in(C)": [2, 2], total_points: [14, 40], rule_of_26: [28, 99] }
+        shows: "cue bid: first-round club control (ace or void), slam interest for hearts"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: cue_bid
+      - id: cue_H_D
+        call: 4D
+        priority: 43
+        when: { standing_bid_level: [3, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          evals: { "control_in(D)": [2, 2], total_points: [14, 40], rule_of_26: [28, 99] }
+        shows: "cue bid: first-round diamond control (ace or void), slam interest for hearts"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: cue_bid
+      - id: cue_H_signoff
+        call: 4H
+        priority: 34
+        requires: {}
+        shows: "no control worth showing: back to the agreed game"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+        negative_inference_weight: soft
+
+  - id: quant_raise_of_3NT
+    description: "Raising partner's natural 3NT on sheer combined strength"
+    pattern: "... - 3NT - P - ?"
+    rules:
+      # Partner's 3NT is a limited, balanced-ish call, so the arithmetic is
+      # honest: my points plus the minimum partner has shown.  Thirty-three
+      # is the classic small-slam number.  Seventeen of the slam boards in
+      # the head-to-head died in exactly this seat - 3NT bid and passed with
+      # a slam cold on power.
+      - id: qr3_6NT
+        call: 6NT
+        priority: 40
+        requires:
+          hcp: [16, 40]
+          evals: { rule_of_26: [33, 99], semi_balanced: [1, 1] }
+        shows: "raising partner's 3NT to slam: 33+ combined points"
+        establishes: { forcing: sign_off }
+      # 33 combined is invisible when it splits 17/16: neither hand can count
+      # it alone, which is what the invite is for.  4NT directly over 3NT is
+      # quantitative by agreement (never keycards), pass-able, and the 3NT
+      # bidder accepts holding the top of the range already shown.
+      - id: qr3_4NT_quant
+        call: 4NT
+        priority: 39
+        requires:
+          hcp: [15, 40]
+          evals: { rule_of_26: [30, 99], semi_balanced: [1, 1] }
+        shows: "quantitative raise of 3NT: inviting slam, partner passes with a minimum"
+        establishes: { forcing: non_forcing }
+        alertable: true
+
+  - id: quant_3NT_accept
+    description: "The 3NT bidder over partner's quantitative 4NT"
+    pattern: "... - 3NT - P - 4NT - P - ?"
+    rules:
+      - id: qa_6NT
+        call: 6NT
+        priority: 40
+        requires: { hcp: [16, 40] }
+        shows: "accepting the slam invite: top of the range shown"
+        establishes: { forcing: sign_off }
+      - id: qa_pass
+        call: P
+        priority: 30
+        requires: {}
+        shows: "declining the slam invite: minimum for the 3NT bid"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
 
   # ===========================================================================
   # GENERIC GAME-FORCE LANDING SPOTS (least specific; consulted when nothing

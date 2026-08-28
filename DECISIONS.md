@@ -684,3 +684,61 @@ slow, unglamorous work every round of this project has converged on, worth
 perhaps 300 IMPs of the 1480 if carried to completion.  There is no single
 lever left to pull.
 
+## Slam machinery
+
+The match's biggest identifiable pocket (about -530 IMPs of slam boards per
+thousand) got its own round.  What was missing was the floor between game
+and Blackwood: with a suit agreed in a game force the engine either met the
+stiff RKC gate or bid game and stopped, and real slam auctions live in that
+gap.
+
+**Cue bids** are authored now: with a major agreed in a game force and the
+agreement standing at the three level, a new suit below game shows
+first-round control there (ace or void, the new `control_in` evaluator) and
+slam interest.  The negative-inference machinery is the whole reason this
+encodes naturally - the cues are priority-ordered cheapest-first, so
+bidding 4D having skipped 4C *denies* first-round club control, and
+returning to game denies whatever was still cheap enough to show.  A cue
+shows 14+ opposite the shown range, which feeds the partner model, raises
+rule_of_26, and thereby unlocks the existing RKC gate for a partner who
+could not have asked directly.  The machinery composes; board 205 of the
+match now runs 3C - 4D(cue) - 4NT - 6C, making.
+
+Two authoring lessons from the round:
+
+- **Specificity shadowing.**  The cue contexts first used the fully generic
+  pattern and the 4C cue silently lost to "raise partner's club suit"
+  whenever the cue suit was one partner had bid naturally - a more specific
+  pattern covers the call first.  One token of specificity and file order
+  fixed it.  When two contexts can claim the same call, the DSL's coverage
+  rules are part of the design, not a detail.
+- **Splinters already existed** (authored in the base system) - the gap was
+  never the conventions at the front of the auction, it was the machinery at
+  the top.
+
+**Quantitative raises of 3NT** close the other slam family: 6NT directly on
+33 combined (rule_of_26 against partner's shown minimum), and - since 33 is
+invisible when it splits 17/16 - a pass-able 4NT invite that the 3NT bidder
+accepts holding the top of the shown range.  4NT directly over 3NT is
+quantitative by agreement, never keycards; pattern specificity enforces
+exactly that.
+
+**The 5NT king ask was considered and deliberately skipped.**  Choosing
+seven over six requires adding partner's shown kings to my own, and the
+constraint language has no cross-hand arithmetic.  Without the 7-level
+decision the ask is pure information leakage - it can never change the
+contract.  A convention that cannot affect the final contract is not worth
+its space in the system file.
+
+Measured on the fixed 1000-board corpus: cue layer alone was IMP-neutral
+(it fired three times - sound but starved, because the engine's raises jump
+straight to game and rarely pass through the position where cues live);
+widening the direct slam-try gates to an eight-card fit and rule_of_26 31
+plus the notrump quantitative raises moved the match from **-1480 to
+-1427**, the first match-level gain in three rounds of slam work.  Slams
+bid: 13 -> 14, made 5 -> 7; the changed boards split 6 up, 2 down.
+
+Known gap surfaced in testing, left for the next round: after a reverse
+(1D - 1S - 2H) responder with 11 opposite 17+ passed a 3D preference out -
+responder's obligations over a reverse are under-authored.
+

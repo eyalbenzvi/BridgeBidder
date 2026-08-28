@@ -688,3 +688,67 @@
   dealer: N
   calls: ["P", "1S", "P", "1NT", "P"]
   expect: { call: "2S" }
+
+# --- slam machinery: cue bids -------------------------------------------------
+
+# with spades agreed in a game force, a new suit below game shows the ace or
+# a void there and slam interest; skipping a cheaper cue denies that control
+- name: cue_shows_cheapest_first_round_control
+  hand: "AJT84.KQ2.A53.73"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P"]
+  expect: { call: "4D", rule: "cue_S_D", alertable: true }
+
+- name: cue_denied_by_signoff
+  hand: "AJT84.Q52.K53.73"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P"]
+  expect: { call: "4S" }
+
+- name: rkc_outranks_cue_on_a_monster
+  hand: "AJT84.KQ2.K5.A73"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+# partner's cue unlocks the ask: rule_of_26 reads what the cue showed
+- name: partners_cue_unlocks_rkc
+  hand: "KQ52.A65.K82.KQ4"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P", "4C", "P"]
+  expect: { calls: ["4NT", "4H"] }
+
+- name: nothing_to_say_over_the_cue
+  hand: "KQ52.Q65.K82.QJ4"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P", "4C", "P"]
+  expect: { call: "4S" }
+
+# hearts agreed: 3S is the cheapest cue
+- name: cue_at_three_level_hearts_agreed
+  hand: "A532.KQJ84.K5.A7"
+  dealer: N
+  calls: ["1H", "P", "2C", "P", "2H", "P", "3H", "P"]
+  expect: { calls: ["3S", "4NT"] }
+
+# --- slam machinery round 2: quantitative raises ---------------------------------
+
+# 33 combined points is invisible when it splits 17/16; the invite is how a
+# partnership counts what neither hand can see alone
+- name: quant_4NT_invite_over_partners_3NT
+  hand: "AQ52.KJ4.QT9.KJ2"
+  dealer: N
+  calls: ["P", "P", "1D", "P", "1S", "1NT", "3NT", "P"]
+  expect: { call: "4NT", alertable: true }
+
+- name: quant_accept_with_a_maximum
+  hand: "KQJ4.A52.KJ3.Q54"
+  dealer: N
+  calls: ["1NT", "P", "3NT", "P", "4NT", "P"]
+  expect: { call: "6NT" }
+
+- name: quant_decline_with_a_minimum
+  hand: "KQJ4.952.KJ3.Q54"
+  dealer: N
+  calls: ["1NT", "P", "3NT", "P", "4NT", "P"]
+  expect: { call: "P" }

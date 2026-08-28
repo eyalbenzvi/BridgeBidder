@@ -37,6 +37,12 @@ _EVAL_S2 = {
     "longest_suit_length": _S2_SUIT,
     "balanced": 0.08,
     "semi_balanced": 0.08,
+    # 0/1/2-valued structural evaluators: nearly-satisfying them is meaningless
+    # (you either hold the singleton or you don't), so the miss is sharp
+    "singleton": 0.05,
+    "void": 0.05,
+    "singleton_or_void": 0.05,
+    "control_in": 0.05,
 }
 
 _FEATURE_MISS_FIT = 0.2
