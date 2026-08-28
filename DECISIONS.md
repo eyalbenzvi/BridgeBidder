@@ -1172,3 +1172,52 @@ by the expert): **-1190 -> -1058 (+132 IMPs paired; 149 boards' auctions
 changed, 59 up, 47 down)** - the round generalizes, and it is the largest
 single-round gain the project has recorded.  Like-for-like series since
 head-to-head play began: -1.474 -> -1.058.
+
+## The expert loop, round 3 (seed 919191) - and the loop audits itself
+
+Before this round's review, a counterfactual answered "what did the last
+round's fixes do to THIS fresh corpus": 14 boards changed, net -47 - the
++132 held-out gain coexisted with real rough edges, and the diff named
+them (a 4-level balancing rebid freed of its rule_of_26 gate turned into
+a phantom sacrifice; the new reopening double got passed out by an
+advancer with no advance context; the new 1NT-overcall penalty double and
+advance rules misfired once each).  The loop's own next iteration caught
+all of them: every one appeared in this round's dossier and was fixed on
+expert verdict.  That is the argument for fresh-corpus rounds.
+
+The round itself: 100 new deals (-128, 38 boards lost), every loss
+adjudicated (docs/EXPERT_REVIEW_919191.md; the expert reproduced ~24
+decisions through choose_bid): 8 implementation bugs, 8 exceptions, 12
+missing agreements, 13 nothing-wrong, 0 deletions.  Implemented:
+
+- **The doubled-cue hole**: retreat/pull floors so the pair never plays
+  its own doubled artificial cue (-800 and -500 on this corpus alone).
+- **Advance ladders for every live takeout double** - the recurring
+  species: the double of a raised major, the reopening double (last
+  round's own addition), and the new 4-level double of a raised weak
+  two, each shipped WITH its advances this time.
+- **partner_has_acted** (new when-condition) gates the 4-level balancing
+  rebids: a balance needs a partner with cards, else it is a phantom
+  sacrifice (-1100 once).
+- **_their_suits no longer counts their cue of OUR suit** (engine):
+  their 2S cue of our opened spades read as "their suit" and zeroed a
+  16-count's reopening double - poisoning every their-suit gate in cue
+  auctions.
+- **The slam floor over their jump overcall** (nx3_cue, 16+ support,
+  with opener's sign-off floor authored in the same breath), the
+  reverse-continuation family for the minor trees (2NT forcing over a
+  reverse; opener answers), opener's rebids over the negative double and
+  over their raise of it, the minor slam probe over the 18-19 2NT rebid,
+  advances of our 1NT overcall, the sit-for-the-penalty-double floor
+  (the double itself is non_forcing now: marking it one-round had the
+  filter deleting opener's pass and rescuing the opponents), competitive
+  invitational jump rebids, priority repairs (7-5 hands jumped past the
+  capped minimum rebid; 2NT over a weak two outranks the off-shape
+  double), sandwich hygiene (never "overcall" THEIR suit; a 6-card suit
+  overcalls instead of doubling), and LOTT obstruction raises (4-trump
+  3-level over their cue; 5-trump NV 4-level over their preemptive jump).
+
+Measured: same 100 boards **-128 -> +30 (+158 paired; 20 up, 4 down)**;
+held-out fixed corpus seed 828282 **-1058 -> -982 (+76 paired)** - the
+first reading below one IMP per board.  Like-for-like series since
+head-to-head play began: -1.474 -> -0.982.

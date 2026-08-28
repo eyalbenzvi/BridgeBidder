@@ -237,6 +237,11 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                 standing = c.bid_index
         if preempted != cond.i_preempted:
             return False
+    if cond.partner_has_acted is not None:
+        acted = any(not c.is_pass for i, c in enumerate(auction.calls)
+                    if auction.seat_of_call(i) == seat.partner)
+        if acted != cond.partner_has_acted:
+            return False
     if cond.my_last_call_was_double is not None:
         last = None
         for i, c in enumerate(auction.calls):
@@ -333,13 +338,24 @@ def _their_suits(analysis: Analysis, auction: Auction, seat: Seat) -> list[str]:
     an auction, so it is counted here whether or not a rule interpreted it.
     """
     out = _shown_suits_of(analysis, [seat.lho, seat.rho])
+    ours_so_far: set[str] = set()
+    their_raw: list[str] = []
     for i, c in enumerate(auction.calls):
         if not c.is_bid or c.strain == "NT":
             continue
         if auction.seat_of_call(i).same_side(seat):
+            ours_so_far.add(c.strain)
             continue
-        if c.strain not in out:
-            out.append(c.strain)
+        # a bid in a strain our side had already bid naturally is a CUE of
+        # our suit, not a suit they hold: counting it as theirs poisoned
+        # every their-suit gate (a 16-count reopening double scored 0.0
+        # because their cue of our own spades read as "their suit")
+        if c.strain in ours_so_far:
+            continue
+        their_raw.append(c.strain)
+    for st in their_raw:
+        if st not in out:
+            out.append(st)
     return out
 
 

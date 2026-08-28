@@ -1262,3 +1262,105 @@
   dealer: N
   calls: ["1S", "P", "P", "X", "P"]
   expect: { calls: ["3H", "2H"] }
+
+# =====================================================================
+# Expert round 3 (seed 919191): all 38 losing boards adjudicated.
+# See docs/EXPERT_REVIEW_919191.md.  Key locks below.
+# =====================================================================
+
+# they doubled our cue-raise: the overcaller retreats, the cue-bidder
+# pulls - we twice played 2-of-a-cue doubled for -800/-500
+- name: e2_retreat_from_doubled_cue
+  hand: "KQ862.A54.86.T42"
+  calls: ["1D", "1H", "P", "2D", "X"]
+  expect: { call: "2H" }
+
+- name: e2_pull_own_doubled_cue
+  hand: "A54.KT86.542.863"
+  calls: ["1D", "1H", "P", "2D", "X", "P", "P"]
+  expect: { call: "2H" }
+
+# every live takeout double now has an advance ladder
+- name: e2_advance_reopening_double
+  hand: "92.K.86432.JT432"
+  calls: ["1H", "2S", "P", "P", "X", "P"]
+  expect: { calls: ["3D", "3C"] }
+
+- name: e2_advance_double_of_raised_major
+  hand: "97.KJ4.87654.A76"
+  calls: ["1H", "P", "2H", "X", "P"]
+  expect: { call: "3D" }
+
+# no phantom 4-level balance over their freely-bid game with a silent partner
+- name: e2_no_phantom_sacrifice
+  hand: "AQ8765..KQ3.QT98"
+  vulnerability: Both
+  calls: ["1H", "1S", "2S", "3H", "P", "4H", "P", "P"]
+  expect: { call: "P" }
+
+# takeout double of the raised weak two exists at the 4-level
+- name: e2_double_raised_weak_two
+  hand: "AK.J8.AT872.A962"
+  calls: ["2H", "P", "4H"]
+  expect: { call: "X" }
+
+# the slam floor over their jump overcall: cue with 16+ support
+- name: e2_slam_cue_over_jump_overcall
+  hand: "AT962.8.2.AKQJ76"
+  calls: ["1S", "3D"]
+  expect: { call: "4D", convention: cue_raise }
+
+# a 10-count with singleton support never passes the minor rebid
+- name: e2_ten_count_escapes_minor_rebid
+  hand: "QJ76.854.AQJ76.8"
+  calls: ["1C", "P", "1S", "P", "2C", "P"]
+  expect: { call: "2D", forcing: one_round }
+
+# a 7-5 twenty-count jumps, the minimum rebid is capped
+- name: e2_seven_five_jumps
+  hand: "AQJT862.KJ432.A."
+  calls: ["1S", "P", "1NT", "P"]
+  expect: { calls: ["4S", "3S"] }
+
+# opener answers the forcing 2NT over his reverse (17 was passing 2NT)
+- name: e2_reverse_2NT_gets_answered
+  hand: "A2.AK95.6.KQJ632"
+  calls: ["1C", "P", "1S", "P", "2H", "P", "2NT", "P"]
+  expect: { calls: ["3NT", "3C"] }
+
+# opener bids the major partner's negative double implied over their raise
+- name: e2_opener_honors_negative_double
+  hand: "AJ64.Q.AKT982.T3"
+  calls: ["1D", "2H", "X", "4H"]
+  expect: { call: "4S" }
+
+# the minor slam probe over the 18-19 2NT rebid
+- name: e2_minor_probe_over_2NT_rebid
+  hand: "4.QT7.KT2.AQT942"
+  calls: ["1S", "P", "1NT", "P", "2NT", "P"]
+  expect: { call: "3C", forcing: one_round }
+
+# opener sits for partner's penalty double of their 1NT overcall
+- name: e2_sit_for_penalty_double
+  hand: "AQ742.K983.75.K2"
+  calls: ["1S", "1NT", "X", "P"]
+  expect: { call: "P" }
+
+# the sandwich seat never "overcalls" THEIR suit
+- name: e2_sandwich_never_their_suit
+  hand: "AQ942.K5.J43.972"
+  dealer: N
+  calls: ["1S", "P", "1NT"]
+  expect: { call: "P" }
+
+# 15-18 balanced over a weak two is 2NT, not the takeout double
+- name: e2_2NT_over_weak_two
+  hand: "QT.AQT94.Q87.AK6"
+  calls: ["2H"]
+  expect: { call: "2NT" }
+
+# competitive invitational jump rebid: a 17-count is not a 12-count
+- name: e2_competitive_jump_rebid
+  hand: "AQ9852.9.AK72.KJ"
+  calls: ["1S", "P", "1NT", "2C"]
+  expect: { call: "3S" }
