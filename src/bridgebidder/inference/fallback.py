@@ -90,7 +90,8 @@ def generate_fallbacks(
     # alertable cue or transfer has no trump suit, and letting the generic
     # pass sit it plays 2-of-a-nothing doubled.  Authored sit/retreat rules
     # still apply; only the undiscussed pass is withheld.
-    if not our_artificial_doubled:
+    withhold_pass = our_artificial_doubled
+    if not withhold_pass:
         if we_have_acted:
             add(PASS, HandConstraint(), "nothing more to say (undiscussed)", "sign_off", 8.0)
         else:
@@ -200,10 +201,17 @@ def generate_fallbacks(
     # ---- ultimate backstop: cheapest legal bid, unconstrained.  Only when
     # passing is actually illegal - otherwise its unconstrained fit (1.0)
     # outscores a poorly-fitting pass and the engine bids on forever. ----
-    if pass_forbidden and not any(m.call.is_bid for m in out):
+    if (pass_forbidden or withhold_pass) and not any(m.call.is_bid for m in out):
         for b in auction.legal_calls():
             if b.is_bid:
                 add(b, HandConstraint(), "forced continuation (undiscussed)", "non_forcing", 1.0)
                 break
+
+    # SAFETY: withholding the pass must never leave the seat with nothing to
+    # say.  If no bid was generated after all (nothing legal, or everything
+    # already covered by rules that did not match), put the pass back - a
+    # crash is worse than playing a doubled artificial call.
+    if withhold_pass and not out:
+        add(PASS, HandConstraint(), "nothing more to say (undiscussed)", "sign_off", 8.0)
 
     return out

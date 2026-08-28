@@ -909,6 +909,39 @@ contexts:
         shows: "exactly two $M: responder decides"
         establishes: { forcing: non_forcing }
 
+  - id: stayman_doubled_pull
+    description: "Our Stayman 2C was doubled and passed round: escape"
+    pattern: "1NT - P - 2C - X - P - P - ?"
+    rules:
+      # opener's pass over the double denied a four-card major, so this is
+      # a landing-spot problem: play in a real suit, or sit 2C doubled with
+      # actual clubs.  (Before this existed the engine had ZERO candidates
+      # here once the fallback pass was withheld.)
+      - id: stmxpp_pass
+        call: P
+        priority: 60
+        requires: { suits: { C: [5, 13] } }
+        shows: "real clubs: 2C doubled is a playable spot"
+        establishes: { forcing: sign_off }
+      - id: stmxpp_2S
+        call: 2S
+        priority: 58
+        requires: { suits: { S: [5, 13] } }
+        shows: "escaping to my long major"
+        establishes: { forcing: sign_off }
+      - id: stmxpp_2H
+        call: 2H
+        priority: 57
+        requires: { suits: { H: [5, 13] } }
+        shows: "escaping to my long major"
+        establishes: { forcing: sign_off }
+      - id: stmxpp_2D
+        call: 2D
+        priority: 55
+        requires: {}
+        shows: "escaping the doubled Stayman: diamonds is the landing spot"
+        establishes: { forcing: sign_off }
+
   - id: transfer_doubled_pull
     description: "The doubled transfer came back to responder: complete it"
     expand_pairs:

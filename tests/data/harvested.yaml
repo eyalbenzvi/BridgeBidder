@@ -1442,3 +1442,19 @@
   hand: "KQ84.AQ63.J5.842"
   calls: ["2NT", "P", "3C", "P", "3S", "P"]
   expect: { call: "4S" }
+
+# the fallback invariant (never pass out our own doubled artificial call)
+# must never leave a seat with ZERO candidates: doubled Stayman had no
+# rules at all and the engine raised "no legal candidate".  Both the
+# escape context and the safety net in the fallback layer are locked here.
+- name: e3_doubled_stayman_escape
+  hand: "QJ54.KT97.QT8.62"
+  dealer: N
+  calls: ["P", "1NT", "P", "2C", "X", "P", "P"]
+  expect: { call: "2D" }
+
+- name: e3_doubled_stayman_escape_to_a_major
+  hand: "QJ543.KT9.QT8.62"
+  dealer: N
+  calls: ["P", "1NT", "P", "2C", "X", "P", "P"]
+  expect: { call: "2S" }
