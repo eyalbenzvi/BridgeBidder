@@ -1159,3 +1159,106 @@
   dealer: N
   calls: ["P", "1S", "2C", "X", "P", "2D", "P", "3D", "P"]
   expect: { calls: ["5D", "3NT"] }
+
+# =====================================================================
+# Expert round 2 (the 100-board loop): verdicts on all 40 losing boards
+# of a fresh match, implemented and locked here.  Same-boards result:
+# -130 -> +50.  See docs/EXPERT_REVIEW_100_BOARDS.md for the verdicts.
+# =====================================================================
+
+# the weak-two-doubled family existed nowhere: advancer now advances
+- name: e1_advance_double_of_weak_two
+  hand: "653.K98.Q874.JT4"
+  calls: ["2S", "X", "P"]
+  expect: { calls: ["3D", "3H"] }
+
+- name: e1_raise_doubled_weak_two_on_lott
+  hand: "KQT92.85.T63.752"
+  calls: ["2S", "X"]
+  expect: { call: "4S" }
+
+# RKC 5H reply with hearts agreed is passable (the engine used to have
+# ZERO legal candidates here and invented 5S on a 4-card suit)
+- name: e1_rkc_5H_reply_is_passable
+  hand: "Q7.KJ654.A83.K52"
+  dealer: E
+  calls: ["1D", "P", "1H", "P", "2H", "P", "4NT", "P", "5H", "P"]
+  expect: { call: "P" }
+
+# the big hand's second action: a reopening double once our side acted,
+# and a SECOND double at 19+
+- name: e1_second_double_with_a_monster
+  hand: "AKQ5.AQJ4.5.AKJ3"
+  calls: ["1D", "P", "P", "X", "2D", "P", "P"]
+  expect: { call: "X" }
+
+# double-then-raise shows 17+: the doubler acts over a 0-8 advance
+- name: e1_doubler_raises_the_advance
+  hand: "AQ85.A4.KQ82.KJ5"
+  calls: ["1C", "X", "P", "1S", "P"]
+  expect: { calls: ["4S", "2S", "3S"] }
+
+# responder actions over their 1NT overcall existed nowhere
+- name: e1_raise_over_their_1NT_overcall
+  hand: "J84.JT863.K.Q874"
+  calls: ["1H", "1NT"]
+  expect: { calls: ["2H", "3H", "4H"] }
+
+# 19-21 balanced balances 2NT, not a takeout double
+- name: e1_balancing_2NT_on_19_21
+  hand: "KQ7.A54.KJ6.AQJ9"
+  calls: ["1H", "P", "P"]
+  expect: { call: "2NT" }
+
+# weak-two feature ask: a maximum with no feature has an honest reply,
+# and "solid suit" means solid (AKT532 is not)
+- name: e1_feature_ask_max_no_feature
+  hand: "Q52.AKT532.87.J4"
+  calls: ["2H", "P", "2NT", "P"]
+  expect: { call: "3H" }
+
+# preempt defense: AK86 + KJ8753 overcalls 3H over their 3D
+- name: e1_overcall_their_preempt_11_with_qt
+  hand: "AK86.KJ8753.7.74"
+  calls: ["3D"]
+  expect: { call: "3H" }
+
+# rule of 15 opens all suits in 4th seat, not just spades
+- name: e1_rule_15_opens_diamonds
+  hand: "AJ32.T92.AQ542.5"
+  calls: ["P", "P", "P"]
+  expect: { call: "1D" }
+
+# a 6-card suit beats a 1NT rebid (singleton spade, six hearts)
+- name: e1_six_hearts_beat_1NT_rebid
+  hand: "7.Q98542.T8.A964"
+  calls: ["1D", "P", "1H", "P", "1S", "P"]
+  expect: { call: "2H" }
+
+# invitations get answered: opener 17 accepts the 2NT invite after 1H-1S-2D
+- name: e1_accept_invite_after_two_suits
+  hand: "7.AQJ85.AK752.Q4"
+  calls: ["1H", "P", "1S", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# the takeout gate reads ALL their suits: 4 cards in their second suit
+# is not "short in their suit"
+- name: e1_no_takeout_double_with_their_second_suit
+  hand: "J6.QT96.AK86.Q86"
+  dealer: E
+  calls: ["1D", "P", "1S", "P", "2C"]
+  expect: { call: "P" }
+
+# 5332 opposite 2NT: choice of games (3NT), not the 5-2 fit
+- name: e1_choice_of_games_with_5332
+  hand: "JT632.J97.QJ5.87"
+  calls: ["2NT", "P", "3H", "P", "3S", "P"]
+  expect: { call: "3NT" }
+
+# advancing the balancing double: the 4-4 major fit gets preference and
+# the 10-12 jump exists
+- name: e1_advance_balance_jump_major
+  hand: "A62.KJ93.AT97.T6"
+  dealer: N
+  calls: ["1S", "P", "P", "X", "P"]
+  expect: { calls: ["3H", "2H"] }

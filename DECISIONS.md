@@ -1104,3 +1104,71 @@ against the pre-maxim state.  The round's meta-lesson: a maxim imported
 from the canon is a hypothesis, not a rule; the corpus convicts or
 acquits, and an expert reading the convictions finds the CAVEAT the
 textbook stated one paragraph below the maxim.
+
+## The expert loop, round 2: a fresh 100 boards, all 40 losses adjudicated
+
+The new working method, run end to end: play a fresh 100-board match
+(seed 909090: -130 IMPs, 40 boards lost), hand EVERY losing board to an
+external bridge expert with the rule text and engine mechanics, implement
+the verdicts, and replay the identical boards.  The verdict document is
+docs/EXPERT_REVIEW_100_BOARDS.md: 9 implementation bugs, 12 exceptions,
+14 missing agreements, 5 nothing-wrong, 0 deletions - and the expert
+reproduced eleven non-obvious boards through choose_bid before judging,
+which overturned one of its own early reads.
+
+The five clusters that carried most of the 130 lost IMPs:
+
+- **"The weak two was doubled" had no rules on either side**: advancer
+  passed takeout doubles of weak twos on three small trumps, responder
+  never raised a doubled weak two on a five-card fit.  Both families
+  authored (advances with the penalty pass gated on trump quality, LOTT
+  raises, responsive doubles).
+- **The big hand had no second action**: side_has_acted:false on the
+  balancing doubles (the anti-triple-double guard) also silenced 17-23
+  counts after a runout.  New reopening doubles keyed on the new
+  my_last_call_was_double engine condition - false for the first reopen
+  at 16+, TRUE for a second double at 19+ (the first draft's guard
+  blocked the exact 23-count it was built for).  The doubler's raises of
+  a minimum advance (17-19 raise, 20+ game) were also authored, in BOTH
+  generic families after a reproduction showed the uncontested context,
+  not the competitive one, interprets the position.
+- **The RKC 5H reply was unpassable**: forcing:one_round on the reply
+  plus the forcing-pass filter left the asker ZERO legal candidates with
+  hearts agreed, and the backstop invented 5S on a four-card suit.  New
+  agreed-suit reply contexts make 5-of-the-agreed-major non-forcing.
+- **Invitations answered by silence**: no acceptance rules after
+  1H-1S-2m-2NT or 1M-1NT-2x-3x; both authored (the second one is why a
+  17-count with ~20 support passed a cold game - the sharp LOTT gate can
+  only count partner's SHOWN three trumps, and the fix is the specific
+  context, not weakening the gate).
+- **First-suit-only residue**: cl_nt1/2/3 and ballow_nt1/2/3 swept to
+  weakest_their_stopper; cl_takeout_X gates on a new sharp
+  max_their_suit_length (it fit 1.00 holding FOUR cards in their second
+  suit); cl_nt1 gained the side_has_acted guard it alone lacked.
+
+Plus the singles: feature-ask replies fixed (a maximum with no feature
+had no reply at all, and "solid suit" now means two of the top three
+plus quality 3); 4th-seat rule-of-15 openings for all suits (only
+spades existed); 6-card suit beats a 1NT rebid; 5332 opposite 2NT plays
+3NT not the 5-2 fit; the balancing-double advance ladder (a king
+lighter, majors first); 3-level negative doubles and free bids; the
+quantitative minor route over 1NT; chunky 5-card majors overcall
+instead of doubling; assorted small gates (xd_second honors, xd_rebid
+LOTT, rr_run i_have_acted - the penalty doubler was running from its
+own double, mixed-raise floor 8, cl_nt2 gate).
+
+Two eval-model additions: `max_their_suit_length` (sharp) and the
+`my_last_call_was_double` condition.  Five boards ruled NOTHING-WRONG
+were left untouched.
+
+**Replaying the identical 100 boards: -130 -> +50 (+180 IMPs; 28 boards
+improved, 4 worse).**  The caveat is stated plainly: these are the boards
+the expert reviewed, so the paired +180 is an in-sample number; the
+held-out fixed corpus (seed 828282) is the honest generalization check
+and is recorded below.
+
+Held-out check, fixed corpus seed 828282 (none of these boards were seen
+by the expert): **-1190 -> -1058 (+132 IMPs paired; 149 boards' auctions
+changed, 59 up, 47 down)** - the round generalizes, and it is the largest
+single-round gain the project has recorded.  Like-for-like series since
+head-to-head play began: -1.474 -> -1.058.

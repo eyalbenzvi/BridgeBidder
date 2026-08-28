@@ -169,6 +169,39 @@ contexts:
         establishes: { forcing: non_forcing }
         when: { opening_seat: [4] }
 
+      - id: open_1H_rule15
+        call: 1H
+        priority: 76
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [10, 11]
+          evals: { rule_of_15: [15, 30], "suit_diff(H,S)": [1, 13] }
+        shows: "5+ hearts, 4th-seat opening satisfying the rule of 15"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [4] }
+      - id: open_1D_rule15
+        call: 1D
+        priority: 75
+        requires:
+          suits: { D: [4, 13] }
+          hcp: [10, 11]
+          evals: { rule_of_15: [15, 30], "suit_diff(D,C)": [0, 13] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "4th-seat opening satisfying the rule of 15 (better minor)"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [4] }
+      - id: open_1C_rule15
+        call: 1C
+        priority: 74
+        requires:
+          suits: { C: [4, 13] }
+          hcp: [10, 11]
+          evals: { rule_of_15: [15, 30], "suit_diff(C,D)": [1, 13] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "4th-seat opening satisfying the rule of 15 (better minor)"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [4] }
+
       - id: open_1D
         call: 1D
         priority: 74
@@ -506,6 +539,22 @@ contexts:
         shows: "to play, 10-15 HCP, no 4-card major"
         establishes: { forcing: sign_off }
 
+      # the minor-slam route over 1NT (minimum viable version): a running
+      # 6+ card minor is worth ~3 points more than its HCP, so 12-15 with
+      # one invites exactly like a balanced 16-17
+      - id: nt_4NT_quant_minor
+        call: 4NT
+        priority: 63
+        requires:
+          hcp: [12, 15]
+          any_of:
+            - suits: { C: [6, 13] }
+              evals: { "two_of_top3(C)": [1, 1] }
+            - suits: { D: [6, 13] }
+              evals: { "two_of_top3(D)": [1, 1] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "quantitative slam invitation: 12-15 with a running 6+ card minor"
+        establishes: { forcing: invitational }
       - id: nt_4NT_quant
         call: 4NT
         priority: 64
@@ -2254,6 +2303,471 @@ contexts:
   # response and RHO's interference below 2 of responder's suit)
   # ===========================================================================
 
+  # ===========================================================================
+  # THE WEAK TWO WAS DOUBLED (both sides of it) - a family the 100-board
+  # expert review found completely absent: advancer converted takeout
+  # doubles of weak twos with three small trumps, and responder never
+  # raised a doubled weak two on a five-card fit.
+  # ===========================================================================
+
+  - id: weak2_our_side_doubled
+    description: "Partner's weak two was doubled: raise the barrage / redouble"
+    expand: { W: [D, H, S] }
+    pattern: "2$W - X - ?"
+    rules:
+      - id: w2x_raise4
+        call: 4$W
+        priority: 62
+        requires:
+          suits: { $W: [4, 13] }
+          evals: { "lott_total_trumps($W)": [10, 26] }
+        shows: "preemptive insurance: 4+ trumps opposite the weak two, straight to the LOTT level"
+        establishes: { forcing: sign_off, agreed_suit: $W }
+      - id: w2x_raise3
+        call: 3$W
+        priority: 60
+        requires:
+          suits: { $W: [3, 13] }
+          evals: { total_points: [0, 9] }
+        shows: "preemptive raise over the double: 3+ trumps, weak"
+        establishes: { forcing: sign_off, agreed_suit: $W }
+      - id: w2x_XX
+        call: XX
+        priority: 58
+        requires: { hcp: [10, 40], suits: { $W: [0, 2] } }
+        shows: "redouble: 10+ defensive values, no fit"
+        establishes: { forcing: one_round }
+
+  - id: advance_weak2_double_D
+    description: "Advancing partner's takeout double of their weak 2D"
+    pattern: "2D - X - P - ?"
+    rules:
+      - id: aw2D_2H
+        call: 2H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [0, 8] } }
+        shows: "cheapest major advance of the double: 0-8"
+        establishes: { forcing: non_forcing }
+      - id: aw2D_2S
+        call: 2S
+        priority: 61
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [0, 8] }, not: { suits: { H: [4, 13] } } }
+        shows: "spade advance of the double: 0-8"
+        establishes: { forcing: non_forcing }
+      - id: aw2D_3C
+        call: 3C
+        priority: 58
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [0, 8] }, not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
+        shows: "club advance of the double: 0-8, no major"
+        establishes: { forcing: non_forcing }
+      - id: aw2D_3H
+        call: 3H
+        priority: 60
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [9, 11] } }
+        shows: "jump advance: invitational 9-11 with 4+ hearts"
+        establishes: { forcing: invitational }
+      - id: aw2D_3S
+        call: 3S
+        priority: 59
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [9, 11] }, not: { suits: { H: [4, 13] } } }
+        shows: "jump advance: invitational 9-11 with 4+ spades"
+        establishes: { forcing: invitational }
+      - id: aw2D_game_4M_H
+        call: 4H
+        priority: 57
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [12, 40] } }
+        shows: "game values opposite the double"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: aw2D_game_4M_S
+        call: 4S
+        priority: 56
+        requires: { suits: { S: [5, 13] }, evals: { total_points: [12, 40] }, not: { suits: { H: [4, 13] } } }
+        shows: "game values opposite the double"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: aw2D_2NT
+        call: 2NT
+        priority: 55
+        requires: { hcp: [8, 11], evals: { "stoppers(D)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural: 8-11 with their suit stopped"
+        establishes: { forcing: non_forcing }
+      - id: aw2D_cue
+        call: 3D
+        priority: 54
+        requires: { evals: { total_points: [12, 40] }, not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
+        shows: "cue: game-forcing values, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+      - id: aw2D_pass_penalty
+        call: P
+        priority: 50
+        requires: { suits: { D: [4, 13] }, evals: { "two_of_top3(D)": [1, 1] } }
+        shows: "penalty pass of the double: 4+ good trumps behind the weak two"
+        establishes: { forcing: sign_off }
+
+  - id: advance_weak2_double_H
+    description: "Advancing partner's takeout double of their weak 2H"
+    pattern: "2H - X - P - ?"
+    rules:
+      - id: aw2H_2S
+        call: 2S
+        priority: 62
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [0, 8] } }
+        shows: "cheapest major advance of the double: 0-8"
+        establishes: { forcing: non_forcing }
+      - id: aw2H_3C
+        call: 3C
+        priority: 58
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [0, 8] }, not: { suits: { S: [4, 13] } } }
+        shows: "club advance of the double: 0-8, no spade suit"
+        establishes: { forcing: non_forcing }
+      - id: aw2H_3D
+        call: 3D
+        priority: 57
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [0, 8] }, not: { any_of: [ { suits: { S: [4, 13] } }, { suits: { C: [4, 13] } } ] } }
+        shows: "diamond advance of the double: 0-8"
+        establishes: { forcing: non_forcing }
+      - id: aw2H_3S
+        call: 3S
+        priority: 60
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [9, 11] } }
+        shows: "jump advance: invitational 9-11 with 4+ spades"
+        establishes: { forcing: invitational }
+      - id: aw2H_4S
+        call: 4S
+        priority: 59
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [12, 40] } }
+        shows: "game values opposite the double"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: aw2H_2NT
+        call: 2NT
+        priority: 55
+        requires: { hcp: [8, 11], evals: { "stoppers(H)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural: 8-11 with their suit stopped"
+        establishes: { forcing: non_forcing }
+      - id: aw2H_cue
+        call: 3H
+        priority: 54
+        requires: { evals: { total_points: [12, 40] }, not: { suits: { S: [4, 13] } } }
+        shows: "cue: game-forcing values, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+      - id: aw2H_pass_penalty
+        call: P
+        priority: 50
+        requires: { suits: { H: [4, 13] }, evals: { "two_of_top3(H)": [1, 1] } }
+        shows: "penalty pass of the double: 4+ good trumps behind the weak two"
+        establishes: { forcing: sign_off }
+
+  - id: advance_weak2_double_S
+    description: "Advancing partner's takeout double of their weak 2S"
+    pattern: "2S - X - P - ?"
+    rules:
+      - id: aw2S_3H
+        call: 3H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [0, 8] } }
+        shows: "cheapest major advance of the double: 0-8"
+        establishes: { forcing: non_forcing }
+      - id: aw2S_3C
+        call: 3C
+        priority: 58
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [0, 8] }, not: { suits: { H: [4, 13] } } }
+        shows: "club advance of the double: 0-8, no heart suit"
+        establishes: { forcing: non_forcing }
+      - id: aw2S_3D
+        call: 3D
+        priority: 57
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [0, 8] }, not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { C: [4, 13] } } ] } }
+        shows: "diamond advance of the double: 0-8"
+        establishes: { forcing: non_forcing }
+      - id: aw2S_4H
+        call: 4H
+        priority: 60
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [9, 40] } }
+        shows: "game jump: 9+ with 4+ hearts opposite the double"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: aw2S_2NT
+        call: 2NT
+        priority: 55
+        requires: { hcp: [8, 11], evals: { "stoppers(S)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural: 8-11 with their suit stopped"
+        establishes: { forcing: non_forcing }
+      - id: aw2S_cue
+        call: 3S
+        priority: 54
+        requires: { evals: { total_points: [12, 40] }, not: { suits: { H: [4, 13] } } }
+        shows: "cue: game-forcing values, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+      - id: aw2S_pass_penalty
+        call: P
+        priority: 50
+        requires: { suits: { S: [4, 13] }, evals: { "two_of_top3(S)": [1, 1] } }
+        shows: "penalty pass of the double: 4+ good trumps behind the weak two"
+        establishes: { forcing: sign_off }
+
+  - id: advance_weak2_double_raised
+    description: "They raised the doubled weak two: responsive double"
+    expand: { W: [D, H, S] }
+    pattern: "2$W - X - bid - ?"
+    rules:
+      - id: aw2r_responsive_X
+        call: X
+        priority: 55
+        requires: { hcp: [8, 40], suits: { $W: [0, 2] } }
+        shows: "responsive double: 8+ opposite the takeout double, no trump stack"
+        establishes: { forcing: one_round }
+        convention: responsive_double
+
+  # Responder's actions over their 1NT overcall of partner's major - the
+  # position had NO context at all, so five-card support passed out 1NT
+  # undoubled with game on our side.
+  - id: resp_over_their_1NT
+    description: "Responder after 1M - (1NT overcall)"
+    expand: { M: [H, S] }
+    pattern: "1$M - 1NT - ?"
+    rules:
+      - id: r1NTo_X
+        call: X
+        priority: 62
+        requires: { hcp: [9, 40] }
+        shows: "penalty double of their 1NT: 9+, the balance of power is ours"
+        establishes: { forcing: one_round }
+      - id: r1NTo_raise2
+        call: 2$M
+        priority: 60
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [5, 10] } }
+        shows: "competitive raise: 3+ trumps, 5-10 support points"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: r1NTo_raise3
+        call: 3$M
+        priority: 58
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [3, 9], "lott_total_trumps($M)": [9, 26] } }
+        shows: "preemptive jump raise: 4+ trumps, 9 combined"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: r1NTo_raise4
+        call: 4$M
+        priority: 59
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [8, 40], "lott_total_trumps($M)": [10, 26] } }
+        shows: "raise to the LOTT level: 10 combined trumps"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+
+  - id: advance_balancing_double_C
+    description: "Advancing partner's balancing double of 1C"
+    pattern: "1C - P - P - X - P - ?"
+    rules:
+      - id: advbal_C_D
+        call: 1D
+        priority: 55
+        requires: { suits: { D: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_C_D_jump
+        call: 2D
+        priority: 51
+        requires: { suits: { D: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(D)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_C_H
+        call: 1H
+        priority: 57
+        requires: { suits: { H: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_C_H_jump
+        call: 2H
+        priority: 53
+        requires: { suits: { H: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(H)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_C_S
+        call: 1S
+        priority: 58
+        requires: { suits: { S: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_C_S_jump
+        call: 2S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(S)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_C_2NT
+        call: 2NT
+        priority: 50
+        requires: { hcp: [11, 13], evals: { "stoppers(C)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural advance of the balance: 11-13 with their suit stopped"
+        establishes: { forcing: invitational }
+      - id: advbal_C_cue
+        call: 2C
+        priority: 49
+        requires: { hcp: [13, 40] }
+        shows: "cue advance of the balance: game interest, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+
+  - id: advance_balancing_double_D
+    description: "Advancing partner's balancing double of 1D"
+    pattern: "1D - P - P - X - P - ?"
+    rules:
+      - id: advbal_D_H
+        call: 1H
+        priority: 57
+        requires: { suits: { H: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_D_H_jump
+        call: 2H
+        priority: 53
+        requires: { suits: { H: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(H)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_D_S
+        call: 1S
+        priority: 58
+        requires: { suits: { S: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_D_S_jump
+        call: 2S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(S)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_D_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_D_C_jump
+        call: 3C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(C)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_D_2NT
+        call: 2NT
+        priority: 50
+        requires: { hcp: [11, 13], evals: { "stoppers(D)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural advance of the balance: 11-13 with their suit stopped"
+        establishes: { forcing: invitational }
+      - id: advbal_D_cue
+        call: 2D
+        priority: 49
+        requires: { hcp: [13, 40] }
+        shows: "cue advance of the balance: game interest, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+
+  - id: advance_balancing_double_H
+    description: "Advancing partner's balancing double of 1H"
+    pattern: "1H - P - P - X - P - ?"
+    rules:
+      - id: advbal_H_S
+        call: 1S
+        priority: 58
+        requires: { suits: { S: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_H_S_jump
+        call: 2S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(S)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_H_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_H_C_jump
+        call: 3C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(C)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_H_D
+        call: 2D
+        priority: 55
+        requires: { suits: { D: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_H_D_jump
+        call: 3D
+        priority: 51
+        requires: { suits: { D: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(D)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_H_2NT
+        call: 2NT
+        priority: 50
+        requires: { hcp: [11, 13], evals: { "stoppers(H)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural advance of the balance: 11-13 with their suit stopped"
+        establishes: { forcing: invitational }
+      - id: advbal_H_cue
+        call: 2H
+        priority: 49
+        requires: { hcp: [13, 40] }
+        shows: "cue advance of the balance: game interest, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+
+  - id: advance_balancing_double_S
+    description: "Advancing partner's balancing double of 1S"
+    pattern: "1S - P - P - X - P - ?"
+    rules:
+      - id: advbal_S_C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_S_C_jump
+        call: 3C
+        priority: 50
+        requires: { suits: { C: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(C)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_S_D
+        call: 2D
+        priority: 55
+        requires: { suits: { D: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_S_D_jump
+        call: 3D
+        priority: 51
+        requires: { suits: { D: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(D)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_S_H
+        call: 2H
+        priority: 57
+        requires: { suits: { H: [4, 13] }, hcp: [0, 9] }
+        shows: "advancing the balancing double: best suit, 0-9"
+        establishes: { forcing: non_forcing }
+      - id: advbal_S_H_jump
+        call: 3H
+        priority: 53
+        requires: { suits: { H: [4, 13] }, hcp: [10, 12], evals: { "suit_quality(H)": [1, 9] } }
+        shows: "jump advance of the balancing double: 10-12 (partner may be a king light)"
+        establishes: { forcing: invitational }
+      - id: advbal_S_2NT
+        call: 2NT
+        priority: 50
+        requires: { hcp: [11, 13], evals: { "stoppers(S)": [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "natural advance of the balance: 11-13 with their suit stopped"
+        establishes: { forcing: invitational }
+      - id: advbal_S_cue
+        call: 2S
+        priority: 49
+        requires: { hcp: [13, 40] }
+        shows: "cue advance of the balance: game interest, no clear suit"
+        establishes: { forcing: game_forcing }
+        convention: cue_raise
+
   - id: support_double
     description: "Support double: X = exactly 3-card support for responder's major"
     expand_pairs:
@@ -2660,6 +3174,9 @@ contexts:
               suits: { C: [0, 2], S: [3, 4], H: [3, 4], D: [3, 13] }
             - hcp: [17, 40]
               suits: { S: [0, 5], H: [0, 5] }
+              # a chunky five-card major is the bid, not the double
+              not: { any_of: [ { suits: { S: [5, 13] }, evals: { "two_of_top3(S)": [1, 1] } },
+                               { suits: { H: [5, 13] }, evals: { "two_of_top3(H)": [1, 1] } } ] }
         shows: "takeout double: opening values, short clubs, support for the other suits, no five-card major (or any 17+)"
         establishes: { forcing: one_round }
       - id: oc1C_1D
@@ -2683,19 +3200,19 @@ contexts:
       - id: oc1C_2D_jump
         call: 2D
         priority: 60
-        requires: { suits: { D: [6, 6] }, hcp: [5, 10], features: [ "good_suit(D)" ] }
+        requires: { suits: { D: [6, 7] }, hcp: [5, 10], features: [ "good_suit(D)" ] }
         shows: "weak jump overcall: 6 diamonds, 5-10"
         establishes: { forcing: non_forcing }
       - id: oc1C_2H_jump
         call: 2H
         priority: 60
-        requires: { suits: { H: [6, 6] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
+        requires: { suits: { H: [6, 7] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
         shows: "weak jump overcall: 6 hearts, 5-10"
         establishes: { forcing: non_forcing }
       - id: oc1C_2S_jump
         call: 2S
         priority: 60
-        requires: { suits: { S: [6, 6] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
+        requires: { suits: { S: [6, 7] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
         shows: "weak jump overcall: 6 spades, 5-10"
         establishes: { forcing: non_forcing }
       - id: oc1C_pass
@@ -2729,6 +3246,9 @@ contexts:
               suits: { D: [0, 2], S: [3, 4], H: [3, 4], C: [3, 13] }
             - hcp: [17, 40]
               suits: { S: [0, 5], H: [0, 5] }
+              # a chunky five-card major is the bid, not the double
+              not: { any_of: [ { suits: { S: [5, 13] }, evals: { "two_of_top3(S)": [1, 1] } },
+                               { suits: { H: [5, 13] }, evals: { "two_of_top3(H)": [1, 1] } } ] }
         shows: "takeout double: opening values, short diamonds, no five-card major (or any 17+)"
         establishes: { forcing: one_round }
       - id: oc1D_1H
@@ -2752,13 +3272,13 @@ contexts:
       - id: oc1D_2H_jump
         call: 2H
         priority: 60
-        requires: { suits: { H: [6, 6] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
+        requires: { suits: { H: [6, 7] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
         shows: "weak jump overcall: 6 hearts, 5-10"
         establishes: { forcing: non_forcing }
       - id: oc1D_2S_jump
         call: 2S
         priority: 60
-        requires: { suits: { S: [6, 6] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
+        requires: { suits: { S: [6, 7] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
         shows: "weak jump overcall: 6 spades, 5-10"
         establishes: { forcing: non_forcing }
       - id: oc1D_3C_jump
@@ -2798,6 +3318,7 @@ contexts:
               suits: { H: [0, 2], S: [3, 4], D: [3, 13], C: [3, 13] }
             - hcp: [17, 40]
               suits: { S: [0, 5] }
+              not: { suits: { S: [5, 13] }, evals: { "two_of_top3(S)": [1, 1] } }
         shows: "takeout double: opening values, short hearts, no five-card major (or any 17+)"
         establishes: { forcing: one_round }
       - id: oc1H_1S
@@ -2821,7 +3342,7 @@ contexts:
       - id: oc1H_2S_jump
         call: 2S
         priority: 60
-        requires: { suits: { S: [6, 6] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
+        requires: { suits: { S: [6, 7] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
         shows: "weak jump overcall: 6 spades, 5-10"
         establishes: { forcing: non_forcing }
       - id: oc1H_3m_jump
@@ -2867,6 +3388,7 @@ contexts:
               suits: { S: [0, 2], H: [3, 4], D: [3, 13], C: [3, 13] }
             - hcp: [17, 40]
               suits: { H: [0, 5] }
+              not: { suits: { H: [5, 13] }, evals: { "two_of_top3(H)": [1, 1] } }
         shows: "takeout double: opening values, short spades, no five-card major (or any 17+)"
         establishes: { forcing: one_round }
       - id: oc1S_2C
@@ -3220,6 +3742,40 @@ contexts:
             - evals: { "keycards(agreed)": [3, 5] }
         shows: "RKC Blackwood 1430 for the agreed suit"
         establishes: { forcing: one_round, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+
+  # When the reply IS the sign-off spot (5H with hearts agreed, 5S with
+  # spades agreed) it must be passable: the one-round-forcing reply plus the
+  # forcing-pass filter left the asker with ZERO legal candidates and the
+  # backstop invented a five-level nonsense bid on a real board.
+  - id: rkc_response_agreed_H
+    description: "RKC replies with hearts agreed: 5H is passable"
+    pattern: "... - 4NT - P - ?"
+    when: { asking: keycards, agreed_suit: H }
+    rules:
+      - id: rkc_5H_agreed
+        call: 5H
+        priority: 58
+        requires:
+          evals: { "keycards(agreed)": [2, 2], "trump_queen(agreed)": [0, 0] }
+        shows: "2 keycards without the trump queen (passable: this is the sign-off spot)"
+        establishes: { forcing: non_forcing }
+        alertable: true
+        convention: rkc_1430
+
+  - id: rkc_response_agreed_S
+    description: "RKC replies with spades agreed: 5S is passable"
+    pattern: "... - 4NT - P - ?"
+    when: { asking: keycards, agreed_suit: S }
+    rules:
+      - id: rkc_5S_agreed
+        call: 5S
+        priority: 57
+        requires:
+          evals: { "keycards(agreed)": [2, 2], "trump_queen(agreed)": [1, 1] }
+        shows: "2 keycards with the trump queen (passable: this is the sign-off spot)"
+        establishes: { forcing: non_forcing }
         alertable: true
         convention: rkc_1430
 
@@ -4199,6 +4755,66 @@ contexts:
         shows: "6+ $M, accepting: game in the long suit"
         establishes: { forcing: sign_off, agreed_suit: $M }
 
+  # Opener's answer to the natural 2NT invite after a two-suited rebid
+  # (1H - 1S - 2m - 2NT): the position had no rules, so a 17-count PASSED
+  # the invite (the generic 3NT is blocked by semi_balanced for a 1-5-4-3).
+  - id: opener_over_invite_2NT_after_2suits
+    description: "Opener over responder's 2NT invite after 1H - 1S - 2m"
+    expand: { x: [C, D] }
+    pattern: "1H - P - 1S - P - 2$x - P - 2NT - P - ?"
+    rules:
+      - id: oi2n_pass_$x
+        call: P
+        priority: 60
+        requires: { hcp: [12, 13] }
+        shows: "declining the invite: minimum opener"
+        establishes: { forcing: sign_off }
+      - id: oi2n_3NT_$x
+        call: 3NT
+        priority: 58
+        requires: { hcp: [14, 18] }
+        shows: "accepting the invite: 14+"
+        establishes: { forcing: sign_off }
+      - id: oi2n_3H_$x
+        call: 3H
+        priority: 59
+        requires: { suits: { H: [6, 13] }, hcp: [12, 13] }
+        shows: "6+ hearts, minimum: re-offering the suit below game"
+        establishes: { forcing: sign_off }
+      - id: oi2n_4H_$x
+        call: 4H
+        priority: 57
+        requires: { suits: { H: [6, 13] }, hcp: [14, 18] }
+        shows: "6+ hearts, accepting: game in the long suit"
+        establishes: { forcing: sign_off, agreed_suit: H }
+
+  # Opener's answer when responder invites by raising the SECOND suit
+  # (1M - 1NT - 2x - 3x): accept to the suit game on 15+, else pass -
+  # a 17-count with a stiff was passing a cold game here because the
+  # generic gate could only count partner's SHOWN three trumps.
+  - id: opener_over_second_suit_raise
+    description: "Opener over the invitational raise of his second suit"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+      - { M: S, x: H }
+    pattern: "1$M - P - 1NT - P - 2$x - P - 3$x - P - ?"
+    rules:
+      - id: ossr_pass_$M$x
+        call: P
+        priority: 60
+        requires: { evals: { total_points: [12, 14] } }
+        shows: "declining the invite: minimum"
+        establishes: { forcing: sign_off }
+      - id: ossr_game_$M$x
+        call: 4$x
+        priority: 58
+        requires: { evals: { total_points: [15, 40] } }
+        shows: "accepting the invite to game in the second suit"
+        establishes: { forcing: non_forcing, agreed_suit: $x }
+
   - id: opener_rebid_1S_2C_2D
     description: "1S - 2C: opener's 4+ diamond second suit (GF)"
     pattern: "1S - P - 2C - P - ?"
@@ -4299,9 +4915,11 @@ contexts:
         requires: { hcp: [11, 14], evals: { semi_balanced: [1, 1] }, features: [ "stopper($o)" ] }
         shows: "balancing 1NT: 11-14 with a stopper"
         establishes: { forcing: non_forcing }
+      # priority above bal_X: 19-21 balanced with a stopper IS the 2NT
+      # bid - the double was winning the tie and burying the notrump hand
       - id: bal_2NT
         call: 2NT
-        priority: 65
+        priority: 71
         requires: { hcp: [19, 21], balanced: true, features: [ "stopper($o)" ] }
         shows: "balancing 2NT: 19-21 balanced"
         establishes: { forcing: non_forcing }
@@ -4578,9 +5196,11 @@ contexts:
         requires: { evals: { total_points: [13, 18] }, suits: { S: [4, 13] } }
         shows: "game raise: 4 spades, 13-18"
         establishes: { forcing: sign_off, agreed_suit: S }
+      # priority above the NT rebids: with six hearts the suit is the bid
+      # (a singleton-spade six-bagger was rebidding 1NT, -300)
       - id: r1sr_2H
         call: 2H
-        priority: 49
+        priority: 56
         requires: { hcp: [6, 9], suits: { H: [6, 13] } }
         shows: "to play: 6+ hearts"
         establishes: { forcing: sign_off }
@@ -5027,7 +5647,7 @@ contexts:
     rules:
       - id: advsw_C1S_H
         call: 2H
-        priority: 54
+        priority: 55
         requires: { suits: { H: [3, 13] }, hcp: [0, 10] }
         shows: "advancing the takeout double: best unbid suit (H), 0-10"
         establishes: { forcing: non_forcing }
@@ -5075,7 +5695,7 @@ contexts:
     rules:
       - id: advsw_D1S_H
         call: 2H
-        priority: 54
+        priority: 55
         requires: { suits: { H: [3, 13] }, hcp: [0, 10] }
         shows: "advancing the takeout double: best unbid suit (H), 0-10"
         establishes: { forcing: non_forcing }
@@ -5547,16 +6167,19 @@ contexts:
         requires: { hcp: [8, 10], features: [ "two_of_top3(S)" ] }
         shows: "feature (ace or king) in S, maximum for the weak two"
         establishes: { forcing: one_round }
+      # widened to the whole weak-two range: a maximum with no outside
+      # feature had NO reply at all and the least-bad soft match invented
+      # a "solid suit" 3NT on AKTxxx (the feature rules outrank in 8-10)
       - id: feat_D_min
         call: 3D
         priority: 55
-        requires: { hcp: [5, 7] }
+        requires: { hcp: [5, 10] }
         shows: "minimum weak two, no outside feature"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: feat_D_3NT
         call: 3NT
         priority: 58
-        requires: { hcp: [9, 10], evals: { "suit_quality(D)": [3, 9] } }
+        requires: { hcp: [9, 10], evals: { "two_of_top3(D)": [1, 1], "suit_quality(D)": [3, 9] } }
         shows: "solid suit, maximum"
         establishes: { forcing: non_forcing }
 
@@ -5582,16 +6205,19 @@ contexts:
         requires: { hcp: [8, 10], features: [ "two_of_top3(S)" ] }
         shows: "feature (ace or king) in S, maximum for the weak two"
         establishes: { forcing: one_round }
+      # widened to the whole weak-two range: a maximum with no outside
+      # feature had NO reply at all and the least-bad soft match invented
+      # a "solid suit" 3NT on AKTxxx (the feature rules outrank in 8-10)
       - id: feat_H_min
         call: 3H
         priority: 55
-        requires: { hcp: [5, 7] }
+        requires: { hcp: [5, 10] }
         shows: "minimum weak two, no outside feature"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: feat_H_3NT
         call: 3NT
         priority: 58
-        requires: { hcp: [9, 10], evals: { "suit_quality(H)": [3, 9] } }
+        requires: { hcp: [9, 10], evals: { "two_of_top3(H)": [1, 1], "suit_quality(H)": [3, 9] } }
         shows: "solid suit, maximum"
         establishes: { forcing: non_forcing }
 
@@ -5617,16 +6243,19 @@ contexts:
         requires: { hcp: [8, 10], features: [ "two_of_top3(H)" ] }
         shows: "feature (ace or king) in H, maximum for the weak two"
         establishes: { forcing: one_round }
+      # widened to the whole weak-two range: a maximum with no outside
+      # feature had NO reply at all and the least-bad soft match invented
+      # a "solid suit" 3NT on AKTxxx (the feature rules outrank in 8-10)
       - id: feat_S_min
         call: 3S
         priority: 55
-        requires: { hcp: [5, 7] }
+        requires: { hcp: [5, 10] }
         shows: "minimum weak two, no outside feature"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: feat_S_3NT
         call: 3NT
         priority: 58
-        requires: { hcp: [9, 10], evals: { "suit_quality(S)": [3, 9] } }
+        requires: { hcp: [9, 10], evals: { "two_of_top3(S)": [1, 1], "suit_quality(S)": [3, 9] } }
         shows: "solid suit, maximum"
         establishes: { forcing: non_forcing }
 
@@ -6097,19 +6726,19 @@ contexts:
       - id: v3_C_D
         call: 3D
         priority: 64
-        requires: { suits: { D: [6, 13] }, hcp: [13, 40], features: [ "good_suit(D)" ] }
+        requires: { suits: { D: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(D)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ D, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_C_H
         call: 3H
         priority: 64
-        requires: { suits: { H: [6, 13] }, hcp: [13, 40], features: [ "good_suit(H)" ] }
+        requires: { suits: { H: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(H)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ H, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_C_S
         call: 3S
         priority: 64
-        requires: { suits: { S: [6, 13] }, hcp: [13, 40], features: [ "good_suit(S)" ] }
+        requires: { suits: { S: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(S)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ S, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_C_pass
@@ -6143,19 +6772,19 @@ contexts:
       - id: v3_D_C
         call: 4C
         priority: 64
-        requires: { suits: { C: [6, 13] }, hcp: [13, 40], features: [ "good_suit(C)" ] }
+        requires: { suits: { C: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(C)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ C, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_D_H
         call: 3H
         priority: 64
-        requires: { suits: { H: [6, 13] }, hcp: [13, 40], features: [ "good_suit(H)" ] }
+        requires: { suits: { H: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(H)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ H, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_D_S
         call: 3S
         priority: 64
-        requires: { suits: { S: [6, 13] }, hcp: [13, 40], features: [ "good_suit(S)" ] }
+        requires: { suits: { S: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(S)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ S, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_D_pass
@@ -6189,19 +6818,19 @@ contexts:
       - id: v3_H_C
         call: 4C
         priority: 64
-        requires: { suits: { C: [6, 13] }, hcp: [13, 40], features: [ "good_suit(C)" ] }
+        requires: { suits: { C: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(C)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ C, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_H_D
         call: 4D
         priority: 64
-        requires: { suits: { D: [6, 13] }, hcp: [13, 40], features: [ "good_suit(D)" ] }
+        requires: { suits: { D: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(D)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ D, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_H_S
         call: 3S
         priority: 64
-        requires: { suits: { S: [6, 13] }, hcp: [13, 40], features: [ "good_suit(S)" ] }
+        requires: { suits: { S: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(S)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ S, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_H_pass
@@ -6235,19 +6864,19 @@ contexts:
       - id: v3_S_C
         call: 4C
         priority: 64
-        requires: { suits: { C: [6, 13] }, hcp: [13, 40], features: [ "good_suit(C)" ] }
+        requires: { suits: { C: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(C)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ C, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_S_D
         call: 4D
         priority: 64
-        requires: { suits: { D: [6, 13] }, hcp: [13, 40], features: [ "good_suit(D)" ] }
+        requires: { suits: { D: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(D)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ D, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_S_H
         call: 4H
         priority: 64
-        requires: { suits: { H: [6, 13] }, hcp: [13, 40], features: [ "good_suit(H)" ] }
+        requires: { suits: { H: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(H)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ H, 13+"
         establishes: { forcing: non_forcing }
       - id: v3_S_pass
@@ -6275,13 +6904,94 @@ contexts:
     pattern: "... - bid<3C - ?"
     when: { we_hold_contract: false }
     rules:
+      # double-then-raise shows 17+: without these a 19-count passed the
+      # 0-8 advance of its own takeout double with game on
+      - id: cl_doubler_raise_C
+        call: 2C
+        priority: 34
+        when: { partner_suit: C, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: cl_doubler_raise3_C
+        call: 3C
+        priority: 33
+        when: { partner_suit: C, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      # double-then-raise shows 17+: without these a 19-count passed the
+      # 0-8 advance of its own takeout double with game on
+      - id: cl_doubler_raise_D
+        call: 2D
+        priority: 34
+        when: { partner_suit: D, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: cl_doubler_raise3_D
+        call: 3D
+        priority: 33
+        when: { partner_suit: D, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      # double-then-raise shows 17+: without these a 19-count passed the
+      # 0-8 advance of its own takeout double with game on
+      - id: cl_doubler_raise_H
+        call: 2H
+        priority: 34
+        when: { partner_suit: H, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: cl_doubler_raise3_H
+        call: 3H
+        priority: 33
+        when: { partner_suit: H, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      # double-then-raise shows 17+: without these a 19-count passed the
+      # 0-8 advance of its own takeout double with game on
+      - id: cl_doubler_raise_S
+        call: 2S
+        priority: 34
+        when: { partner_suit: S, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: cl_doubler_raise3_S
+        call: 3S
+        priority: 33
+        when: { partner_suit: S, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: cl_doubler_game_H
+        call: 4H
+        priority: 35
+        when: { partner_suit: H, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [20, 40] } }
+        shows: "jump to game opposite the advance: 20+ with 4-card support"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: cl_doubler_game_S
+        call: 4S
+        priority: 35
+        when: { partner_suit: S, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [20, 40] } }
+        shows: "jump to game opposite the advance: 20+ with 4-card support"
+        establishes: { forcing: sign_off, agreed_suit: S }
       - id: cl_takeout_X
         call: X
         priority: 36
         when: { their_last_bid_suit: true, side_has_acted: false }
         requires:
           hcp: [12, 40]
-          evals: { "suit_length(their)": [0, 2] }
+          # max over ALL their shown suits: the single-suit version was
+          # vacuous once they had bid two, and a 12-count doubled holding
+          # four cards in their second suit
+          evals: { max_their_suit_length: [0, 2] }
         shows: "takeout-flavoured double: opening values, short in their suit"
         establishes: { forcing: one_round }
       # The negative double and the responsive double are the same shape of
@@ -6337,7 +7047,9 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
+          # floor 8: the mixed raise (6-9 with 3 trumps, 8 combined) is
+          # standard competitive practice; the LOTT gate carries the safety
+          evals: { total_points: [8, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: cl_raise_C4
@@ -6368,7 +7080,9 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
+          # floor 8: the mixed raise (6-9 with 3 trumps, 8 combined) is
+          # standard competitive practice; the LOTT gate carries the safety
+          evals: { total_points: [8, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: cl_raise_D4
@@ -6548,11 +7262,12 @@ contexts:
         establishes: { forcing: non_forcing }
       - id: cl_nt1
         call: 1NT
+        when: { side_has_acted: true }
         priority: 27
         requires:
           hcp: [8, 11]
-          evals: { "stoppers(their)": [1, 1], semi_balanced: [1, 1] }
-          features: [ "stopper(their)" ]
+          evals: { weakest_their_stopper: [0.9, 9], semi_balanced: [1, 1] }
+          not: { any_of: [ { suits: { H: [6, 13] } }, { suits: { S: [6, 13] } } ] }
         shows: "natural 1NT: 8-11 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
       - id: cl_nt2
@@ -6561,8 +7276,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { "stoppers(their)": [1, 1], rule_of_26: [21, 99], semi_balanced: [1, 1] }
-          features: [ "stopper(their)" ]
+          evals: { weakest_their_stopper: [0.9, 9], rule_of_26: [22, 99], semi_balanced: [1, 1] }
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
       - id: cl_nt3
@@ -6571,8 +7285,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 19]
-          evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
-          features: [ "stopper(their)" ]
+          evals: { weakest_their_stopper: [0.9, 9], rule_of_26: [24, 99], semi_balanced: [1, 1] }
         shows: "natural 3NT: 13-19 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
@@ -6717,6 +7430,37 @@ contexts:
           hcp: [15, 40]
           evals: { quick_tricks: [3, 12], "suit_length(their)": [3, 13] }
         shows: "penalty double of their high contract: defensive tricks and trump length"
+        establishes: { forcing: non_forcing }
+      - id: ch_negative_X3
+        call: X
+        priority: 33
+        when: { their_last_bid_suit: true, side_has_acted: true, i_have_acted: false, standing_bid_level: [3] }
+        requires:
+          hcp: [10, 40]
+          evals: { "suit_length(their)": [0, 3], longest_suit_length: [0, 4] }
+          any_of:
+            - suits: { H: [4, 13] }
+            - suits: { S: [4, 13] }
+        shows: "negative double at the three level: 10+ HCP with a major they have not bid"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: ch_free_3H
+        call: 3H
+        priority: 30
+        when: { unbid_suit: H, cheapest_in_suit: true, side_has_acted: true, i_have_acted: false }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "free bid: 5+ good hearts over their jump, 10+"
+        establishes: { forcing: non_forcing }
+      - id: ch_free_3S
+        call: 3S
+        priority: 30
+        when: { unbid_suit: S, cheapest_in_suit: true, side_has_acted: true, i_have_acted: false }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "free bid: 5+ good spades over their jump, 10+"
         establishes: { forcing: non_forcing }
       - id: ch_raise_C2
         call: 2C
@@ -7139,6 +7883,32 @@ contexts:
     pattern: "... - bid<3C - P - P - ?"
     when: { we_hold_contract: false }
     rules:
+      # The big hand's SECOND action.  side_has_acted:false on the rule
+      # below is the anti-triple-double guard, but it also silenced 17-23
+      # counts whose first double was answered by a runout or a raise: with
+      # the values-still-marked shape the reopening double must exist, and
+      # my_last_call_was_double:false is the honest anti-repeat guard (a
+      # different hand, or a hand whose last call was a bid, may double).
+      - id: ballow_reopen_X2
+        call: X
+        priority: 41
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: true, we_hold_contract: false }
+        requires:
+          hcp: [19, 40]
+          evals: { max_their_suit_length: [0, 2] }
+        shows: "a SECOND double: 19+, still nothing to say but takeout"
+        establishes: { forcing: one_round }
+      - id: ballow_reopen_X
+        call: X
+        priority: 41
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: false, we_hold_contract: false }
+        requires:
+          hcp: [16, 40]
+          evals: { max_their_suit_length: [0, 2] }
+        shows: "reopening double: 16+, short in their suit, our side already in"
+        establishes: { forcing: one_round }
       - id: ballow_X
         call: X
         priority: 40
@@ -7382,8 +8152,8 @@ contexts:
         priority: 27
         requires:
           hcp: [10, 14]
-          evals: { "stoppers(their)": [1, 1], semi_balanced: [1, 1] }
-          features: [ "stopper(their)" ]
+          evals: { weakest_their_stopper: [0.9, 9], semi_balanced: [1, 1] }
+          not: { any_of: [ { suits: { H: [6, 13] } }, { suits: { S: [6, 13] } } ] }
         shows: "natural 1NT: 10-14 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
       - id: ballow_nt2
@@ -7392,8 +8162,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { "stoppers(their)": [1, 1], rule_of_26: [21, 99], semi_balanced: [1, 1] }
-          features: [ "stopper(their)" ]
+          evals: { weakest_their_stopper: [0.9, 9], rule_of_26: [21, 99], semi_balanced: [1, 1] }
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
       - id: ballow_nt3
@@ -7402,8 +8171,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 19]
-          evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
-          features: [ "stopper(their)" ]
+          evals: { weakest_their_stopper: [0.9, 9], rule_of_26: [24, 99], semi_balanced: [1, 1] }
         shows: "natural 3NT: 13-19 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
@@ -7421,7 +8189,9 @@ contexts:
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_C3
@@ -7430,7 +8200,7 @@ contexts:
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_C4
@@ -7439,7 +8209,7 @@ contexts:
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_D2
@@ -7448,7 +8218,9 @@ contexts:
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_D3
@@ -7457,7 +8229,7 @@ contexts:
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_D4
@@ -7466,7 +8238,7 @@ contexts:
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_H2
@@ -7475,7 +8247,9 @@ contexts:
         when: { my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_H3
@@ -7484,7 +8258,7 @@ contexts:
         when: { my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_H4
@@ -7493,7 +8267,7 @@ contexts:
         when: { my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_S2
@@ -7502,7 +8276,9 @@ contexts:
         when: { my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_S3
@@ -7511,7 +8287,7 @@ contexts:
         when: { my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_rebid_S4
@@ -7520,7 +8296,7 @@ contexts:
         when: { my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: ballow_pass
@@ -7536,6 +8312,32 @@ contexts:
     pattern: "... - bid>=3C - P - P - ?"
     when: { we_hold_contract: false }
     rules:
+      # The big hand's SECOND action.  side_has_acted:false on the rule
+      # below is the anti-triple-double guard, but it also silenced 17-23
+      # counts whose first double was answered by a runout or a raise: with
+      # the values-still-marked shape the reopening double must exist, and
+      # my_last_call_was_double:false is the honest anti-repeat guard (a
+      # different hand, or a hand whose last call was a bid, may double).
+      - id: balhigh_reopen_X2
+        call: X
+        priority: 41
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: true, we_hold_contract: false }
+        requires:
+          hcp: [19, 40]
+          evals: { max_their_suit_length: [0, 2] }
+        shows: "a SECOND double: 19+, still nothing to say but takeout"
+        establishes: { forcing: one_round }
+      - id: balhigh_reopen_X
+        call: X
+        priority: 41
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: false, we_hold_contract: false }
+        requires:
+          hcp: [16, 40]
+          evals: { max_their_suit_length: [0, 2] }
+        shows: "reopening double: 16+, short in their suit, our side already in"
+        establishes: { forcing: one_round }
       - id: balhigh_X
         call: X
         priority: 40
@@ -7818,7 +8620,9 @@ contexts:
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_C3
@@ -7827,7 +8631,7 @@ contexts:
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_C4
@@ -7836,7 +8640,7 @@ contexts:
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_D2
@@ -7845,7 +8649,9 @@ contexts:
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_D3
@@ -7854,7 +8660,7 @@ contexts:
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_D4
@@ -7863,7 +8669,7 @@ contexts:
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_H2
@@ -7872,7 +8678,9 @@ contexts:
         when: { my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_H3
@@ -7881,7 +8689,7 @@ contexts:
         when: { my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_H4
@@ -7890,7 +8698,7 @@ contexts:
         when: { my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_S2
@@ -7899,7 +8707,9 @@ contexts:
         when: { my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+          # six cards IS the credential in a reopening seat: a quality floor
+          # was pushing honorless six-baggers into 1NT without a stopper
+          evals: { total_points: [11, 40] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_S3
@@ -7908,7 +8718,7 @@ contexts:
         when: { my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       - id: balhigh_rebid_S4
@@ -7917,7 +8727,7 @@ contexts:
         when: { my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
       # At this height the cheapest bid in a new suit is a four-level
@@ -7971,6 +8781,80 @@ contexts:
     pattern: "... - P - ?"
     when: { we_hold_contract: false }
     rules:
+      # double-then-raise shows 17+ (see cl_doubler_raise_C)
+      - id: uc_doubler_raise_C
+        call: 2C
+        priority: 34
+        when: { partner_suit: C, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: uc_doubler_raise3_C
+        call: 3C
+        priority: 33
+        when: { partner_suit: C, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { C: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      # double-then-raise shows 17+ (see cl_doubler_raise_D)
+      - id: uc_doubler_raise_D
+        call: 2D
+        priority: 34
+        when: { partner_suit: D, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: uc_doubler_raise3_D
+        call: 3D
+        priority: 33
+        when: { partner_suit: D, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      # double-then-raise shows 17+ (see cl_doubler_raise_H)
+      - id: uc_doubler_raise_H
+        call: 2H
+        priority: 34
+        when: { partner_suit: H, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_doubler_raise3_H
+        call: 3H
+        priority: 33
+        when: { partner_suit: H, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      # double-then-raise shows 17+ (see cl_doubler_raise_S)
+      - id: uc_doubler_raise_S
+        call: 2S
+        priority: 34
+        when: { partner_suit: S, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support (the double promised less)"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: uc_doubler_raise3_S
+        call: 3S
+        priority: 33
+        when: { partner_suit: S, cheapest_in_suit: true, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [17, 19] } }
+        shows: "raise of the advance: 17-19 with 4-card support"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: uc_doubler_game_H
+        call: 4H
+        priority: 35
+        when: { partner_suit: H, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [20, 40] } }
+        shows: "jump to game opposite the advance: 20+ with 4-card support"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: uc_doubler_game_S
+        call: 4S
+        priority: 35
+        when: { partner_suit: S, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [20, 40] } }
+        shows: "jump to game opposite the advance: 20+ with 4-card support"
+        establishes: { forcing: sign_off, agreed_suit: S }
       - id: uc_raise_C2
         call: 2C
         priority: 30
@@ -8359,7 +9243,7 @@ contexts:
         when: { partner_suit: C, we_hold_contract: false }
         requires:
           suits: { C: [4, 13] }
-          evals: { total_points: [17, 40], "lott_total_trumps(C)": [8, 26] }
+          evals: { total_points: [17, 40], rule_of_26: [29, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "accepting to game in the raised minor: 17+ opposite the raise"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: uc_minor_game_5D
@@ -8370,7 +9254,7 @@ contexts:
         when: { partner_suit: D, we_hold_contract: false }
         requires:
           suits: { D: [4, 13] }
-          evals: { total_points: [17, 40], "lott_total_trumps(D)": [8, 26] }
+          evals: { total_points: [17, 40], rule_of_26: [29, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "accepting to game in the raised minor: 17+ opposite the raise"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: uc_pass
@@ -8446,7 +9330,7 @@ contexts:
         when: { we_bid_last: true, my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "lott_total_trumps(C)": [9, 26], total_points: [14, 40] }
         shows: "rebid of my own doubled C: 6+ cards, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_rebid_D2
@@ -8464,7 +9348,7 @@ contexts:
         when: { we_bid_last: true, my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "lott_total_trumps(D)": [9, 26], total_points: [14, 40] }
         shows: "rebid of my own doubled D: 6+ cards, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_rebid_H2
@@ -8482,7 +9366,7 @@ contexts:
         when: { we_bid_last: true, my_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [6, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "lott_total_trumps(H)": [9, 26], total_points: [14, 40] }
         shows: "rebid of my own doubled H: 6+ cards, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_rebid_S2
@@ -8500,7 +9384,7 @@ contexts:
         when: { we_bid_last: true, my_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [6, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "lott_total_trumps(S)": [9, 26], total_points: [14, 40] }
         shows: "rebid of my own doubled S: 6+ cards, 14+ points"
         establishes: { forcing: non_forcing }
       # Raising partner's doubled suit: trump length is what makes the
@@ -8586,7 +9470,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [4, 13] }
-          evals: { total_points: [8, 40] }
+          evals: { "suit_quality(C)": [1, 9], total_points: [8, 40] }
         shows: "my second suit over their double: 4+ C, 8+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_C2
@@ -8595,7 +9479,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [4, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "suit_quality(C)": [1, 9], total_points: [14, 40] }
         shows: "my second suit over their double: 4+ C, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_C3
@@ -8604,7 +9488,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [4, 13] }
-          evals: { total_points: [17, 40] }
+          evals: { "suit_quality(C)": [1, 9], total_points: [17, 40] }
         shows: "my second suit over their double: 4+ C, 17+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_D1
@@ -8613,7 +9497,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [4, 13] }
-          evals: { total_points: [8, 40] }
+          evals: { "suit_quality(D)": [1, 9], total_points: [8, 40] }
         shows: "my second suit over their double: 4+ D, 8+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_D2
@@ -8622,7 +9506,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [4, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "suit_quality(D)": [1, 9], total_points: [14, 40] }
         shows: "my second suit over their double: 4+ D, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_D3
@@ -8631,7 +9515,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [4, 13] }
-          evals: { total_points: [17, 40] }
+          evals: { "suit_quality(D)": [1, 9], total_points: [17, 40] }
         shows: "my second suit over their double: 4+ D, 17+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_H1
@@ -8640,7 +9524,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [4, 13] }
-          evals: { total_points: [8, 40] }
+          evals: { "suit_quality(H)": [1, 9], total_points: [8, 40] }
         shows: "my second suit over their double: 4+ H, 8+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_H2
@@ -8649,7 +9533,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [4, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "suit_quality(H)": [1, 9], total_points: [14, 40] }
         shows: "my second suit over their double: 4+ H, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_H3
@@ -8658,7 +9542,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [4, 13] }
-          evals: { total_points: [17, 40] }
+          evals: { "suit_quality(H)": [1, 9], total_points: [17, 40] }
         shows: "my second suit over their double: 4+ H, 17+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_S1
@@ -8667,7 +9551,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [4, 13] }
-          evals: { total_points: [8, 40] }
+          evals: { "suit_quality(S)": [1, 9], total_points: [8, 40] }
         shows: "my second suit over their double: 4+ S, 8+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_S2
@@ -8676,7 +9560,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [4, 13] }
-          evals: { total_points: [14, 40] }
+          evals: { "suit_quality(S)": [1, 9], total_points: [14, 40] }
         shows: "my second suit over their double: 4+ S, 14+ points"
         establishes: { forcing: non_forcing }
       - id: xd_second_S3
@@ -8685,7 +9569,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: true, unbid_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [4, 13] }
-          evals: { total_points: [17, 40] }
+          evals: { "suit_quality(S)": [1, 9], total_points: [17, 40] }
         shows: "my second suit over their double: 4+ S, 17+ points"
         establishes: { forcing: non_forcing }
       # Running from a penalty double of partner's call.  Length only:
@@ -8825,7 +9709,7 @@ contexts:
       - id: rr_run_C1
         call: 1C
         priority: 26
-        when: { we_bid_last: false, unbid_suit: C, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: C, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { C: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ C"
@@ -8833,7 +9717,7 @@ contexts:
       - id: rr_run_C2
         call: 2C
         priority: 25
-        when: { we_bid_last: false, unbid_suit: C, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: C, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { C: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ C"
@@ -8841,7 +9725,7 @@ contexts:
       - id: rr_run_C3
         call: 3C
         priority: 24
-        when: { we_bid_last: false, unbid_suit: C, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: C, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { C: [5, 13] }
         shows: "answering partner's double: my longest suit, 5+ C"
@@ -8849,7 +9733,7 @@ contexts:
       - id: rr_run_D1
         call: 1D
         priority: 26
-        when: { we_bid_last: false, unbid_suit: D, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: D, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { D: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ D"
@@ -8857,7 +9741,7 @@ contexts:
       - id: rr_run_D2
         call: 2D
         priority: 25
-        when: { we_bid_last: false, unbid_suit: D, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: D, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { D: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ D"
@@ -8865,7 +9749,7 @@ contexts:
       - id: rr_run_D3
         call: 3D
         priority: 24
-        when: { we_bid_last: false, unbid_suit: D, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: D, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { D: [5, 13] }
         shows: "answering partner's double: my longest suit, 5+ D"
@@ -8873,7 +9757,7 @@ contexts:
       - id: rr_run_H1
         call: 1H
         priority: 26
-        when: { we_bid_last: false, unbid_suit: H, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: H, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { H: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ H"
@@ -8881,7 +9765,7 @@ contexts:
       - id: rr_run_H2
         call: 2H
         priority: 25
-        when: { we_bid_last: false, unbid_suit: H, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: H, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { H: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ H"
@@ -8889,7 +9773,7 @@ contexts:
       - id: rr_run_H3
         call: 3H
         priority: 24
-        when: { we_bid_last: false, unbid_suit: H, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: H, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { H: [5, 13] }
         shows: "answering partner's double: my longest suit, 5+ H"
@@ -8897,7 +9781,7 @@ contexts:
       - id: rr_run_S1
         call: 1S
         priority: 26
-        when: { we_bid_last: false, unbid_suit: S, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: S, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { S: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ S"
@@ -8905,7 +9789,7 @@ contexts:
       - id: rr_run_S2
         call: 2S
         priority: 25
-        when: { we_bid_last: false, unbid_suit: S, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: S, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { S: [4, 13] }
         shows: "answering partner's double: my longest suit, 4+ S"
@@ -8913,7 +9797,7 @@ contexts:
       - id: rr_run_S3
         call: 3S
         priority: 24
-        when: { we_bid_last: false, unbid_suit: S, cheapest_in_suit: true }
+        when: { we_bid_last: false, unbid_suit: S, cheapest_in_suit: true, i_have_acted: false }
         requires:
           suits: { S: [5, 13] }
         shows: "answering partner's double: my longest suit, 5+ S"
@@ -9090,16 +9974,23 @@ contexts:
     expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
     pattern: "2NT - P - 3$T - P - 3$M - P - ?"
     rules:
+      # with exactly five trumps and a balanced hand the textbook call is
+      # 3NT (choice of games) - the old any-5-suit 4M played 5-2 fits
       - id: nt2_tr_4$M
         call: 4$M
         priority: 60
-        requires: { suits: { $M: [5, 13] }, hcp: [3, 40] }
-        shows: "game in $M opposite 20-21"
+        requires:
+          hcp: [3, 40]
+          any_of:
+            - suits: { $M: [6, 13] }
+            - suits: { $M: [5, 13] }
+              evals: { singleton_or_void: [1, 2] }
+        shows: "game in $M opposite 20-21 (6+ trumps, or 5 with shortness)"
         establishes: { forcing: sign_off, agreed_suit: $M }
       - id: nt2_tr_3NT
         call: 3NT
         priority: 56
-        requires: { suits: { $M: [5, 5] }, hcp: [5, 40], evals: { semi_balanced: [1, 1] } }
+        requires: { suits: { $M: [5, 5] }, hcp: [4, 40], evals: { semi_balanced: [1, 1] } }
         shows: "choice of games with exactly 5 $M opposite 20-21"
         establishes: { forcing: sign_off }
       - id: nt2_tr_slam

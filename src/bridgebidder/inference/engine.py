@@ -237,6 +237,14 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                 standing = c.bid_index
         if preempted != cond.i_preempted:
             return False
+    if cond.my_last_call_was_double is not None:
+        last = None
+        for i, c in enumerate(auction.calls):
+            if auction.seat_of_call(i) == seat and not c.is_pass:
+                last = c
+        was_x = last is not None and last.kind == "double"
+        if was_x != cond.my_last_call_was_double:
+            return False
     if cond.partner_last_suit is not None:
         # partner's most recent SUIT bid (notrump bids and doubles skipped):
         # when partner has shown several suits, the last one bid is the live

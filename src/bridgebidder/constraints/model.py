@@ -51,6 +51,8 @@ _EVAL_S2 = {
     # a vetoed 4NT on a real board once its sane alternative was shadowed
     "worthless_doubleton": 0.05,
     "quick_tricks_outside": 0.9,
+    # counted, not estimated (same as suit_length)
+    "max_their_suit_length": _S2_SUIT,
 }
 
 _FEATURE_MISS_FIT = 0.2

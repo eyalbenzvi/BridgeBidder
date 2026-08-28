@@ -185,6 +185,18 @@ def quick_tricks_outside(hand: Hand, ctx: EvalContext, suit: str = "S") -> float
     return qt
 
 
+@register_evaluator("max_their_suit_length")
+def max_their_suit_length(hand: Hand, ctx: EvalContext) -> float:
+    """My longest holding across ALL the suits the opponents have shown -
+    the honest "short in their suit" test.  `suit_length(their)` reads only
+    their FIRST suit, so with two or three suits on the other side the
+    takeout-shape gate was nearly vacuous (a hand doubled holding four
+    cards in their second suit).  0 when they have shown nothing."""
+    if not ctx.their_suits:
+        return 0.0
+    return float(max(hand.suit_length(s) for s in set(ctx.their_suits)))
+
+
 @register_evaluator("lott_total_trumps")
 def lott_total_trumps(hand: Hand, ctx: EvalContext, suit: str = "") -> float:
     """Law of Total Tricks support: our side's known combined trumps
