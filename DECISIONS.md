@@ -829,3 +829,38 @@ changed.
 
 Fixed corpus across the round: -1359 -> -1333 -> -1281.
 
+### The 10,000-board verdict
+
+Both ten-thousand-board matches ran on the identical deals (seed 777), one
+on the system as the round began and one after the fixes:
+
+|  | before | after |
+|---|---|---|
+| total margin | -13342 | **-12988** |
+| per board | -1.334 | **-1.299** |
+| boards won / lost | 1992 / 3859 | 1976 / 3830 |
+
+The paired reading is the trustworthy one: the fixes touched **120 of the
+10,000 boards**, and on exactly those boards the round gained **+354 IMPs**
+(71 improved, 41 worse).  Since the other 9,880 boards are bit-identical,
+that +354 carries essentially no sampling noise - it is the round's true
+value, +0.035 IMPs per board.
+
+Two calibration lessons from running at this scale:
+
+- The 1000-board corpus numbers were optimistic in level but right in
+  direction: it showed +78 for these fixes where the 10k shows +35 per
+  thousand.  Small corpora overweight their own hot boards; the paired 10k
+  is the number to quote.
+- The headline "-1.48/board" of the early matches and today's "-1.30" are
+  not directly comparable either - different seeds, different noise.  The
+  like-for-like series is the fixed corpus (-1.474 at its start, -1.281
+  now) and this paired 10k.
+
+Where the engine stands after the round: **-1.30 IMPs/board against BEN**,
+down from about -1.47 when head-to-head play began.  Roughly a quarter of
+the original deficit is gone, all of it from reading the match's own boards
+and fixing what they showed - and the largest remaining pocket is still
+slam depth (BEN bids five slams for our one), which is a structure problem,
+not a threshold problem.
+
