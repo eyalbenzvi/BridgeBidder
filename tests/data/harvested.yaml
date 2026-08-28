@@ -636,3 +636,38 @@
   dealer: N
   calls: ["1C", "P", "1H", "P", "1S", "P", "2D", "P"]
   expect: { calls: ["3D", "3NT", "4D"], fallback: false }
+
+# repeating my own suit was missing from the generic toolkit entirely
+- name: ben2_rebid_my_own_six_card_suit_in_competition
+  hand: "AKQ652.J64.83.J9"
+  dealer: N
+  calls: ["1S", "2D", "3C", "P"]
+  expect: { call: "3S", fallback: false }
+
+# ... but counted opposite what partner has shown, not in a vacuum
+- name: ben2_no_rebid_to_game_over_a_preemptive_raise
+  hand: "AKJ8752.A5.K7.94"
+  dealer: N
+  calls: ["P", "P", "1S", "X", "3S", "P"]
+  expect: { calls: ["P", "3S"] }
+
+# opener's rebids have to cover the hands the system actually opens: we open
+# 10- and 11-counts by the rule of 20, and the 1S rebid started at 12
+- name: ben2_show_the_spades_on_a_light_opening
+  hand: "QJ65.J.T9.AQ9632"
+  dealer: N
+  calls: ["1C", "P", "1H", "P"]
+  expect: { call: "1S" }
+
+- name: ben2_show_the_spades_after_1D
+  hand: "KQ72.T.JT875.KQ2"
+  dealer: N
+  calls: ["1D", "P", "1H", "P"]
+  expect: { call: "1S" }
+
+# 5-4-2-2 is a 1NT rebid, not a five-card-minor rebid
+- name: ben2_1NT_rebid_on_five_four_two_two
+  hand: "A9.J7.A963.KQ864"
+  dealer: N
+  calls: ["1C", "P", "1S", "P"]
+  expect: { call: "1NT" }

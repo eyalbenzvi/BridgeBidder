@@ -1295,7 +1295,10 @@ contexts:
       - id: ob_1NT
         call: 1NT
         priority: 55
-        requires: { hcp: [12, 14], balanced: true, not: { suits: { $M: [4, 13] } } }
+        # semi-balanced, not balanced: 5-4-2-2 is a 1NT rebid in anyone's
+        # system, and requiring at most one doubleton pushed those hands
+        # into rebidding a five-card minor instead.
+        requires: { hcp: [12, 14], evals: { semi_balanced: [1, 1] }, not: { suits: { $M: [4, 13] } } }
         shows: "balanced minimum 12-14, no fit"
         establishes: { forcing: non_forcing }
       - id: ob_2NT
@@ -1321,11 +1324,14 @@ contexts:
     description: "1C - 1H: opener's 1S / reverses"
     pattern: "1C - P - 1H - P - ?"
     rules:
+      # Floor 10, not 12: the system opens 10- and 11-counts by the rule of
+      # 20, and opener's rebids have to cover the hands opener actually
+      # holds.  Rebidding the minor with four spades hidden was the result.
       - id: ob_1C1H_1S
         call: 1S
         priority: 60
-        requires: { suits: { S: [4, 13] }, hcp: [12, 17], not: { suits: { H: [4, 13] } } }
-        shows: "4+ spades, 12-17, unbalanced or 4-4-x-x"
+        requires: { suits: { S: [4, 13] }, hcp: [10, 17], not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades, 10-17, unbalanced or 4-4-x-x"
         establishes: { forcing: non_forcing }
       - id: ob_1C1H_2D_reverse
         call: 2D
@@ -1342,14 +1348,14 @@ contexts:
       - id: ob_1D1H_1S
         call: 1S
         priority: 60
-        requires: { suits: { S: [4, 13] }, hcp: [12, 17], not: { suits: { H: [4, 13] } } }
-        shows: "4+ spades, 12-17"
+        requires: { suits: { S: [4, 13] }, hcp: [10, 17], not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades, 10-17"
         establishes: { forcing: non_forcing }
       - id: ob_1D1H_2C
         call: 2C
         priority: 58
-        requires: { suits: { C: [4, 13], D: [4, 13] }, hcp: [12, 17], not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
-        shows: "second suit: 4+ clubs, 12-17"
+        requires: { suits: { C: [4, 13], D: [4, 13] }, hcp: [10, 17], not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
+        shows: "second suit: 4+ clubs, 10-17"
         establishes: { forcing: non_forcing }
       - id: ob_1D1H_3C_jump
         call: 3C
@@ -1388,8 +1394,8 @@ contexts:
       - id: ob_1D1S_2C
         call: 2C
         priority: 57
-        requires: { suits: { C: [4, 13], D: [4, 13] }, hcp: [12, 17], not: { suits: { S: [4, 13] } } }
-        shows: "second suit: 4+ clubs, 12-17"
+        requires: { suits: { C: [4, 13], D: [4, 13] }, hcp: [10, 17], not: { suits: { S: [4, 13] } } }
+        shows: "second suit: 4+ clubs, 10-17"
         establishes: { forcing: non_forcing }
       - id: ob_1D1S_3C_jump
         call: 3C
@@ -5259,6 +5265,120 @@ contexts:
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
+      # Repeating my own suit was missing from the generic toolkit
+      # entirely: with six of them and nothing else to say, the bid is the
+      # suit again.  The level follows the values, and - the first version
+      # of this rule had to learn it the hard way - the values are counted
+      # opposite what partner has actually shown, or the rule cheerfully
+      # rebids to game over a preemptive raise.
+      - id: cl_rebid_C2
+        call: 2C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_C3
+        call: 3C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_C4
+        call: 4C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_D2
+        call: 2D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_D3
+        call: 3D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_D4
+        call: 4D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_H2
+        call: 2H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_H3
+        call: 3H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_H4
+        call: 4H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_S2
+        call: 2S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_S3
+        call: 3S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: cl_rebid_S4
+        call: 4S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
       - id: cl_pass
         call: P
         priority: 20
@@ -5533,6 +5653,158 @@ contexts:
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
+      # Repeating my own suit was missing from the generic toolkit
+      # entirely: with six of them and nothing else to say, the bid is the
+      # suit again.  The level follows the values, and - the first version
+      # of this rule had to learn it the hard way - the values are counted
+      # opposite what partner has actually shown, or the rule cheerfully
+      # rebids to game over a preemptive raise.
+      - id: ch_rebid_C2
+        call: 2C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_C3
+        call: 3C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_C4
+        call: 4C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_D2
+        call: 2D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_D3
+        call: 3D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_D4
+        call: 4D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_H2
+        call: 2H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_H3
+        call: 3H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_H4
+        call: 4H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_S2
+        call: 2S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_S3
+        call: 3S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_S4
+        call: 4S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      # At this height the cheapest bid in a new suit is a four-level
+      # bid; without these the toolkit simply had nothing to offer.
+      - id: ch_new_C4
+        call: 4C
+        priority: 28
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_D4
+        call: 4D
+        priority: 28
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_H4
+        call: 4H
+        priority: 28
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: ch_new_S4
+        call: 4S
+        priority: 28
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
       - id: ch_pass
         call: P
         priority: 22
@@ -5813,6 +6085,120 @@ contexts:
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
+      # Repeating my own suit was missing from the generic toolkit
+      # entirely: with six of them and nothing else to say, the bid is the
+      # suit again.  The level follows the values, and - the first version
+      # of this rule had to learn it the hard way - the values are counted
+      # opposite what partner has actually shown, or the rule cheerfully
+      # rebids to game over a preemptive raise.
+      - id: ballow_rebid_C2
+        call: 2C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_C3
+        call: 3C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_C4
+        call: 4C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_D2
+        call: 2D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_D3
+        call: 3D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_D4
+        call: 4D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_H2
+        call: 2H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_H3
+        call: 3H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_H4
+        call: 4H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_S2
+        call: 2S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_S3
+        call: 3S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: ballow_rebid_S4
+        call: 4S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
       - id: ballow_pass
         call: P
         priority: 21
@@ -6093,6 +6479,158 @@ contexts:
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
+      # Repeating my own suit was missing from the generic toolkit
+      # entirely: with six of them and nothing else to say, the bid is the
+      # suit again.  The level follows the values, and - the first version
+      # of this rule had to learn it the hard way - the values are counted
+      # opposite what partner has actually shown, or the rule cheerfully
+      # rebids to game over a preemptive raise.
+      - id: balhigh_rebid_C2
+        call: 2C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_C3
+        call: 3C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_C4
+        call: 4C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_D2
+        call: 2D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_D3
+        call: 3D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_D4
+        call: 4D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_H2
+        call: 2H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_H3
+        call: 3H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_H4
+        call: 4H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_S2
+        call: 2S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_S3
+        call: 3S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_rebid_S4
+        call: 4S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      # At this height the cheapest bid in a new suit is a four-level
+      # bid; without these the toolkit simply had nothing to offer.
+      - id: balhigh_new_C4
+        call: 4C
+        priority: 28
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_D4
+        call: 4D
+        priority: 28
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_H4
+        call: 4H
+        priority: 28
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: balhigh_new_S4
+        call: 4S
+        priority: 28
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
       - id: balhigh_pass
         call: P
         priority: 21
@@ -6364,6 +6902,120 @@ contexts:
           evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
         shows: "natural 3NT: 13-17 balanced"
         establishes: { forcing: sign_off }
+      # Repeating my own suit was missing from the generic toolkit
+      # entirely: with six of them and nothing else to say, the bid is the
+      # suit again.  The level follows the values, and - the first version
+      # of this rule had to learn it the hard way - the values are counted
+      # opposite what partner has actually shown, or the rule cheerfully
+      # rebids to game over a preemptive raise.
+      - id: uc_rebid_C2
+        call: 2C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_C3
+        call: 3C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_C4
+        call: 4C
+        priority: 29
+        when: { my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
+        shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_D2
+        call: 2D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_D3
+        call: 3D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_D4
+        call: 4D
+        priority: 29
+        when: { my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
+        shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_H2
+        call: 2H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_H3
+        call: 3H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_H4
+        call: 4H
+        priority: 29
+        when: { my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
+        shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_S2
+        call: 2S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_S3
+        call: 3S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [22, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
+      - id: uc_rebid_S4
+        call: 4S
+        priority: 29
+        when: { my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
+        shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
+        establishes: { forcing: non_forcing }
       - id: uc_pass
         call: P
         priority: 18

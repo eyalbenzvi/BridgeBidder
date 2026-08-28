@@ -495,3 +495,55 @@ while whole families of errors disappeared, because fixing one call changes
 every call after it: the same 1000 deals produced 10,175 decisions before
 and 9,485 after.  Cluster movement, not the percentage, is what these rounds
 are measured by.
+
+### A second thousand deals, on a seed nothing was fitted to
+
+Read on a fresh corpus (seed 20260828) the engine started at 76.9%.  Three
+findings needed no judgement at all, because the corpus convicted the rules
+rather than suggesting improvements to them:
+
+- **`xd_XX_values` was deleted.**  It was authored the previous round on
+  principle - "partner's call was doubled and I hold values, so redouble" -
+  with no evidence behind it.  31 disagreements, 27 with BEN confident, 16 of
+  those saying simply "pass".  A redouble of a double aimed at partner is a
+  specialised call, not a general agreement.  Authoring on principle is how
+  the rulebook gets written; the corpus is what decides whether the principle
+  was real.
+- **The takeout doubles allowed a five-card major.**  The engine doubled 1D
+  holding AKJT5 and then heard partner name spades.  They deny one now (six,
+  in the strong branch, where the suit is worth showing on its own).
+- **The game-level major raise took three trumps flat**, and jumped to game
+  on 4-3 fits.  It counts *combined* trumps now - the same test read
+  correctly, since three are plenty opposite a rebid six-card suit and too
+  few opposite a four-card response.
+
+The redouble had left exactly the hole the double had (no generic pattern
+matches a trailing XX), and it was the largest single fallback family: 55 of
+131.  `general_after_redouble` covers both positions, split by role.
+
+Two gaps were structural rather than mistaken.  **Repeating my own suit was
+missing from the generic toolkit entirely** - only the doubled and redoubled
+families had the rule - so 79 confident disagreements were the engine passing
+with six of a suit it had already bid.  And **opener's rebids started at 12
+HCP while the openings start at 10** under the rule of 20, so a light opener
+with four spades hidden behind a six-card minor rebid the minor.
+
+The rebid rule is worth recording as a two-step lesson.  Authored with a flat
+point requirement it made things *worse* - 132 confident disagreements, and
+overall agreement fell.  It was rebidding to game over partner's preemptive
+raise: the same partner-blindness that round 6 fixed for the raises.  With
+the values counted opposite partner's shown range it is a clear gain.  A new
+rule that scores worse is not necessarily a wrong idea, but it is always an
+unfinished one.
+
+Across three seeds, before -> after this round:
+
+| corpus | before | after |
+|---|---|---|
+| seed 20260828 (fresh) | 76.9% | 78.5% |
+| seed 42 | 77.7% | 78.9% |
+| seed 99 | 75.7% | 77.7% |
+
+Confident disagreements on the fresh corpus: 1417 -> 1305.  Undiscussed
+fallbacks: 131 -> 91.
+

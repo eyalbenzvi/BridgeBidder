@@ -216,6 +216,60 @@
     "derived_from_rule": "uc_nt3",
     "text": "not: natural 3NT: 13-17 balanced",
     "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "rule_of_26": [
+        22,
+        99
+       ],
+       "suit_quality(C)": [
+        1,
+        9
+       ],
+       "total_points": [
+        11,
+        40
+       ]
+      },
+      "suits": {
+       "C": [
+        6,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "uc_rebid_C3",
+    "text": "not: rebid of my own C: 6+ cards, values for the level opposite partner's shown range",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "evals": {
+       "suit_quality(S)": [
+        1,
+        9
+       ],
+       "total_points": [
+        11,
+        40
+       ]
+      },
+      "suits": {
+       "S": [
+        6,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "uc_rebid_S2",
+    "text": "not: rebid of my own S: 6+ cards, values for the level opposite partner's shown range",
+    "weight": "strong"
    }
   ],
   "forcing_status": "non_forcing",
@@ -1121,7 +1175,7 @@
   "call": "1NT",
   "constraint": {
    "evals": {
-    "balanced": [
+    "semi_balanced": [
      1,
      1
     ]
@@ -1243,15 +1297,15 @@
    "suits": {
     "C": [
      2,
-     5
+     6
     ],
     "D": [
      2,
-     5
+     6
     ],
     "H": [
      2,
-     5
+     6
     ],
     "S": [
      2,
