@@ -1330,3 +1330,60 @@ one verifiable shape (a context where every rule is gated and no pass is
 offered, so it can produce nothing) and is advisory, not enforced.  The
 second: a detector that cannot be shown to catch its motivating bug is not
 evidence of anything - hence the fixture in `tests/fixtures/`.
+
+## Round 5 (triaged 1000, seed 515151): starved seats, not bad rules
+
+The finding that reframed the dossier, and the most useful sentence any
+review has produced about this engine: `fast_decision` picks by priority
+among candidates fitting >= 0.9, and every generic context ends in a
+catch-all pass with `requires: {}` - which fits **1.00 on every hand** at
+priority 18-21, above every fallback.  So **any hole in an authored ladder
+becomes a pass by construction.**  The two biggest clusters ("all-pass",
+192 IMPs, and `uc_nt3`, 112) are not bad rules; they are *starved seats*,
+and most of the round's fixes are missing contexts rather than exceptions.
+
+Both reviewers reproduced every indictment through `choose_bid`, and one
+of them prototyped its whole fix set in a scratch copy and re-ran the
+motivating boards before prescribing - which is why so much of it landed
+unchanged.
+
+Applied: new contexts for opener's rebid over a 1NT response, responder
+after 1D-1S-2C, and GF landing; `general_pull_or_sit` re-gated by LENGTH
+rather than suit rank (it was ordering pulls S>H>D>C, so 4=6 in the majors
+bid the spades) with the weak-hand pass restored and negative-double
+auctions excluded; `ballow_X`/`balhigh_X` reading the STANDING suit rather
+than the opponents' first (a textbook 14-count reopening double of 2H
+scored 0.000 because the rule read the doubler's diamonds); the keycard
+asks no longer double-counting the sharp LOTT gate; the 2/1 over 1H
+denying four spades; five-card rungs on the competitive 2NT ladder; and
+own-long-suit rungs in three ladders.
+
+Two bugs of my own, found by verifying an expert's report rather than
+trusting it:
+
+- **The round-4 forcing-pass relaxation was defeated by its own escape
+  hatch.**  It admitted any authored pass fitting >= 0.9, and the generic
+  floors are authored rules with `requires: {}` - so one-round forces
+  could be passed out wholesale, including alertable artificial ones.  The
+  relaxation now demands a DISCRIMINATING pass (one whose constraint says
+  something about the hand); the trump-stack conversion it was built for
+  is unaffected.
+- **A round-3 edit had silently not applied.**  Opener bid 3NT over
+  partner's Jordan 2NT holding AQ932 and a known nine-card fit, because
+  the ladder still demanded six cards: the fix script had matched concrete
+  suit letters (`oc2nt_3H`) against template-var rule ids (`oc2nt_3$M`)
+  and changed nothing while reporting success.  Jordan promises four-card
+  support, so it has its own anchored context now.  **Every scripted edit
+  must assert that it applied** - an edit that reports success and changes
+  nothing is invisible for a whole round.
+
+Measured: same 1000 boards **-1365 -> -1143 (+222 paired; 61 up, 36 down)**;
+held-out fixed corpus **-826 -> -700 (+126 paired)**.  Like-for-like since
+head-to-head play began: **-1.474 -> -0.700 IMPs/board.**
+
+Both reviewers independently named the same two meta-species the current
+lints do not catch, and both proposed detectors: *a ladder that bands by
+strength forgets to band by shape* (four contexts here had no rung for
+responder's own long suit - invisible to the `gap` lint, which sees
+strength only), and *a gate added to one rule is not added to its
+siblings* (four instances this round).  Those are the next two lints.
