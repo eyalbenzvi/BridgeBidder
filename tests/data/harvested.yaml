@@ -580,3 +580,59 @@
   dealer: N
   calls: ["P", "P", "1D", "X", "1H"]
   expect: { calls: ["P", "2D"] }
+
+# --- second BEN round, fresh 1000 deals (seed 20260828) ------------------------
+
+# the redouble left the same hole the double had: 55 of 131 fallbacks
+- name: ben2_answer_partners_double_after_their_redouble
+  hand: "K2.98742.T8752.6"
+  dealer: N
+  calls: ["1D", "X", "XX"]
+  expect: { call: "1H", fallback: false }
+
+- name: ben2_describe_after_partner_redoubles
+  hand: "AJ3.65.KQJ4.QJ42"
+  dealer: N
+  calls: ["1D", "X", "XX", "P"]
+  expect: { call: "1NT", fallback: false }
+
+# a takeout double must not be hiding a five-card major: partner will name
+# the other one
+- name: ben2_overcall_the_five_card_major_not_double
+  hand: "853.AKJT5.3.AQ87"
+  dealer: N
+  calls: ["1D"]
+  expect: { call: "1H" }
+
+- name: ben2_overcall_the_six_card_major_even_with_seventeen
+  hand: "KQ4.AJT832.QJ8.A"
+  dealer: N
+  calls: ["P", "1D"]
+  expect: { call: "1H" }
+
+- name: ben2_still_double_with_four_four_majors
+  hand: "KQ52.AQ4.3.KJ932"
+  dealer: N
+  calls: ["1D"]
+  expect: { call: "X" }
+
+# the game raise counts combined trumps, so three are plenty opposite a
+# rebid suit and too few opposite a four-card response
+- name: ben2_game_raise_on_three_trumps_opposite_a_rebid_suit
+  hand: "AKJ5.T87.A2.J875"
+  dealer: N
+  calls: ["1H", "P", "2C", "P", "2H", "P"]
+  expect: { call: "4H" }
+
+- name: ben2_no_game_raise_on_a_four_three_fit
+  hand: "J82.94.AQT75.A65"
+  dealer: N
+  calls: ["P", "P", "P", "1C", "P", "1D", "P", "1S", "P"]
+  expect: { calls: ["2NT", "3NT", "2S", "P"] }
+
+# 13+ support points used to have nowhere to go below game
+- name: ben2_invitational_plus_raise_below_game
+  hand: "AQ52.6.KQ94.KQ32"
+  dealer: N
+  calls: ["1C", "P", "1H", "P", "1S", "P", "2D", "P"]
+  expect: { calls: ["3D", "3NT", "4D"], fallback: false }

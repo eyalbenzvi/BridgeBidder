@@ -115,6 +115,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "lott_total_trumps": [
+        8,
+        26
+       ],
        "rule_of_26": [
         25,
         99
@@ -133,7 +137,7 @@
      }
     },
     "derived_from_rule": "uc_raise_H4",
-    "text": "not: raise of partner's H: 3+ trumps, 13+ support points opposite partner's shown range",
+    "text": "not: raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range",
     "weight": "strong"
    },
    {
@@ -150,7 +154,7 @@
        ],
        "total_points": [
         10,
-        12
+        40
        ]
       },
       "suits": {
@@ -162,7 +166,7 @@
      }
     },
     "derived_from_rule": "uc_raise_D3",
-    "text": "not: raise of partner's D: 3+ trumps, 10-12 support points, 8+ combined trumps",
+    "text": "not: raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps",
     "weight": "strong"
    },
    {
@@ -2358,7 +2362,7 @@
       ],
       "S": [
        3,
-       13
+       4
       ]
      }
     },
@@ -2366,7 +2370,13 @@
      "hcp": [
       17,
       40
-     ]
+     ],
+     "suits": {
+      "S": [
+       0,
+       5
+      ]
+     }
     }
    ]
   },
@@ -2403,8 +2413,13 @@
     11,
     99
    ],
-   "suits": {},
-   "text": "takeout double: opening values, short hearts (or any 17+)"
+   "suits": {
+    "S": [
+     0,
+     5
+    ]
+   },
+   "text": "takeout double: opening values, short hearts, no five-card major (or any 17+)"
   },
   "source_rule_id": "oc1H_X"
  }
