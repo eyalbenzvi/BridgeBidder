@@ -4,3 +4,7 @@ __pycache__/
 .pytest_cache/
 reports/
 *.pkl
+
+# patch(1) backups
+*.orig
+*.rej
