@@ -197,6 +197,27 @@ def max_their_suit_length(hand: Hand, ctx: EvalContext) -> float:
     return float(max(hand.suit_length(s) for s in set(ctx.their_suits)))
 
 
+@register_evaluator("standing_suit_length")
+def standing_suit_length(hand: Hand, ctx: EvalContext) -> float:
+    """My length in the strain of the STANDING bid - what a penalty double
+    or a sit-for-partner's-double is actually about.  suit_length(their)
+    reads their first shown suit, which on one board meant a double of 4H
+    was gated on the defender's CLUB length.  13 when no bid stands or the
+    standing bid is notrump (so [3,13] gates pass vacuously in NT cases -
+    gate NT doubles separately)."""
+    if not ctx.standing_strain or ctx.standing_strain == "NT":
+        return 13.0
+    return float(hand.suit_length(ctx.standing_strain))
+
+
+@register_evaluator("rule_of_26_sharp")
+def rule_of_26_sharp(hand: Hand, ctx: EvalContext) -> float:
+    """rule_of_26 under a sharp tolerance (registered in the sharpness
+    table): for COUNTING CLAIMS - quantitative slam raises, keycard gates -
+    where a one-point soft miss must fail, not lean."""
+    return rule_of_26(hand, ctx)
+
+
 @register_evaluator("lott_total_trumps")
 def lott_total_trumps(hand: Hand, ctx: EvalContext, suit: str = "") -> float:
     """Law of Total Tricks support: our side's known combined trumps

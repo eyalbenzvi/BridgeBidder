@@ -376,6 +376,7 @@ def build_eval_ctx(analysis: Analysis, auction: Auction, seat: Seat) -> EvalCont
         partner_min_points=partner_desc.min_total_points,
         partner_min_length={s: int(pbox.suit(s)[0]) for s in SUITS},
         partner_max_length={s: int(pbox.suit(s)[1]) for s in SUITS},
+        standing_strain=(auction.last_bid.strain if auction.last_bid is not None else None),
     )
 
 
@@ -466,11 +467,23 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
     # is reached.  Keyed on the seat, so responder can still act after RHO
     # doubles partner's opening.
     pass_forbidden = _pass_forbidden(auction, seat, analysis)
+    # standing doubled bid is our own side's artificial (alertable or
+    # conventional) call: the fallback pass is withheld (see fallback.py)
+    our_artificial_doubled = False
+    lbi = auction.last_bid_info
+    if lbi is not None and auction.doubled_state == 1             and auction.seat_of_call(lbi[1]).same_side(seat):
+        for a in analysis.annotations:
+            if a.index == lbi[1]:
+                interp = a.interpretation
+                if interp.alertable or interp.convention:
+                    our_artificial_doubled = True
+                break
     for fb in generate_fallbacks(
         auction, seat, partner_suits, their_suits,
         side.agreed_suit, side.game_forced, frozenset(covered), we_have_acted,
         partner_signed_off, we_hold_contract(auction, seat), partner_forcing,
         pass_forbidden,
+        our_artificial_doubled=our_artificial_doubled,
     ):
         candidates.append(Candidate(call=fb.call, fallback=fb))
 

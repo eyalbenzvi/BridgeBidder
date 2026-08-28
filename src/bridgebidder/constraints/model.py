@@ -53,6 +53,9 @@ _EVAL_S2 = {
     "quick_tricks_outside": 0.9,
     # counted, not estimated (same as suit_length)
     "max_their_suit_length": _S2_SUIT,
+    "standing_suit_length": _S2_SUIT,
+    # counting claims: a one-point miss on a quantitative raise must fail
+    "rule_of_26_sharp": 0.4,
 }
 
 _FEATURE_MISS_FIT = 0.2

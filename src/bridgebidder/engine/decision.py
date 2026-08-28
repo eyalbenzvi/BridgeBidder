@@ -64,7 +64,15 @@ def score_candidates(setup: DecisionSetup, hand: Hand) -> list[ScoredCandidate]:
         (passes if cand.call.is_pass else out).append(sc)
     if not setup.pass_forbidden:
         out.extend(passes)
-    elif not setup.pass_forbidden_hard and not any(sc.fit >= FORCED_BID_MIN_FIT for sc in out):
+    elif not setup.pass_forbidden_hard and (
+        not any(sc.fit >= FORCED_BID_MIN_FIT for sc in out)
+        # An AUTHORED pass rule that fits is a positive decision, not a
+        # failure to find a bid: converting partner's takeout double with a
+        # trump stack is the textbook action, and the nothing-fits-anywhere
+        # relaxation alone could never reach it (some 4-card-suit pull
+        # always soft-fits).  Fallback passes stay filtered.
+        or any(sc.fit >= 0.9 and not sc.candidate.is_fallback for sc in passes)
+    ):
         # a one-round force with no bid that remotely fits: passing (e.g.
         # converting partner's takeout double) beats inventing a call.
         # A game force is never passed below game.

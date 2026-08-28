@@ -252,6 +252,10 @@
        },
        {
         "evals": {
+         "longest_suit_length": [
+          5,
+          13
+         ],
          "ltc": [
           0,
           3.5
@@ -389,6 +393,10 @@
        },
        {
         "evals": {
+         "longest_suit_length": [
+          5,
+          13
+         ],
          "ltc": [
           0,
           3.5
@@ -477,6 +485,10 @@
     },
     {
      "evals": {
+      "longest_suit_length": [
+       5,
+       13
+      ],
       "ltc": [
        0,
        3.5
@@ -548,6 +560,10 @@
        },
        {
         "evals": {
+         "longest_suit_length": [
+          5,
+          13
+         ],
          "ltc": [
           0,
           3.5
@@ -1408,16 +1424,32 @@
    {
     "constraint": {
      "not": {
-      "evals": {
-       "singleton_or_void": [
-        0,
-        0
-       ],
-       "total_points": [
-        13,
-        40
-       ]
-      },
+      "any_of": [
+       {
+        "evals": {
+         "singleton_or_void": [
+          0,
+          0
+         ],
+         "total_points": [
+          13,
+          40
+         ]
+        }
+       },
+       {
+        "evals": {
+         "total_points": [
+          15,
+          40
+         ]
+        },
+        "hcp": [
+         15,
+         40
+        ]
+       }
+      ],
       "hcp": [
        11,
        40
@@ -1522,16 +1554,32 @@
   "announce": null,
   "call": "2NT",
   "constraint": {
-   "evals": {
-    "singleton_or_void": [
-     0,
-     0
-    ],
-    "total_points": [
-     13,
-     40
-    ]
-   },
+   "any_of": [
+    {
+     "evals": {
+      "singleton_or_void": [
+       0,
+       0
+      ],
+      "total_points": [
+       13,
+       40
+      ]
+     }
+    },
+    {
+     "evals": {
+      "total_points": [
+       15,
+       40
+      ]
+     },
+     "hcp": [
+      15,
+      40
+     ]
+    }
+   ],
    "hcp": [
     11,
     40
@@ -1590,16 +1638,32 @@
    {
     "constraint": {
      "not": {
-      "evals": {
-       "singleton_or_void": [
-        0,
-        0
-       ],
-       "total_points": [
-        13,
-        40
-       ]
-      },
+      "any_of": [
+       {
+        "evals": {
+         "singleton_or_void": [
+          0,
+          0
+         ],
+         "total_points": [
+          13,
+          40
+         ]
+        }
+       },
+       {
+        "evals": {
+         "total_points": [
+          15,
+          40
+         ]
+        },
+        "hcp": [
+         15,
+         40
+        ]
+       }
+      ],
       "hcp": [
        11,
        40
@@ -1789,16 +1853,32 @@
    {
     "constraint": {
      "not": {
-      "evals": {
-       "singleton_or_void": [
-        0,
-        0
-       ],
-       "total_points": [
-        13,
-        40
-       ]
-      },
+      "any_of": [
+       {
+        "evals": {
+         "singleton_or_void": [
+          0,
+          0
+         ],
+         "total_points": [
+          13,
+          40
+         ]
+        }
+       },
+       {
+        "evals": {
+         "total_points": [
+          15,
+          40
+         ]
+        },
+        "hcp": [
+         15,
+         40
+        ]
+       }
+      ],
       "hcp": [
        11,
        40

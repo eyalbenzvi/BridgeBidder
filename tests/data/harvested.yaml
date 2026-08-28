@@ -1364,3 +1364,81 @@
   hand: "AQ9852.9.AK72.KJ"
   calls: ["1S", "P", "1NT", "2C"]
   expect: { call: "3S" }
+
+# =====================================================================
+# Expert round 4: the TRIAGED 1000-board review (seed 303030).  368
+# losing boards were clustered by the rule making our last bid at the
+# damaged table; two experts reviewed the 20 biggest clusters plus the
+# worst singles.  See docs/EXPERT_REVIEW_303030_{A,B}.md.
+# =====================================================================
+
+# the headline: a generic pull/sit floor under EVERY takeout double.
+# Sitting is a positive decision (a trump stack behind the bid); pulling
+# to a 4+ card suit is the default with weakness.
+- name: e3_sit_the_double_with_a_trump_stack
+  hand: "K52.QJT96.842.97"
+  calls: ["1H", "P", "2H", "X", "P"]
+  expect: { call: "P" }
+
+- name: e3_pull_the_double_without_trumps
+  hand: "92.K.86432.JT432"
+  calls: ["1H", "2S", "P", "P", "X", "P"]
+  expect: { calls: ["3D", "3C"] }
+
+# partner's double of their 1NT is a PENALTY double: no "pulling" it to
+# a natural 2NT (two regression scenarios caught this)
+- name: e3_no_pull_of_a_notrump_double
+  hand: "AJ873.Q8.532.985"
+  dealer: W
+  calls: ["1S", "P", "1NT", "X", "P"]
+  expect: { call: "P" }
+
+# the doubled transfer: opener completes with three, and the transfer
+# bidder completes his own if it comes back around
+- name: e3_complete_the_doubled_transfer
+  hand: "AQ7.K54.KQ83.A96"
+  calls: ["1NT", "P", "2D", "X"]
+  expect: { call: "2H" }
+
+- name: e3_transfer_bidder_completes_himself
+  hand: "54.QJT9832.75.83"
+  calls: ["1NT", "P", "2D", "X", "P", "P"]
+  expect: { call: "2H" }
+
+# the strong 2C under interference had no rules at all: the big hand
+# never sells out at the two level
+- name: e3_strong_2C_reopens_over_interference
+  hand: "AKQ2.AKQ84.A93.K"
+  calls: ["2C", "3D", "P", "P"]
+  expect: { calls: ["3NT", "X", "3H"] }
+
+# 2C over 1C was defined twice in one context (raise AND 2/1), so a
+# 9-count raise read as game-forcing; clubs now respond 1NT
+- name: e3_no_2C_raise_collision
+  hand: "QJ4.K73.85.QJ865"
+  calls: ["1C", "P"]
+  expect: { call: "1NT" }
+
+# the 5H reply is an exact count: 2+2 with the queen is six
+- name: e3_rkc_5H_counting
+  hand: "AKQ83.KQ54.A2.K5"
+  calls: ["1S", "P", "2NT", "P", "3S", "P", "4NT", "P", "5H", "P"]
+  expect: { call: "6S" }
+
+# gf_3NT is gated now: a 6-card suit is bid, not buried in notrump
+- name: e3_gf_3NT_does_not_bury_a_six_card_suit
+  hand: "KQ8.A97632.5.K84"
+  calls: ["1D", "P", "2C", "P", "2D", "P"]
+  expect: { calls: ["2H", "3H"] }
+
+# the jump-raise game bid no longer shadows the keycard ask
+- name: e3_slam_ask_over_the_jump_raise
+  hand: "AQ63.KJ98.AQ7.K5"
+  calls: ["1D", "P", "1H", "P", "3H", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+# Stayman placement must check WHICH major opener showed
+- name: e3_stayman_placement_reads_the_reply
+  hand: "KQ84.AQ63.J5.842"
+  calls: ["2NT", "P", "3C", "P", "3S", "P"]
+  expect: { call: "4S" }

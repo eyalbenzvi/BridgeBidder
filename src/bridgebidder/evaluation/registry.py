@@ -35,6 +35,7 @@ class EvalContext:
     partner_min_points: float = 0.0   # partner's shown minimum TOTAL points
     partner_min_length: dict[str, int] = field(default_factory=dict)
     partner_max_length: dict[str, int] = field(default_factory=dict)
+    standing_strain: str | None = None      # strain of the auction's standing bid
 
     @property
     def we_vulnerable(self) -> bool:

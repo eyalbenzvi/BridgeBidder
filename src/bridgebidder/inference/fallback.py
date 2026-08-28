@@ -53,6 +53,7 @@ def generate_fallbacks(
     we_hold_contract: bool = False,
     partner_forcing: bool = False,
     pass_forbidden: bool = False,
+    our_artificial_doubled: bool = False,
 ) -> list[FallbackMeaning]:
     """Generate generic candidates for calls NOT covered by system rules."""
     out: list[FallbackMeaning] = []
@@ -84,10 +85,16 @@ def generate_fallbacks(
     # ---- pass ----
     # Once our side has spoken, pass is the safe default in undiscussed spots
     # (any hand); before that it shows a weak-ish hand.
-    if we_have_acted:
-        add(PASS, HandConstraint(), "nothing more to say (undiscussed)", "sign_off", 8.0)
-    else:
-        add(PASS, _c(hcp=[0, 11]), "nothing suitable to say (undiscussed)", "sign_off", 8.0)
+    # INVARIANT (bought with -800 twice): the fallback layer never passes
+    # when the standing doubled bid is our own side's artificial call - an
+    # alertable cue or transfer has no trump suit, and letting the generic
+    # pass sit it plays 2-of-a-nothing doubled.  Authored sit/retreat rules
+    # still apply; only the undiscussed pass is withheld.
+    if not our_artificial_doubled:
+        if we_have_acted:
+            add(PASS, HandConstraint(), "nothing more to say (undiscussed)", "sign_off", 8.0)
+        else:
+            add(PASS, _c(hcp=[0, 11]), "nothing suitable to say (undiscussed)", "sign_off", 8.0)
 
     # ---- raises of partner's suit(s): cheapest raise (banded) plus a
     # game-level raise so strong hands are not trapped in the cheap band ----
