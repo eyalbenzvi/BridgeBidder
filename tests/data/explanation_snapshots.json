@@ -95,212 +95,26 @@
   "call": "2NT",
   "constraint": {
    "evals": {
-    "rule_of_26": [
-     21,
-     99
-    ],
-    "semi_balanced": [
+    "stoppers(D)": [
      1,
-     1
+     9
     ]
-   },
-   "hcp": [
-    11,
-    12
-   ]
+   }
   },
   "convention": null,
-  "denies": [
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "lott_total_trumps(H)": [
-        8,
-        26
-       ],
-       "rule_of_26": [
-        25,
-        99
-       ],
-       "total_points": [
-        11,
-        40
-       ]
-      },
-      "suits": {
-       "H": [
-        3,
-        13
-       ]
-      }
-     }
-    },
-    "derived_from_rule": "uc_raise_H4",
-    "text": "not: raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range",
-    "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "lott_total_trumps(D)": [
-        8,
-        26
-       ],
-       "rule_of_26": [
-        22,
-        99
-       ],
-       "total_points": [
-        10,
-        40
-       ]
-      },
-      "suits": {
-       "D": [
-        3,
-        13
-       ]
-      }
-     }
-    },
-    "derived_from_rule": "uc_raise_D3",
-    "text": "not: raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps",
-    "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "lott_total_trumps(H)": [
-        7,
-        26
-       ],
-       "total_points": [
-        6,
-        9
-       ]
-      },
-      "suits": {
-       "H": [
-        3,
-        13
-       ]
-      }
-     }
-    },
-    "derived_from_rule": "uc_raise_H2",
-    "text": "not: raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps",
-    "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "rule_of_26": [
-        24,
-        99
-       ],
-       "semi_balanced": [
-        1,
-        1
-       ]
-      },
-      "hcp": [
-       13,
-       17
-      ]
-     }
-    },
-    "derived_from_rule": "uc_nt3",
-    "text": "not: natural 3NT: 13-17 balanced",
-    "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "rule_of_26": [
-        22,
-        99
-       ],
-       "suit_quality(C)": [
-        1,
-        9
-       ],
-       "total_points": [
-        11,
-        40
-       ]
-      },
-      "suits": {
-       "C": [
-        6,
-        13
-       ]
-      }
-     }
-    },
-    "derived_from_rule": "uc_rebid_C3",
-    "text": "not: rebid of my own C: 6+ cards, values for the level opposite partner's shown range",
-    "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "suit_quality(S)": [
-        1,
-        9
-       ],
-       "total_points": [
-        11,
-        40
-       ]
-      },
-      "suits": {
-       "S": [
-        6,
-        13
-       ]
-      }
-     }
-    },
-    "derived_from_rule": "uc_rebid_S2",
-    "text": "not: rebid of my own S: 6+ cards, values for the level opposite partner's shown range",
-    "weight": "strong"
-   }
-  ],
-  "forcing_status": "non_forcing",
+  "denies": [],
+  "forcing_status": "game_forcing",
   "is_undiscussed_fallback": false,
   "shows": {
    "features": [],
    "hcp": [
-    11,
-    12
+    0,
+    99
    ],
-   "suits": {
-    "C": [
-     2,
-     6
-    ],
-    "D": [
-     2,
-     6
-    ],
-    "H": [
-     2,
-     6
-    ],
-    "S": [
-     2,
-     6
-    ]
-   },
-   "text": "natural 2NT: 11-12 balanced"
+   "suits": {},
+   "text": "fourth suit answered: D stopped, notrump from this side"
   },
-  "source_rule_id": "uc_nt2"
+  "source_rule_id": "fsfr_2NT_2D"
  },
  "jacoby_transfer": {
   "alertable": false,

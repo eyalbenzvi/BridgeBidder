@@ -742,3 +742,55 @@ Known gap surfaced in testing, left for the next round: after a reverse
 (1D - 1S - 2H) responder with 11 opposite 17+ passed a 3D preference out -
 responder's obligations over a reverse are under-authored.
 
+## Thumb rules: encoding the folklore
+
+A round dedicated to bridge maxims - the compressed expert judgment every
+partnership plays by.  The audit first, because most of the canon turned out
+to be already in the system: rule of 20 and 15 openings, LOTT raise gates,
+higher-of-five-five, support-with-support (raise priorities), balancing a
+king lighter, no notrump with a void (semi_balanced), never pulling a doubled
+contract.  The card-play maxims (eight-ever-nine-never, second-hand-low) are
+out of scope by construction.
+
+What was genuinely missing, now added:
+
+- **"If 3NT is one of the logical options, bid it."**  With a MINOR agreed in
+  a game force there was no notrump preference at all - the landing contexts
+  covered majors and no-fit only, so the engine bid five of a minor with 3NT
+  cold.  `gf_minor_3NT` prefers nine tricks over eleven whenever every suit
+  our side has not shown is stopped (the new `weakest_unshown_stopper`
+  evaluator - the honest version of "3NT is an option").
+- **Fourth suit forcing**, the tool that makes the maxim reachable: with
+  three suits on the table and no clear bid, the fourth suit is artificial,
+  game-forcing, and asks for a stopper so 3NT can be bid from the right
+  side.  "No clear natural bid" is gated in, not assumed: no fit for
+  opener's second suit, no stopper in the fourth suit, no six-card suit of
+  your own, and genuine game values (13+, because the bid forces to game -
+  the first draft said 12 and an eleven-count invite went through it).
+
+Two negative results, both kept in the file as comments:
+
+- **"Don't preempt twice" was tried and REVERTED.**  As a 10-HCP floor on
+  the generic suit rebids it silenced nine-count overcallers competing at
+  the two level: a measured 10-IMP loss.  The maxim is about free rebids by
+  a preempt opener, and the rulebook currently cannot distinguish "I opened
+  a preempt" from "I bid this suit once".
+- The first version of the minor-game landing **violated its own maxim**: 
+  its 5m sign-off fired over partner's freely chosen 3NT and pulled it to
+  five of a minor.  It is gated to the raise position now (a new
+  `standing_bid_strain` condition: the standing bid is the agreed minor).
+
+The deepest fix of the round came out of chasing a single bad board: **trump
+counting was soft**.  `lott_total_trumps` used the default Gaussian
+tolerance, so a seven-card "fit" scored 0.8 against an eight-trump gate and
+the engine raised to game on 4-3 fits past an available 3NT.  Trumps are
+counted, not estimated - a near-miss on a countable quantity is a different
+bid.  The sigma is sharp now, which tightened every LOTT gate in the book at
+once.
+
+Fixed corpus: -1427 -> -1359, the best result yet (from -1474 at the round's
+start, +115 total).  Hold-out seed, never used for tuning: -1.05/board.
+The overall arc of the maxim round: the folklore was mostly already there;
+the wins came from the two structural gaps (minor-game 3NT, fourth suit)
+and from one representation bug the maxims flushed out.
+

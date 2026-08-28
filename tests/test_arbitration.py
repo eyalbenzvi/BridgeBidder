@@ -22,7 +22,7 @@ SYSTEM = load_system()
 # positions harvested from self-play where the fast path is genuinely unsure
 UNCLEAR = [
     ("A7654.A9.AKJ4.87", "E", ["2D"]),
-    ("AJT7.943.J8.QJ94", "E", ["P", "P", "P", "1C", "P", "1S", "2H", "X", "P"]),
+    ("87.KJ64.AKJ42.A7", "E", ["1D", "P", "1S", "X"]),
 ]
 
 

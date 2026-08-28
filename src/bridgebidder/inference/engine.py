@@ -217,6 +217,10 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         lb = auction.last_bid
         if lb is None or lb.level not in cond.standing_bid_level:
             return False
+    if cond.standing_bid_strain is not None:
+        lb = auction.last_bid
+        if lb is None or lb.strain not in cond.standing_bid_strain:
+            return False
     if cond.i_have_acted is not None:
         acted = any(not c.is_pass for i, c in enumerate(auction.calls)
                     if auction.seat_of_call(i) == seat)

@@ -261,6 +261,25 @@ def stopper(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
     return 1.0 if stoppers(hand, ctx, suit) >= 1.0 else 0.0
 
 
+@register_evaluator("weakest_unshown_stopper")
+def weakest_unshown_stopper(hand: Hand, ctx: EvalContext) -> float:
+    """The worst stopper among suits our side has NOT shown - the 3NT
+    question.  "If 3NT is one of the logical options, bid it" is only sound
+    when the unshown suits are actually stopped; a suit partner has bid, or
+    the agreed suit, is partner's to stop.  1.0 = every unshown suit fully
+    stopped, 0.5 = one of them only half-stopped (Qx / Jxx), 0 = one wide
+    open."""
+    shown = set(ctx.partner_suits)
+    if ctx.agreed_suit:
+        shown.add(ctx.agreed_suit)
+    worst = 1.0
+    for s in SUITS:
+        if s in shown:
+            continue
+        worst = min(worst, stoppers(hand, ctx, s))
+    return worst
+
+
 @register_evaluator("void")
 def void(hand: Hand, ctx: EvalContext, suit: str = "any") -> float:
     if suit == "any":

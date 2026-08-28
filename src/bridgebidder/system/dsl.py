@@ -72,6 +72,7 @@ class Conditions:
     we_bid_last: bool | None = None                # the standing contract bid is OURS (either seat)
     i_have_acted: bool | None = None               # I myself have already made a non-pass call
     standing_bid_level: tuple[int, ...] | None = None  # level of the standing contract bid
+    standing_bid_strain: tuple[str, ...] | None = None  # strain of the standing contract bid
     my_suit: str | None = None                     # I have bid this suit myself
     config: dict[str, Any] = field(default_factory=dict)
 
@@ -93,6 +94,8 @@ class Conditions:
             i_have_acted=d.pop("i_have_acted", None),
             standing_bid_level=(tuple(d.pop("standing_bid_level"))
                                 if "standing_bid_level" in d else None),
+            standing_bid_strain=(tuple(d.pop("standing_bid_strain"))
+                                 if "standing_bid_strain" in d else None),
             my_suit=d.pop("my_suit", None),
             config=d.pop("config", {}) or {},
         )
@@ -116,6 +119,7 @@ class Conditions:
             and self.we_bid_last is None
             and self.i_have_acted is None
             and self.standing_bid_level is None
+            and self.standing_bid_strain is None
             and self.my_suit is None
             and not self.config
         )

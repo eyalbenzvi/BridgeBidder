@@ -3368,6 +3368,71 @@ contexts:
         negative_inference_weight: soft
 
   # ===========================================================================
+  # FOURTH SUIT FORCING
+  #
+  # Three suits are on the table and responder still has no clear bid: the
+  # fourth suit is artificial, game-forcing, and says "pick for me" - most
+  # often asking for a stopper there so 3NT can be bid from the right side.
+  # This is the tool that makes "when 3NT is an option, bid it" reachable:
+  # without it, the hands with one unstopped suit had no way to ask.
+  # ===========================================================================
+
+  - id: fourth_suit_forcing
+    description: "Responder's fourth suit is artificial and game forcing"
+    expand_pairs:
+      - { O: 1C, R: 1H, B: 1S, BS: S, F: 2D, FS: D }
+      - { O: 1C, R: 1D, B: 1S, BS: S, F: 2H, FS: H }
+      - { O: 1D, R: 1H, B: 1S, BS: S, F: 2C, FS: C }
+      - { O: 1D, R: 1S, B: 2C, BS: C, F: 2H, FS: H }
+      - { O: 1H, R: 1S, B: 2C, BS: C, F: 2D, FS: D }
+    pattern: "$O - P - $R - P - $B - P - ?"
+    rules:
+      # "no clear natural bid" is the premise, so it is gated in: no fit for
+      # opener's second suit (raise it instead), no stopper in the fourth
+      # suit (bid notrump yourself instead), no self-sufficient suit of your
+      # own (rebid it instead)
+      - id: fsf_$F
+        call: $F
+        priority: 65
+        requires:
+          suits: { $BS: [0, 3] }
+          # 13+: the fourth suit FORCES TO GAME, so invitational hands (11-12)
+          # must find a natural call instead
+          evals: { total_points: [13, 40], "stoppers($FS)": [0, 0.5],
+                   longest_suit_length: [0, 5] }
+        shows: "fourth suit forcing: game values, no clear natural bid, seeking a $FS stopper for notrump"
+        establishes: { forcing: game_forcing }
+        alertable: true
+        convention: fourth_suit_forcing
+
+  - id: fourth_suit_reply
+    description: "Opener's reply to fourth suit forcing"
+    expand_pairs:
+      - { O: 1C, R: 1H, RS: H, B: 1S, F: 2D, FS: D }
+      - { O: 1C, R: 1D, RS: D, B: 1S, F: 2H, FS: H }
+      - { O: 1D, R: 1H, RS: H, B: 1S, F: 2C, FS: C }
+      - { O: 1D, R: 1S, RS: S, B: 2C, F: 2H, FS: H }
+      - { O: 1H, R: 1S, RS: S, B: 2C, F: 2D, FS: D }
+    pattern: "$O - P - $R - P - $B - P - $F - P - ?"
+    rules:
+      # the stopper answer comes first: that is what partner asked about
+      - id: fsfr_2NT_$F
+        call: 2NT
+        priority: 68
+        requires:
+          evals: { "stoppers($FS)": [1, 9] }
+        shows: "fourth suit answered: $FS stopped, notrump from this side"
+        establishes: { forcing: game_forcing }
+      - id: fsfr_raise_$F
+        call: 3$RS
+        priority: 66
+        requires:
+          suits: { $RS: [3, 13] }
+          evals: { "stoppers($FS)": [0, 0.5] }
+        shows: "no $FS stopper: showing delayed 3-card support for partner's $RS"
+        establishes: { forcing: game_forcing, agreed_suit: $RS }
+
+  # ===========================================================================
   # GENERIC GAME-FORCE LANDING SPOTS (least specific; consulted when nothing
   # anchored matches)
   # ===========================================================================
@@ -3385,15 +3450,57 @@ contexts:
         shows: "signing off in the agreed major game"
         establishes: { forcing: non_forcing, agreed_suit: $A }
 
+  - id: gf_landing_minor
+    description: "With a minor agreed in a GF: nine tricks beat eleven"
+    expand: { m: [C, D] }
+    # "... - P - ?" for the same reason as the cue contexts: the generic
+    # toolkit's 3NT rule would otherwise cover the call at higher specificity
+    # and this context's honest stopper gate would never be consulted
+    pattern: "... - P - ?"
+    when: { agreed_suit: $m, game_forced: true }
+    rules:
+      # The oldest maxim in the book: when 3NT is one of the logical options,
+      # bid it.  Eleven tricks in a minor need roughly the same values as
+      # nine in notrump, and score worse.  The gate is the honest version of
+      # "is 3NT an option": every suit our side has not shown is stopped.
+      - id: gf_minor_3NT
+        call: 3NT
+        priority: 37
+        # only in the "partner raised the minor, pick a game" position: over
+        # our own side's 3NT this rule must never fire (it was pulling
+        # partner's 3NT to five of a minor - the exact opposite of the maxim)
+        when: { standing_bid_strain: [$m] }
+        requires:
+          hcp: [0, 17]
+          evals: { weakest_unshown_stopper: [0.9, 9] }
+        shows: "choosing 3NT over the minor game: the unshown suits are stopped"
+        establishes: { forcing: non_forcing }
+      - id: gf_game_5$m
+        call: 5$m
+        priority: 33
+        when: { standing_bid_strain: [$m] }
+        requires: { evals: { total_points: [0, 17] } }
+        shows: "signing off in the agreed minor game (3NT unavailable)"
+        establishes: { forcing: non_forcing, agreed_suit: $m }
+
   - id: gf_landing_nt
     description: "Generic: in a GF with no agreed suit, 3NT is the default game"
-    pattern: "... - ?"
+    # "... - P - ?" so this covers 3NT ahead of the generic 13-17 notrump
+    # rule: in a game force ANY strength raises partner's 2NT to game, and
+    # the shadowing cost a real board (a 4-3 spade game on eleven points
+    # because 3NT was gated 13+)
+    pattern: "... - P - ?"
     when: { agreed_suit: false, game_forced: true }
     rules:
       - id: gf_3NT
         call: 3NT
         priority: 34
-        requires: { hcp: [0, 17], features: [ "stopper(their)" ] }
+        # "no fit found" is a checkable claim: no known eight-card fit with
+        # partner's suit (the lott gate is sharp - trumps are counted)
+        requires:
+          hcp: [0, 17]
+          evals: { lott_total_trumps: [0, 7] }
+          features: [ "stopper(their)" ]
         shows: "no fit found: choosing 3NT"
         establishes: { forcing: non_forcing }
 
@@ -5703,7 +5810,10 @@ contexts:
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
-      # suit again.  The level follows the values, and - the first version
+      # suit again.  ("Don't preempt twice" was tried here as a 10-HCP floor
+      # and REVERTED: it silenced nine-count overcallers competing at the two
+      # level, a measured 10-IMP loss - the maxim is about free rebids by a
+      # preempt opener, which this gate cannot distinguish.)  The level follows the values, and - the first version
       # of this rule had to learn it the hard way - the values are counted
       # opposite what partner has actually shown, or the rule cheerfully
       # rebids to game over a preemptive raise.
@@ -6096,7 +6206,10 @@ contexts:
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
-      # suit again.  The level follows the values, and - the first version
+      # suit again.  ("Don't preempt twice" was tried here as a 10-HCP floor
+      # and REVERTED: it silenced nine-count overcallers competing at the two
+      # level, a measured 10-IMP loss - the maxim is about free rebids by a
+      # preempt opener, which this gate cannot distinguish.)  The level follows the values, and - the first version
       # of this rule had to learn it the hard way - the values are counted
       # opposite what partner has actually shown, or the rule cheerfully
       # rebids to game over a preemptive raise.
@@ -6528,7 +6641,10 @@ contexts:
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
-      # suit again.  The level follows the values, and - the first version
+      # suit again.  ("Don't preempt twice" was tried here as a 10-HCP floor
+      # and REVERTED: it silenced nine-count overcallers competing at the two
+      # level, a measured 10-IMP loss - the maxim is about free rebids by a
+      # preempt opener, which this gate cannot distinguish.)  The level follows the values, and - the first version
       # of this rule had to learn it the hard way - the values are counted
       # opposite what partner has actually shown, or the rule cheerfully
       # rebids to game over a preemptive raise.
@@ -6922,7 +7038,10 @@ contexts:
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
-      # suit again.  The level follows the values, and - the first version
+      # suit again.  ("Don't preempt twice" was tried here as a 10-HCP floor
+      # and REVERTED: it silenced nine-count overcallers competing at the two
+      # level, a measured 10-IMP loss - the maxim is about free rebids by a
+      # preempt opener, which this gate cannot distinguish.)  The level follows the values, and - the first version
       # of this rule had to learn it the hard way - the values are counted
       # opposite what partner has actually shown, or the rule cheerfully
       # rebids to game over a preemptive raise.
@@ -7345,7 +7464,10 @@ contexts:
         establishes: { forcing: sign_off }
       # Repeating my own suit was missing from the generic toolkit
       # entirely: with six of them and nothing else to say, the bid is the
-      # suit again.  The level follows the values, and - the first version
+      # suit again.  ("Don't preempt twice" was tried here as a 10-HCP floor
+      # and REVERTED: it silenced nine-count overcallers competing at the two
+      # level, a measured 10-IMP loss - the maxim is about free rebids by a
+      # preempt opener, which this gate cannot distinguish.)  The level follows the values, and - the first version
       # of this rule had to learn it the hard way - the values are counted
       # opposite what partner has actually shown, or the rule cheerfully
       # rebids to game over a preemptive raise.

@@ -635,7 +635,9 @@
   hand: "AQ52.6.KQ94.KQ32"
   dealer: N
   calls: ["1C", "P", "1H", "P", "1S", "P", "2D", "P"]
-  expect: { calls: ["3D", "3NT", "4D", "4NT"], fallback: false }
+  # 2D reads as fourth suit forcing now, so answering 2NT with diamonds
+  # stopped is the systemic call
+  expect: { calls: ["3D", "3NT", "4D", "4NT", "2NT"], fallback: false }
 
 # repeating my own suit was missing from the generic toolkit entirely
 - name: ben2_rebid_my_own_six_card_suit_in_competition
@@ -751,4 +753,58 @@
   hand: "KQJ4.952.KJ3.Q54"
   dealer: N
   calls: ["1NT", "P", "3NT", "P", "4NT", "P"]
+  expect: { call: "P" }
+
+# --- thumb-rule round -----------------------------------------------------------
+
+# "when 3NT is one of the logical options, bid it": with a minor agreed in a
+# game force and every unshown suit stopped, nine tricks beat eleven
+- name: maxim_3NT_over_five_of_a_minor
+  hand: "AQ5.KJ4.KQ94.432"
+  dealer: N
+  calls: ["1D", "P", "2C", "P", "2D", "P", "3D", "P"]
+  expect: { call: "3NT", rule: "gf_minor_3NT" }
+
+- name: maxim_5m_when_a_suit_is_wide_open
+  hand: "AQ5.964.KQ94.A32"
+  dealer: N
+  calls: ["1D", "P", "2C", "P", "2D", "P", "3D", "P"]
+  expect: { calls: ["5D", "4D"] }
+
+# fourth suit forcing: the tool that finds the stopper 3NT needs
+- name: maxim_fourth_suit_forcing
+  hand: "K52.AQJ84.A4.J63"
+  dealer: N
+  calls: ["1D", "P", "1H", "P", "1S", "P"]
+  expect: { call: "2C", convention: fourth_suit_forcing, alertable: true }
+
+- name: maxim_fsf_answered_with_the_stopper
+  hand: "A94.K2.AQJ84.Q52"
+  dealer: N
+  calls: ["1D", "P", "1H", "P", "1S", "P", "2C", "P"]
+  expect: { call: "2NT" }
+
+- name: maxim_fsf_no_stopper_shows_delayed_support
+  hand: "AJ94.KQ2.AQJ84.5"
+  dealer: N
+  calls: ["1D", "P", "1H", "P", "1S", "P", "2C", "P"]
+  expect: { call: "3H" }
+
+- name: maxim_fsf_needs_game_values
+  hand: "J82.94.AQT75.A65"
+  dealer: N
+  calls: ["P", "P", "P", "1C", "P", "1D", "P", "1S", "P"]
+  expect: { calls: ["2NT", "3NT", "2S", "P"] }
+
+- name: maxim_raise_beats_fourth_suit
+  hand: "9732.AQ942.K76.Q"
+  dealer: E
+  calls: ["1C", "P", "1H", "P", "1S", "P"]
+  expect: { calls: ["4S", "3S"] }
+
+# "don't preempt twice": the weak two has said everything already
+- name: maxim_dont_preempt_twice
+  hand: "KQT854.9.T95.764"
+  dealer: N
+  calls: ["2S", "P", "P", "3C", "P", "P"]
   expect: { call: "P" }

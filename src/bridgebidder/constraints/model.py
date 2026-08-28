@@ -33,7 +33,11 @@ _EVAL_S2 = {
     "quick_tricks": 0.9,
     "suit_quality": 0.9,
     "stoppers": 0.3,
+    "weakest_unshown_stopper": 0.3,
     "suit_length": _S2_SUIT,
+    # combined trumps are counted, not estimated: a 7-card "fit" missing an
+    # 8-trump gate is a different bid, not a near miss
+    "lott_total_trumps": 0.4,
     "longest_suit_length": _S2_SUIT,
     "balanced": 0.08,
     "semi_balanced": 0.08,
