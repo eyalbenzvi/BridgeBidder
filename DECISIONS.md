@@ -974,3 +974,47 @@ stopper-less 3NT that partner's hand happened to cover.  Both are bets
 the odds say not to take.
 
 Session so far on the fixed corpus: -1281 -> -1248.
+
+## RKC 5D: the 0-or-3 reply is a counting problem
+
+The RKC continuations after the ambiguous 5D reply (0 or 3 keycards) used
+an hcp-18 gate to decide between slam and signoff.  Reading the corpus's
+six such auctions showed the gate wrong in both directions: two making
+slams were signed off (Jacoby auctions, 30-33 combined, asker under 18),
+and an 18-count asker holding three keycards would have bid a slam
+missing two aces - it escaped by one point.
+
+The honest rule is arithmetic, since only five keycards exist:
+
+- **Three or more in the asker's hand: partner's "0 or 3" can only be 0.**
+  Two keycards are missing; sign off, whatever the point count.
+- **Four or more in hand: at most one is missing.**  Bid the slam.
+- **Exactly two in hand: genuinely ambiguous**, and partner's shown
+  strength decides - opposite a sound raise or extras (12+ hcp of my own
+  and 28 combined), zero keycards is not credible; opposite nothing
+  shown, it may truly be zero, so stay low.
+
+Both slam branches live in one `any_of` rule so the recorded explanation
+stays honest whichever applies (a two-rule version cited "four keycards
+in hand" while holding two - the same primary-reading-by-priority
+artifact the `partner_last_suit` fix addressed).
+
+All four corpus boards trace correctly.  The 1000-board adjudicating
+match for this change was stopped on request before finishing, so it is
+committed test-verified but UNMEASURED - the next session should re-run
+seed 828282 (last measured state -1248) before building further.
+
+## Where this session leaves the engine
+
+Fixed corpus (seed 828282): **-1281 -> -1248** across two measured rounds
+(trump-setting raises +19, notrump discipline +14), the RKC counting
+rewrite pending measurement on top.  Hold-out seed 606060: -1.215/board.
+Tests 546 -> 569.  Known remaining slam pockets, in observed-size order:
+minor-suit slam machinery over 1NT openings (no minor transfers, ~7
+missed slams per 1000), minor-agreed cue bids (the cue contexts cover
+majors only), and the thin-game invitation dribble (uc_raise family,
+-5/-6 a board - judgment, not structure; the Phase 3 result warns
+against tuning it).  `stoppers(their)` still reads only their first suit
+everywhere except the two generic notrump rules now gated on
+`weakest_their_stopper`; sweeping the remaining uses is safe-looking but
+unmeasured, so it was left alone.

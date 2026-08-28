@@ -987,3 +987,32 @@
   hand: "AQ985.K76.A4.Q53"
   calls: ["1S", "P", "1NT", "P", "2C", "P", "2NT", "P"]
   expect: { call: "3NT" }
+
+# =====================================================================
+# RKC 5D reply (0 or 3), disambiguated by counting: only five keycards
+# exist, so three-plus in the asker's hand mean partner's answer is 0
+# (sign off, whatever the point count); exactly two plus real shown
+# values mean it is 3 (bid the slam); a weak asker stays low.
+# =====================================================================
+
+# asker holds two keycards, partner's Jacoby sequence showed 13+: the
+# reply must be 3, five in all - slam (this board made 12 tricks)
+- name: rkc5D_two_plus_shown_values_bids_slam
+  hand: "KQJ872.K4.A.JT75"
+  calls: ["1S", "P", "2NT", "P", "3D", "P", "4S", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "6S" }
+
+# asker holds three keycards: 3+3 > 5, so partner has 0 - two missing,
+# sign off even with 16 HCP and a game-forcing partner (6H was down)
+- name: rkc5D_three_in_hand_signs_off
+  hand: "654.AKQJ84.7.AQT"
+  calls: ["1H", "P", "2C", "P", "3H", "P", "4H", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "5H" }
+
+# asker with two keycards but a raw 8-count: even opposite 3, twelve
+# tricks need high cards - stay at five (6H had only 11 tricks)
+- name: rkc5D_weak_asker_stays_low
+  hand: "8753.95432.AJ6.A"
+  dealer: N
+  calls: ["P", "P", "P", "1C", "P", "1H", "P", "4H", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "5H" }
