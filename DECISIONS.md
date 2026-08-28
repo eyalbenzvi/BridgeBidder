@@ -794,3 +794,38 @@ The overall arc of the maxim round: the folklore was mostly already there;
 the wins came from the two structural gaps (minor-game 3NT, fourth suit)
 and from one representation bug the maxims flushed out.
 
+## The 10,000-board round
+
+A ten-thousand-board match (seed 777) pins the baseline down to about
+±0.02 IMPs/board - tight enough to trust small movements.  It was launched
+on the committed system and used as the high-precision "before"; each fix
+was then adjudicated on the fixed 1000-board corpus as usual.
+
+Three fixes, all found by reading the corpus's worst boards, all of the same
+species - **a strength range with no rule**:
+
+- **Opposite the 18-19 2NT jump rebid, responders above 13 HCP had no rule
+  at all.**  3NT was bid on 35 combined while BEN bid the making 6NT.  The
+  arithmetic opposite a shown 18-19 is exact: 15+ bids 6NT directly (with a
+  controls gate - the corpus also produced a 33-combined 6NT missing two
+  aces), 13-14 invites quantitatively, opener accepts on 19.
+- **A positive response to 2C was raised with the generic four-level rule**,
+  which partner read as fast arrival: a 24-count played 4H with twelve
+  tricks on top.  Opener's raise of a positive is THREE - slam territory by
+  definition - putting the auction on the cue/keycard floor.  That board
+  now bids 6H.
+- **An 18-count had no 3NT bid.**  The generic notrump band ran 13-17, and
+  18-19 balanced hands in ordinary continuations had nowhere to go - the
+  reverse-auction board from two rounds back (opener passing a preference
+  at the three level with 18) was this bug, not a reverse problem.  Band
+  widened to 19; the same board now bids 6D making.
+
+One non-fix worth recording: advancer passing partner's takeout double of a
+preempt looked like a bug on the worst-board list (a doubled 3H making),
+but the count said 9 such tables, the doubled contract DOWN on 7 of them,
+net -9 IMPs.  Passing the double is usually the right call there; the two
+visible disasters were the price of correct discipline, and no rule was
+changed.
+
+Fixed corpus across the round: -1359 -> -1333 -> -1281.
+
