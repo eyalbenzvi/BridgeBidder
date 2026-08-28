@@ -1304,10 +1304,12 @@ contexts:
         requires: { suits: { $M: [4, 13] }, evals: { total_points: [16, 18] } }
         shows: "jump raise: 4 $M support, invitational (16-18)"
         establishes: { forcing: invitational, agreed_suit: $M }
+      # capped at 24 so a monster reaches the keycard rules (the 31-combined
+      # gate opens at 25 opposite the 6+ response) instead of being shadowed
       - id: ob_raise_4$M
         call: 4$M
         priority: 76
-        requires: { suits: { $M: [4, 13] }, evals: { total_points: [19, 40] } }
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [19, 24] } }
         shows: "game raise: 4 $M support, 19+ support points"
         establishes: { forcing: sign_off, agreed_suit: $M }
       - id: ob_1NT
@@ -1442,10 +1444,12 @@ contexts:
         requires: { suits: { S: [4, 13] }, evals: { total_points: [16, 18] } }
         shows: "jump raise: 4 spades, 16-18"
         establishes: { forcing: invitational, agreed_suit: S }
+      # capped at 24 so a monster reaches the keycard rules (the 31-combined
+      # gate opens at 25 opposite the 6+ response) instead of being shadowed
       - id: ob_1H1S_raise4S
         call: 4S
         priority: 76
-        requires: { suits: { S: [4, 13] }, evals: { total_points: [19, 40] } }
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [19, 24] } }
         shows: "game raise: 4 spades, 19+"
         establishes: { forcing: sign_off, agreed_suit: S }
       - id: ob_1H1S_1NT
@@ -1581,6 +1585,15 @@ contexts:
         requires: { suits: { S: [6, 13] }, not: { suits: { H: [3, 13] } } }
         shows: "6+ spades"
         establishes: { forcing: game_forcing }
+      # extras and a self-sufficient suit jump, setting trumps (see the
+      # 2/1 trump-setting block below for why the jump matters: a quiet 2S
+      # hides a 17-count and the auction drifts to 3NT past the slam)
+      - id: ob_1S2H_3S
+        call: 3S
+        priority: 61
+        requires: { suits: { S: [6, 13] }, hcp: [15, 21], not: { suits: { H: [3, 13] } } }
+        shows: "jump rebid: 6+ spades and extras (15+), setting trumps (GF)"
+        establishes: { forcing: game_forcing, agreed_suit: S }
       - id: ob_1S2H_2NT
         call: 2NT
         priority: 55
@@ -1637,6 +1650,133 @@ contexts:
         requires: { suits: { $x: [4, 13] } }
         shows: "raising the 2/1 suit: 4+ $x (GF)"
         establishes: { forcing: game_forcing, agreed_suit: $x }
+      # The strong jump rebid: a self-sufficient six-card suit with extras
+      # sets trumps below game, so the cue-bid and keycard floor is reachable
+      # from opener's side too.  Without it a 17-count with AKQxxx rebid a
+      # quiet 2M (12-21) and the auction drifted to 3NT past a cold slam -
+      # the head-to-head match lost exactly this board (1S - 2H - 2S - 2NT -
+      # 3NT with 6S making).
+      - id: ob_2over1_jump3$M
+        call: 3$M
+        priority: 62
+        requires: { suits: { $M: [6, 13] }, hcp: [15, 21] }
+        shows: "jump rebid: 6+ $M and extras (15+), setting trumps (GF)"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+
+  # ===========================================================================
+  # RESPONDER'S REBID IN A 2/1 AUCTION: SETTING TRUMPS BELOW GAME
+  #
+  # The biggest structural hole the slam analysis found.  These positions had
+  # no authored rules at all, so the generic toolkit's game raise fired: a
+  # seventeen-count with three-card support jumped to a NON-FORCING 4M over
+  # opener's rebid and the auction died at game with a slam on.  In 2/1 the
+  # whole point of the game force is that nobody needs to jump: the raise to
+  # THREE of opener's major sets trumps, is forcing to game by definition,
+  # and leaves the four-level free for the cue-bid and keycard machinery
+  # that already exists (agreed suit + game force + standing bid at the
+  # three level is exactly the gate those contexts fire on).
+  #
+  # Fast arrival carries the negative inference: with a dead-minimum flat
+  # game force responder jumps to game DIRECTLY, so the 3M raise promises
+  # thirteen-plus and slam interest is real when the cheaper raise is chosen.
+  # The 13/14 seam is deliberate: 3M's shown floor of 13 is what lets
+  # opener's cue gate (14+ own, 28 combined) open opposite it.
+  # ===========================================================================
+
+  - id: responder_21_after_2M
+    description: "Responder's rebid after 1M - 2m - 2M (opener shows 6+)"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+    pattern: "1$M - P - 2$x - P - 2$M - P - ?"
+    rules:
+      - id: r21_fast4_$M$x
+        call: 4$M
+        priority: 72
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [12, 13], semi_balanced: [1, 1] } }
+        shows: "fast arrival: minimum flat game force with support, no slam interest"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: r21_set3_$M$x
+        call: 3$M
+        priority: 71
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "setting trumps: 3+ $M, 13+, game forcing (slam interest possible)"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+
+  - id: responder_21_after_2NT
+    description: "Responder's rebid after 1M - 2m - 2NT (opener balanced minimum)"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+    pattern: "1$M - P - 2$x - P - 2NT - P - ?"
+    rules:
+      - id: r21nt_fast4_$M$x
+        call: 4$M
+        priority: 72
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [12, 13] } }
+        shows: "fast arrival: minimum game force with 3+ $M, no slam interest"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: r21nt_set3_$M$x
+        call: 3$M
+        priority: 71
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "setting trumps: 3+ $M, 13+, game forcing (slam interest possible)"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+
+  # The same trump-setting raise when opener's rebid was a second suit: the
+  # raise of opener's FIRST major promises only three (the suit is five-plus),
+  # the raise of the second suit promises four.  Both are unlimited and both
+  # leave the machinery room; the first-suit raise ranks above the 4-4 raise
+  # because the 5-3 major is the fit the auction has actually confirmed.
+  - id: responder_21_after_second_suit_1S
+    description: "Responder's rebid after 1S - 2m - 2H"
+    expand: { x: [C, D] }
+    pattern: "1S - P - 2$x - P - 2H - P - ?"
+    rules:
+      - id: r21ss_set3_S$x
+        call: 3S
+        priority: 71
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "setting trumps: 3+ spades, 13+, game forcing (slam interest possible)"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+      - id: r21ss_raise2nd_H$x
+        call: 3H
+        priority: 70
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [13, 40] }, not: { suits: { S: [3, 13] } } }
+        shows: "raising the second suit: 4+ hearts, 13+, game forcing"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+
+  - id: responder_21_after_1S2H_rebid
+    description: "Responder's rebid after 1S - 2H - 2S/2NT: delayed spade support"
+    expand: { y: [2S, 2NT] }
+    pattern: "1S - P - 2H - P - $y - P - ?"
+    rules:
+      - id: r21h_set3_S$y
+        call: 3S
+        priority: 71
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "setting trumps: 3+ spades, 13+, game forcing (slam interest possible)"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+
+  - id: responder_21_after_second_suit_1H
+    description: "Responder's rebid after 1H - 2m - (second suit)"
+    expand_pairs:
+      - { x: C, y: 2D }
+      - { x: C, y: 2S }
+      - { x: D, y: 2S }
+      - { x: D, y: 3C }
+    pattern: "1H - P - 2$x - P - $y - P - ?"
+    rules:
+      - id: r21ss_set3_H$x$y
+        call: 3H
+        priority: 71
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "setting trumps: 3+ hearts, 13+, game forcing (slam interest possible)"
+        establishes: { forcing: game_forcing, agreed_suit: H }
 
   - id: opener_rebid_1H_2C_extras
     description: "1H - 2C: opener's second suits"
@@ -1703,12 +1843,23 @@ contexts:
         requires: { hcp: [11, 12], not: { suits: { $M: [6, 13] } } }
         shows: "invitational 11-12"
         establishes: { forcing: invitational }
+      # 13-16 plays 3NT; 17-18 opposite the 12-14 rebid is 29-32 combined,
+      # which is a quantitative invite, not a sign-off (a 4-4 heart slam was
+      # lost to this rule reading 13-18 - the invite is how 17+14 finds it)
+      # full band kept as the backstop (the 4NT invite outranks it at 17-18)
       - id: rr_nt_3NT
         call: 3NT
         priority: 54
         requires: { hcp: [13, 18], not: { suits: { $M: [6, 13] } } }
         shows: "to play"
         establishes: { forcing: sign_off }
+      - id: rr_nt_4NT
+        call: 4NT
+        priority: 55
+        requires: { hcp: [17, 18], evals: { semi_balanced: [1, 1] }, not: { suits: { $M: [6, 13] } } }
+        shows: "quantitative: 17-18 opposite the 12-14 rebid, inviting slam"
+        establishes: { forcing: non_forcing }
+        alertable: true
       - id: rr_nt_2$M
         call: 2$M
         priority: 51
@@ -1733,11 +1884,15 @@ contexts:
         requires: { evals: { total_points: [6, 10] } }
         shows: "no game interest opposite the minimum raise"
         establishes: { forcing: sign_off }
+      # Capped at 18: the head-to-head lost a board where a 19-count jumped
+      # to game here (this rule read 13-40) and shadowed the RKC ask by
+      # priority - opposite the 12-15 raise, nineteen-plus is slam territory
+      # and belongs to the slam-try rules, not to a sign-off.
       - id: rr_raise_game
         call: 4$M
         priority: 54
-        requires: { evals: { total_points: [13, 40] }, suits: { $M: [4, 13] } }
-        shows: "game values opposite the raise"
+        requires: { evals: { total_points: [13, 18] }, suits: { $M: [4, 13] } }
+        shows: "game values opposite the raise (slam moves start at 19)"
         establishes: { forcing: sign_off, agreed_suit: $M }
       - id: rr_raise_inv
         call: 3$M
@@ -1757,10 +1912,13 @@ contexts:
         requires: { evals: { total_points: [12, 16] } }
         shows: "no game interest opposite 6-9"
         establishes: { forcing: sign_off }
+      # Capped at 24 (was 19-40) so a true monster reaches the RKC rules
+      # instead of being shadowed by this sign-off's higher priority:
+      # opposite the 6-9 raise the keycard gate (31 combined) opens at 25.
       - id: op_after_raise_game
         call: 4$M
         priority: 54
-        requires: { evals: { total_points: [19, 40] } }
+        requires: { evals: { total_points: [19, 24] } }
         shows: "bidding game opposite the single raise"
         establishes: { forcing: sign_off, agreed_suit: $M }
       - id: op_after_raise_inv
@@ -1775,10 +1933,13 @@ contexts:
     expand: { M: [H, S] }
     pattern: "1$M - P - 3$M - P - ?"
     rules:
+      # Capped at 20 (was 14-40) so a slam-worthy opener is not shadowed out
+      # of the keycard rules by this sign-off's priority: opposite the 10-13
+      # limit raise the 31-combined gate opens at 21.
       - id: op_lr_game
         call: 4$M
         priority: 54
-        requires: { evals: { total_points: [14, 40] } }
+        requires: { evals: { total_points: [14, 20] } }
         shows: "accepting the limit raise"
         establishes: { forcing: sign_off, agreed_suit: $M }
       - id: op_lr_pass
@@ -3157,6 +3318,15 @@ contexts:
   # way.  Point count alone cannot tell a slam try from a game bid here: the
   # hands in the corpus that SHOULD bid game were, if anything, stronger in
   # points than the ones with a slam on.  What separates them is the fit.
+  #
+  # When partner has shown more than one suit, WHICH suit 4NT agrees must be
+  # decided by something partner can see - the reply and the final contract
+  # both hang on it, and the asker's own holding is invisible across the
+  # table.  An attempt to prefer the majors by priority cost a measured 53
+  # IMPs in one thousand boards: a hand with one spade "agreed" partner's
+  # spades because priority is hand-blind.  The honest, auction-visible rule
+  # is partner's LAST suit bid - the live trump proposal - and it read every
+  # one of those wrecked boards correctly.  Hence the partner_last_suit gate.
   # ===========================================================================
 
   - id: general_slam_try
@@ -3166,7 +3336,7 @@ contexts:
       - id: gst_rkc_C
         call: 4NT
         priority: 46
-        when: { partner_suit: C, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        when: { partner_suit: C, partner_last_suit: C, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { C: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
@@ -3178,7 +3348,7 @@ contexts:
       - id: gst_rkc_D
         call: 4NT
         priority: 46
-        when: { partner_suit: D, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        when: { partner_suit: D, partner_last_suit: D, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { D: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
@@ -3190,7 +3360,7 @@ contexts:
       - id: gst_rkc_H
         call: 4NT
         priority: 46
-        when: { partner_suit: H, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        when: { partner_suit: H, partner_last_suit: H, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { H: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
@@ -3202,7 +3372,7 @@ contexts:
       - id: gst_rkc_S
         call: 4NT
         priority: 46
-        when: { partner_suit: S, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        when: { partner_suit: S, partner_last_suit: S, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
           suits: { S: [4, 13] }
           evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
@@ -4030,11 +4200,13 @@ contexts:
         requires: { evals: { total_points: [10, 12] }, suits: { S: [4, 13] } }
         shows: "invitational raise: 4 spades, 10-12"
         establishes: { forcing: invitational, agreed_suit: S }
+      # capped at 18: nineteen-plus opposite an opening hand is slam
+      # territory and belongs to the keycard rules, not a sign-off
       - id: r1sr_game
         call: 4S
         priority: 55
-        requires: { evals: { total_points: [13, 40] }, suits: { S: [4, 13] } }
-        shows: "game raise: 4 spades, 13+"
+        requires: { evals: { total_points: [13, 18] }, suits: { S: [4, 13] } }
+        shows: "game raise: 4 spades, 13-18"
         establishes: { forcing: sign_off, agreed_suit: S }
       - id: r1sr_2H
         call: 2H
@@ -4089,12 +4261,32 @@ contexts:
     expand: { m: [C, D], M: [H, S] }
     pattern: "1$m - P - 1$M - P - 3$m - P - ?"
     rules:
+      # Opposite a narrow 16-18 the arithmetic is exact, the same way it is
+      # opposite the 18-19 2NT jump: fourteen is worth a quantitative invite
+      # (14 + 18 = 32) and sixteen bids the slam itself.  Before the split
+      # a sixteen-count bid a dead 3NT with 32-34 combined on the table.
+      # full band kept as the backstop: the quantitative rules outrank this
+      # in their bands, and a strong hand whose SHAPE fails their gates
+      # (a 4-4-4-1 fifteen-count, in the corpus) must still have a bid
       - id: rjrb_3NT
         call: 3NT
         priority: 55
         requires: { hcp: [10, 16] }
         shows: "game opposite the 16-18 jump rebid"
         establishes: { forcing: sign_off }
+      - id: rjrb_6NT
+        call: 6NT
+        priority: 57
+        requires: { hcp: [16, 21], evals: { semi_balanced: [1, 1], controls: [4, 12] }, not: { suits: { $M: [6, 13] } } }
+        shows: "16+ opposite the 16-18 jump rebid: 32+ combined"
+        establishes: { forcing: sign_off }
+      - id: rjrb_4NT
+        call: 4NT
+        priority: 56
+        requires: { hcp: [14, 15], evals: { semi_balanced: [1, 1] }, not: { suits: { $M: [6, 13] } } }
+        shows: "quantitative: 14-15 opposite 16-18, inviting slam"
+        establishes: { forcing: non_forcing }
+        alertable: true
       - id: rjrb_3M
         call: 3$M
         priority: 54
@@ -4106,6 +4298,149 @@ contexts:
         priority: 50
         requires: { hcp: [6, 9] }
         shows: "no game opposite 16-18"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # SLAM ARITHMETIC OPPOSITE OPENER'S STRONG REBIDS
+  #
+  # The same species of fix as "opposite the 18-19 2NT jump" from the 10k
+  # round: whenever opener's rebid pins his strength into a narrow band,
+  # responder can place or invite by simple addition - and every one of
+  # these positions had NO rule above the game blast, so 32-combined hands
+  # were parking in 3NT or 4M.  Each block is: direct slam on the values
+  # that guarantee it, a quantitative invite one notch below, and an accept
+  # rule keyed to the top of opener's shown range.
+  # ===========================================================================
+
+  - id: responder_after_jump_shift
+    description: "Responder opposite opener's 18-21 jump shift (1D - 1M - 3C)"
+    expand: { M: [H, S] }
+    pattern: "1D - P - 1$M - P - 3C - P - ?"
+    rules:
+      - id: rjs_6NT_$M
+        call: 6NT
+        priority: 60
+        requires: { hcp: [14, 21], evals: { semi_balanced: [1, 1], controls: [4, 12] }, not: { suits: { $M: [6, 13] } } }
+        shows: "14+ opposite the 18-21 jump shift: 32+ combined"
+        establishes: { forcing: sign_off }
+      - id: rjs_4NT_$M
+        call: 4NT
+        priority: 58
+        requires: { hcp: [12, 13], evals: { semi_balanced: [1, 1] }, not: { suits: { $M: [6, 13] } } }
+        shows: "quantitative: 12-13 opposite 18-21, inviting slam"
+        establishes: { forcing: non_forcing }
+        alertable: true
+      # full band, no shape gate: this is the backstop under the two rules
+      # above, and a hand that fails their gates must still have a bid
+      - id: rjs_3NT_$M
+        call: 3NT
+        priority: 55
+        requires: { hcp: [6, 21] }
+        shows: "placing the game opposite 18-21"
+        establishes: { forcing: sign_off }
+
+  - id: jump_shift_quant_accept
+    description: "Opener answers the quantitative 4NT over his 18-21 jump shift"
+    expand: { M: [H, S] }
+    pattern: "1D - P - 1$M - P - 3C - P - 4NT - P - ?"
+    rules:
+      - id: rjsq_accept_$M
+        call: 6NT
+        priority: 60
+        requires: { hcp: [20, 21] }
+        shows: "maximum jump shift: accepting the slam invite"
+        establishes: { forcing: sign_off }
+      - id: rjsq_decline_$M
+        call: P
+        priority: 55
+        requires: { hcp: [18, 19] }
+        shows: "minimum jump shift: declining"
+        establishes: { forcing: sign_off }
+
+  - id: quant_accept_after_1NT_rebid
+    description: "Opener answers the quantitative 4NT over his 12-14 1NT rebid"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 1NT - P - 4NT - P - ?"
+    rules:
+      - id: rrntq_accept
+        call: 6NT
+        priority: 60
+        requires: { hcp: [14, 14] }
+        shows: "maximum 1NT rebid: accepting the slam invite"
+        establishes: { forcing: sign_off }
+      - id: rrntq_decline
+        call: P
+        priority: 55
+        requires: { hcp: [12, 13] }
+        shows: "minimum 1NT rebid: declining"
+        establishes: { forcing: sign_off }
+
+  # Responder may still move over opener's 19+ double raise to game: the
+  # raise is a sign-off only from opener's side.  Twelve facing nineteen is
+  # thirty-one, which is exactly the keycard gate - without this rule the
+  # auction was dead at 4M whatever responder held (the raise carries
+  # we-hold-contract for every generic continuation).
+  - id: responder_after_1m1M_game_raise
+    description: "Responder over opener's 19+ game raise (1m - 1M - 4M)"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 4$M - P - ?"
+    rules:
+      - id: rj4_rkc
+        call: 4NT
+        priority: 60
+        requires: { evals: { total_points: [12, 40], controls: [4, 12], rule_of_26: [31, 99] } }
+        shows: "RKC 1430 for $M: slam values opposite the 19+ game raise"
+        establishes: { forcing: one_round, asking: keycards, agreed_suit: $M }
+        alertable: true
+        convention: rkc_1430
+
+  # ===========================================================================
+  # REVERSE CONTINUATIONS (minimal): responder's 5+ major rebid is forcing,
+  # and opener's raise of it sets the 5-3 fit.  The known gap from the slam
+  # rounds: opposite a 17-21 reverse a responder with a real suit had no
+  # forcing rebid, so 3NT swallowed hands with a cold heart slam.
+  # ===========================================================================
+
+  - id: responder_reverse_rebid_major
+    description: "Responder rebids the 5+ major over opener's 2D reverse"
+    expand: { M: [H, S] }
+    pattern: "1C - P - 1$M - P - 2D - P - ?"
+    rules:
+      - id: rrev_2$M
+        call: 2$M
+        priority: 66
+        requires: { suits: { $M: [5, 13] }, hcp: [8, 40] }
+        shows: "5+ $M opposite the reverse (forcing one round)"
+        establishes: { forcing: one_round }
+
+  - id: opener_raise_after_reverse
+    description: "Opener raises responder's rebid major after the reverse"
+    expand: { M: [H, S] }
+    pattern: "1C - P - 1$M - P - 2D - P - 2$M - P - ?"
+    rules:
+      - id: orev_raise_3$M
+        call: 3$M
+        priority: 66
+        requires: { suits: { $M: [3, 13] } }
+        shows: "3-card $M support opposite the shown 5+: raising"
+        establishes: { forcing: one_round, agreed_suit: $M }
+
+  - id: jump_rebid_quant_accept
+    description: "Opener answers the quantitative 4NT over his 16-18 jump rebid"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 3$m - P - 4NT - P - ?"
+    rules:
+      - id: rjrbq_accept
+        call: 6NT
+        priority: 60
+        requires: { hcp: [18, 18] }
+        shows: "maximum jump rebid: accepting the slam invite"
+        establishes: { forcing: sign_off }
+      - id: rjrbq_decline
+        call: P
+        priority: 55
+        requires: { hcp: [16, 17] }
+        shows: "minimum jump rebid: declining"
         establishes: { forcing: sign_off }
 
   - id: stayman_over_interference
@@ -4597,10 +4932,11 @@ contexts:
         requires: { suits: { H: [4, 13] }, evals: { total_points: [11, 12] } }
         shows: "invitational heart raise: 4+ hearts"
         establishes: { forcing: invitational, agreed_suit: H }
+      # capped at 18 (see the trump-setting round): 19+ belongs to the slam rules
       - id: rr1H1SC_4H
         call: 4H
         priority: 63
-        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 40] } }
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 18] } }
         shows: "game in hearts: 3+ hearts opposite a 5-card suit, game values"
         establishes: { forcing: sign_off, agreed_suit: H }
       - id: rr1H1SC_2S
@@ -4644,10 +4980,11 @@ contexts:
         requires: { suits: { H: [4, 13] }, evals: { total_points: [11, 12] } }
         shows: "invitational heart raise: 4+ hearts"
         establishes: { forcing: invitational, agreed_suit: H }
+      # capped at 18 (see the trump-setting round): 19+ belongs to the slam rules
       - id: rr1H1SD_4H
         call: 4H
         priority: 63
-        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 40] } }
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [13, 18] } }
         shows: "game in hearts: 3+ hearts opposite a 5-card suit, game values"
         establishes: { forcing: sign_off, agreed_suit: H }
       - id: rr1H1SD_2S

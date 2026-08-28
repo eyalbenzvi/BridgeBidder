@@ -617,12 +617,14 @@
   expect: { call: "X" }
 
 # the game raise counts combined trumps, so three are plenty opposite a
-# rebid suit and too few opposite a four-card response
+# rebid suit and too few opposite a four-card response.  Since the 2/1
+# trump-setting round this raise arrives via 3H (forcing, slam-friendly)
+# rather than a jump to game: same fit judgment, one level of room kept.
 - name: ben2_game_raise_on_three_trumps_opposite_a_rebid_suit
   hand: "AKJ5.T87.A2.J875"
   dealer: N
   calls: ["1H", "P", "2C", "P", "2H", "P"]
-  expect: { call: "4H" }
+  expect: { call: "3H", forcing: game_forcing }
 
 - name: ben2_no_game_raise_on_a_four_three_fit
   hand: "J82.94.AQT75.A65"
@@ -838,3 +840,107 @@
   dealer: N
   calls: ["2C", "P", "2H", "P"]
   expect: { call: "3H", rule: "o2cp_raise_3H", forcing: game_forcing }
+
+# =====================================================================
+# The 2/1 trump-setting round: responder's raise to 3M in a game force
+# sets trumps below game (fast arrival jumps with a flat minimum), and
+# opener's jump rebid shows a self-sufficient suit with extras.  These
+# route strong-fit auctions onto the cue/RKC floor instead of past it.
+# =====================================================================
+
+- name: r21_responder_sets_trumps_below_game
+  hand: "K76.A5.842.AKQ73"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P"]
+  expect: { call: "3S", forcing: game_forcing }
+
+- name: r21_fast_arrival_with_flat_minimum
+  hand: "K76.85.Q42.AQ873"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P"]
+  expect: { call: "4S" }
+
+- name: r21_opener_asks_keycards_over_the_set
+  hand: "AQJ853.KQ6.A4.85"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+- name: r21_opener_signs_off_minimum_over_the_set
+  hand: "AQ9853.K76.84.Q5"
+  dealer: N
+  calls: ["1S", "P", "2C", "P", "2S", "P", "3S", "P"]
+  expect: { call: "4S" }
+
+- name: r21_opener_jump_rebid_sets_trumps
+  hand: "AKQT54.2.AQ.Q763"
+  dealer: N
+  calls: ["1S", "P", "2H", "P"]
+  expect: { call: "3S", forcing: game_forcing }
+
+- name: r21_responder_cues_over_the_jump_rebid
+  hand: "32.AKJ74.JT4.AT2"
+  dealer: N
+  calls: ["1S", "P", "2H", "P", "3S", "P"]
+  expect: { call: "4C", convention: cue_bid }
+
+# a 19-count opposite the 12-15 raise is slam territory: the game raise
+# is capped at 18 so the keycard ask is not shadowed out by priority
+- name: raise_cap_nineteen_asks_keycards
+  hand: "KQJ5.KQT6.AJ3.KT"
+  dealer: E
+  calls: ["1C", "P", "1H", "P", "2H", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+# with partner having bid two suits the RKC reading prefers the real
+# major fit over a soft-matched minor (priorities S > H > D > C)
+- name: rkc_reply_reads_the_major_not_the_minor
+  hand: "A43.A874.K52.973"
+  dealer: E
+  calls: ["1C", "P", "1H", "P", "2H", "P", "4NT", "P"]
+  expect: { call: "5H", convention: rkc_1430 }
+
+# =====================================================================
+# Slam arithmetic opposite opener's strong, narrow rebids (same species
+# as "opposite the 18-19 2NT jump"): a quantitative invite one notch
+# below the direct slam, and an accept keyed to the top of the range.
+# =====================================================================
+
+# 15 opposite the 16-18 jump rebid invites; 16-18 top accepts
+- name: quant_invite_over_jump_rebid
+  hand: "KQ84.AQ63.K75.84"
+  calls: ["1C", "P", "1H", "P", "3C", "P"]
+  expect: { call: "4NT" }
+
+- name: quant_accept_on_maximum_jump_rebid
+  hand: "A5.K2.Q42.AKQJ73"
+  calls: ["1C", "P", "1H", "P", "3C", "P", "4NT", "P"]
+  expect: { call: "6NT" }
+
+# responder may move over opener's 19+ double raise to game: 12 with
+# controls facing 19 is the keycard gate exactly
+- name: responder_moves_over_19_game_raise
+  hand: "K84.AQ632.A75.84"
+  calls: ["1C", "P", "1H", "P", "4H", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+# the reverse continuation chain: responder's 5+ major rebid is forcing,
+# opener raises with three, and the keycard floor is reachable (a cold
+# grand was parked in 3NT before these existed)
+- name: reverse_responder_rebids_major_forcing
+  hand: "AQ86.KQJT4.A9.T3"
+  dealer: N
+  calls: ["P", "1C", "P", "1H", "P", "2D", "P"]
+  expect: { call: "2H", forcing: one_round }
+
+- name: reverse_opener_raises_with_three
+  hand: ".A76.KQT6.AKJ954"
+  dealer: N
+  calls: ["P", "1C", "P", "1H", "P", "2D", "P", "2H", "P"]
+  expect: { call: "3H" }
+
+- name: reverse_responder_asks_keycards_after_raise
+  hand: "AQ86.KQJT4.A9.T3"
+  dealer: N
+  calls: ["P", "1C", "P", "1H", "P", "2D", "P", "2H", "P", "3H", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }

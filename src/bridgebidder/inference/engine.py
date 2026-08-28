@@ -213,6 +213,17 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                 if c.is_bid and auction.seat_of_call(i) == seat}
         if cond.my_suit not in mine:
             return False
+    if cond.partner_last_suit is not None:
+        # partner's most recent SUIT bid (notrump bids and doubles skipped):
+        # when partner has shown several suits, the last one bid is the live
+        # trump proposal, and it is visible to both hands - unlike my own
+        # holding, which must never decide what a call MEANS
+        last = None
+        for i, c in enumerate(auction.calls):
+            if c.is_bid and c.strain != "NT" and auction.seat_of_call(i) == seat.partner:
+                last = c.strain
+        if last != cond.partner_last_suit:
+            return False
     if cond.standing_bid_level is not None:
         lb = auction.last_bid
         if lb is None or lb.level not in cond.standing_bid_level:

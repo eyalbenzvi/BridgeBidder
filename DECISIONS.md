@@ -864,3 +864,80 @@ and fixing what they showed - and the largest remaining pocket is still
 slam depth (BEN bids five slams for our one), which is a structure problem,
 not a threshold problem.
 
+## The trump-setting round: routing auctions onto the slam floor
+
+The known target from the 10k round - the raise structure jumps straight to
+game, so the cue/RKC machinery that exists is rarely REACHED - held up under
+tracing.  After `1S - 2C - 2S` a seventeen-count with three-card support had
+no authored rebid at all, so the generic toolkit's game raise fired: a
+NON-FORCING 4S, auction over, slam never sniffed.  The whole family of
+positions where a 2/1 game force should set trumps below game was missing.
+
+Authored this round, all of one theme:
+
+- **Responder's trump-setting raise in 2/1 auctions**: over opener's 2M
+  rebid, 2NT rebid, second suits, and the 1S - 2H pair, 3M = 3+ trumps and
+  13+, game-forcing, slam-friendly.  **Fast arrival carries the negative
+  inference**: the flat 12-13 minimum jumps to 4M directly, so the cheap
+  raise promises real values - its shown floor of 13 is what lets opener's
+  cue gate (14 own, 28 combined) open opposite it.
+- **Opener's strong jump rebid** (`1M - 2m - 3M`, and `1S - 2H - 3S`): a
+  self-sufficient six-card suit with 15+ sets trumps from opener's side.
+  The board that taught it: `1S - 2H - 2S - 2NT - 3NT` passed out with 6S
+  cold, the 17-count having hidden behind a 12-21 rebid.
+- **Wide game raises were shadowing the slam rules by priority.**  The
+  specific contexts' 4M raises read 13-40 (or 19-40), so a 19-count jumped
+  to game while the RKC rule (priority 46) sat unreachable behind priority
+  54.  Every such raise is now capped where the keycard gate opens opposite
+  the shown range: 18 opposite a 12-15 raise, 24 opposite a 6-9 raise or a
+  1-level response, 20 opposite a limit raise.
+- **Responder may move over opener's 19+ double raise to game** (`1m - 1M -
+  4M - 4NT`): the raise is a sign-off only from opener's side, and twelve
+  facing nineteen is exactly the keycard gate.  Without the rule the
+  position was dead whatever responder held.
+- **Slam arithmetic opposite opener's strong narrow rebids**, the same
+  species as the 10k round's "opposite the 18-19 2NT jump": quantitative
+  4NT invites and direct 6NT over the 16-18 jump rebid, the 18-21 jump
+  shift, and the 12-14 1NT rebid, each with an accept rule keyed to the
+  top of opener's range.
+- **Reverse continuations (minimal)**: responder's 5+ major rebid over the
+  2D reverse is forcing, opener raises with three, and the existing keycard
+  rules take it from there.  Board 279's `3NT+13 tricks` now bids
+  `1C - 1H - 2D - 2H - 3H - 4NT - 6H` (BEN bids the grand; most of the
+  loss recovered).
+
+Two authoring lessons, both paid for in IMPs on the fixed corpus:
+
+- **WHICH suit a generic 4NT agrees must be decided by something partner
+  can see.**  With partner having shown two suits, the four gst_rkc rules
+  tied on priority and file order picked clubs; staggering the priorities
+  toward the majors instead cost a measured **53 IMPs in one thousand
+  boards** - priority is hand-blind, so a hand with ONE spade "agreed"
+  partner's spades and played 6S off three while 6C had thirteen tricks.
+  The honest disambiguator is auction-visible: **partner's last suit bid**
+  (a new `partner_last_suit` when-condition), which read every wrecked
+  board correctly.  The reply and the final contract hang on the agreed
+  suit, and the asker's holding is invisible across the table.
+- **A split range must keep its backstop.**  The first draft of the
+  quantitative splits carved 3NT down to the low band and gated the
+  invites on shape, so a 4-4-4-1 fifteen-count fell between rules and
+  wandered into a generic 3D with 6NT cold - the exact "range with no
+  rule" species this project keeps rediscovering.  The 3NT rules keep
+  their full band now and the invites simply outrank them in-band.
+
+Measured on the fixed corpus (seed 828282), all steps paired on identical
+deals: **-1281 -> -1262 (+19)**; 20 boards' auctions changed, 7 improved,
+1 worse.  The one loss is board 308: the capped limit raise now asks
+keycards holding 21 total, finds four of five, and bids a 6H that BEN also
+bids at the other table - it happens to be off the trump queen and a
+finesse.  Bidding the same fifty-percent slam as the opponent is the
+correct IMP position; the +13 we used to collect there was BEN's variance,
+not our skill.
+
+The changed positions are rare (about 2% of boards) but worth ~10 IMPs
+each.  The machinery now composes end to end: trump set below game, cues
+with negative inference, keycards, placement - every link exercised by the
+corpus.
+
+Hold-out check (seed 606060, never used for any fitting): -1.215/board,
+in line with the fixed corpus - the resliced bands broke nothing broad.
