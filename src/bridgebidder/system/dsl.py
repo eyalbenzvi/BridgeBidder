@@ -70,6 +70,8 @@ class Conditions:
     side_has_acted: bool | None = None             # our side has already made a non-pass call
     their_last_bid_suit: bool | None = None        # the standing contract is a SUIT bid by them
     we_bid_last: bool | None = None                # the standing contract bid is OURS (either seat)
+    i_have_acted: bool | None = None               # I myself have already made a non-pass call
+    their_bid_level: tuple[int, ...] | None = None # level of the standing bid (theirs or ours)
     my_suit: str | None = None                     # I have bid this suit myself
     config: dict[str, Any] = field(default_factory=dict)
 
@@ -88,6 +90,8 @@ class Conditions:
             side_has_acted=d.pop("side_has_acted", None),
             their_last_bid_suit=d.pop("their_last_bid_suit", None),
             we_bid_last=d.pop("we_bid_last", None),
+            i_have_acted=d.pop("i_have_acted", None),
+            their_bid_level=tuple(d.pop("their_bid_level")) if "their_bid_level" in d else None,
             my_suit=d.pop("my_suit", None),
             config=d.pop("config", {}) or {},
         )
@@ -109,6 +113,8 @@ class Conditions:
             and self.side_has_acted is None
             and self.their_last_bid_suit is None
             and self.we_bid_last is None
+            and self.i_have_acted is None
+            and self.their_bid_level is None
             and self.my_suit is None
             and not self.config
         )

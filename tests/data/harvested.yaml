@@ -469,3 +469,114 @@
   hand: "AQ5.KJ8.A92.KJ42"
   calls: ["1C", "P", "1D", "P"]
   expect: { calls: ["2NT", "3NT", "1H"] }
+
+# --- BEN comparison round (tools/compare_ben.py) -------------------------------
+
+# Nothing in the rulebook matched when the opponents doubled our call: every
+# generic context required the standing call to be a bid or a pass, so 80 of
+# the 174 undiscussed fallbacks over 1000 deals were this one hole.
+
+# opener re-acting over their balancing double: the second suit, not a pass
+- name: ben_second_suit_over_balancing_double
+  hand: "Q5.JT54.KQJ63.Q4"
+  dealer: N
+  calls: ["1D", "P", "P", "X"]
+  expect: { call: "1H", fallback: false }
+
+- name: ben_second_suit_over_balancing_double_two_level
+  hand: "AKJ65.976.AT82.K"
+  dealer: N
+  calls: ["1S", "P", "P", "X"]
+  expect: { call: "2D", fallback: false }
+
+# with six of them, length answers the double
+- name: ben_rebid_own_six_card_suit_when_doubled
+  hand: "2.KQT9762.KQ6.K7"
+  dealer: N
+  calls: ["P", "P", "1H", "P", "P", "X"]
+  expect: { call: "2H", fallback: false }
+
+# a big hand redoubles - but only when there is nothing to describe
+- name: ben_redouble_with_extras
+  hand: "Q97.AQ.A87.AK976"
+  dealer: N
+  calls: ["1C", "P", "P", "X"]
+  expect: { call: "XX", fallback: false }
+
+# partner's call doubled for penalties and a bust hand: run to real length
+- name: ben_runout_from_doubled_1NT
+  hand: "A9742.54.62.T632"
+  dealer: N
+  calls: ["1NT", "X"]
+  expect: { call: "2S", fallback: false }
+
+# a "new suit" rule must never fire in a suit I bid myself
+- name: ben_own_suit_is_not_an_unbid_suit
+  hand: "AK9.Q4.KQ9863.64"
+  dealer: N
+  calls: ["1C", "1D", "P", "P", "X"]
+  expect: { call: "2D", rule: "xd_rebid" }
+
+# balancing doubles are for a side that has been silent: this one already
+# doubled once and was firing again (and again) in the same auction
+- name: ben_no_second_balancing_double
+  hand: "KQT2.AKT95.T6.KT"
+  dealer: N
+  calls: ["1D", "P", "1S", "X", "2D", "P", "P", "X", "3D", "P", "P"]
+  expect: { calls: ["P", "3H"] }
+
+# preempts: a seven-card suit is the preempt, and "two of the top three"
+# was refusing to bid on most of them
+- name: ben_preempt_on_a_decent_seven_bagger
+  hand: "3.Q5.KJ96432.J32"
+  dealer: N
+  vulnerability: Both
+  expect: { call: "3D", rule: "open_3D" }
+
+- name: ben_preempt_nonvul_on_a_ragged_seven_bagger
+  hand: "JT87532.AK.98.74"
+  dealer: N
+  expect: { call: "3S", rule: "open_3S" }
+
+# eight of them is a four-level preempt
+- name: ben_four_level_preempt_on_eight
+  hand: "872.AKJT9743.Q6."
+  dealer: N
+  vulnerability: Both
+  calls: ["P", "P"]
+  expect: { call: "4H", rule: "open_4H" }
+
+# negative doubles were authored only over major overcalls
+- name: ben_negative_double_over_a_minor_overcall
+  hand: "KJ84.A952.973.64"
+  dealer: N
+  calls: ["P", "P", "1C", "1D"]
+  expect: { call: "X", convention: negative_double }
+
+- name: ben_negative_double_over_a_two_level_overcall
+  hand: "KT5.AQT4.986.843"
+  dealer: N
+  calls: ["P", "1C", "2D"]
+  expect: { call: "X", convention: negative_double }
+
+# ... but not with a suit of my own to bid, and not as a running commentary.
+# (The raise to four of a minor was outranking the spade bid here: a game
+# raise in a minor now needs the minor to be my longest suit.)
+- name: ben_bid_the_suit_rather_than_double
+  hand: "KQJT87.42.K.6543"
+  dealer: N
+  calls: ["P", "1C", "1D"]
+  expect: { call: "1S" }
+
+- name: ben_negative_double_is_a_first_call
+  hand: "AQ93.T94.QJ.QJT7"
+  dealer: N
+  calls: ["1C", "1D", "P", "1H", "X", "XX", "P", "2D"]
+  expect: { calls: ["P", "2NT", "3D"] }
+
+# a 1NT bid in a live auction promises more than a 1NT response does
+- name: ben_no_competitive_1NT_on_six_points
+  hand: "92.642.K7653.K87"
+  dealer: N
+  calls: ["P", "P", "1D", "X", "1H"]
+  expect: { calls: ["P", "2D"] }

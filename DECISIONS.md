@@ -433,3 +433,65 @@ disagreements are believed.
   into the auction rather than a continuation.
 
 Agreement with BEN over 300 boards: **72.4% -> 75.8%** from those two fixes.
+
+### What 1000 deals found next
+
+The first 1000-deal run said 77.0% agreement and, crucially, said the
+previous round's general-notrump fix had changed *nothing*.  It had not: the
+ten rules had ended up with two `evals:` keys under one `requires:`, and YAML
+keeps only the last, so the added `rule_of_26` gate was discarded on load.
+The rulebook is hand-edited data, so the loader now rejects duplicate mapping
+keys instead of silently dropping a constraint.  With the gate actually live,
+the general-notrump rules went from 252 confident disagreements to 121.
+
+The rest of the round came from reading the *undiscussed fallbacks* rather
+than the disagreements - a fallback is the engine saying it has no agreement
+at all, which is a stronger signal than a disagreement with a statistical
+bidder.  Of 174, eighty were one hole:
+
+- **Nothing covered "they doubled our call."**  Every generic context
+  required the standing call to be a bid or a pass, so opener re-acting over
+  a balancing double, advancer over a penalty double of partner's overcall,
+  and the runout from a doubled 1NT all had no agreements.
+  `general_their_double` covers them, split by role, because the two roles
+  are different auctions: over a balancing double of my own partscore a
+  second suit is constructive and four cards of any quality will do, while
+  over a penalty double of partner's call a suit of mine is an escape and
+  needs real length.  Both redoubles rank *below* the descriptive calls -
+  with a suit to show, showing it beats announcing strength.
+- **Balancing doubles had no "our side has been silent" gate**, which is the
+  premise of the bid, so the same hand doubled twice and three times in one
+  auction.  Sixty-two confident disagreements, gone with one condition.
+- **Preempts required two of the top three honours**, which refuses to
+  preempt on KJ9xxxx and QJTxxxx - most seven-card suits.  Quality is a
+  matter of degree and of vulnerability now.  Eight-card majors had no
+  opening at all; 4H and 4S are openings.
+- **Negative doubles existed only over major overcalls**, so `1C-(1D)` and
+  every two-level overcall had none.  One generic rule covers the negative
+  and responsive double both - our side has acted, they have bid a suit, it
+  is my first call, I have no five-card suit of my own, and I hold a major
+  they have not bid.
+
+Two supporting fixes fell out of the same reading.  A suit I have bid myself
+was still counted as "unbid", so a new-suit rule could fire in my own suit;
+and a game raise in a *minor* could outrank a one-level bid in my own longer
+major, so it now requires the minor to be my longest suit.
+
+Over 1000 deals, same seed: agreement 77.0% -> 77.7%, confident
+disagreements 1537 -> 1336, undiscussed fallbacks 174 -> 136.
+
+**A negative result worth recording.**  The negative-double rule *costs*
+about 0.3 points of BEN agreement on a held-out seed (76.0% -> 75.7%).  It
+is kept anyway.  A 2/1 system without negative doubles over a minor overcall
+is not the system it claims to be, and the disagreement is about *where* BEN
+doubles rather than *whether* the convention exists - which is exactly the
+kind of question a statistical bidder is not entitled to settle.  The same
+applies to the keycard responses: our 1430 answers disagree with BEN's 3014
+about ten times per thousand deals, and that is a system difference, not a
+bug.
+
+**And a caution about the headline number.**  Agreement moved 0.7 points
+while whole families of errors disappeared, because fixing one call changes
+every call after it: the same 1000 deals produced 10,175 decisions before
+and 9,485 after.  Cluster movement, not the percentage, is what these rounds
+are measured by.

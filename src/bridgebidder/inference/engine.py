@@ -213,6 +213,15 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                 if c.is_bid and auction.seat_of_call(i) == seat}
         if cond.my_suit not in mine:
             return False
+    if cond.their_bid_level is not None:
+        lb = auction.last_bid
+        if lb is None or lb.level not in cond.their_bid_level:
+            return False
+    if cond.i_have_acted is not None:
+        acted = any(not c.is_pass for i, c in enumerate(auction.calls)
+                    if auction.seat_of_call(i) == seat)
+        if acted != cond.i_have_acted:
+            return False
     if cond.side_has_acted is not None:
         acted = any(not c.is_pass for i, c in enumerate(auction.calls)
                     if auction.seat_of_call(i).side == seat.side)
