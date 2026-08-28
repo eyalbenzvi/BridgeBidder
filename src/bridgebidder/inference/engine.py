@@ -176,6 +176,10 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         shown = set(ctx.partner_suits) | set(ctx.their_suits)
         if ctx.agreed_suit:
             shown.add(ctx.agreed_suit)
+        # a suit I have bid myself is not "unbid" either: repeating it is a
+        # rebid (a length statement), not the introduction of a new suit
+        shown |= {c.strain for i, c in enumerate(auction.calls)
+                  if c.is_bid and auction.seat_of_call(i) == seat}
         if cond.unbid_suit in shown:
             return False
     if cond.opening_seat is not None:
@@ -198,6 +202,16 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
               and lb_info[0].strain != "NT"
               and not auction.seat_of_call(lb_info[1]).same_side(seat))
         if ok != cond.their_last_bid_suit:
+            return False
+    if cond.we_bid_last is not None:
+        lb_info = auction.last_bid_info
+        ok = lb_info is not None and auction.seat_of_call(lb_info[1]).same_side(seat)
+        if ok != cond.we_bid_last:
+            return False
+    if cond.my_suit is not None:
+        mine = {c.strain for i, c in enumerate(auction.calls)
+                if c.is_bid and auction.seat_of_call(i) == seat}
+        if cond.my_suit not in mine:
             return False
     if cond.side_has_acted is not None:
         acted = any(not c.is_pass for i, c in enumerate(auction.calls)

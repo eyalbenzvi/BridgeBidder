@@ -69,6 +69,8 @@ class Conditions:
     cheapest_in_suit: bool | None = None           # this call is the lowest bid available in its suit
     side_has_acted: bool | None = None             # our side has already made a non-pass call
     their_last_bid_suit: bool | None = None        # the standing contract is a SUIT bid by them
+    we_bid_last: bool | None = None                # the standing contract bid is OURS (either seat)
+    my_suit: str | None = None                     # I have bid this suit myself
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -85,6 +87,8 @@ class Conditions:
             cheapest_in_suit=d.pop("cheapest_in_suit", None),
             side_has_acted=d.pop("side_has_acted", None),
             their_last_bid_suit=d.pop("their_last_bid_suit", None),
+            we_bid_last=d.pop("we_bid_last", None),
+            my_suit=d.pop("my_suit", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -104,6 +108,8 @@ class Conditions:
             and self.cheapest_in_suit is None
             and self.side_has_acted is None
             and self.their_last_bid_suit is None
+            and self.we_bid_last is None
+            and self.my_suit is None
             and not self.config
         )
 
@@ -303,6 +309,28 @@ def parse_system(data: dict) -> BiddingSystem:
     )
 
 
+class _StrictLoader(yaml.SafeLoader):
+    """SafeLoader that refuses duplicate mapping keys.
+
+    Plain YAML silently keeps the last of two identical keys.  In a hand-edited
+    rulebook that is a silent constraint deletion: writing `evals:` twice under
+    one `requires:` drops the first gate entirely, and the rule keeps firing as
+    if the new gate had never been added.  That exact mistake shipped once and
+    cost a whole measurement round; it is a parse error now.
+    """
+
+    def construct_mapping(self, node, deep=False):
+        seen: set = set()
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            if key in seen:
+                raise yaml.constructor.ConstructorError(
+                    "while constructing a mapping", node.start_mark,
+                    f"duplicate key {key!r}", key_node.start_mark)
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
 def default_system_path() -> Path:
     return Path(__file__).resolve().parent.parent / "systems" / "two_over_one.yaml"
 
@@ -315,7 +343,7 @@ def load_system(path: str | Path | None = None, config_overrides: dict | None = 
     key = (str(p), p.stat().st_mtime)
     if key not in _SYSTEM_CACHE:
         with open(p) as f:
-            data = yaml.safe_load(f)
+            data = yaml.load(f, Loader=_StrictLoader)
         _SYSTEM_CACHE[key] = parse_system(data)
     system = _SYSTEM_CACHE[key]
     if config_overrides:

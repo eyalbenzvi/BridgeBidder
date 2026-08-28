@@ -95,6 +95,10 @@
   "call": "2NT",
   "constraint": {
    "evals": {
+    "rule_of_26": [
+     21,
+     99
+    ],
     "semi_balanced": [
      1,
      1
@@ -190,6 +194,10 @@
     "constraint": {
      "not": {
       "evals": {
+       "rule_of_26": [
+        24,
+        99
+       ],
        "semi_balanced": [
         1,
         1
@@ -625,9 +633,12 @@
   "announce": null,
   "call": "2H",
   "constraint": {
-   "features": [
-    "good_suit(H)"
-   ],
+   "evals": {
+    "suit_quality(H)": [
+     1,
+     9
+    ]
+   },
    "hcp": [
     5,
     10
@@ -1051,9 +1062,12 @@
    {
     "constraint": {
      "not": {
-      "features": [
-       "good_suit(S)"
-      ],
+      "evals": {
+       "suit_quality(S)": [
+        1,
+        9
+       ]
+      },
       "hcp": [
        5,
        10
@@ -1078,9 +1092,7 @@
   "forcing_status": "non_forcing",
   "is_undiscussed_fallback": false,
   "shows": {
-   "features": [
-    "good_suit(H)"
-   ],
+   "features": [],
    "hcp": [
     5,
     10

@@ -183,7 +183,7 @@ contexts:
         requires:
           suits: { S: [6, 6], H: [0, 3] }
           hcp: [5, 10]
-          features: [ "good_suit(S)" ]
+          evals: { "suit_quality(S)": [1, 9] }
         shows: "weak two: 6 spades, 5-10 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -203,7 +203,7 @@ contexts:
         requires:
           suits: { H: [6, 6], S: [0, 3] }
           hcp: [5, 10]
-          features: [ "good_suit(H)" ]
+          evals: { "suit_quality(H)": [1, 9] }
         shows: "weak two: 6 hearts, 5-10 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -223,7 +223,7 @@ contexts:
         requires:
           suits: { D: [6, 6], H: [0, 3], S: [0, 3] }
           hcp: [5, 10]
-          features: [ "good_suit(D)" ]
+          evals: { "suit_quality(D)": [1, 9] }
         shows: "weak two: 6 diamonds, 5-10 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -5101,7 +5101,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5111,7 +5111,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -5367,7 +5367,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5377,7 +5377,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -5397,7 +5397,12 @@ contexts:
       - id: ballow_X
         call: X
         priority: 40
-        when: { their_last_bid_suit: true }
+        # `side_has_acted: false` is the premise of the bid, not a detail: a
+        # balancing double says "the values are marked, partner passed with
+        # some of them".  Once our side has already acted - overcalled, or
+        # doubled and been passed - none of that is true any more, and the
+        # rule was firing a second and third time in the same auction.
+        when: { their_last_bid_suit: true, side_has_acted: false }
         requires:
           hcp: [11, 40]
           evals: { "suit_length(their)": [0, 2] }
@@ -5634,7 +5639,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5644,7 +5649,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -5664,7 +5669,12 @@ contexts:
       - id: balhigh_X
         call: X
         priority: 40
-        when: { their_last_bid_suit: true }
+        # `side_has_acted: false` is the premise of the bid, not a detail: a
+        # balancing double says "the values are marked, partner passed with
+        # some of them".  Once our side has already acted - overcalled, or
+        # doubled and been passed - none of that is true any more, and the
+        # rule was firing a second and third time in the same auction.
+        when: { their_last_bid_suit: true, side_has_acted: false }
         requires:
           hcp: [14, 40]
           evals: { "suit_length(their)": [0, 2] }
@@ -5901,7 +5911,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5911,7 +5921,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -6158,7 +6168,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
         shows: "natural 2NT: 11-12 balanced"
         establishes: { forcing: non_forcing }
       - id: uc_nt3
@@ -6167,7 +6177,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { semi_balanced: [1, 1] }
+          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
         shows: "natural 3NT: 13-17 balanced"
         establishes: { forcing: sign_off }
       - id: uc_pass
@@ -6175,6 +6185,421 @@ contexts:
         priority: 18
         requires: {}
         shows: "no bid describes this hand: nothing further to show"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  # ===========================================================================
+  # THEY DOUBLED OUR CALL
+  #
+  # Every generic context above requires the standing call to be a bid or a
+  # pass, so the whole "they doubled us" family - opener re-acting over a
+  # balancing double, advancer over a penalty double of partner's overcall,
+  # a runout from a doubled 1NT - had no agreements at all and fell through
+  # to an undiscussed fallback.  These are the ordinary ones.
+  #
+  # `we_bid_last` keeps every rule pointed at OUR doubled contract; if the
+  # standing bid were theirs the double would be partner's, which is a
+  # different toolkit (advancing a takeout double).  `we_hold_contract` then
+  # splits the two roles, and they are genuinely different auctions:
+  #
+  #   my own call doubled  - usually their balance of a partscore I opened.
+  #     Partner has already limited themselves, so a second suit is
+  #     constructive: I am steering us to the right strain, and four cards
+  #     of any quality will do.  With a minimum, pass and play it there.
+  #
+  #   partner's call doubled - a penalty double aimed at partner.  Now a suit
+  #     of mine is an escape: it needs real length because we are running to
+  #     it, not choosing it, and the hand may be worthless.
+  # ===========================================================================
+
+  - id: general_their_double
+    description: "General agreements after the opponents double our call"
+    pattern: "... - X - ?"
+    rules:
+      # Both redoubles rank BELOW the descriptive calls on purpose: with a
+      # sixth trump or a suit to show, showing it beats announcing strength,
+      # so XX is what is left when nothing else describes the hand.
+      - id: xd_XX_extras
+        call: XX
+        priority: 23
+        when: { we_bid_last: true, we_hold_contract: true }
+        requires:
+          evals: { total_points: [19, 40] }
+        shows: "redouble: extra values, we are not being pushed out of this auction"
+        establishes: { forcing: one_round }
+      - id: xd_XX_values
+        call: XX
+        priority: 23
+        when: { we_bid_last: true, we_hold_contract: false }
+        requires:
+          hcp: [11, 40]
+        shows: "redouble: values, the balance of strength is ours"
+        establishes: { forcing: one_round }
+
+      # Rebidding my own doubled suit is a length statement, not a strength
+      # one: with six of them the double is far less dangerous than a
+      # misfitting partscore, and partner has already heard my range.
+      - id: xd_rebid_C2
+        call: 2C
+        priority: 34
+        when: { we_bid_last: true, my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [11, 40] }
+        shows: "rebid of my own doubled C: 6+ cards, 11+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_C3
+        call: 3C
+        priority: 34
+        when: { we_bid_last: true, my_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "rebid of my own doubled C: 6+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_D2
+        call: 2D
+        priority: 34
+        when: { we_bid_last: true, my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [11, 40] }
+        shows: "rebid of my own doubled D: 6+ cards, 11+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_D3
+        call: 3D
+        priority: 34
+        when: { we_bid_last: true, my_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "rebid of my own doubled D: 6+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_H2
+        call: 2H
+        priority: 34
+        when: { we_bid_last: true, my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [11, 40] }
+        shows: "rebid of my own doubled H: 6+ cards, 11+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_H3
+        call: 3H
+        priority: 34
+        when: { we_bid_last: true, my_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "rebid of my own doubled H: 6+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_S2
+        call: 2S
+        priority: 34
+        when: { we_bid_last: true, my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [11, 40] }
+        shows: "rebid of my own doubled S: 6+ cards, 11+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_rebid_S3
+        call: 3S
+        priority: 34
+        when: { we_bid_last: true, my_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "rebid of my own doubled S: 6+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      # Raising partner's doubled suit: trump length is what makes the
+      # contract playable, so these are the LOTT raises, same as elsewhere.
+      - id: xd_raise_C2
+        call: 2C
+        priority: 30
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's doubled C: 3+ trumps, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: xd_raise_C3
+        call: 3C
+        priority: 31
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [3, 13] }
+          evals: { total_points: [10, 12], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's doubled C: 3+ trumps, 10-12 support points"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: xd_raise_D2
+        call: 2D
+        priority: 30
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's doubled D: 3+ trumps, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: xd_raise_D3
+        call: 3D
+        priority: 31
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [10, 12], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's doubled D: 3+ trumps, 10-12 support points"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: xd_raise_H2
+        call: 2H
+        priority: 30
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's doubled H: 3+ trumps, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: xd_raise_H3
+        call: 3H
+        priority: 31
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [10, 12], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's doubled H: 3+ trumps, 10-12 support points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: xd_raise_S2
+        call: 2S
+        priority: 30
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+        shows: "raise of partner's doubled S: 3+ trumps, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: xd_raise_S3
+        call: 3S
+        priority: 31
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 12], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+        shows: "raise of partner's doubled S: 3+ trumps, 10-12 support points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      # My second suit after they balanced into my partscore.  Four cards
+      # is enough - the point is the strain, not the suit - but the two
+      # level costs a trick, so it takes extras to go there.
+      - id: xd_second_C1
+        call: 1C
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [8, 40] }
+        shows: "my second suit over their double: 4+ C, 8+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_C2
+        call: 2C
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "my second suit over their double: 4+ C, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_C3
+        call: 3C
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [17, 40] }
+        shows: "my second suit over their double: 4+ C, 17+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_D1
+        call: 1D
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [8, 40] }
+        shows: "my second suit over their double: 4+ D, 8+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_D2
+        call: 2D
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "my second suit over their double: 4+ D, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_D3
+        call: 3D
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [17, 40] }
+        shows: "my second suit over their double: 4+ D, 17+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_H1
+        call: 1H
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [8, 40] }
+        shows: "my second suit over their double: 4+ H, 8+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_H2
+        call: 2H
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "my second suit over their double: 4+ H, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_H3
+        call: 3H
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [17, 40] }
+        shows: "my second suit over their double: 4+ H, 17+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_S1
+        call: 1S
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [8, 40] }
+        shows: "my second suit over their double: 4+ S, 8+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_S2
+        call: 2S
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "my second suit over their double: 4+ S, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: xd_second_S3
+        call: 3S
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: true, unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [17, 40] }
+        shows: "my second suit over their double: 4+ S, 17+ points"
+        establishes: { forcing: non_forcing }
+      # Running from a penalty double of partner's call.  Length only:
+      # a bust hand with five of them still has to be somewhere, and the
+      # points that would justify sitting are what the redouble is for.
+      - id: xd_run_C1
+        call: 1C
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+        shows: "running to my own C: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_C2
+        call: 2C
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+        shows: "running to my own C: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_C3
+        call: 3C
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+        shows: "running to my own C: 6+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_D1
+        call: 1D
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+        shows: "running to my own D: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_D2
+        call: 2D
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+        shows: "running to my own D: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_D3
+        call: 3D
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+        shows: "running to my own D: 6+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_H1
+        call: 1H
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+        shows: "running to my own H: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_H2
+        call: 2H
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+        shows: "running to my own H: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_H3
+        call: 3H
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+        shows: "running to my own H: 6+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_S1
+        call: 1S
+        priority: 24
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+        shows: "running to my own S: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_S2
+        call: 2S
+        priority: 25
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+        shows: "running to my own S: 5+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_run_S3
+        call: 3S
+        priority: 26
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+        shows: "running to my own S: 6+ cards"
+        establishes: { forcing: non_forcing }
+      - id: xd_pass
+        call: P
+        priority: 18
+        requires: {}
+        shows: "sitting for their double: no better spot to run to"
         establishes: { forcing: sign_off }
         negative_inference_weight: soft
 
