@@ -1458,3 +1458,31 @@
   dealer: N
   calls: ["P", "1NT", "P", "2C", "X", "P", "P"]
   expect: { call: "2S" }
+
+# Round 5, found while verifying an expert's report of a forcing-pass
+# regression: the round-4 relaxation ("an authored pass that fits may
+# convert partner's double") admitted the GENERIC floor passes, which are
+# `requires: {}` and so fit 1.00 on every hand - any one-round force could
+# be passed out.  The relaxation now demands a DISCRIMINATING pass.
+- name: e4_trump_stack_sit_still_converts
+  hand: "K52.QJT96.842.97"
+  calls: ["1H", "P", "2H", "X", "P"]
+  expect: { call: "P" }
+
+# Jordan 2NT promises four-card support, so opener needs only his own five;
+# the generic competitive-2NT ladder demanded six (a round-3 fix silently
+# missed - its search used concrete suit letters against template-var ids)
+- name: e4_jordan_minimum_signs_off_in_three
+  hand: "AQ932.K64.A82.75"
+  calls: ["1S", "X", "2NT", "P"]
+  expect: { call: "3S" }
+
+- name: e4_jordan_maximum_bids_game
+  hand: "AQ932.K4.AQ82.75"
+  calls: ["1S", "X", "2NT", "P"]
+  expect: { call: "4S" }
+
+- name: e4_jordan_slam_values_ask
+  hand: "AKQ32.A4.AQ82.K5"
+  calls: ["1S", "X", "2NT", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }

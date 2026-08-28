@@ -66,12 +66,18 @@ def score_candidates(setup: DecisionSetup, hand: Hand) -> list[ScoredCandidate]:
         out.extend(passes)
     elif not setup.pass_forbidden_hard and (
         not any(sc.fit >= FORCED_BID_MIN_FIT for sc in out)
-        # An AUTHORED pass rule that fits is a positive decision, not a
+        # An authored pass rule that fits is a positive decision, not a
         # failure to find a bid: converting partner's takeout double with a
         # trump stack is the textbook action, and the nothing-fits-anywhere
         # relaxation alone could never reach it (some 4-card-suit pull
-        # always soft-fits).  Fallback passes stay filtered.
-        or any(sc.fit >= 0.9 and not sc.candidate.is_fallback for sc in passes)
+        # always soft-fits).  The pass must be DISCRIMINATING to count -
+        # it has to say something about the hand.  The generic floors
+        # (uc_pass, cl_pass, ch_pass) are authored rules with `requires: {}`
+        # and therefore fit 1.00 on every hand, so accepting those let any
+        # one-round force be passed out, including an alertable artificial
+        # one.  Fallback passes stay filtered too.
+        or any(sc.fit >= 0.9 and not sc.candidate.is_fallback
+               and _is_discriminating(sc.candidate) for sc in passes)
     ):
         # a one-round force with no bid that remotely fits: passing (e.g.
         # converting partner's takeout double) beats inventing a call.
@@ -79,6 +85,19 @@ def score_candidates(setup: DecisionSetup, hand: Hand) -> list[ScoredCandidate]:
         out.extend(passes)
     out.sort(key=_sort_key)
     return out
+
+
+def _is_discriminating(cand) -> bool:
+    """True when the candidate's rule actually constrains the hand.
+
+    A rule with an empty `requires` is a floor - it fires for anything -
+    so it carries no evidence that passing is right here.
+    """
+    if cand.rule is None:
+        return False
+    c = cand.rule.requires
+    return bool(c.hcp or c.suits or c.evals or c.features or c.shapes
+                or c.any_of or c.all_of or c.not_)
 
 
 def _dedupe_by_call(ranked: list[ScoredCandidate]) -> list[ScoredCandidate]:

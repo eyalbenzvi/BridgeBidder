@@ -4987,6 +4987,40 @@ contexts:
         shows: "quantitative: 18+ opposite the 11-12 response"
         establishes: { forcing: non_forcing }
 
+  # Jordan 2NT promises FOUR-card support, so opener needs only his own
+  # five to know of a nine-card fit - the generic competitive-2NT ladder
+  # below demands six because there the 2NT is a natural invite that has
+  # shown no support at all.  (A round-3 review asked for exactly this and
+  # the edit silently missed: its search used concrete suit letters against
+  # template-var rule ids, so a 15-count with AQ932 kept bidding 3NT over
+  # partner's limit raise.)
+  - id: opener_over_jordan_2NT
+    description: "Opener's action over partner's Jordan 2NT (limit raise+ with 4 trumps)"
+    expand: { M: [H, S] }
+    pattern: "1$M - X - 2NT - P - ?"
+    rules:
+      - id: ojord_4$M
+        call: 4$M
+        priority: 64
+        requires: { evals: { total_points: [15, 40] } }
+        shows: "accepting the limit raise: game in our nine-card fit"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: ojord_3$M
+        call: 3$M
+        priority: 62
+        requires: { evals: { total_points: [12, 14] } }
+        shows: "minimum: signing off in three of our suit"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: ojord_slam_4NT
+        call: 4NT
+        priority: 65
+        requires:
+          evals: { total_points: [19, 40], controls: [4, 12], "void(any)": [0, 0] }
+        shows: "RKC 1430: slam values opposite the limit raise"
+        establishes: { forcing: one_round, agreed_suit: $M, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+
   - id: opener_over_competitive_2NT
     description: "Opener after 1m - (overcall) - 2NT (natural, invitational)"
     expand: { m: [C, D] }
