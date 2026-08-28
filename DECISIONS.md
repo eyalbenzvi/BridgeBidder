@@ -620,3 +620,67 @@ boards) and noisy at the level of individual changes - a 60-IMP move over
 adjudicate a small change.  Use it for direction and for the big buckets;
 use the decision-level comparison for anything finer.
 
+### A second head-to-head, and what three rounds of fixes did not do
+
+A fresh 1000 boards on a seed nothing had been tuned against: **-1474 IMPs,
+1.47 per board**, 195 won to 390 lost.  Statistically identical to the first
+corpus, so the measurement is stable.
+
+Attributing each table's loss against par to the rule that made our last bid
+put one item far out in front: the generic `uc_nt3`, "natural 3NT, 13-17
+balanced", was the final bid on 96 tables and carried -487 IMPs, -5.07 per
+use.  Reading those boards found a real hole behind it - `1S - 1NT - 2H`
+does not exist, because the opener-rebid context is expanded over both
+majors and 1H - 1NT - 2S would be a reverse, so a hand with five spades and
+four hearts had no way to show the second major and jumped to 3NT instead.
+
+That gap is authored now.  The other half of the fix - raising the generic
+notrump game gate from 24 to 26, on the theory that we were bidding too many
+thin games - **did exactly what it was designed to do and changed nothing**:
+`uc_nt3` fell from 96 last bids to 68, our 3NT contracts from 180 to 146,
+and their success rate rose from 65% to 73%.  The match went from -1474 to
+-1473.
+
+The 51 boards whose contract changed tell the whole story: **27 improved, 21
+got worse, net +1 IMP.**  At IMPs, stopping short of a game that makes costs
+what bidding one that fails does, and a 65% success rate was never evidence
+of overbidding in the first place.  The gate is reverted; the missing rebid
+is kept.
+
+The rule-level attribution is therefore **correlational, not causal**.  It
+ranks rules by how often they are the last bid on a board that went badly,
+and the generic rules are the last bid precisely when the auction has
+already gone somewhere no specific agreement covers.  Fixing the rule the
+ranking blames does not recover the IMPs, because the rule was a symptom.
+
+Every other slice of the deficit comes out flat:
+
+| slice | our margin |
+|---|---|
+| both sides competed | -1.47 / board |
+| only BEN's side bid | -1.37 / board |
+| only our side bid | -1.62 / board |
+| games bid | ours 373 at 73% made, BEN 430 at 72% |
+| partscores | ours 280 at 67%, BEN 340 at 65% |
+| identical contract at both tables | 302 boards, **0 IMPs** |
+
+Our judgement *per contract* matches BEN's almost exactly.  What differs is
+volume: BEN declares 1132 contracts to our 851, and on identical cards it
+enters 82 more auctions per thousand boards.  But competing more is not the
+lever it looks like either - the loss rate is the same whether the board was
+contested or not.
+
+So the honest conclusion after three rounds of targeted fixes, each moving
+the match by less than 1%: **the deficit is not concentrated anywhere.**  It
+is a small, broad, per-decision quality difference that accumulates over
+roughly nine decisions a board - which is what a network trained on millions
+of expert auctions has over a hand-authored rulebook of 1100 rules.
+
+The one measurement that does point somewhere: our last bid coming from a
+**specific** agreement costs -1.81 IMPs per table against par, and from the
+**generic** toolkit -2.24.  Closing that gap means authoring specific
+contexts for the positions where the generic rules currently fire - the same
+slow, unglamorous work every round of this project has converged on, worth
+perhaps 300 IMPs of the 1480 if carried to completion.  There is no single
+lever left to pull.
+

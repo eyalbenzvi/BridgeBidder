@@ -1521,6 +1521,26 @@ contexts:
         shows: "too strong to invite: bidding game opposite 6-11"
         establishes: { forcing: sign_off, agreed_suit: $M }
 
+  - id: opener_rebid_1S_1NT_second_major
+    description: "1S - 1NT: 2H is the second suit (five spades and four hearts)"
+    pattern: "1S - P - 1NT - P - ?"
+    rules:
+      # The 1M - 1NT context is expanded over both majors, so it can offer a
+      # second suit in a minor but never the other major - and 1H - 1NT - 2S
+      # would be a reverse, so only this half of it is a plain second suit.
+      # Without it a 5-4 major hand had nothing to say and the generic 3NT
+      # took over: on the BEN match that jump was the single most expensive
+      # call in the rulebook.
+      - id: ob_1S1NT_2H
+        call: 2H
+        priority: 53.5
+        requires:
+          suits: { S: [5, 13], H: [4, 13] }
+          hcp: [12, 17]
+          not: { suits: { S: [6, 13] } }
+        shows: "second suit: five spades and 4+ hearts, 12-17"
+        establishes: { forcing: non_forcing }
+
   - id: opener_rebid_1S_2H
     description: "Opener's rebid after the 1S - 2H game force"
     pattern: "1S - P - 2H - P - ?"

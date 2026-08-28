@@ -671,3 +671,20 @@
   dealer: N
   calls: ["1C", "P", "1S", "P"]
   expect: { call: "1NT" }
+
+# --- head-to-head match round (tools/match_ben.py) -----------------------------
+
+# 1S - 1NT - 2H did not exist: the 1M-1NT context is expanded over both majors,
+# so it could offer a second suit in a minor but never the other major, and a
+# 5-4 major hand jumped to 3NT instead
+- name: match_second_major_over_forcing_1NT
+  hand: "AKQ53.6532.54.KJ"
+  dealer: N
+  calls: ["P", "1S", "P", "1NT", "P"]
+  expect: { call: "2H", rule: "ob_1S1NT_2H" }
+
+- name: match_six_spades_still_rebids_the_suit
+  hand: "AKQ853.6532.5.KJ"
+  dealer: N
+  calls: ["P", "1S", "P", "1NT", "P"]
+  expect: { call: "2S" }
