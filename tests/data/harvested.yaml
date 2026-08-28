@@ -429,3 +429,43 @@
   dealer: N
   calls: ["P", "1D", "P", "1H", "P", "2NT", "P", "3H", "P"]
   expect: { call: "3NT" }
+
+# --- counterfactual regret round ----------------------------------------------
+
+# The regret tool localised this to rule cl_nt3: the general "natural 3NT,
+# 13-17 balanced" agreement was firing as a DIRECT OVERCALL of their 1-bid
+# (P 1C -> 3NT, doubled, -16 IMPs). A natural NT as a general agreement only
+# makes sense once our side has entered the auction.
+- name: cr_no_general_3NT_as_direct_overcall
+  hand: "KQ5.AQ4.KJ92.QJ5"
+  calls: ["1C"]
+  expect: { call: "1NT" }
+
+- name: cr_no_general_3NT_over_their_opening_offshape
+  hand: "K5.AQ42.KJ92.QJ5"
+  calls: ["1D"]
+  expect: { call: "1NT" }
+
+# ... and this to rule uc_nt2: opener rebid 2NT showing "11-12" holding 12+,
+# because opener's rebid after 1C - 1D was never authored
+- name: cr_opener_rebid_after_1C_1D
+  hand: "AQ5.KJ84.Q92.KJ2"
+  calls: ["1C", "P", "1D", "P"]
+  expect: { call: "1H", fallback: false }
+
+- name: cr_opener_1NT_rebid_after_1C_1D
+  hand: "AQ5.K98.Q92.J742"
+  calls: ["1C", "P", "1D", "P"]
+  expect: { call: "1NT", fallback: false }
+
+- name: cr_opener_jump_2NT_after_1C_1D
+  hand: "AQ5.KJ8.A92.KJ42"
+  calls: ["1C", "P", "1D", "P"]
+  expect: { call: "2NT" }
+
+# the general game-level raise in a MINOR needs a real fit: with three-card
+# support and a balanced hand the natural notrump rebid is the bid
+- name: cr_no_minor_game_raise_on_three_cards
+  hand: "AQ5.KJ8.A92.KJ42"
+  calls: ["1C", "P", "1D", "P"]
+  expect: { calls: ["2NT", "3NT", "1H"] }

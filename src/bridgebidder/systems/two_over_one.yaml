@@ -4892,7 +4892,7 @@ contexts:
         priority: 27
         when: { partner_suit: C }
         requires:
-          suits: { C: [3, 13] }
+          suits: { C: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -4919,7 +4919,7 @@ contexts:
         priority: 27
         when: { partner_suit: D }
         requires:
-          suits: { D: [3, 13] }
+          suits: { D: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5097,6 +5097,7 @@ contexts:
       - id: cl_nt2
         call: 2NT
         priority: 28
+        when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
           evals: { semi_balanced: [1, 1] }
@@ -5106,6 +5107,7 @@ contexts:
       - id: cl_nt3
         call: 3NT
         priority: 29
+        when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
           evals: { semi_balanced: [1, 1] }
@@ -5156,7 +5158,7 @@ contexts:
         priority: 27
         when: { partner_suit: C }
         requires:
-          suits: { C: [3, 13] }
+          suits: { C: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5183,7 +5185,7 @@ contexts:
         priority: 27
         when: { partner_suit: D }
         requires:
-          suits: { D: [3, 13] }
+          suits: { D: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5361,6 +5363,7 @@ contexts:
       - id: ch_nt2
         call: 2NT
         priority: 28
+        when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
           evals: { semi_balanced: [1, 1] }
@@ -5370,6 +5373,7 @@ contexts:
       - id: ch_nt3
         call: 3NT
         priority: 29
+        when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
           evals: { semi_balanced: [1, 1] }
@@ -5420,7 +5424,7 @@ contexts:
         priority: 27
         when: { partner_suit: C }
         requires:
-          suits: { C: [3, 13] }
+          suits: { C: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5447,7 +5451,7 @@ contexts:
         priority: 27
         when: { partner_suit: D }
         requires:
-          suits: { D: [3, 13] }
+          suits: { D: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5625,6 +5629,7 @@ contexts:
       - id: ballow_nt2
         call: 2NT
         priority: 28
+        when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
           evals: { semi_balanced: [1, 1] }
@@ -5634,6 +5639,7 @@ contexts:
       - id: ballow_nt3
         call: 3NT
         priority: 29
+        when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
           evals: { semi_balanced: [1, 1] }
@@ -5684,7 +5690,7 @@ contexts:
         priority: 27
         when: { partner_suit: C }
         requires:
-          suits: { C: [3, 13] }
+          suits: { C: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5711,7 +5717,7 @@ contexts:
         priority: 27
         when: { partner_suit: D }
         requires:
-          suits: { D: [3, 13] }
+          suits: { D: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5889,6 +5895,7 @@ contexts:
       - id: balhigh_nt2
         call: 2NT
         priority: 28
+        when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
           evals: { semi_balanced: [1, 1] }
@@ -5898,6 +5905,7 @@ contexts:
       - id: balhigh_nt3
         call: 3NT
         priority: 29
+        when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
           evals: { semi_balanced: [1, 1] }
@@ -5940,7 +5948,7 @@ contexts:
         priority: 27
         when: { partner_suit: C }
         requires:
-          suits: { C: [3, 13] }
+          suits: { C: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5967,7 +5975,7 @@ contexts:
         priority: 27
         when: { partner_suit: D }
         requires:
-          suits: { D: [3, 13] }
+          suits: { D: [4, 13] }
           evals: { total_points: [11, 40], rule_of_26: [25, 99] }
         shows: "raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -6144,6 +6152,7 @@ contexts:
       - id: uc_nt2
         call: 2NT
         priority: 28
+        when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
           evals: { semi_balanced: [1, 1] }
@@ -6152,6 +6161,7 @@ contexts:
       - id: uc_nt3
         call: 3NT
         priority: 29
+        when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
           evals: { semi_balanced: [1, 1] }
@@ -6257,3 +6267,67 @@ contexts:
         requires: { suits: { $M: [0, 2] } }
         shows: "no 3-card support: 3NT it is"
         establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # REGRET-ROUND GAP: opener's rebid after 1C - 1D (the general 2NT rule was
+  # filling this in, describing opener as 11-12 when opener holds 12+)
+  # ===========================================================================
+
+  - id: opener_rebid_1C_1D
+    description: "Opener's rebid after 1C - P - 1D"
+    pattern: "1C - P - 1D - P - ?"
+    rules:
+      - id: ob1C1D_1H
+        call: 1H
+        priority: 62
+        requires: { suits: { H: [4, 13] }, hcp: [12, 17] }
+        shows: "4+ hearts, 12-17"
+        establishes: { forcing: one_round }
+      - id: ob1C1D_1S
+        call: 1S
+        priority: 61
+        requires: { suits: { S: [4, 13] }, hcp: [12, 17], not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades, 12-17, denies 4 hearts"
+        establishes: { forcing: one_round }
+      - id: ob1C1D_1NT
+        call: 1NT
+        priority: 58
+        requires:
+          hcp: [12, 14]
+          balanced: true
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "12-14 balanced"
+        establishes: { forcing: non_forcing }
+      - id: ob1C1D_2NT
+        call: 2NT
+        priority: 59
+        requires:
+          hcp: [18, 19]
+          balanced: true
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "jump: 18-19 balanced"
+        establishes: { forcing: non_forcing }
+      - id: ob1C1D_2D
+        call: 2D
+        priority: 57
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [12, 15] } }
+        shows: "raise: 4+ diamonds, minimum"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: ob1C1D_3D
+        call: 3D
+        priority: 56
+        requires: { suits: { D: [4, 13] }, evals: { total_points: [16, 18] } }
+        shows: "jump raise: 4+ diamonds, invitational"
+        establishes: { forcing: invitational, agreed_suit: D }
+      - id: ob1C1D_2C
+        call: 2C
+        priority: 54
+        requires: { suits: { C: [6, 13] }, hcp: [12, 15] }
+        shows: "rebid: 6+ clubs, minimum"
+        establishes: { forcing: non_forcing }
+      - id: ob1C1D_3C
+        call: 3C
+        priority: 53
+        requires: { suits: { C: [6, 13] }, hcp: [16, 18] }
+        shows: "jump rebid: 6+ good clubs, 16-18"
+        establishes: { forcing: invitational }

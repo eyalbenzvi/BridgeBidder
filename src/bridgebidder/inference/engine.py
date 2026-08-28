@@ -192,6 +192,11 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         return False
     if cond.we_hold_contract is not None and we_hold_contract(auction, seat) != cond.we_hold_contract:
         return False
+    if cond.side_has_acted is not None:
+        acted = any(not c.is_pass for i, c in enumerate(auction.calls)
+                    if auction.seat_of_call(i).side == seat.side)
+        if acted != cond.side_has_acted:
+            return False
     for flag, want in cond.config.items():
         if system.config.get(flag) != want:
             return False
