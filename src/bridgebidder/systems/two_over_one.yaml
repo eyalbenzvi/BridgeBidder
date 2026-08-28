@@ -193,8 +193,8 @@ contexts:
         requires:
           suits: { S: [6, 6], H: [0, 3] }
           hcp: [7, 10]
-          features: [ "two_of_top3(S)" ]
-        shows: "weak two: 6 good spades, 7-10 HCP (vulnerable)"
+          evals: { "suit_quality(S)": [1.5, 9] }
+        shows: "weak two: 6 decent spades, 7-10 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
       - id: open_weak_2H_nv
@@ -213,8 +213,8 @@ contexts:
         requires:
           suits: { H: [6, 6], S: [0, 3] }
           hcp: [7, 10]
-          features: [ "two_of_top3(H)" ]
-        shows: "weak two: 6 good hearts, 7-10 HCP (vulnerable)"
+          evals: { "suit_quality(H)": [1.5, 9] }
+        shows: "weak two: 6 decent hearts, 7-10 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
       - id: open_weak_2D_nv
@@ -233,38 +233,116 @@ contexts:
         requires:
           suits: { D: [6, 6], H: [0, 3], S: [0, 3] }
           hcp: [7, 10]
-          features: [ "two_of_top3(D)" ]
-        shows: "weak two: 6 good diamonds, 7-10 HCP (vulnerable)"
+          evals: { "suit_quality(D)": [1.5, 9] }
+        shows: "weak two: 6 decent diamonds, 7-10 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
 
       # 3-level preempts: 7-card suit, seats 1-3
-      - id: open_3C
+      # A seven-card suit is the preempt; `good_suit` (two of the top three)
+      # was refusing to preempt on KJ9xxxx and QJTxxxx, which is most of
+      # them.  Quality is a matter of degree and of vulnerability instead:
+      # any seven-bagger with an honour or two non-vulnerable, a decent one
+      # when a bad result costs 200 a trick.
+      - id: open_3C_nv
         call: 3C
         priority: 60
-        requires: { suits: { C: [7, 13] }, hcp: [4, 9], features: [ "good_suit(C)" ] }
-        shows: "preempt: 7+ clubs, 4-9 HCP"
+        requires:
+          suits: { C: [7, 13] }
+          hcp: [3, 9]
+          evals: { "suit_quality(C)": [1, 9] }
+        shows: "preempt: 7+ clubs, 3-9 HCP"
         establishes: { forcing: non_forcing }
-        when: { opening_seat: [1, 2, 3] }
-      - id: open_3D
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_3C_vul
+        call: 3C
+        priority: 60
+        requires:
+          suits: { C: [7, 13] }
+          hcp: [5, 9]
+          evals: { "suit_quality(C)": [1.5, 9] }
+        shows: "preempt: 7+ decent clubs, 5-9 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+      - id: open_3D_nv
         call: 3D
         priority: 60
-        requires: { suits: { D: [7, 13] }, hcp: [4, 9], features: [ "good_suit(D)" ] }
-        shows: "preempt: 7+ diamonds, 4-9 HCP"
+        requires:
+          suits: { D: [7, 13] }
+          hcp: [3, 9]
+          evals: { "suit_quality(D)": [1, 9] }
+        shows: "preempt: 7+ diamonds, 3-9 HCP"
         establishes: { forcing: non_forcing }
-        when: { opening_seat: [1, 2, 3] }
-      - id: open_3H
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_3D_vul
+        call: 3D
+        priority: 60
+        requires:
+          suits: { D: [7, 13] }
+          hcp: [5, 9]
+          evals: { "suit_quality(D)": [1.5, 9] }
+        shows: "preempt: 7+ decent diamonds, 5-9 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+      - id: open_3H_nv
         call: 3H
         priority: 60
-        requires: { suits: { H: [7, 13] }, hcp: [4, 9], features: [ "good_suit(H)" ] }
-        shows: "preempt: 7+ hearts, 4-9 HCP"
+        requires:
+          suits: { H: [7, 13] }
+          hcp: [3, 9]
+          evals: { "suit_quality(H)": [1, 9] }
+        shows: "preempt: 7+ hearts, 3-9 HCP"
         establishes: { forcing: non_forcing }
-        when: { opening_seat: [1, 2, 3] }
-      - id: open_3S
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_3H_vul
+        call: 3H
+        priority: 60
+        requires:
+          suits: { H: [7, 13] }
+          hcp: [5, 9]
+          evals: { "suit_quality(H)": [1.5, 9] }
+        shows: "preempt: 7+ decent hearts, 5-9 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+      - id: open_3S_nv
         call: 3S
         priority: 60
-        requires: { suits: { S: [7, 13] }, hcp: [4, 9], features: [ "good_suit(S)" ] }
-        shows: "preempt: 7+ spades, 4-9 HCP"
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [3, 9]
+          evals: { "suit_quality(S)": [1, 9] }
+        shows: "preempt: 7+ spades, 3-9 HCP"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+      - id: open_3S_vul
+        call: 3S
+        priority: 60
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [5, 9]
+          evals: { "suit_quality(S)": [1.5, 9] }
+        shows: "preempt: 7+ decent spades, 5-9 HCP (vulnerable)"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
+
+      # Eight of them is a four-level preempt, not a three-level one: the
+      # extra trump is a trick, and the hand is worthless on defence.
+      - id: open_4H
+        call: 4H
+        priority: 61
+        requires:
+          suits: { H: [8, 13] }
+          hcp: [3, 10]
+        shows: "preempt: 8+ hearts, 3-10 HCP"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [1, 2, 3] }
+      - id: open_4S
+        call: 4S
+        priority: 61
+        requires:
+          suits: { S: [8, 13] }
+          hcp: [3, 10]
+        shows: "preempt: 8+ spades, 3-10 HCP"
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2, 3] }
 
