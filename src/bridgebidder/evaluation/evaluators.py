@@ -161,14 +161,19 @@ def quick_tricks(hand: Hand, ctx: EvalContext) -> float:
 
 
 @register_evaluator("lott_total_trumps")
-def lott_total_trumps(hand: Hand, ctx: EvalContext) -> float:
+def lott_total_trumps(hand: Hand, ctx: EvalContext, suit: str = "") -> float:
     """Law of Total Tricks support: our side's known combined trumps
-    (my length in the agreed/partner suit + partner's minimum shown length)."""
-    suit = ctx.agreed_suit or (ctx.partner_suits[0] if ctx.partner_suits else None)
-    if suit is None:
+    (my length in the named suit + partner's minimum shown length there).
+
+    With no argument it reads the agreed suit, or partner's FIRST shown suit -
+    which is wrong for any rule about a different suit, and every raise rule
+    is about a specific one.  Name the suit.
+    """
+    s = _resolve_suit(suit, ctx) if suit else (
+        ctx.agreed_suit or (ctx.partner_suits[0] if ctx.partner_suits else None))
+    if s is None:
         return 0.0
-    partner_min = ctx.partner_min_length.get(suit, 0)
-    return float(hand.suit_length(suit) + partner_min)
+    return float(hand.suit_length(s) + ctx.partner_min_length.get(s, 0))
 
 
 # --------------------------------------------------------------------------

@@ -10,10 +10,13 @@
 
 # the general agreements (round 5) cover ordinary deep sequences too: this
 # used to be an undiscussed fallback and is now an explained systemic raise
+# 4NT is in the set because this hand has a nine-card diamond fit, a
+# singleton, and nineteen support points opposite a partner who has bid two
+# suits: asking for keycards is a real option, not a wild one.
 - name: deep_sequence_is_systemic
   hand: "AQ52.6.KQ94.KQ32"
   calls: ["1C", "P", "1H", "P", "1S", "P", "2D", "P"]
-  expect: { fallback: false, calls: ["4D", "3D", "3NT", "2NT"] }
+  expect: { fallback: false, calls: ["4D", "3D", "3NT", "2NT", "4NT"] }
 
 - name: pass_over_their_game_is_systemic
   hand: "852.864.94.QJ432"

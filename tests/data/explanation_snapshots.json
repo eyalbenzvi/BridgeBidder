@@ -115,7 +115,7 @@
     "constraint": {
      "not": {
       "evals": {
-       "lott_total_trumps": [
+       "lott_total_trumps(H)": [
         8,
         26
        ],
@@ -144,7 +144,7 @@
     "constraint": {
      "not": {
       "evals": {
-       "lott_total_trumps": [
+       "lott_total_trumps(D)": [
         8,
         26
        ],
@@ -173,7 +173,7 @@
     "constraint": {
      "not": {
       "evals": {
-       "lott_total_trumps": [
+       "lott_total_trumps(H)": [
         7,
         26
        ],

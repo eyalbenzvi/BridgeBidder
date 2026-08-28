@@ -2894,6 +2894,13 @@ contexts:
         requires: { evals: { "keycards(agreed)": [0, 2] } }
         shows: "a keycard missing: signing off"
         establishes: { forcing: sign_off, agreed_suit: $A }
+      # with hearts agreed the 5H sign-off is already on the table: pass it
+      - id: rkc5H_pass_signoff
+        call: P
+        priority: 54
+        requires: { evals: { "keycards(agreed)": [0, 2] } }
+        shows: "a keycard missing: passing the reply, which is our suit"
+        establishes: { forcing: sign_off }
 
   - id: rkc_continue_after_5S
     description: "Asker's continuation after the 5S (2 with Q) reply"
@@ -2930,6 +2937,242 @@ contexts:
         requires: { evals: { "keycards(agreed)": [0, 2] } }
         shows: "forced to the six level; a keycard may be missing"
         establishes: { forcing: sign_off, agreed_suit: H }
+
+  # ===========================================================================
+  # RKC WITH A MINOR AGREED
+  #
+  # The continuations were authored for an agreed major only, so with a minor
+  # agreed the engine asked for keycards and then had no rule for the answer:
+  # the fallback machinery placed the contract, and it placed it in nonsense
+  # (5S with clubs agreed, on one board of the BEN match).  Missed and
+  # butchered slams were the single largest item in that match, worth about
+  # a third of the whole deficit.
+  #
+  # The resting place depends on the minor and on how high the reply already
+  # is: five of the agreed minor when that is still available, a pass when
+  # the reply IS five of it, and otherwise 5NT - the eleven tricks are worth
+  # more than a six-level contract known to be missing two keycards.
+  # ===========================================================================
+
+  - id: rkc_minor_after_5C_C
+    description: "Asker's continuation after the 5C reply with C agreed"
+    pattern: "... - 4NT - P - 5C - P - ?"
+    when: { agreed_suit: C }
+    rules:
+      - id: rkc5C_slam_C
+        call: 6C
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all/most keycards present: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: C }
+      - id: rkc5C_signoff_C
+        call: P
+        priority: 55
+        requires: {}
+        shows: "keycards missing: passing the reply, which is our suit"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5C_D
+    description: "Asker's continuation after the 5C reply with D agreed"
+    pattern: "... - 4NT - P - 5C - P - ?"
+    when: { agreed_suit: D }
+    rules:
+      - id: rkc5C_slam_D
+        call: 6D
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all/most keycards present: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: D }
+      - id: rkc5C_signoff_D
+        call: 5D
+        priority: 55
+        requires: {}
+        shows: "keycards missing: stopping below slam"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5D_C
+    description: "Asker's continuation after the 5D reply with C agreed"
+    pattern: "... - 4NT - P - 5D - P - ?"
+    when: { agreed_suit: C }
+    rules:
+      - id: rkc5D_slam_C
+        call: 6C
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [2, 5], hcp: [18, 40] } }
+        shows: "assuming three keycards opposite: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: C }
+      - id: rkc5D_signoff_C
+        call: 5NT
+        priority: 55
+        requires: {}
+        shows: "keycards missing: stopping below slam"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5D_D
+    description: "Asker's continuation after the 5D reply with D agreed"
+    pattern: "... - 4NT - P - 5D - P - ?"
+    when: { agreed_suit: D }
+    rules:
+      - id: rkc5D_slam_D
+        call: 6D
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [2, 5], hcp: [18, 40] } }
+        shows: "assuming three keycards opposite: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: D }
+      - id: rkc5D_signoff_D
+        call: P
+        priority: 55
+        requires: {}
+        shows: "keycards missing: passing the reply, which is our suit"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5H_C
+    description: "Asker's continuation after the 5H reply with C agreed"
+    pattern: "... - 4NT - P - 5H - P - ?"
+    when: { agreed_suit: C }
+    rules:
+      - id: rkc5H_slam_C
+        call: 6C
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards held: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: C }
+      - id: rkc5H_signoff_C
+        call: 5NT
+        priority: 55
+        requires: {}
+        shows: "keycards missing: stopping below slam"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5H_D
+    description: "Asker's continuation after the 5H reply with D agreed"
+    pattern: "... - 4NT - P - 5H - P - ?"
+    when: { agreed_suit: D }
+    rules:
+      - id: rkc5H_slam_D
+        call: 6D
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards held: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: D }
+      - id: rkc5H_signoff_D
+        call: 5NT
+        priority: 55
+        requires: {}
+        shows: "keycards missing: stopping below slam"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5S_C
+    description: "Asker's continuation after the 5S reply with C agreed"
+    pattern: "... - 4NT - P - 5S - P - ?"
+    when: { agreed_suit: C }
+    rules:
+      - id: rkc5S_slam_C
+        call: 6C
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards and the queen: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: C }
+      - id: rkc5S_signoff_C
+        call: 5NT
+        priority: 55
+        requires: {}
+        shows: "keycards missing: stopping below slam"
+        establishes: { forcing: sign_off }
+
+  - id: rkc_minor_after_5S_D
+    description: "Asker's continuation after the 5S reply with D agreed"
+    pattern: "... - 4NT - P - 5S - P - ?"
+    when: { agreed_suit: D }
+    rules:
+      - id: rkc5S_slam_D
+        call: 6D
+        priority: 60
+        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        shows: "all five keycards and the queen: bidding the small slam"
+        establishes: { forcing: sign_off, agreed_suit: D }
+      - id: rkc5S_signoff_D
+        call: 5NT
+        priority: 55
+        requires: {}
+        shows: "keycards missing: stopping below slam"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
+  # SLAM TRY IN AN ORDINARY AUCTION
+  #
+  # The RKC ask lived behind two gates - a recorded trump agreement and a
+  # game force - and in the BEN match neither held in the position that
+  # actually matters.  With a fit and twenty points the generic raise simply
+  # jumped to game and the auction died: on the 117 boards of that match
+  # where a slam was available we stopped at the four level 61 times and
+  # asked for keycards 15 times, while BEN bid 49 slams to our 11.
+  #
+  # So the ask is available here too, in the same position as the game raise
+  # and ranked above it, on the values that justify hearing the answer: a
+  # nine-card fit, seventeen points of my own, two aces or the equivalent,
+  # and thirty counting what partner has actually shown.  The auction has to
+  # be at the two level or higher first - 4NT over a one-level bid is a
+  # guess, not a question.
+  #
+  # The nine-trump gate is doing the real work, and it was chosen the hard
+  # way.  Point count alone cannot tell a slam try from a game bid here: the
+  # hands in the corpus that SHOULD bid game were, if anything, stronger in
+  # points than the ones with a slam on.  What separates them is the fit.
+  # ===========================================================================
+
+  - id: general_slam_try
+    description: "RKC 1430 when partner has shown a suit and we hold slam values"
+    pattern: "... - ?"
+    rules:
+      - id: gst_rkc_C
+        call: 4NT
+        priority: 46
+        when: { partner_suit: C, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
+                    "lott_total_trumps(C)": [9, 26] }
+        shows: "RKC Blackwood 1430 for C: slam values opposite partner's shown range"
+        establishes: { forcing: one_round, agreed_suit: C, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: gst_rkc_D
+        call: 4NT
+        priority: 46
+        when: { partner_suit: D, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        requires:
+          suits: { D: [4, 13] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
+                    "lott_total_trumps(D)": [9, 26] }
+        shows: "RKC Blackwood 1430 for D: slam values opposite partner's shown range"
+        establishes: { forcing: one_round, agreed_suit: D, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: gst_rkc_H
+        call: 4NT
+        priority: 46
+        when: { partner_suit: H, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
+                    "lott_total_trumps(H)": [9, 26] }
+        shows: "RKC Blackwood 1430 for H: slam values opposite partner's shown range"
+        establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: gst_rkc_S
+        call: 4NT
+        priority: 46
+        when: { partner_suit: S, standing_bid_level: [2, 3, 4], we_hold_contract: false }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [30, 99],
+                    "lott_total_trumps(S)": [9, 26] }
+        shows: "RKC Blackwood 1430 for S: slam values opposite partner's shown range"
+        establishes: { forcing: one_round, agreed_suit: S, asking: keycards }
+        alertable: true
+        convention: rkc_1430
 
   # ===========================================================================
   # GENERIC GAME-FORCE LANDING SPOTS (least specific; consulted when nothing
@@ -4989,7 +5232,7 @@ contexts:
       - id: cl_negative_X1
         call: X
         priority: 33
-        when: { their_last_bid_suit: true, side_has_acted: true, i_have_acted: false, their_bid_level: [1] }
+        when: { their_last_bid_suit: true, side_has_acted: true, i_have_acted: false, standing_bid_level: [1] }
         requires:
           hcp: [6, 40]
           evals: { "suit_length(their)": [0, 3], longest_suit_length: [0, 4] }
@@ -5002,7 +5245,7 @@ contexts:
       - id: cl_negative_X2
         call: X
         priority: 33
-        when: { their_last_bid_suit: true, side_has_acted: true, i_have_acted: false, their_bid_level: [2] }
+        when: { their_last_bid_suit: true, side_has_acted: true, i_have_acted: false, standing_bid_level: [2] }
         requires:
           hcp: [8, 40]
           evals: { "suit_length(their)": [0, 3], longest_suit_length: [0, 4] }
@@ -5018,7 +5261,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(C)": [7, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: cl_raise_C3
@@ -5027,7 +5270,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: cl_raise_C4
@@ -5039,7 +5282,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { C: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(C)": [10, 26],
                     "suit_diff(C, H)": [0, 13], "suit_diff(C, S)": [0, 13] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5049,7 +5292,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: cl_raise_D3
@@ -5058,7 +5301,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: cl_raise_D4
@@ -5070,7 +5313,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { D: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(D)": [10, 26],
                     "suit_diff(D, H)": [0, 13], "suit_diff(D, S)": [0, 13] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5080,7 +5323,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(H)": [7, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: cl_raise_H3
@@ -5089,7 +5332,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: cl_raise_H4
@@ -5098,7 +5341,7 @@ contexts:
         when: { partner_suit: H }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: cl_raise_S2
@@ -5107,7 +5350,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(S)": [7, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: cl_raise_S3
@@ -5116,7 +5359,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: cl_raise_S4
@@ -5125,7 +5368,7 @@ contexts:
         when: { partner_suit: S }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: cl_new_C1
@@ -5241,7 +5484,7 @@ contexts:
         priority: 27
         requires:
           hcp: [8, 11]
-          evals: { semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 1NT: 8-11 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5251,7 +5494,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5261,7 +5504,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -5392,13 +5635,18 @@ contexts:
     pattern: "... - bid>=3C - ?"
     when: { we_hold_contract: false }
     rules:
+      # This asked for SHORTNESS in their suit, which is a takeout shape, and
+      # then left the double in as a penalty.  Over 1000 duplicate boards
+      # against BEN our doubles were beaten 27 times and made 26, a losing
+      # bet worth about 200 IMPs.  A business double of a high contract needs
+      # trump tricks: length in their suit, not a void opposite silence.
       - id: ch_penalty_X
         call: X
         priority: 38
         requires:
           hcp: [15, 40]
-          evals: { quick_tricks: [3, 12], "suit_length(their)": [0, 2] }
-        shows: "values double of their high contract: defensive tricks, no fit for them"
+          evals: { quick_tricks: [3, 12], "suit_length(their)": [3, 13] }
+        shows: "penalty double of their high contract: defensive tricks and trump length"
         establishes: { forcing: non_forcing }
       - id: ch_raise_C2
         call: 2C
@@ -5406,7 +5654,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(C)": [7, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ch_raise_C3
@@ -5415,7 +5663,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ch_raise_C4
@@ -5427,7 +5675,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { C: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(C)": [10, 26],
                     "suit_diff(C, H)": [0, 13], "suit_diff(C, S)": [0, 13] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5437,7 +5685,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ch_raise_D3
@@ -5446,7 +5694,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ch_raise_D4
@@ -5458,7 +5706,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { D: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(D)": [10, 26],
                     "suit_diff(D, H)": [0, 13], "suit_diff(D, S)": [0, 13] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5468,7 +5716,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(H)": [7, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_raise_H3
@@ -5477,7 +5725,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_raise_H4
@@ -5486,7 +5734,7 @@ contexts:
         when: { partner_suit: H }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_raise_S2
@@ -5495,7 +5743,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(S)": [7, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_raise_S3
@@ -5504,7 +5752,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_raise_S4
@@ -5513,7 +5761,7 @@ contexts:
         when: { partner_suit: S }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_new_C1
@@ -5629,7 +5877,7 @@ contexts:
         priority: 27
         requires:
           hcp: [8, 11]
-          evals: { semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 1NT: 8-11 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5639,7 +5887,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -5649,7 +5897,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -5838,7 +6086,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(C)": [7, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ballow_raise_C3
@@ -5847,7 +6095,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ballow_raise_C4
@@ -5859,7 +6107,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { C: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(C)": [10, 26],
                     "suit_diff(C, H)": [0, 13], "suit_diff(C, S)": [0, 13] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -5869,7 +6117,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ballow_raise_D3
@@ -5878,7 +6126,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ballow_raise_D4
@@ -5890,7 +6138,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { D: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(D)": [10, 26],
                     "suit_diff(D, H)": [0, 13], "suit_diff(D, S)": [0, 13] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -5900,7 +6148,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(H)": [7, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ballow_raise_H3
@@ -5909,7 +6157,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ballow_raise_H4
@@ -5918,7 +6166,7 @@ contexts:
         when: { partner_suit: H }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ballow_raise_S2
@@ -5927,7 +6175,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(S)": [7, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ballow_raise_S3
@@ -5936,7 +6184,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ballow_raise_S4
@@ -5945,7 +6193,7 @@ contexts:
         when: { partner_suit: S }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ballow_new_C1
@@ -6061,7 +6309,7 @@ contexts:
         priority: 27
         requires:
           hcp: [10, 14]
-          evals: { semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 1NT: 10-14 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -6071,7 +6319,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -6081,7 +6329,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -6232,7 +6480,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(C)": [7, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: balhigh_raise_C3
@@ -6241,7 +6489,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "competitive raise of partner's C: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: balhigh_raise_C4
@@ -6253,7 +6501,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { C: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(C)": [10, 26],
                     "suit_diff(C, H)": [0, 13], "suit_diff(C, S)": [0, 13] }
         shows: "competitive raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -6263,7 +6511,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: balhigh_raise_D3
@@ -6272,7 +6520,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "competitive raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: balhigh_raise_D4
@@ -6284,7 +6532,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { D: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(D)": [10, 26],
                     "suit_diff(D, H)": [0, 13], "suit_diff(D, S)": [0, 13] }
         shows: "competitive raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -6294,7 +6542,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(H)": [7, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: balhigh_raise_H3
@@ -6303,7 +6551,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: balhigh_raise_H4
@@ -6312,7 +6560,7 @@ contexts:
         when: { partner_suit: H }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: balhigh_raise_S2
@@ -6321,7 +6569,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(S)": [7, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: balhigh_raise_S3
@@ -6330,7 +6578,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: balhigh_raise_S4
@@ -6339,7 +6587,7 @@ contexts:
         when: { partner_suit: S }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "competitive raise of partner's S: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: balhigh_new_C1
@@ -6455,7 +6703,7 @@ contexts:
         priority: 27
         requires:
           hcp: [10, 14]
-          evals: { semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 1NT: 10-14 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -6465,7 +6713,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [11, 12]
-          evals: { rule_of_26: [21, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [21, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
         establishes: { forcing: non_forcing }
@@ -6475,7 +6723,7 @@ contexts:
         when: { side_has_acted: true }
         requires:
           hcp: [13, 17]
-          evals: { rule_of_26: [24, 99], semi_balanced: [1, 1] }
+          evals: { "stoppers(their)": [1, 1], rule_of_26: [24, 99], semi_balanced: [1, 1] }
           features: [ "stopper(their)" ]
         shows: "natural 3NT: 13-17 balanced with a stopper in their suit"
         establishes: { forcing: sign_off }
@@ -6650,7 +6898,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(C)": [7, 26] }
         shows: "raise of partner's C: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: uc_raise_C3
@@ -6659,7 +6907,7 @@ contexts:
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "raise of partner's C: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: uc_raise_C4
@@ -6671,7 +6919,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { C: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(C)": [10, 26],
                     "suit_diff(C, H)": [0, 13], "suit_diff(C, S)": [0, 13] }
         shows: "raise of partner's C: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: C }
@@ -6681,7 +6929,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
         shows: "raise of partner's D: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: uc_raise_D3
@@ -6690,7 +6938,7 @@ contexts:
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "raise of partner's D: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: uc_raise_D4
@@ -6702,7 +6950,7 @@ contexts:
           # bidding at all: ten combined trumps, and the minor has to be my
           # longest suit or the major is the bid.
           suits: { D: [4, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [10, 26],
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(D)": [10, 26],
                     "suit_diff(D, H)": [0, 13], "suit_diff(D, S)": [0, 13] }
         shows: "raise of partner's D: 3+ trumps, 13+ support points opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: D }
@@ -6712,7 +6960,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(H)": [7, 26] }
         shows: "raise of partner's H: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: uc_raise_H3
@@ -6721,7 +6969,7 @@ contexts:
         when: { partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "raise of partner's H: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: uc_raise_H4
@@ -6734,7 +6982,7 @@ contexts:
           # suit and too few opposite a four-card response, and this rule's
           # commonest mistake was jumping to game on a 4-3 fit.
           suits: { H: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: uc_raise_S2
@@ -6743,7 +6991,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(S)": [7, 26] }
         shows: "raise of partner's S: 3+ trumps, 6-9 support points, 7+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_raise_S3
@@ -6752,7 +7000,7 @@ contexts:
         when: { partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "raise of partner's S: 3+ trumps, 10+ support points, 8+ combined trumps"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_raise_S4
@@ -6765,7 +7013,7 @@ contexts:
           # suit and too few opposite a four-card response, and this rule's
           # commonest mistake was jumping to game on a 4-3 fit.
           suits: { S: [3, 13] }
-          evals: { total_points: [11, 40], rule_of_26: [25, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "raise of partner's S: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_new_C1
@@ -7154,7 +7402,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(C)": [7, 26] }
         shows: "raise of partner's doubled C: 3+ trumps, 6-9 support points"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: xd_raise_C3
@@ -7163,7 +7411,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(C)": [8, 26] }
         shows: "raise of partner's doubled C: 3+ trumps, 10+ support points"
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: xd_raise_D2
@@ -7172,7 +7420,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
         shows: "raise of partner's doubled D: 3+ trumps, 6-9 support points"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: xd_raise_D3
@@ -7181,7 +7429,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(D)": [8, 26] }
         shows: "raise of partner's doubled D: 3+ trumps, 10+ support points"
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: xd_raise_H2
@@ -7190,7 +7438,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(H)": [7, 26] }
         shows: "raise of partner's doubled H: 3+ trumps, 6-9 support points"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: xd_raise_H3
@@ -7199,7 +7447,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "raise of partner's doubled H: 3+ trumps, 10+ support points"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: xd_raise_S2
@@ -7208,7 +7456,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [6, 9], lott_total_trumps: [7, 26] }
+          evals: { total_points: [6, 9], "lott_total_trumps(S)": [7, 26] }
         shows: "raise of partner's doubled S: 3+ trumps, 6-9 support points"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: xd_raise_S3
@@ -7217,7 +7465,7 @@ contexts:
         when: { we_bid_last: true, we_hold_contract: false, partner_suit: S, cheapest_in_suit: true }
         requires:
           suits: { S: [3, 13] }
-          evals: { total_points: [10, 40], rule_of_26: [22, 99], lott_total_trumps: [8, 26] }
+          evals: { total_points: [10, 40], rule_of_26: [22, 99], "lott_total_trumps(S)": [8, 26] }
         shows: "raise of partner's doubled S: 3+ trumps, 10+ support points"
         establishes: { forcing: non_forcing, agreed_suit: S }
       # My second suit after they balanced into my partscore.  Four cards

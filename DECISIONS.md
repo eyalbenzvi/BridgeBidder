@@ -547,3 +547,76 @@ Across three seeds, before -> after this round:
 Confident disagreements on the fresh corpus: 1417 -> 1305.  Undiscussed
 fallbacks: 131 -> 91.
 
+## Playing BEN head to head
+
+Agreement percentages measure imitation, not results.  `tools/match_ben.py`
+plays a duplicate teams match instead: every deal is dealt twice with the
+same dealer and vulnerability, our engine holding N/S at one table and E/W
+at the other, so the deal's own luck cancels and the margin between the two
+tables is the difference between the two bidders.  Contracts are scored
+double-dummy, so play never enters into it.
+
+**First match, 1000 boards: we lost by 1484 IMPs, 1.48 per board.**  184
+boards won, 388 lost, 428 flat.  That is a decisive result, not a close one,
+and worth stating plainly: BEN bids better than this engine does.
+
+Where the deficit actually was:
+
+- **Slams: -529 IMPs, a third of the whole margin.**  117 boards had a slam
+  available.  BEN bid 37 of them; we bid 6.  Holding the slam cards we
+  stopped at the four level 61 times.
+- **Our penalty doubles: 53 of them, 26 made.**  Doubling a contract that
+  makes half the time is a losing bet, and it cost about 200 IMPs.  BEN
+  doubled 7 times in the same 2000 auctions.
+- **We were outbid.**  BEN declared 1105 contracts to our 883.
+
+Three fixes came out of the first match.  The RKC continuations turned out
+to be authored for an agreed MAJOR only, so with a minor agreed the engine
+asked for keycards and then had no rule for the answer - on one board it
+signed off in 5S with clubs agreed.  The generic penalty double of a high
+contract asked for *shortness* in their suit, which is a takeout shape, and
+then left the double in as a penalty; a business double needs trump tricks.
+
+And a bug worth its own paragraph: **the opponents' suits were not being
+tracked at all** unless one of our own contexts happened to interpret their
+call.  Every "their suit" evaluator therefore read as vacuously satisfied -
+no stopper needed, no length held, short in their suit - across most
+competitive auctions.  A suit an opponent has bid is a suit they have shown,
+whether or not a rule of ours described the call.
+
+A second bug of the same kind: `lott_total_trumps` took no suit argument and
+read partner's FIRST shown suit, so every LOTT gate in a rule about a
+different suit was measuring the wrong fit.  Seventy-two gates now name
+their suit.
+
+**Second and third matches: -1414 and -1421.**  The doubles fell from 53 to
+34 and the slams rose from 11 to 26 (made 46%), but the total moved by 4%
+and then stopped.  That is the honest headline: the fixes were real and the
+match barely noticed.
+
+The reason is in the breakdown.  On the 298 boards where both tables reach
+the identical contract we are +14 IMPs - dead level, as expected.  The
+deficit is spread almost evenly across every other bucket: one level lower,
+one level higher, two levels either way.  There is no single systematic
+error left to correct.  The two concentrations that remain are slams (-436,
+needing cue-bidding and control-showing machinery this engine does not have)
+and strain selection at the same level (-121 over 58 boards, most of it
+choosing notrump where BEN chooses a suit).
+
+A negative result about slam bidding is worth recording precisely.  The
+obvious fix - let the engine ask for keycards in the position where it
+currently jumps to game - cannot be gated on strength.  Measured on the
+corpus, the hands that SHOULD bid game were *stronger in points* than the
+hands with a slam on.  What separates them is the fit: nine trumps counting
+partner's shown length.  Gated that way the slam try is sound and improved
+the slam boards by 33 IMPs; gated on points it fired on hands that belong in
+game, including over our own doubled contract.
+
+What this measurement is good for, and what it is not: it is the first
+metric here that is genuinely adversarial and zero-sum, so it cannot be
+gamed by bidding more of anything.  It is also slow (five minutes per 1000
+boards) and noisy at the level of individual changes - a 60-IMP move over
+1000 boards is roughly one standard deviation, so a single run cannot
+adjudicate a small change.  Use it for direction and for the big buckets;
+use the decision-level comparison for anything finer.
+

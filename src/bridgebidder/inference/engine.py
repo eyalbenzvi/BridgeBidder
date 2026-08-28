@@ -213,9 +213,9 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                 if c.is_bid and auction.seat_of_call(i) == seat}
         if cond.my_suit not in mine:
             return False
-    if cond.their_bid_level is not None:
+    if cond.standing_bid_level is not None:
         lb = auction.last_bid
-        if lb is None or lb.level not in cond.their_bid_level:
+        if lb is None or lb.level not in cond.standing_bid_level:
             return False
     if cond.i_have_acted is not None:
         acted = any(not c.is_pass for i, c in enumerate(auction.calls)
@@ -275,6 +275,27 @@ def _shown_suits_of(analysis: Analysis, seats: list[Seat]) -> list[str]:
     return out
 
 
+def _their_suits(analysis: Analysis, auction: Auction, seat: Seat) -> list[str]:
+    """Suits the opponents have shown.
+
+    Their calls carry no interpretation of ours unless one of our contexts
+    happened to describe them, so the descriptor alone leaves this empty for
+    most auctions - and then every "their suit" evaluator reads as vacuously
+    satisfied: no stopper needed, no length held, short in their suit.  A suit
+    an opponent has BID is a suit they have shown, which is how anyone reads
+    an auction, so it is counted here whether or not a rule interpreted it.
+    """
+    out = _shown_suits_of(analysis, [seat.lho, seat.rho])
+    for i, c in enumerate(auction.calls):
+        if not c.is_bid or c.strain == "NT":
+            continue
+        if auction.seat_of_call(i).same_side(seat):
+            continue
+        if c.strain not in out:
+            out.append(c.strain)
+    return out
+
+
 def build_eval_ctx(analysis: Analysis, auction: Auction, seat: Seat) -> EvalContext:
     side = analysis.sides[seat.side]
     partner_desc = analysis.descriptors[seat.partner]
@@ -284,7 +305,7 @@ def build_eval_ctx(analysis: Analysis, auction: Auction, seat: Seat) -> EvalCont
         vulnerability=auction.vulnerability,
         agreed_suit=side.agreed_suit,
         partner_suits=list(partner_desc.shown_suits),
-        their_suits=_shown_suits_of(analysis, [seat.lho, seat.rho]),
+        their_suits=_their_suits(analysis, auction, seat),
         opening_seat_number=auction.opening_seat_number if auction.opener_index() is None else None,
         is_passed_hand=auction.is_passed_hand(seat),
         partner_min_hcp=pbox.hcp[0],
