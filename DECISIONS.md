@@ -377,3 +377,59 @@ end to end so the subsystem cannot rot unnoticed.
 replay-determinism checks.  Achieved at the time of writing: par 5.78 (ceiling
 7.5), undiscussed 0.23/board (0.60), misbid rate 0.012 (0.030).  Tighten the
 ceilings when the engine improves; never loosen them to make a change pass.
+
+## A better evaluation method: comparison against BEN
+
+Double-dummy par turned out to be a poor teacher.  It judges the *final
+contract* against an omniscient oracle, so it cannot distinguish bidding
+badly from bidding well with information the partnership could not have; it
+attributes a whole board to nothing in particular; and because both sides run
+the same rulebook in self-play, systematic biases cancel and become invisible.
+Six rounds of it produced real bug fixes but a flat average.
+
+`tools/compare_ben.py` replaces it.  BEN (github.com/lorserker/ben) is a
+neural bidder trained on a large corpus of expert auctions.  At every decision
+our engine makes, BEN is asked what it would call from the same seat, with the
+same hand and the same auction.  Disagreements are recorded with the rule that
+produced our call and BEN's confidence.
+
+Why this is a better signal: BEN encodes *human expert judgement*, which is
+precisely what the rulebook is trying to capture and precisely what a
+double-dummy oracle cannot express.  And a disagreement points at one
+decision, made by one named rule, with a hand and an auction attached.
+
+**BEN is not a source of truth.**  It is statistical, it offers no
+explanations, and it is sometimes wrong.  The unit of evidence is therefore
+never a single disagreement - it is a *cluster*: the same rule disagreeing the
+same way many times with BEN confident each time.  A one-off, or a
+disagreement where BEN itself is unsure, is discarded.
+
+Engineering notes.  BEN pins numpy<2.1 while endplay here needs 2.4, so BEN
+runs in its own virtualenv driven over a pipe, using only its ONNX bidder (no
+TensorFlow).  The model is BEN's own 2/1 Game Forcing network, so the
+comparison is like-for-like.  The worker imports BEN's own feature encoders
+rather than reimplementing them.
+
+A validation lesson worth recording: the first run looked plausible but was
+wrong.  BEN's auction array is left-padded with `PAD_START` up to the dealer,
+and the model is *sequential*, so counting a phantom turn for seats before the
+dealer corrupted its hidden state - contaminating three quarters of all
+boards.  It was caught only by asking BEN to bid one fixed 14-count from all
+four seats and noticing it "passed" in some of them.  Any oracle must be
+validated on known answers per seat, per vulnerability, before its
+disagreements are believed.
+
+### What the comparison found immediately
+
+- **11-HCP hands were being opened.**  `open_pass` covered 0-10 and the
+  openings 12-21, so an 11-count fitted neither and rule priority alone
+  decided - it opened.  BEN passes these at 95%+ confidence.  `open_pass` now
+  covers 0-11; rule-of-20 openings still fire because they match exactly.
+- **The general takeout double had nothing to take out.**  It was doubling
+  *notrump* contracts, and doubling after our side had already described its
+  hand.  "Short in their suit" was vacuously true when the opponents had
+  shown no suit at all.  A new `their_last_bid_suit` condition requires a suit
+  to take out, and `side_has_acted: false` keeps the takeout double an entry
+  into the auction rather than a continuation.
+
+Agreement with BEN over 300 boards: **72.4% -> 75.8%** from those two fixes.

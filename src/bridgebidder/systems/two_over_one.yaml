@@ -280,7 +280,7 @@ contexts:
       - id: open_pass
         call: P
         priority: 20
-        requires: { hcp: [0, 10] }
+        requires: { hcp: [0, 11] }
         shows: "fewer than opening values"
         establishes: { forcing: sign_off }
         negative_inference_weight: soft
@@ -4864,6 +4864,7 @@ contexts:
       - id: cl_takeout_X
         call: X
         priority: 36
+        when: { their_last_bid_suit: true, side_has_acted: false }
         requires:
           hcp: [12, 40]
           evals: { "suit_length(their)": [0, 2] }
@@ -5396,6 +5397,7 @@ contexts:
       - id: ballow_X
         call: X
         priority: 40
+        when: { their_last_bid_suit: true }
         requires:
           hcp: [11, 40]
           evals: { "suit_length(their)": [0, 2] }
@@ -5662,6 +5664,7 @@ contexts:
       - id: balhigh_X
         call: X
         priority: 40
+        when: { their_last_bid_suit: true }
         requires:
           hcp: [14, 40]
           evals: { "suit_length(their)": [0, 2] }

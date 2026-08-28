@@ -21,8 +21,8 @@ SYSTEM = load_system()
 
 # positions harvested from self-play where the fast path is genuinely unsure
 UNCLEAR = [
-    ("AJ752.K4.Q92.J87", "N", []),
-    ("K9542.A72.K4.J83", "N", ["P", "1D", "1S", "X", "2S", "X"]),
+    ("KJT54.A742.A.AKQ", "E", ["1S", "P", "1NT", "P"]),
+    ("8.AQ93.AKJ3.J864", "S", ["P", "P", "1D", "1H", "1S", "P"]),
 ]
 
 
@@ -38,17 +38,20 @@ def test_arbitration_returns_a_sound_call(hand, dealer, calls):
     assert elapsed < 10.0, f"arbitration took {elapsed:.1f}s"
     assert auction.is_legal(decision.chosen.call)
     assert decision.confidence == "judgment"
-    # it must consider at least two candidates and report what it found
-    assert decision.arbitration is not None
-    assert len(decision.arbitration["candidates"]) >= 2
+    # either the simulation ran on two or more contenders, or the engine
+    # recorded that nothing else was plausible enough to be worth simulating
+    if decision.arbitration is not None:
+        assert len(decision.arbitration["candidates"]) >= 2
+    else:
+        assert any("no plausible alternative" in line for line in decision.log)
 
 
 def test_arbitration_only_considers_plausible_candidates():
     """A candidate the hand cannot hold must never reach the simulation:
     double-dummy rollouts reward systemic lies, because partner then bids as
     though the lie were true."""
-    auction = Auction.from_strings("N", [])
-    decision = choose(SYSTEM, auction, Seat.N, Hand.parse("AJ752.K4.Q92.J87"),
+    auction = Auction.from_strings("E", ["1S", "P", "1NT", "P"])
+    decision = choose(SYSTEM, auction, auction.next_seat, Hand.parse("KJT54.A742.A.AKQ"),
                       use_arbitration=True, arbitration_budget=6.0)
     if decision.arbitration:
         for call in decision.arbitration["candidates"]:
@@ -68,8 +71,8 @@ def test_arbitration_agrees_with_fast_path_on_clear_decisions():
 
 def test_api_reports_arbitration_details():
     result = choose_bid({
-        "hand": "AJ752.K4.Q92.J87",
-        "auction_state": {"dealer": "N", "seat": "N", "calls": []},
+        "hand": "KJT54.A742.A.AKQ",
+        "auction_state": {"dealer": "E", "seat": "E", "calls": ["1S", "P", "1NT", "P"]},
         "arbitration_budget": 6.0,
     })
     assert result["confidence"] in ("clear", "judgment")

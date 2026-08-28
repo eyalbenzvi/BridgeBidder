@@ -60,8 +60,11 @@ def _features(hand_str, vuln_ns, vuln_ew, auction, seat_i, dealer_i):
     def at(j):
         return padded[j] if 0 <= j < len(padded) else "PAD_START"
 
+    # This seat's turns are the indices congruent to seat_i (mod 4) that fall
+    # at or after the dealer: earlier slots are PAD_START placeholders and are
+    # NOT turns.  Feeding them as steps corrupts the sequential model's state.
     steps = []
-    i = seat_i
+    i = seat_i if seat_i >= dealer_i else seat_i + 4
     while i <= len(padded):
         steps.append(np.concatenate((
             ns_ew, vuln, hcp, shape, hand,

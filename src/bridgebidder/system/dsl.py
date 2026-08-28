@@ -68,6 +68,7 @@ class Conditions:
     unbid_suit: str | None = None                  # nobody has shown this suit
     cheapest_in_suit: bool | None = None           # this call is the lowest bid available in its suit
     side_has_acted: bool | None = None             # our side has already made a non-pass call
+    their_last_bid_suit: bool | None = None        # the standing contract is a SUIT bid by them
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -83,6 +84,7 @@ class Conditions:
             unbid_suit=d.pop("unbid_suit", None),
             cheapest_in_suit=d.pop("cheapest_in_suit", None),
             side_has_acted=d.pop("side_has_acted", None),
+            their_last_bid_suit=d.pop("their_last_bid_suit", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -101,6 +103,7 @@ class Conditions:
             and self.unbid_suit is None
             and self.cheapest_in_suit is None
             and self.side_has_acted is None
+            and self.their_last_bid_suit is None
             and not self.config
         )
 

@@ -192,6 +192,13 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         return False
     if cond.we_hold_contract is not None and we_hold_contract(auction, seat) != cond.we_hold_contract:
         return False
+    if cond.their_last_bid_suit is not None:
+        lb_info = auction.last_bid_info
+        ok = (lb_info is not None
+              and lb_info[0].strain != "NT"
+              and not auction.seat_of_call(lb_info[1]).same_side(seat))
+        if ok != cond.their_last_bid_suit:
+            return False
     if cond.side_has_acted is not None:
         acted = any(not c.is_pass for i, c in enumerate(auction.calls)
                     if auction.seat_of_call(i).side == seat.side)
