@@ -1486,3 +1486,33 @@
   hand: "AKQ32.A4.AQ82.K5"
   calls: ["1S", "X", "2NT", "P"]
   expect: { call: "4NT", convention: rkc_1430 }
+
+# =====================================================================
+# Expert round 5 (triaged 1000, seed 515151).  The finding that reframed
+# the dossier: every generic context ends in a catch-all pass with
+# `requires: {}`, which fits 1.00 at priority 18-21 - so ANY hole in an
+# authored ladder becomes a pass by construction.  "all-pass" and
+# "uc_nt3" name starved seats, not bad rules.
+# See docs/EXPERT_REVIEW_515151_{A,B}.md.
+# =====================================================================
+
+# opener with 16-19 had no context at all over a 1NT response
+- name: e4_opener_rebids_over_1NT_response
+  hand: "AQ7.K4.KQJ932.A5"
+  calls: ["1D", "P", "1NT", "P"]
+  expect: { calls: ["2NT", "3NT", "3D"] }
+
+# the reopening double gated shortness on their FIRST suit, not the strain
+# they are actually playing
+- name: e4_reopening_double_reads_the_standing_suit
+  hand: "KQ85.4.AQ96.K952"
+  dealer: N
+  calls: ["1D", "P", "2H", "P", "P"]
+  expect: { call: "X" }
+
+# the 2/1 over 1H must deny four spades: with four spades and a longer
+# minor, bid the spades first
+- name: e4_two_over_one_over_1H_denies_spades
+  hand: "AQ85.4.K72.AQJ96"
+  calls: ["1H", "P"]
+  expect: { call: "1S" }
