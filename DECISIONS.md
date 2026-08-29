@@ -2087,3 +2087,92 @@ corpus that found them.  This round's in-sample and held-out gains are **the sam
 size**, because a decision where an expert bidder confidently disagrees with us,
 holding our cards in our auction, is a defect wherever it occurs - not a property
 of the boards it was found on.
+
+## Round 11 (seed 242424): a round that mostly produced negative results
+
+Fresh 1000 deals, seed 242424: **-804 IMPs (-0.804/board)**, 219 boards won, 331
+lost, 450 flat, swings >= 10 IMPs 44 ours to 88 theirs.  Per-decision audit:
+**3,427 of our decisions replayed, 856 disagreements, 418 with BEN >= 0.80
+confident, 278 of them a first divergence.**
+
+Three candidates were found, verified through `choose_bid`, implemented and
+measured.  Two were reverted on the held-out corpus and the third is worth ~1
+IMP.  The round's value is the two negative results, both of which correct a
+belief this project was operating on.
+
+### The headline negative: a rule that "never fires" is not necessarily unreachable
+
+`open_pass` topped the ranking again (-169 IMPs over 28 first-divergences), but
+its hands are rule-of-20 threshold cases, which DECISIONS scopes out.  Below it
+sat what looked like a clean structural bug: **the weak jump overcall is
+unreachable by construction.**  `oc1$o_2$X_jump` states gates strictly NARROWER
+than the simple overcall beside it - exactly 6-7 cards against 5+, 5-10 HCP
+against 8-16, plus a good-suit requirement - and sat at priority 59-60 against
+that rule's 71.  Whenever a one-level overcall was legal, which is most of the
+time, both fitted 1.00 and the LESS descriptive call won on priority alone.
+Across 2000 tables the twelve rules fired **eight times between them**, and
+`oc1C_2S_jump` never fired at all.  Four boards in the audit had us overcall 1S
+on a six-card suit where BEN jumps, at 0.92-0.97 confidence.
+
+Re-ranked so the jump wins where its own gates are met: **-24 IMPs held out.**
+REVERTED.
+
+The diagnosis was right and the inference from it was wrong, and the correction
+is worth stating because it will come up again.  The jump was **already reachable
+for the hands it is for**: with 5-7 HCP the simple overcall (8-16) does not fit
+>= 0.9, so the jump was the only candidate and did fire.  The only thing the
+re-ranking changed was the **8-10 HCP overlap** - and on that population the
+corpus says the one-level overcall is the better call.  Eight firings in 2000
+tables is not evidence of dead code; it is evidence that 5-7 HCP with a good
+six-card suit is a rare hand.  **Before concluding a rule is unreachable, check
+whether the hands it describes are simply uncommon.**
+
+### The second negative: the gate was broken and freeing it does not pay
+
+`cl_raise_lott3_$M` - "preemptive raise to the LOTT level: 4 trumps, weak" -
+carries `cheapest_in_suit: true`, and **a preemptive raise TO THE LEVEL OF THE
+FIT is a jump by definition**, so the rung was unreachable whenever the cheap
+raise was legal.  This is exactly the trap round 10 found on the sandwich
+preempts, where removing the same gate measured +23.  Two audit boards convict
+it precisely: six spades opposite a 1S overcall is eleven trumps and the Law
+says 4S (BEN, 0.95) - we passed; a yarborough with four trumps opposite a 1H
+overcall is nine trumps and the Law says 3H (BEN, 0.81) - we passed.
+
+Freed, extended to a four-level rung for eleven trumps, and with the obstruction
+floor lowered from 3 to 0 (obstruction is FOR weak hands), both boards match BEN
+exactly and the review corpus gains **+19**.  Held out it measures **-3**, twice.
+REVERTED.
+
+The changed boards are unsystematic (-5, -3, +1, +1, +3) - noise, not a
+disaster - so the honest reading is that the *gate* is genuinely broken and the
+*rung behind it* does not pay against this opponent.  Unblocking it is not the
+fix; the rung's content needs rethinking.  Recorded as an open item rather than
+a repair, because leaving a known-unreachable rule in place is a real if minor
+debt.
+
+### What shipped
+
+**The sandwich seat has no weak jump overcall.**  The direct seat has one (6
+cards, 5-10, good suit); the sandwich seat's two-level rung is the STRONG 11-17
+overcall, so a seven-count with six good spades had nothing between a one-level
+bid it did not qualify for and a pass - and passed, where BEN bids 2S at
+confidence 0.99.  A sibling gap, additive, and the `cheapest_in_suit: false`
+condition is what makes it a jump (in this seat the opponents have bid two
+suits, so a two-level call is only sometimes one).
+
+Measured: held out **-535 -> -535 (0 IMPs, one board changed)**, review corpus
+**-804 -> -803 (+1)**.  Kept on structure at zero measured cost, the same call
+as round 7's weak-two overcalls and round 8's three neutral keeps.
+
+### Method note: the audit's ranking is only as good as the verification
+
+The per-decision audit did its job - all three candidates reproduced exactly,
+and the two that failed did so on the held-out corpus rather than in testing.
+But this round is the counterweight to round 10's result: a confident BEN
+disagreement is a **lead**, and two of the three leads here were either a style
+difference the corpus does not reward (the weak jump overlap) or a real defect
+whose repair does not pay (the LOTT rung).  Round 10's 1:1 in-sample to held-out
+ratio was not a promise that every audit finding generalises; it was one round's
+result.  The discipline that mattered here was decomposition: the bundle
+measured **-28** held out, and decomposing it (-24, -3, +0) is the only reason
+the round shipped anything at all rather than reverting a mixed batch wholesale.

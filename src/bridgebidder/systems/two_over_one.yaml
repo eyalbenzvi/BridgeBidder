@@ -7130,10 +7130,57 @@ contexts:
       # 0.96.  The preemptive jump is the sandwich seat's most useful call and
       # it was the one call the context did not have.  Gates mirror the
       # opening preempts.
+      # SIBLING GAP: the direct seat has a weak jump overcall (6 cards, 5-10,
+      # good suit) and the sandwich seat never got one - its two-level rung is
+      # the STRONG 11-17 overcall - so a seven-count with six good spades had
+      # nothing between a one-level bid it did not qualify for and a pass, and
+      # passed where BEN bids 2S at confidence 0.99.
+      # `cheapest_in_suit: false` is what makes it a JUMP: in this seat the
+      # opponents have bid two suits, so a two-level call is only sometimes one.
+      - id: sw_2C_jump
+        call: 2C
+        when: { unbid_suit: C, cheapest_in_suit: false }
+        priority: 69
+        requires:
+          suits: { C: [6, 13] }
+          hcp: [5, 10]
+          features: [ "good_suit(C)" ]
+        shows: "sandwich weak jump overcall: 6+ c, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: sw_2D_jump
+        call: 2D
+        when: { unbid_suit: D, cheapest_in_suit: false }
+        priority: 69
+        requires:
+          suits: { D: [6, 13] }
+          hcp: [5, 10]
+          features: [ "good_suit(D)" ]
+        shows: "sandwich weak jump overcall: 6+ d, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: sw_2H_jump
+        call: 2H
+        when: { unbid_suit: H, cheapest_in_suit: false }
+        priority: 69
+        requires:
+          suits: { H: [6, 13] }
+          hcp: [5, 10]
+          features: [ "good_suit(H)" ]
+        shows: "sandwich weak jump overcall: 6+ h, 5-10"
+        establishes: { forcing: non_forcing }
+      - id: sw_2S_jump
+        call: 2S
+        when: { unbid_suit: S, cheapest_in_suit: false }
+        priority: 69
+        requires:
+          suits: { S: [6, 13] }
+          hcp: [5, 10]
+          features: [ "good_suit(S)" ]
+        shows: "sandwich weak jump overcall: 6+ s, 5-10"
+        establishes: { forcing: non_forcing }
       - id: sw_3C
         call: 3C
         when: { unbid_suit: C }
-        priority: 64
+        priority: 69.5
         requires:
           suits: { C: [7, 13] }
           hcp: [3, 10]
@@ -7143,7 +7190,7 @@ contexts:
       - id: sw_3D
         call: 3D
         when: { unbid_suit: D }
-        priority: 64
+        priority: 69.5
         requires:
           suits: { D: [7, 13] }
           hcp: [3, 10]
@@ -7153,7 +7200,7 @@ contexts:
       - id: sw_3H
         call: 3H
         when: { unbid_suit: H }
-        priority: 64
+        priority: 69.5
         requires:
           suits: { H: [7, 13] }
           hcp: [3, 10]
@@ -7163,7 +7210,7 @@ contexts:
       - id: sw_3S
         call: 3S
         when: { unbid_suit: S }
-        priority: 64
+        priority: 69.5
         requires:
           suits: { S: [7, 13] }
           hcp: [3, 10]

@@ -2184,3 +2184,24 @@
   vulnerability: Both
   calls: ["1D", "P", "1H"]
   expect: { call: "3S" }
+
+# --- round 11 (seed 242424): per-decision audit against BEN -----------------
+
+# the direct seat has a weak jump overcall (6 cards, 5-10, good suit) and the
+# sandwich seat never got one - its two-level rung is the STRONG 11-17
+# overcall - so a seven-count with six good spades had nothing between a
+# one-level bid it did not qualify for and a pass
+- name: e11_sandwich_weak_jump_overcall
+  hand: "KQT843.7.T2.Q754"
+  dealer: W
+  seat: S
+  calls: ["1D", "P", "1H"]
+  expect: { call: "2S" }
+
+# ... and the strong sandwich overcall is untouched
+- name: e11_sandwich_strong_overcall_unchanged
+  hand: "AKJ72.K5.Q84.J43"
+  dealer: W
+  seat: S
+  calls: ["1D", "P", "1H"]
+  expect: { call: "1S" }

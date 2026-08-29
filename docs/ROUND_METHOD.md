@@ -18,6 +18,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 9 | 969696 | -576 |
 | 9b (agreed-suit follow-up) | - | -558 |
 | 10 (per-decision BEN audit) | 171717 | -535 |
+| 11 | 242424 | -535 (two fixes reverted) |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -158,6 +159,17 @@ average -2.00/table, WITHOUT -2.54.
   non-forcing responsive double** are each structurally right, each measured
   individually in round 9 at -22, -12 and -8 held out, and each reverted.  The
   pull needs a "partner's double was PENALTY" condition before it can be safe.
+- **The weak jump overcall is outranked by the simple overcall** and fires
+  eight times in 2000 tables.  Round 11 re-ranked it and measured **-24 held
+  out**: the jump was already reachable below 8 HCP (where the simple overcall
+  does not fit), and on the 8-10 overlap the one-level call is better.  A rule
+  that rarely fires may simply describe a rare hand - check the population
+  before calling it dead code.
+- **`cl_raise_lott3_$M` carries `cheapest_in_suit: true`** and a preemptive
+  raise to the level of the fit is a jump, so the rung is unreachable whenever
+  the cheap raise is legal.  Round 11 freed it (+19 in sample, **-3 held out,
+  twice**) and reverted: the gate is broken AND the rung does not pay.  Its
+  content needs rethinking, not unblocking.
 - **`weakest_their_stopper` has no sharp tolerance** (`constraints/model.py`,
   `_EVAL_S2`) while both its siblings carry 0.3, so the `[0.9, 9]` gate on 27
   generic notrump rules does not gate: no stopper at all scores 0.835.  Round 8
