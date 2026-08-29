@@ -1928,3 +1928,144 @@
   seat: N
   calls: ["P", "P", "1D", "P", "1S", "1NT", "3NT", "P"]
   expect: { call: "4NT", alertable: true }
+
+# --- expert round 9 (seed 969696) -------------------------------------------
+
+# BOTH reviewers, independently: round 7 swept rkc5H_slam's trump-queen clause
+# onto the 5C and 5D replies, where its stated premise - "a keycard is already
+# unaccounted for" - is provably FALSE.  5C shows ONE OR FOUR, so holding four
+# myself partner's reply can only be one and every keycard is present.
+- name: e9_rkc_5C_reply_all_five_keycards_present
+  hand: ".AK64.AQJ963.A64"
+  dealer: W
+  seat: S
+  calls: ["P", "1D", "P", "1H", "P", "2H", "P", "4NT", "P", "5C", "P"]
+  expect: { call: "6H" }
+
+# the 5D twin: 5D shows ZERO OR THREE, and opposite a partner who has shown
+# values zero is not credible, so holding two the reply is three
+- name: e9_rkc_5D_reply_all_five_keycards_present
+  hand: "AJT93.KQ43.AK2.9"
+  dealer: E
+  seat: N
+  calls: ["P", "1D", "P", "1S", "P", "1NT", "P", "3S", "P", "4S", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "6S" }
+
+# ... and the clause must still bite where its premise HOLDS: three keycards in
+# hand means partner has exactly one, so a keycard IS missing and a short fit
+# without the trump queen is a trump loser
+- name: e9_rkc_5C_three_keycards_still_needs_the_queen
+  hand: "K5.AK64.AQJ63.94"
+  dealer: W
+  seat: S
+  calls: ["P", "1D", "P", "1H", "P", "2H", "P", "4NT", "P", "5C", "P"]
+  expect: { call: "5H" }
+
+# the 2NT overcall of their weak two is a 15-18 notrump and NOTHING answered
+# it: the seat fell to the generic toolkit, whose catch-all pass fits 1.00, so
+# the overcall was passed out on every one of its firings
+- name: e9_advance_the_2NT_overcall_of_a_weak_two
+  hand: "A4.654.K64.AT972"
+  dealer: W
+  seat: N
+  calls: ["P", "P", "2S", "2NT", "P"]
+  expect: { call: "3NT" }
+
+- name: e9_no_game_opposite_the_2NT_overcall_without_values
+  hand: "98.983.QT9.Q8643"
+  dealer: W
+  seat: W
+  calls: ["P", "P", "2S", "2NT"]
+  expect: { call: "P" }
+
+# the two accept rungs of opener_over_invite_2NT_minor used different floors -
+# 3NT from 14, the minor game only from 16 - so 14-15 with a six-card minor and
+# a suit WIDE OPEN had no choice but notrump
+- name: e9_minor_game_accepts_from_the_same_floor_as_3NT
+  hand: "6.AK73.K.AJT7543"
+  dealer: E
+  seat: E
+  calls: ["1C", "P", "1S", "P", "2C", "P", "2NT", "P"]
+  expect: { call: "5C" }
+
+# ... but NOT with a running suit: AKQJ976 is nine tricks off the top and 3NT
+# is the game.  Lowering the floor alone sent this hand to five of a minor.
+- name: e9_a_running_minor_still_bids_3NT
+  hand: "92.98.AKQJ976.A7"
+  dealer: N
+  seat: N
+  calls: ["1D", "P", "1H", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# responder's only rebid of his own major demanded SIX cards, so 5-4-4-0 with a
+# VOID in opener's rebid minor had no call and the soft-miss lottery invited in
+# notrump on nine points
+- name: e9_five_card_major_rebid_with_no_fit_for_the_minor
+  hand: "AQ853.T643.K752."
+  dealer: S
+  seat: S
+  calls: ["P", "P", "1C", "P", "1S", "P", "2C", "P"]
+  expect: { call: "2S" }
+
+# the minor game-force landing carried only the 3NT and 5m halves of its
+# documented design ("3NT without a fit, 4M with one"), and 3NT outranked the
+# generic toolkit's raise - so a counted eight-card major fit lost to notrump
+- name: e9_minor_gf_landing_prefers_the_major_fit
+  hand: "A8.T73.AK7.Q8765"
+  dealer: E
+  seat: N
+  calls: ["P", "1H", "P", "2C", "P", "3C", "P"]
+  expect: { call: "4H" }
+
+# higher of equal length: the 2-level-and-above new-suit rungs are flat in
+# priority, so file order handed a 5-5 hand's auction to the LOWER suit
+- name: e9_higher_of_equal_length_at_the_four_level
+  hand: "5.AKQ93.AT983.AK"
+  dealer: N
+  seat: N
+  calls: ["2C", "P", "2D", "3S"]
+  expect: { call: "4H" }
+
+- name: e9_higher_of_equal_length_at_the_three_level
+  hand: "AKJ95.AK754.4.65"
+  dealer: E
+  seat: N
+  calls: ["P", "P", "2D", "X", "P", "2NT", "P"]
+  expect: { call: "3S" }
+
+# opener's answer to a negative double existed for the TWO-level overcall and
+# was never given its one-level twin, which is the commoner auction
+- name: e9_opener_answers_the_negative_double_over_a_1level_raise
+  hand: "A764.K932.75.AQ3"
+  dealer: W
+  seat: W
+  calls: ["1C", "1S", "X", "3S"]
+  expect: { call: "4H" }
+
+# 3NT opposite a preempt asked for a stopper in PARTNER'S suit - the one suit
+# that needs none - and said nothing about the three the defence will lead
+- name: e9_no_3NT_opposite_a_preempt_with_a_suit_wide_open
+  hand: "AKQ5.Q732.K8.J93"
+  dealer: N
+  seat: S
+  calls: ["3D", "P"]
+  expect: { call: "P" }
+
+# the competitive raise seam: every three-level raise rung is cheapest_in_suit
+# gated and therefore unreachable while the two-level raise is legal, and the
+# two-level rungs capped at 9-10, so 11-13 support points had no raise at all
+- name: e9_competitive_raise_seam_at_eleven_to_thirteen
+  hand: "Q986.AJ82.AT6.86"
+  dealer: W
+  seat: S
+  calls: ["P", "P", "1C", "X", "1H", "1S", "2H"]
+  expect: { call: "2S" }
+
+# banded by strength and never by shape: a six-card major opposite a shown
+# 18-19 is 31+ combined and had only the fast-arrival game jump
+- name: e9_six_card_major_can_invite_slam_over_the_2NT_jump
+  hand: "AQJ863.K4.KJ5.Q3"
+  dealer: N
+  seat: S
+  calls: ["1D", "P", "1S", "P", "2NT", "P"]
+  expect: { call: "4NT" }

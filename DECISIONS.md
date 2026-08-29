@@ -1740,3 +1740,167 @@ were briefed with round 6's shadowing lesson as a hard constraint and both spent
 as much effort killing hypotheses as proposing fixes - eighteen non-findings
 between them, including four prototypes each reviewer built, measured worse, and
 reported rather than shipped.
+
+## Expert round 9 (triaged 1000, seed 969696)
+
+Baseline **-952 IMPs** on the review corpus, 370 losing boards, 20 clusters, two
+independent expert reviews (`docs/EXPERT_REVIEW_969696_{A,B}.md`).  The -952 is a
+harder corpus draw than round 8's -710 and is not a regression: the like-for-like
+series is the held-out corpus.
+
+Measured: same 1000 boards **-952 -> -788 (+164 paired; 23 up, 4 down)**;
+held-out fixed corpus **-612 -> -576 (+36 paired; 15 up, 7 down)**.  Like-for-like
+since head-to-head play began: **-1.474 -> -0.576 IMPs/board.**  The best held-out
+gain since round 5.
+
+### The dossier named the wrong rule, twice, and both reviewers caught it
+
+The triage tool attributes a cluster to the **primary reading** - the
+highest-priority same-call rule - not to the rule whose constraint actually
+matched.  Both reviewers independently re-ranked the decisions to find the real
+chooser, and on two clusters the headline rule had never fired at all:
+
+| dossier cluster | rule that actually chose | tables | mean |
+|---|---|---|---|
+| 4 `ch_penalty_X` | `ch_penalty_X` itself | 14 | **-1.00** (baseline) |
+| 4 `ch_penalty_X` | `ch_negative_X3`, hidden beneath it | 7 | **-4.57** |
+| 11 `ballow_nt2_strong` | `ballow_nt2` (an 11-12 rule) | 4 | -5.00 |
+
+Anyone triaging by the dossier field alone would have gated the wrong rule.  This
+is now the standard first step of a review, and it should stay one.
+
+### What both reviewers found independently: the trump-queen clause's premise
+
+Round 7 swept `rkc5H_slam`'s trump-queen clause onto the 5C and 5D replies.  The
+clause's own comment states its premise - *"a keycard is already unaccounted for,
+so the trump QUEEN cannot be missing as well"* - and that premise is **provably
+false** in two branches:
+
+- **5C shows one or four.**  Holding four myself, partner's reply can only be one
+  (four would make seven), so **every keycard is present** and the reply has said
+  nothing whatever about the queen.
+- **5D shows zero or three.**  Holding two opposite shown values, the reply can
+  only be three - again all five present.
+
+In both positions the clause vetoed a slam on a card that is a finesse at worst,
+and the asker *knew* nothing was missing.  Both rewrites are provable supersets.
+Two boards, +24 in sample; on the held-out corpus it is 1-for-2 (a cold 6S bid,
+a 6H off the queen going down), net -1 - noise, kept on the arithmetic.
+
+### A ceiling, a starved seat, and two bands that disagreed
+
+- **The 2NT overcall of their weak two had no answering seat at all**, so it was
+  passed out on every one of its six firings - once with eleven points opposite
+  the shown fifteen and 3NT making twelve tricks.  +23 held-out on its own.
+- **`opener_over_invite_2NT_minor`'s two accept rungs used different floors** -
+  3NT accepted from 14, the minor game only from 16 - so 14-15 with a six-card
+  minor and a suit wide open had no choice but notrump.
+- **`rmr_2M` demanded SIX cards**, so 5-4-4-0 with a void in opener's rebid minor
+  had no call and the soft-miss lottery invited in notrump on nine points.
+- **The minor game-force landing had only the 3NT and 5m halves** of its own
+  documented design ("3NT without a fit, 4M with one"), and 3NT outranked the
+  generic toolkit's raise, so a counted eight-card major fit lost to notrump.
+- **Higher of equal length was never carried above the one level.**  The 2-, 3-,
+  4- and 5-level new-suit rungs are flat in priority within a level, so two suits
+  of equal length both fit 1.00 and file order (C, D, H, S) handed the auction to
+  the LOWEST one: a 21-count 5-5 in hearts and diamonds bid 4D.  Forty
+  strict-subset twins at +0.5 priority, so no reading is deleted.
+- **Opener's answer to a negative double existed for the two-level overcall
+  only** and was never given its one-level twin, which is the commoner auction.
+- **3NT opposite a preempt demanded a stopper in PARTNER'S suit** - the one suit
+  that needs none, since it is the source of tricks - and said nothing about the
+  three the defence is about to lead.  One went down six.
+- **The competitive-raise seam at 11-13.**  Every three-level raise rung carries
+  `cheapest_in_suit: true` and is therefore not offered while the two-level raise
+  is legal, and the two-level rungs capped at 9-10 - so a hand with 11-13 support
+  points had no raise at all.  "Range with no rule", the most recurring defect in
+  this project's history.
+
+### The bundled batch measured -19, and decomposition is why the round survived
+
+The nine-fix main batch measured **+123 in sample and -19 held out**.  Rather than
+revert the batch, every fix whose changed boards could be attributed was measured
+alone against the same held-out corpus.  The decomposition was exact:
+
+| | held-out |
+|---|---|
+| core (six fixes) | **+23** |
+| the four-level pull ladder | **-22** |
+| 2NT Stayman over interference | **-12** |
+| the responsive double made non-forcing | **-8** |
+| **bundled total** | **-19** |
+
++23 - 22 - 12 - 8 = -19, so nothing was hiding.  All three losers were reverted
+and the core kept.  **A batch that measures negative is not necessarily a batch
+of bad fixes**; without the decomposition this round would have thrown away a
++23 core to escape a -42 tail.
+
+The three reverts are worth recording individually, because each was argued well
+and lost to the corpus anyway:
+
+- **The four-level pull (-22).**  The seat was provably empty - a hand with seven
+  diamonds and a singleton spade could not pull partner's double of 3S and
+  converted it for penalties.  But the reviewer's own ENDANGERS line named the
+  reason it fails: *there is still no condition for "partner's double was
+  PENALTY"*, so the new rungs pull business doubles too, and on the held-out
+  corpus that is exactly what they did - a 4CX down six became a 4D of ours.
+  The fix is sound only once that condition exists.
+- **2NT Stayman over interference (-12).**  Structurally unarguable - a 20-count
+  sat for a double of an ARTIFICIAL 3C, and the 1NT ladder has carried this twin
+  for rounds.  Its author measured it at zero on its own board and asked for it
+  as a structure keep.  Held out it is -12 on one board, where sitting collected
+  500.  Reverted on the number, and recorded as the strongest remaining
+  structural gap in the file.
+- **The responsive double made non-forcing (-8).**  Same shape: the forcing-pass
+  filter deletes the doubler's pass and above the three level there is nothing
+  below game to bid, so the fallback invented a 4NT.  Held out, letting the
+  doubler pass let a 4HX make.
+
+### Measured alone, and what that settled
+
+- **Sweeping the three negative doubles onto `standing_suit_length`: -40 held
+  out. REVERTED.**  The *diagnosis* is a genuine engine-level finding and stands:
+  `_their_suits` seeds itself LHO-before-RHO, so `suit_length(their)` means "my
+  LHO's suit", not "their first suit" as the file's comments and this document
+  both say.  Reproduced on three synthetic auctions.  Round 4 fixed exactly this
+  once, for a different rule, by adding `standing_suit_length`.  But sweeping the
+  three negative doubles onto it costs 40 IMPs held out (1 board up, 7 down), so
+  the evaluator's misnaming is now a documented open item rather than a repair.
+- **The keycard ask over a standing game, again.**  Both reviewers reached the
+  cluster from different directions and both refused to gate it.  One tested the
+  separator nobody had tried - a floor of two keycards on the *asker* - and found
+  the metric degenerate (8 asks with <=1 keycard for -25, 46 with >=2 for -167,
+  and only 3 of the 8 are genuine keycard asks).  Round 8 measured a gate there
+  at -17 held out.  It stays unfixed, deliberately, for the second round running.
+- **Kept on a neutral held-out number** (the round 6 / 7 / 8 precedent): the
+  one-level negative-double twin (+2 held out, all PASS->bid), the competitive
+  raise seam (+1 held out, 8 boards up to 3 down), and the six-card-major slam
+  invitation over the 18-19 2NT rebid (0 boards changed held out, +21 in sample,
+  2 up and 0 down).
+
+### Two authoring lessons paid for in this round
+
+- **A second rule defining a call steals the PRIMARY READING from the first.**
+  The six-card-major slam invitation was first written as its own rung at
+  priority 56.5.  It worked, and it also made a 4-3-3-3 fourteen-count's
+  quantitative 4NT report as *"31+ combined with a six-card spade suit"* - a
+  locked scenario caught it.  Folded into the existing quantitative rule as an
+  `any_of` branch instead: one rule, one reading, no priority contest.  But
+  folding it in at the same priority silently lost the fix, because the rule tied
+  with the 4M game jump and **on a tie the lower call wins** - so the invitation
+  could never be reached by any hand that also fitted the game bid, which is
+  every hand the branch exists for.  Priority 56.5 on the merged rule, and the
+  reason is now a comment.
+- **`.` matches newlines under `re.S`.**  A scripted extraction of one rule block
+  used `re.S` and silently swallowed the rest of the file into a sandbox; the
+  loader's duplicate-context-id guard caught it instantly.  Scripted edits now
+  assert the SIZE of what they extracted, not only that they applied.
+
+### Where the round leaves the engine
+
+Held-out **-576 (-0.576 IMPs/board)**, tests 693 -> 708, lints and fuzz unchanged.
+The largest identified pockets that remain are unchanged in character: grand
+slams the system cannot bid (one reviewer quantified them at **-50 IMPs on this
+corpus alone**, 5% of the whole margin), the keycard ask over a standing game,
+and the `weakest_their_stopper` / `suit_length(their)` pair of evaluators that
+are both known to misread and both measured negative when repaired naively.

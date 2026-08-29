@@ -15,6 +15,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 6 | 626262 | -639 |
 | 7 | 747474 | -621 |
 | 8 | 858585 | -612 |
+| 9 | 969696 | -576 |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -25,7 +26,7 @@ place a fix is guaranteed to look good, because it is where the fix was found.
 
 1. **Fresh match.**  `python3 tools/match_ben.py run --n 1000 --seed <NEW> --out reports/<tag>_before.jsonl`
    Pick a seed never used before (used: 7, 828282, 919191, 303030, 515151,
-   626262, 747474, 858585).  ~5 minutes.  Report with
+   626262, 747474, 858585, 969696).  ~5 minutes.  Report with
    `python3 tools/match_ben.py report --rows reports/<tag>_before.jsonl`.
 2. **Triage.**  `python3 tools/triage_match.py reports/<tag>_before.jsonl <SEED> <dossier>.md`
    Clusters the losing boards by the rule that made our last bid at the table
@@ -43,7 +44,7 @@ place a fix is guaranteed to look good, because it is where the fix was found.
    `python3 tools/fuzz_decisions.py --n 300 --strict`.
 7. **Measure twice**: the SAME 1000 boards paired against `<tag>_before`, and
    the held-out corpus (seed 828282) against the previous round's held-out run.
-   The current bar is **-612** (round 8).
+   The current bar is **-576** (round 9).
    Keep or revert on the held-out number.
 8. Preserve both verdicts to `docs/EXPERT_REVIEW_<seed>_{A,B}.md`, add
    regression scenarios to `tests/data/harvested.yaml`, append a `DECISIONS.md`
@@ -137,6 +138,17 @@ average -2.00/table, WITHOUT -2.54.
   engine walks `3C-3D-4C-4D-4H` inventing a suit each turn.
 - `qr3_4NT_quant` was measured in round 8 and REPAIRED, not deleted: its floor
   is `rule_of_26_sharp >= 31`.  No longer an open item.
+- **`suit_length(their)` does not mean "their first suit".**  `_their_suits`
+  seeds itself LHO-before-RHO, so the evaluator resolves to my LHO's suit, which
+  is their OTHER suit as often as not - this file's comments and DECISIONS both
+  say otherwise.  Round 4 fixed it for one rule by adding `standing_suit_length`;
+  sweeping the three negative doubles onto that measured **-40 held out** in
+  round 9 and was reverted.  The misnaming is real; the naive sweep is not the
+  repair.
+- **The four-level pull, the 2NT-Stayman-over-interference twin and a
+  non-forcing responsive double** are each structurally right, each measured
+  individually in round 9 at -22, -12 and -8 held out, and each reverted.  The
+  pull needs a "partner's double was PENALTY" condition before it can be safe.
 - **`weakest_their_stopper` has no sharp tolerance** (`constraints/model.py`,
   `_EVAL_S2`) while both its siblings carry 0.3, so the `[0.9, 9]` gate on 27
   generic notrump rules does not gate: no stopper at all scores 0.835.  Round 8
