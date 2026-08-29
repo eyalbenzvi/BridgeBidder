@@ -2096,3 +2096,91 @@
   vulnerability: NS
   calls: ["P", "1D", "P", "2C", "P", "2NT", "P", "3C", "P", "3D", "P", "4C", "P"]
   expect: { call: "4NT" }
+
+# --- round 10 (seed 171717): found by per-DECISION audit against BEN --------
+
+# third seat had no light MINOR opening: open_1$M_rule20_third exists for both
+# majors and the minors never got the twin, so 11 HCP with five clubs and two
+# quick tricks passed out where BEN opens 1C at confidence 1.00
+- name: e10_third_seat_light_minor_opening
+  hand: "KJT.T864.2.AK962"
+  dealer: N
+  seat: S
+  vulnerability: Both
+  calls: ["P", "P"]
+  expect: { call: "1C" }
+
+# ... and a bad suit still passes: a light third-seat opening is part lead
+# direction, so it needs a suit worth leading
+- name: e10_third_seat_light_minor_needs_a_suit
+  hand: "KJT.T864.2.J9862"
+  dealer: N
+  seat: S
+  vulnerability: Both
+  calls: ["P", "P"]
+  expect: { call: "P" }
+
+# HIGHER OF EQUAL LENGTH, never carried from the openings to the responses:
+# five-five and six-six in the majors both answered 1H, because both rules
+# soft-missed their suit_diff gate by one card and 1H outranked its twin
+- name: e10_five_five_majors_respond_one_spade
+  hand: "QT763.Q7652.A.KQ"
+  dealer: S
+  seat: N
+  calls: ["1C", "P"]
+  expect: { call: "1S" }
+
+- name: e10_six_six_majors_respond_one_spade
+  hand: "KQT982.AQJ765..4"
+  dealer: S
+  seat: N
+  calls: ["1C", "P"]
+  expect: { call: "1S" }
+
+- name: e10_four_four_majors_still_up_the_line
+  hand: "AQ72.KJ83.752.42"
+  dealer: S
+  seat: N
+  calls: ["1C", "P"]
+  expect: { call: "1H" }
+
+- name: e10_five_hearts_four_spades_still_one_heart
+  hand: "AQ72.KJ832.75.42"
+  dealer: S
+  seat: N
+  calls: ["1C", "P"]
+  expect: { call: "1H" }
+
+# the weak jump overcall is capped at SEVEN cards and was the top of the
+# ladder, so an eight- or nine-card suit had no overcall at all
+- name: e10_preemptive_overcall_with_nine_cards
+  hand: "52.KT9876542.7.4"
+  dealer: N
+  seat: E
+  calls: ["1C"]
+  expect: { call: "4H" }
+
+- name: e10_preemptive_overcall_with_seven_cards
+  hand: "523.KT98765.74.4"
+  dealer: N
+  seat: E
+  calls: ["1C"]
+  expect: { call: "3H" }
+
+# ... and a strong hand with the same length is not a preempt
+- name: e10_strong_seven_card_suit_overcalls_at_the_one_level
+  hand: "A2.AKJ8765.KQ4.A"
+  dealer: N
+  seat: E
+  calls: ["1C"]
+  expect: { call: "1H" }
+
+# the sandwich ladder stopped at the two level (good 5+ and 11-17), so a
+# seven-card suit on a weak hand had nothing to bid
+- name: e10_sandwich_preemptive_jump
+  hand: "KQT9432.Q95.52.T"
+  dealer: W
+  seat: S
+  vulnerability: Both
+  calls: ["1D", "P", "1H"]
+  expect: { call: "3S" }

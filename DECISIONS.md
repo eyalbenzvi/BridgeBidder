@@ -1982,3 +1982,108 @@ that had nothing to do with the change being tested, was worth +14 on its own,
 and had been sitting in the file across every round that measured the keycard
 families.  A fix that measures flat is sometimes a fix standing on top of a
 second bug.
+
+## Round 10: the triage method is replaced by a per-DECISION audit
+
+The expert-triage loop had stopped working, and the project's own numbers say so.
+`tools/triage_match.py` clusters losing boards by **the rule that made our last
+bid**, an attribution this file has called correlational since round 3.  Across
+rounds 5-9 it kept nominating the same generic terminal rules - `uc_nt3` topped
+the list five rounds running, `all-pass` is a quarter of the corpus - and every
+one of them was re-scored across all 2000 tables and ruled NOT a defect.  Expert
+budget went on proving big clusters innocent.  Round 9's triage-driven batch
+measured **-19 held out** and survived only because it was decomposed fix by fix.
+
+Meanwhile the two most valuable findings of the last two rounds came from reading
+ONE board at ONE decision (boards 231 and 852).  The signal was never the cluster;
+it was the decision.
+
+### The replacement: `tools/ben_audit.py`
+
+For every call we made on every board we LOST, BEN is asked what it would call
+**from the same seat, holding the same thirteen cards, after the identical
+auction**.  One decision, two bidders, everything else held fixed.  Two things
+make it sharper than a disagreement count:
+
+- **Weighted by the IMPs on the board**, not merely counted.
+- **First divergence.**  After our call differs from BEN's, every later decision
+  in that auction is conditioned on our own earlier choice and BEN's later
+  opinions answer a different question.  The FIRST confident disagreement is the
+  causally meaningful one; the rest are downstream, and are ranked separately.
+
+On seed 171717: 318 losing boards, **3,296 of our decisions replayed, 807
+disagreements, 392 with BEN >= 0.80 confident, 264 of those the first divergence
+in their auction** - and the resulting ranking has almost nothing in common with
+what triage produced.  The top families were `open_pass` (15 decisions, -87 IMPs),
+`cl_pass`, `r1m_1H`, `oc1C_pass`, `sw_pass`: all of them *specific decisions with
+a named alternative*, none of them reachable by last-rule clustering, because a
+pass that leads to a bad board is labelled "all-pass" and dismissed as the
+defensive long tail.
+
+Denominators still matter and still killed hypotheses: `sw_pass` fires on 216
+tables at a mean of **-0.52** against a corpus baseline of -0.811, and `r1m_1H`
+on 80 tables at **-0.03**.  Both families are healthy - the defects were specific
+missing rungs inside them, not the rules.
+
+### What it found, all four verified through `choose_bid`
+
+- **Third seat has no light MINOR opening.**  `open_1S_rule20_third` and
+  `open_1H_rule20_third` exist; the minors never got the twin, so eleven points
+  with five clubs and two quick tricks passed out where BEN opens 1C at
+  confidence **1.00**.  The `sibling` lint cannot see it because the two rules
+  differ in other gates.  (Reviewer A diagnosed this in round 8 from one board
+  and did not propose it; a second corpus has now confirmed it.)
+- **Higher of equal length was never carried from the openings to the
+  responses.**  Five-five and six-six in the majors both answered 1H.  Both
+  `r1m_1H` and `r1m_1S` were soft-missing their `suit_diff` gate by exactly one
+  card - **0.8 apiece** - and 1H won on priority alone, 76 to 75.  Worth
+  recording precisely: **reviewer A proposed this exact repair in round 7,
+  DECISIONS records it as VERIFIED, and it was never implemented.**  No scenario
+  was locked, so nothing caught it, and the corpus has re-found it twice since.
+  Priority only separates candidates that both fit >= 0.9, so the fix has to make
+  the equal-length case *fit*, not merely outrank; it is now a branch of
+  `r1m_1S` at priority 77 (one rule, one reading).
+- **The weak jump overcall is capped at SEVEN cards and was the top of the
+  ladder.**  `oc1$o_2$X_jump` reads `suits: [6, 7]`, and there was no rung above
+  it, so an eight- or nine-card suit had no overcall at all: one hand held
+  KT9876542 of hearts over 1C and passed it out.  Preemptive overcalls added at
+  the three level (7+) and four level (8+), gates mirrored from the opening
+  preempts.
+- **The sandwich seat stops at the two level.**  Good 5+ cards and 11-17, and
+  nothing else - so a seven-card suit on a weak hand had nothing to bid.  The
+  preemptive jump is the sandwich seat's most useful call and it was the one call
+  the context did not have.
+
+A fifth candidate was **rejected**: `r1m_1H` answering 1H on a 6-diamond 4-heart
+five-count where BEN bids 1D at 1.00.  That is Walsh, which this system plays by
+documented choice - bypassing diamonds with a weak hand and a four-card major is
+the agreement, not a bug.  Similarly `sw_pass` on a hand where BEN bids 2S over
+their 1S is a CUE bid; Michaels and the unusual notrump are scope-excluded.
+
+### One authoring trap, twice
+
+`cheapest_in_suit: true` was copied onto the new preempt rungs from their
+neighbours, and **a preempt is a jump by definition** - the gate excluded every
+one of them, so the first version of both fixes changed nothing on their own
+motivating boards.  The traces caught it immediately.  This is the third round in
+a row where a scripted edit applied cleanly and did nothing useful, and the third
+time tracing the board rather than trusting the edit is what found it.
+
+### Measured, and the ratio is the point
+
+| | in sample | held out |
+|---|---|---|
+| round 8 (triage) | +183 | +9 |
+| round 9 (triage) | +164 | +36 |
+| **round 10 (per-decision audit)** | **+22** | **+23** |
+
+Held-out **-558 -> -535 (+23 paired; 4 up, 3 down)**, review corpus **-811 ->
+-789 (+22 paired; 8 up, 4 down)**.  Like-for-like since head-to-head play began:
+**-1.474 -> -0.535 IMPs/board.**
+
+The in-sample number is small and that is the finding.  Triage produced gains of
+5x to 20x its held-out value, which is the signature of fixes fitted to the
+corpus that found them.  This round's in-sample and held-out gains are **the same
+size**, because a decision where an expert bidder confidently disagrees with us,
+holding our cards in our auction, is a defect wherever it occurs - not a property
+of the boards it was found on.

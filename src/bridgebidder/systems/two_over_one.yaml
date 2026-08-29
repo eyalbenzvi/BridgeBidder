@@ -270,6 +270,26 @@ contexts:
         establishes: { forcing: non_forcing }
         when: { opening_seat: [1, 2] }
 
+      # SIBLING GAP: open_1$M_rule20_third exists for both majors and the
+      # minors never got one, so third seat could not make a light minor
+      # opening at all - eleven points with five clubs and two quick tricks
+      # passed out where BEN opens 1C at confidence 1.00.  Same gates as the
+      # first/second-seat rule above, plus the third-seat lead-direction
+      # requirement the major twins carry: a light third-seat opening is part
+      # obstruction and part lead direction, so the suit must be worth leading.
+      - id: open_1D_rule20_third
+        call: 1D
+        priority: 72
+        requires:
+          hcp: [10, 11]
+          suits: { D: [5, 13] }
+          evals: { rule_of_20: [20, 33], "suit_diff(D,C)": [0, 13],
+                   quick_tricks: [1.5, 12], "suit_quality(D)": [1.5, 9] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "5+ d, third-seat light opening satisfying the rule of 20"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [3] }
+
       - id: open_1C_rule20
         call: 1C
         priority: 71
@@ -290,6 +310,26 @@ contexts:
       # Preempt veto: fast defensive tricks OUTSIDE the suit veto the
       # preempt (2.5+; AK inside your own seven-bagger is offence, and the
       # measured corpus keeps preempts holding exactly two outside).
+      # SIBLING GAP: open_1$M_rule20_third exists for both majors and the
+      # minors never got one, so third seat could not make a light minor
+      # opening at all - eleven points with five clubs and two quick tricks
+      # passed out where BEN opens 1C at confidence 1.00.  Same gates as the
+      # first/second-seat rule above, plus the third-seat lead-direction
+      # requirement the major twins carry: a light third-seat opening is part
+      # obstruction and part lead direction, so the suit must be worth leading.
+      - id: open_1C_rule20_third
+        call: 1C
+        priority: 71
+        requires:
+          hcp: [10, 11]
+          suits: { C: [5, 13] }
+          evals: { rule_of_20: [20, 33], "suit_diff(C,D)": [1, 13],
+                   quick_tricks: [1.5, 12], "suit_quality(C)": [1.5, 9] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "5+ c, third-seat light opening satisfying the rule of 20"
+        establishes: { forcing: non_forcing }
+        when: { opening_seat: [3] }
+
       - id: open_weak_2S_nv
         call: 2S
         priority: 66
@@ -1401,20 +1441,35 @@ contexts:
                   suits: { H: [6, 13] }
         shows: "4+ hearts, 6+ HCP (up the line), or a six-card suit on 3+"
         establishes: { forcing: one_round }
+      # Priority 77, above r1m_1H's 76: HIGHER OF EQUAL LENGTH is the system's
+      # own opening rule and was never carried to the responses, so five-five
+      # and six-six in the majors both answered 1H.  Both rules were soft-
+      # missing their suit_diff gate by exactly one card (0.8 apiece) and 1H
+      # won on priority alone - priority only separates candidates that both
+      # fit >= 0.9, so the equal-length case has to FIT here, which is what the
+      # second branch does.  4-4 (up the line, 1H) and every unequal holding
+      # are untouched: they miss this rule's gates and r1m_1H still fits 1.00.
+      # Reviewer A proposed this repair in round 7; it was never implemented
+      # and no scenario was locked, so two corpora have now found it.
       - id: r1m_1S
         call: 1S
-        priority: 75
+        priority: 77
         requires:
           suits: { S: [4, 13] }
-          evals: { "suit_diff(S,H)": [1, 13] }
           any_of:
-            - hcp: [6, 40]
-            - hcp: [3, 40]
-              suits: { S: [6, 13] }
-            - hcp: [5, 40]
-              suits: { S: [5, 13] }
-              evals: { singleton_or_void: [1, 1] }
-        shows: "4+ spades, 6+ HCP longer than hearts, or a six-card suit on 3+"
+            - evals: { "suit_diff(S,H)": [1, 13] }
+              any_of:
+                - hcp: [6, 40]
+                - hcp: [3, 40]
+                  suits: { S: [6, 13] }
+                - hcp: [5, 40]
+                  suits: { S: [5, 13] }
+                  evals: { singleton_or_void: [1, 1] }
+            # five-five or longer in the majors: bid the spades and rebid hearts
+            - suits: { S: [5, 13], H: [5, 13] }
+              evals: { "suit_diff(S,H)": [0, 0] }
+              hcp: [4, 40]
+        shows: "4+ spades longer than hearts, five-five in the majors, or a six-card suit on 3+"
         establishes: { forcing: one_round }
       - id: r1m_2over1
         call: 2C
@@ -3757,6 +3812,67 @@ contexts:
         requires: { suits: { S: [6, 7] }, hcp: [5, 10], features: [ "good_suit(S)" ] }
         shows: "weak jump overcall: 6 spades, 5-10"
         establishes: { forcing: non_forcing }
+      # CEILING: the weak jump overcall above is capped at SEVEN cards
+      # (`suits: [6, 7]`) and was the top of the ladder, so an eight- or
+      # nine-card suit had no overcall at all and passed - one hand held
+      # KT9876542 of hearts over 1C and passed it out, where BEN bids 4H at
+      # confidence 0.91.  These mirror the OPENING preempts' own gates: 7+ to
+      # the three level, 8+ to four, 3-10 HCP, at most two quick tricks
+      # outside the suit.
+      - id: oc1C_3D_preempt
+        call: 3D
+        priority: 58
+        when: { unbid_suit: D }
+        requires:
+          suits: { D: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
+        shows: "preemptive overcall: seven-card d suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_3H_preempt
+        call: 3H
+        priority: 58
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
+        shows: "preemptive overcall: seven-card h suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_4H_preempt
+        call: 4H
+        # above the three-level rung: an EIGHT-card suit belongs at the
+        # four level, and both rungs fit it
+        priority: 59
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [8, 13] }
+          hcp: [3, 10]
+          evals: { "quick_tricks_outside(H)": [0, 2] }
+        shows: "preemptive overcall: eight-card h suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_3S_preempt
+        call: 3S
+        priority: 58
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: seven-card s suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1C_4S_preempt
+        call: 4S
+        # above the three-level rung: an EIGHT-card suit belongs at the
+        # four level, and both rungs fit it
+        priority: 59
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [8, 13] }
+          hcp: [3, 10]
+          evals: { "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: eight-card s suit, 3-10"
+        establishes: { forcing: non_forcing }
       - id: oc1C_pass
         call: P
         priority: 25
@@ -3829,6 +3945,67 @@ contexts:
         priority: 59
         requires: { suits: { C: [6, 13] }, hcp: [5, 10], features: [ "good_suit(C)" ] }
         shows: "weak jump overcall: 6+ clubs, 5-10"
+        establishes: { forcing: non_forcing }
+      # CEILING: the weak jump overcall above is capped at SEVEN cards
+      # (`suits: [6, 7]`) and was the top of the ladder, so an eight- or
+      # nine-card suit had no overcall at all and passed - one hand held
+      # KT9876542 of hearts over 1C and passed it out, where BEN bids 4H at
+      # confidence 0.91.  These mirror the OPENING preempts' own gates: 7+ to
+      # the three level, 8+ to four, 3-10 HCP, at most two quick tricks
+      # outside the suit.
+      - id: oc1D_3C_preempt
+        call: 3C
+        priority: 58
+        when: { unbid_suit: C }
+        requires:
+          suits: { C: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
+        shows: "preemptive overcall: seven-card c suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_3H_preempt
+        call: 3H
+        priority: 58
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
+        shows: "preemptive overcall: seven-card h suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_4H_preempt
+        call: 4H
+        # above the three-level rung: an EIGHT-card suit belongs at the
+        # four level, and both rungs fit it
+        priority: 59
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [8, 13] }
+          hcp: [3, 10]
+          evals: { "quick_tricks_outside(H)": [0, 2] }
+        shows: "preemptive overcall: eight-card h suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_3S_preempt
+        call: 3S
+        priority: 58
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: seven-card s suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1D_4S_preempt
+        call: 4S
+        # above the three-level rung: an EIGHT-card suit belongs at the
+        # four level, and both rungs fit it
+        priority: 59
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [8, 13] }
+          hcp: [3, 10]
+          evals: { "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: eight-card s suit, 3-10"
         establishes: { forcing: non_forcing }
       - id: oc1D_pass
         call: P
@@ -3904,6 +4081,55 @@ contexts:
         requires: { suits: { D: [6, 13] }, hcp: [5, 10], features: [ "good_suit(D)" ] }
         shows: "weak jump overcall: 6+ diamonds, 5-10"
         establishes: { forcing: non_forcing }
+      # CEILING: the weak jump overcall above is capped at SEVEN cards
+      # (`suits: [6, 7]`) and was the top of the ladder, so an eight- or
+      # nine-card suit had no overcall at all and passed - one hand held
+      # KT9876542 of hearts over 1C and passed it out, where BEN bids 4H at
+      # confidence 0.91.  These mirror the OPENING preempts' own gates: 7+ to
+      # the three level, 8+ to four, 3-10 HCP, at most two quick tricks
+      # outside the suit.
+      - id: oc1H_3C_preempt
+        call: 3C
+        priority: 58
+        when: { unbid_suit: C }
+        requires:
+          suits: { C: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
+        shows: "preemptive overcall: seven-card c suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_3D_preempt
+        call: 3D
+        priority: 58
+        when: { unbid_suit: D }
+        requires:
+          suits: { D: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
+        shows: "preemptive overcall: seven-card d suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_3S_preempt
+        call: 3S
+        priority: 58
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: seven-card s suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1H_4S_preempt
+        call: 4S
+        # above the three-level rung: an EIGHT-card suit belongs at the
+        # four level, and both rungs fit it
+        priority: 59
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [8, 13] }
+          hcp: [3, 10]
+          evals: { "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: eight-card s suit, 3-10"
+        establishes: { forcing: non_forcing }
       - id: oc1H_pass
         call: P
         priority: 25
@@ -3978,6 +4204,55 @@ contexts:
         priority: 59
         requires: { suits: { H: [6, 13] }, hcp: [5, 10], features: [ "good_suit(H)" ] }
         shows: "weak jump overcall: 6+ hearts, 5-10"
+        establishes: { forcing: non_forcing }
+      # CEILING: the weak jump overcall above is capped at SEVEN cards
+      # (`suits: [6, 7]`) and was the top of the ladder, so an eight- or
+      # nine-card suit had no overcall at all and passed - one hand held
+      # KT9876542 of hearts over 1C and passed it out, where BEN bids 4H at
+      # confidence 0.91.  These mirror the OPENING preempts' own gates: 7+ to
+      # the three level, 8+ to four, 3-10 HCP, at most two quick tricks
+      # outside the suit.
+      - id: oc1S_3C_preempt
+        call: 3C
+        priority: 58
+        when: { unbid_suit: C }
+        requires:
+          suits: { C: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
+        shows: "preemptive overcall: seven-card c suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_3D_preempt
+        call: 3D
+        priority: 58
+        when: { unbid_suit: D }
+        requires:
+          suits: { D: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
+        shows: "preemptive overcall: seven-card d suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_3H_preempt
+        call: 3H
+        priority: 58
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
+        shows: "preemptive overcall: seven-card h suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: oc1S_4H_preempt
+        call: 4H
+        # above the three-level rung: an EIGHT-card suit belongs at the
+        # four level, and both rungs fit it
+        priority: 59
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [8, 13] }
+          hcp: [3, 10]
+          evals: { "quick_tricks_outside(H)": [0, 2] }
+        shows: "preemptive overcall: eight-card h suit, 3-10"
         establishes: { forcing: non_forcing }
       - id: oc1S_pass
         call: P
@@ -6848,6 +7123,52 @@ contexts:
         priority: 66
         requires: { suits: { S: [5, 13] }, hcp: [11, 17], evals: { suit_quality(S): [2, 9] } }
         shows: "sandwich 2-level overcall: good 5+ spades, 11-17"
+        establishes: { forcing: non_forcing }
+      # CEILING: the sandwich ladder stops at the TWO level (good 5+ cards and
+      # 11-17), so a seven-card suit on a weak hand had nothing to bid and
+      # passed - KQT9432 of spades passed over 1D - P - 1H where BEN bids 3S at
+      # 0.96.  The preemptive jump is the sandwich seat's most useful call and
+      # it was the one call the context did not have.  Gates mirror the
+      # opening preempts.
+      - id: sw_3C
+        call: 3C
+        when: { unbid_suit: C }
+        priority: 64
+        requires:
+          suits: { C: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
+        shows: "sandwich preemptive jump: seven-card c suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: sw_3D
+        call: 3D
+        when: { unbid_suit: D }
+        priority: 64
+        requires:
+          suits: { D: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
+        shows: "sandwich preemptive jump: seven-card d suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: sw_3H
+        call: 3H
+        when: { unbid_suit: H }
+        priority: 64
+        requires:
+          suits: { H: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
+        shows: "sandwich preemptive jump: seven-card h suit, 3-10"
+        establishes: { forcing: non_forcing }
+      - id: sw_3S
+        call: 3S
+        when: { unbid_suit: S }
+        priority: 64
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
+        shows: "sandwich preemptive jump: seven-card s suit, 3-10"
         establishes: { forcing: non_forcing }
       - id: sw_pass
         call: P

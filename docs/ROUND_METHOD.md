@@ -16,6 +16,8 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 7 | 747474 | -621 |
 | 8 | 858585 | -612 |
 | 9 | 969696 | -576 |
+| 9b (agreed-suit follow-up) | - | -558 |
+| 10 (per-decision BEN audit) | 171717 | -535 |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -28,9 +30,16 @@ place a fix is guaranteed to look good, because it is where the fix was found.
    Pick a seed never used before (used: 7, 828282, 919191, 303030, 515151,
    626262, 747474, 858585, 969696).  ~5 minutes.  Report with
    `python3 tools/match_ben.py report --rows reports/<tag>_before.jsonl`.
-2. **Triage.**  `python3 tools/triage_match.py reports/<tag>_before.jsonl <SEED> <dossier>.md`
-   Clusters the losing boards by the rule that made our last bid at the table
-   where we did worse against par, plus the worst singles.
+2. **Triage - use the PER-DECISION audit, not the cluster dossier.**
+   `python3 tools/ben_audit.py run --rows reports/<tag>_before.jsonl --out reports/audit.jsonl`
+   then `report --conf 0.80`.  For every call we made on every board we LOST it
+   asks BEN what it would call from the same seat, the same cards, the same
+   auction, and ranks by IMPs and by FIRST divergence.  Round 10 records why
+   this replaced `triage_match.py`: last-rule clustering is correlational, it
+   nominated the same innocent generic rules five rounds running, and its fixes
+   returned 5x-20x less held out than in sample.  The per-decision audit's
+   in-sample and held-out gains were the same size.  `triage_match.py` is still
+   useful for a whole-family denominator; it is no longer the way in.
 3. **Two independent expert reviews**, in parallel, as subagents.  Split the
    clusters between them and give the second a second-opinion pass on the
    largest two or three.  Disagreement between them is signal, not noise.  The
@@ -44,7 +53,7 @@ place a fix is guaranteed to look good, because it is where the fix was found.
    `python3 tools/fuzz_decisions.py --n 300 --strict`.
 7. **Measure twice**: the SAME 1000 boards paired against `<tag>_before`, and
    the held-out corpus (seed 828282) against the previous round's held-out run.
-   The current bar is **-576** (round 9).
+   The current bar is **-535** (round 10).
    Keep or revert on the held-out number.
 8. Preserve both verdicts to `docs/EXPERT_REVIEW_<seed>_{A,B}.md`, add
    regression scenarios to `tests/data/harvested.yaml`, append a `DECISIONS.md`
