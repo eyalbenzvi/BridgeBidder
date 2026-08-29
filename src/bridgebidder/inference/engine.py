@@ -242,6 +242,9 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                     if auction.seat_of_call(i) == seat.partner)
         if acted != cond.partner_has_acted:
             return False
+    if cond.is_competitive is not None:
+        if auction.is_competitive != cond.is_competitive:
+            return False
     if cond.my_last_call_was_double is not None:
         last = None
         for i, c in enumerate(auction.calls):
@@ -389,7 +392,29 @@ def build_eval_ctx(analysis: Analysis, auction: Auction, seat: Seat) -> EvalCont
         partner_min_length={s: int(pbox.suit(s)[0]) for s in SUITS},
         partner_max_length={s: int(pbox.suit(s)[1]) for s in SUITS},
         standing_strain=(auction.last_bid.strain if auction.last_bid is not None else None),
+        **_their_state(analysis, auction, seat),
     )
+
+
+def _their_state(analysis: Analysis, auction: Auction, seat: Seat) -> dict:
+    """What the opponents have promised, from our seat.
+
+    Both opponent descriptors are maintained by the same inference machinery
+    that builds partner's; this simply carries them across the EvalContext
+    boundary so a rule can be gated on the opponents' disclosed strength and
+    shape rather than only on which suits they named.
+    """
+    lho, rho = analysis.descriptors[seat.lho].box, analysis.descriptors[seat.rho].box
+    acted = {auction.seat_of_call(i) for i, c in enumerate(auction.calls)
+             if not c.is_pass and auction.seat_of_call(i).side != seat.side}
+    mins = {s: int(lho.suit(s)[0]) + int(rho.suit(s)[0]) for s in SUITS}
+    return {
+        "is_competitive": auction.is_competitive,
+        "their_shown_count": len(acted),
+        "their_min_hcp": float(lho.hcp[0]) + float(rho.hcp[0]),
+        "their_min_length": mins,
+        "their_max_fit": max(mins.values()) if mins else 0,
+    }
 
 
 def _game_reached(auction: Auction) -> bool:

@@ -114,6 +114,28 @@ def rule_of_15(hand: Hand, ctx: EvalContext) -> float:
     return hand.hcp + hand.suit_length("S")
 
 
+@register_evaluator("their_shown_hcp")
+def their_shown_hcp(hand: Hand, ctx: EvalContext) -> float:
+    """HCP the two opponents have PROMISED between them.  A competitive
+    auction in which they have shown real values is a different animal from
+    one in which they have preempted on air."""
+    return ctx.their_min_hcp
+
+
+@register_evaluator("their_fit")
+def their_fit(hand: Hand, ctx: EvalContext) -> float:
+    """Longest combined trump length the opponents have disclosed.  Eight or
+    more means they have found a fit, which is what turns a decision to
+    compete into a decision to sacrifice or defend."""
+    return float(ctx.their_max_fit)
+
+
+@register_evaluator("their_bidders")
+def their_bidders(hand: Hand, ctx: EvalContext) -> float:
+    """How many of the two opponents have made a non-pass call."""
+    return float(ctx.their_shown_count)
+
+
 @register_evaluator("rule_of_26")
 def rule_of_26(hand: Hand, ctx: EvalContext) -> float:
     """Combined-values game test: my total points + midpoint of partner's

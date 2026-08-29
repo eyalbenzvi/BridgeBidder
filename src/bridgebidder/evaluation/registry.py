@@ -37,6 +37,17 @@ class EvalContext:
     partner_max_length: dict[str, int] = field(default_factory=dict)
     standing_strain: str | None = None      # strain of the auction's standing bid
 
+    # --- what the OPPONENTS have told us ------------------------------------
+    # The inference engine has always maintained a full descriptor for each
+    # opponent; none of it reached a rule, so the system could name "partner
+    # has values" but never "they have values" - and a competitive auction is
+    # exactly the one you cannot categorise without that.
+    is_competitive: bool = False            # both sides have made a non-pass call
+    their_shown_count: int = 0              # how many opponents have acted
+    their_min_hcp: float = 0.0              # HCP the two of them have PROMISED
+    their_min_length: dict[str, int] = field(default_factory=dict)
+    their_max_fit: int = 0                  # longest combined fit they have shown
+
     @property
     def we_vulnerable(self) -> bool:
         return self.seat is not None and self.vulnerability.is_vulnerable(self.seat)

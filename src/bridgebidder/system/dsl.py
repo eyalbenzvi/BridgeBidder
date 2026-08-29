@@ -79,6 +79,7 @@ class Conditions:
     my_last_call_was_double: bool | None = None    # my most recent non-pass call was X
     partner_last_call_was_double: bool | None = None  # partner's most recent non-pass call was X
     partner_has_acted: bool | None = None          # partner has made a non-pass call
+    is_competitive: bool | None = None             # BOTH sides have made a non-pass call
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -107,6 +108,7 @@ class Conditions:
             my_last_call_was_double=d.pop("my_last_call_was_double", None),
             partner_last_call_was_double=d.pop("partner_last_call_was_double", None),
             partner_has_acted=d.pop("partner_has_acted", None),
+            is_competitive=d.pop("is_competitive", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -136,6 +138,7 @@ class Conditions:
             and self.my_last_call_was_double is None
             and self.partner_last_call_was_double is None
             and self.partner_has_acted is None
+            and self.is_competitive is None
             and not self.config
         )
 

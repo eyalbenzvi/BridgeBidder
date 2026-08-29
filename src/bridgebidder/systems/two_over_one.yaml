@@ -9984,6 +9984,46 @@ contexts:
           evals: { "lott_total_trumps(S)": [9, 26], total_points: [3, 10] }
         shows: "preemptive raise to the LOTT level: 4 trumps, weak"
         establishes: { forcing: non_forcing, agreed_suit: S }
+      # THE LAW AT THE FOUR LEVEL.  `cl_raise_H4` tests COMBINED VALUES
+      # (rule_of_26 >= 25) - the right test in a constructive auction and the
+      # wrong one in a contested one.  With ten trumps between us the four
+      # level is right on shape whether it makes or it is a save, so a hand
+      # that misses the combined-values test by a point had NO four-level
+      # raise and fell to the catch-all pass.  The 11-point floor matches the
+      # sibling, so partner's shown minimum for 4M does not move.  No
+      # `cheapest_in_suit` gate: a four-level raise is usually a jump.
+      #
+      # `their_fit >= 8` is the whole point and was learned the hard way.
+      # Without it the rung fired on OUR ten trumps alone and measured +1 over
+      # 1000 boards - it pushed a making 3H to a failing 4H as often as it
+      # found a good save.  The Law is about TOTAL trumps: it only licenses
+      # bidding one more when BOTH sides have a fit, because that is what makes
+      # the total-trick count high enough for someone's contract to be making.
+      - id: cl_raise_lott4_H
+        call: 4H
+        priority: 32
+        when: { partner_suit: H }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { "lott_total_trumps(H)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      # THE LAW AT THE FOUR LEVEL.  `cl_raise_S4` tests COMBINED VALUES
+      # (rule_of_26 >= 25) - the right test in a constructive auction and the
+      # wrong one in a contested one.  With ten trumps between us the four
+      # level is right on shape whether it makes or it is a save, so a hand
+      # that misses the combined-values test by a point had NO four-level
+      # raise and fell to the catch-all pass.  Same discipline as the H twin:
+      # 11-point floor, no `cheapest_in_suit`, and `their_fit >= 8`.
+      - id: cl_raise_lott4_S
+        call: 4S
+        priority: 32
+        when: { partner_suit: S }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { "lott_total_trumps(S)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       # THE SEAM AT 11-13.  Every three-level raise rung carries
       # `cheapest_in_suit: true`, so whenever the two-level raise is legal the
       # three-level one is not offered at all - and these two-level rungs

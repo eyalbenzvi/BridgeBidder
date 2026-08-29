@@ -2205,3 +2205,28 @@
   seat: S
   calls: ["1D", "P", "1H"]
   expect: { call: "1S" }
+
+# --- round 12 (seed 242424): categorization -------------------------------
+
+# THE LAW AT THE FOUR LEVEL.  The only four-level competitive raise tested
+# COMBINED VALUES (rule_of_26 >= 25), which is the right test in a constructive
+# auction and the wrong one in a contested one.  Here both sides have a fit -
+# they have shown eight hearts, we have eleven spades - so the four level is
+# right on shape whatever the point count says.
+- name: e12_law_four_level_both_sides_have_a_fit
+  hand: "Q87652.7.A62.Q84"
+  dealer: S
+  seat: E
+  calls: ["1H", "1S", "2H"]
+  expect: { call: "4S" }
+
+# ... and the gate that makes it the LAW rather than an overbid: with the same
+# eleven trumps our way but no fit shown against us, the total-trick count is
+# not high enough to bid one more, and this hand passes.  (Without
+# `their_fit >= 8` the rung measured +1 over 1000 boards; with it, +12.)
+- name: e12_law_four_level_needs_their_fit_too
+  hand: "AQ9763.T6.K3.KT2"
+  dealer: S
+  seat: E
+  calls: ["1C", "1S", "2H"]
+  expect: { call: "P" }
