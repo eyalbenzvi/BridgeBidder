@@ -4660,6 +4660,139 @@ contexts:
   # DEFENSE TO THEIR WEAK TWOS
   # ===========================================================================
 
+  # The defence to their THREE-level preempt was authored with natural suit
+  # overcalls (v3_*); its sibling, the defence to a weak TWO, has only a
+  # double, 2NT and a pass - and vw2_pass (0-14) sits at priority 30, ABOVE
+  # the generic toolkit's overcall at 26.  So an eleven-count with KQJ95
+  # passed 2D out.  These contexts sit BEFORE defense_vs_weak2 and define only
+  # the suit calls, so the double, the 2NT and the pass keep their readings.
+  # Gates copied from the measured three-level defence, with the two-level
+  # rung taking a good FIVE instead of a six.  Advances are the generic
+  # competitive raise and new-suit ladders, which already cover a natural
+  # overcall - none of these calls is artificial.
+  - id: defense_vs_weak2D_overcalls
+    description: "Direct seat over their 2D: natural two-level overcalls"
+    pattern: "2D - ?"
+    rules:
+      - id: vw2D_over_2H
+        call: 2H
+        priority: 64
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [5, 13] }
+          # capped at 16: with 17+ the system's own route is to double first
+          # and bid the suit afterwards, which is what vw2_X's strong branch
+          # is for.  Overcalling two of a major on a 17-count underbids it.
+          hcp: [11, 16]
+          evals: { "suit_quality(H)": [2, 9] }
+        shows: "natural overcall of the weak two: good 5+ H, 11-16"
+        establishes: { forcing: non_forcing }
+      # A context that DEFINES a call takes over interpreting it, so this one
+      # must carry the reading it shadows verbatim or it subtracts behaviour:
+      # without this rung the generic cl_new_H2 (5+ cards, 10+ points) stopped
+      # fitting here, a 17-count's 2S fell from 0.76 to 0.33, and the engine
+      # started reporting a genuine X-versus-2S judgment as "clear".
+      - id: vw2_shadow_DH
+        call: 2H
+        priority: 26
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      # A context that DEFINES a call takes over interpreting it, so this one
+      # must carry the reading it shadows verbatim or it subtracts behaviour:
+      # without this rung the generic cl_new_S2 (5+ cards, 10+ points) stopped
+      # fitting here, a 17-count's 2S fell from 0.76 to 0.33, and the engine
+      # started reporting a genuine X-versus-2S judgment as "clear".
+      - id: vw2_shadow_DS
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: vw2D_over_2S
+        call: 2S
+        priority: 64
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [5, 13] }
+          # capped at 16: with 17+ the system's own route is to double first
+          # and bid the suit afterwards, which is what vw2_X's strong branch
+          # is for.  Overcalling two of a major on a 17-count underbids it.
+          hcp: [11, 16]
+          evals: { "suit_quality(S)": [2, 9] }
+        shows: "natural overcall of the weak two: good 5+ S, 11-16"
+        establishes: { forcing: non_forcing }
+
+  - id: defense_vs_weak2H_overcalls
+    description: "Direct seat over their 2H: the two-level spade overcall"
+    pattern: "2H - ?"
+    rules:
+      # A context that DEFINES a call takes over interpreting it, so this one
+      # must carry the reading it shadows verbatim or it subtracts behaviour:
+      # without this rung the generic cl_new_S2 (5+ cards, 10+ points) stopped
+      # fitting here, a 17-count's 2S fell from 0.76 to 0.33, and the engine
+      # started reporting a genuine X-versus-2S judgment as "clear".
+      - id: vw2_shadow_HS
+        call: 2S
+        priority: 26
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      - id: vw2H_over_2S
+        call: 2S
+        priority: 64
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [5, 13] }
+          # capped at 16: with 17+ the system's own route is to double first
+          # and bid the suit afterwards, which is what vw2_X's strong branch
+          # is for.  Overcalling two of a major on a 17-count underbids it.
+          hcp: [11, 16]
+          evals: { "suit_quality(S)": [2, 9] }
+        shows: "natural overcall of the weak two: good 5+ S, 11-16"
+        establishes: { forcing: non_forcing }
+
+  - id: defense_vs_weak2_overcalls3
+    description: "Direct seat over their weak two: three-level suit overcalls"
+    expand_pairs:
+      - { W: D, X: C }
+      - { W: H, X: C }
+      - { W: H, X: D }
+      - { W: S, X: C }
+      - { W: S, X: D }
+      - { W: S, X: H }
+    pattern: "2$W - ?"
+    rules:
+      # the same superset guard for the three-level rung
+      - id: vw2_shadow3_$X
+        call: 3$X
+        priority: 26
+        when: { unbid_suit: $X, cheapest_in_suit: true }
+        requires:
+          suits: { $X: [5, 13] }
+          evals: { total_points: [14, 40], "suit_quality($X)": [1.5, 9] }
+        shows: "natural $X at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+      - id: vw2_over3_$X
+        call: 3$X
+        priority: 64
+        when: { unbid_suit: $X }
+        requires:
+          suits: { $X: [6, 13] }
+          hcp: [11, 40]
+          evals: { "suit_quality($X)": [1.5, 9], quick_tricks: [2, 12] }
+        shows: "overcalling the weak two at the three level: good 6+ $X, 11+"
+        establishes: { forcing: non_forcing }
+
   - id: defense_vs_weak2
     description: "Direct seat over their weak two"
     expand: { W: [D, H, S] }
@@ -9772,6 +9905,21 @@ contexts:
           evals: { total_points: [10, 40], "suit_quality(C)": [1.5, 9] }
         shows: "natural C at the cheapest level: 5+ cards, 10+ points"
         establishes: { forcing: non_forcing }
+      # sibling of cl_new_long3_$X, which the HIGH-level competitive context
+      # never received: a good six-card suit is worth the three level, and
+      # the 14-point floor on ch_new_$X3 was passing KQT942 out over their
+      # raised weak two.  The low-level twin uses 11 points and quality 1.0;
+      # this uses 13 and 1.5, a threshold set from a 400-board A/B rather
+      # than from the book - at 11/1.0 it bid 3S on JT8754 and got doubled.
+      - id: ch_new_long3_C
+        call: 3C
+        priority: 27
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [13, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the cheapest level: a SIX-card suit, 13+ points"
+        establishes: { forcing: non_forcing }
       - id: ch_new_C3
         call: 3C
         priority: 27
@@ -9798,6 +9946,21 @@ contexts:
           suits: { D: [5, 13] }
           evals: { total_points: [10, 40], "suit_quality(D)": [1.5, 9] }
         shows: "natural D at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      # sibling of cl_new_long3_$X, which the HIGH-level competitive context
+      # never received: a good six-card suit is worth the three level, and
+      # the 14-point floor on ch_new_$X3 was passing KQT942 out over their
+      # raised weak two.  The low-level twin uses 11 points and quality 1.0;
+      # this uses 13 and 1.5, a threshold set from a 400-board A/B rather
+      # than from the book - at 11/1.0 it bid 3S on JT8754 and got doubled.
+      - id: ch_new_long3_D
+        call: 3D
+        priority: 27
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [13, 40], "suit_quality(D)": [1.5, 9] }
+        shows: "natural D at the cheapest level: a SIX-card suit, 13+ points"
         establishes: { forcing: non_forcing }
       - id: ch_new_D3
         call: 3D
@@ -9826,6 +9989,21 @@ contexts:
           evals: { total_points: [10, 40], "suit_quality(H)": [1.5, 9] }
         shows: "natural H at the cheapest level: 5+ cards, 10+ points"
         establishes: { forcing: non_forcing }
+      # sibling of cl_new_long3_$X, which the HIGH-level competitive context
+      # never received: a good six-card suit is worth the three level, and
+      # the 14-point floor on ch_new_$X3 was passing KQT942 out over their
+      # raised weak two.  The low-level twin uses 11 points and quality 1.0;
+      # this uses 13 and 1.5, a threshold set from a 400-board A/B rather
+      # than from the book - at 11/1.0 it bid 3S on JT8754 and got doubled.
+      - id: ch_new_long3_H
+        call: 3H
+        priority: 27
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [13, 40], "suit_quality(H)": [1.5, 9] }
+        shows: "natural H at the cheapest level: a SIX-card suit, 13+ points"
+        establishes: { forcing: non_forcing }
       - id: ch_new_H3
         call: 3H
         priority: 27
@@ -9852,6 +10030,21 @@ contexts:
           suits: { S: [5, 13] }
           evals: { total_points: [10, 40], "suit_quality(S)": [1.5, 9] }
         shows: "natural S at the cheapest level: 5+ cards, 10+ points"
+        establishes: { forcing: non_forcing }
+      # sibling of cl_new_long3_$X, which the HIGH-level competitive context
+      # never received: a good six-card suit is worth the three level, and
+      # the 14-point floor on ch_new_$X3 was passing KQT942 out over their
+      # raised weak two.  The low-level twin uses 11 points and quality 1.0;
+      # this uses 13 and 1.5, a threshold set from a 400-board A/B rather
+      # than from the book - at 11/1.0 it bid 3S on JT8754 and got doubled.
+      - id: ch_new_long3_S
+        call: 3S
+        priority: 27
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [13, 40], "suit_quality(S)": [1.5, 9] }
+        shows: "natural S at the cheapest level: a SIX-card suit, 13+ points"
         establishes: { forcing: non_forcing }
       - id: ch_new_S3
         call: 3S

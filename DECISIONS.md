@@ -1484,3 +1484,84 @@ trumps, the single holding where the two accountings actually overlap.
 **An expert's diagnosis and an expert's patch are separate artifacts.**  The
 diagnosis here was right and the patch reached past it; the tests caught the
 difference.
+
+## Expert round 7 (triaged 1000, seed 747474)
+
+Baseline **-726 IMPs**, 316 losing boards, 20 clusters, two independent expert
+reviews (`docs/EXPERT_REVIEW_747474_{A,B}.md`).
+
+Measured, core batch: same 1000 boards **-726 -> -580 (+146 paired; 31 up, 14
+down)**; held-out fixed corpus **-639 -> -627 (+12 paired)**.  Like-for-like
+since head-to-head play began: **-1.474 -> -0.627 IMPs/board.**
+
+The two corpora agreed in sign for the first time in three rounds.  That is the
+point of the round-6 pre-brief, which both reviewers were given as a hard
+constraint: state what a gate SUBTRACTS, make a shadowing context a provable
+superset, ship a ladder with the seat that answers it.
+
+### The species this round: a gate given to one sibling and not the other
+
+- **`balhigh_reopen_X` carried a light 12-point branch that its low-level twin
+  `ballow_reopen_X` does not have.**  Backwards: balancing a king lighter is a
+  one- and two-level agreement, and at the three level the double commits
+  partner to the FOUR level, so partner - who has passed throughout - converts
+  it and every light one became a penalty double made on takeout shape.  The
+  rule is now capped at the three level too: you cannot take a four-level
+  contract out for takeout.  18 tables, -89 IMPs whole-corpus.
+- **The generic MINOR ladder ranked its uncapped invitational rung above both
+  game rungs**, so with a minor fit the toolkit could never bid game by raising.
+  The major ladder was already ordered correctly.  Re-ranked rather than capped:
+  a ceiling would have opened a hole for the catch-all pass to swallow.
+- **The RKC trump-queen clause existed only on the 5H reply** and was never
+  swept onto 5C/5D - shipped with the complete-fallback signoff it requires,
+  which is not optional: without it the seat is empty and the engine invents a
+  call.
+- **`rr1H1SC_2S` had an identical untouched sibling `rr1H1SD_2S`.**
+
+### Ceilings again (round 6's species, still paying)
+
+A one-level new-suit rebid capped at 17 left 18-19 WITH a four-card major no
+rule at all, so an 18-count holding 4-4 in the majors bid a generic 3NT.
+Stayman's ladder stopped at 15, so an 18-count with no fit passed 2S with 6NT
+cold.  Five starved seats were authored, each with the context that answers it.
+
+### What the reviewers refused to do, which is why the held-out number held
+
+Both spent as much effort killing hypotheses as proposing fixes, and both
+re-scored suspect rules across ALL 2000 tables (winners included) before
+accusing them:
+
+- **The largest cluster was not a bug.**  `all-pass` (28 losing boards, 140
+  IMPs) is the single most profitable family in the engine: +1538 IMPs, 264 wins
+  to 84 losses.  The losing boards are the defensive long tail.
+- **`uc_nt3` is a symptom for the third round running** - it fits 1.00 on nearly
+  every board it loses.  Do not tighten it again.
+- **"A takeout double must not hide a six-card suit" does not generalise** to
+  the remaining siblings: measured across 113 firings, doubles WITH a 6+ suit
+  average **-2.00**/table, WITHOUT **-2.54**.  Killed.
+- One reviewer prototyped a priority demotion, **measured it worse on its own
+  motivating board, and reported the negative result** instead of shipping it.
+
+### The shadowing trap, caught a second time - by a test
+
+The deferred batch's first version added natural suit overcalls of a weak two.
+That new context took over interpreting `2S` at those auctions, and its narrower
+gate DELETED a better-fitting reading: a 17-count's 2S fell from fit 0.76 to
+0.33, so the engine began reporting a genuine X-versus-2S judgment as "clear".
+A locked arbitration test caught it.  Fixed by carrying the shadowed generic
+gate verbatim as a companion rung, so the context can only be a superset - the
+rule round 6 wrote down, applied.
+
+**A context that DEFINES a call takes over interpreting it.**  That is the whole
+lesson, and it now has two scalps.
+
+### Deferred, deliberately: measured on its own
+
+Both reviewers independently marked the weak-two natural overcalls as needing
+their own measurement (one measured the affected population as genuinely split,
++38 of wins against -78 of losses).  That fix, plus `ch_new_long3`, is in the
+tree but **NOT yet measured** - its first run was reclaimed before writing
+output.  Keep or revert it on the held-out number.
+
+The method is now written down in `docs/ROUND_METHOD.md` so a session with no
+memory of these rounds can run one correctly.

@@ -1611,3 +1611,151 @@
   seat: E
   calls: ["P", "1C", "P", "1S", "P", "1NT", "P", "3S", "P"]
   expect: { call: "3NT" }
+
+# =====================================================================
+# Expert round 7 (triaged 1000, seed 747474).  Two independent reviews.
+# The species this round: a gate or a light branch given to ONE sibling
+# and not the other, and ladders whose top rung caps below the hands
+# that need it.  Both reviewers also killed hypotheses with whole-corpus
+# data - the biggest cluster (`all-pass`) turned out to be the single
+# most profitable family in the engine.
+# See docs/EXPERT_REVIEW_747474_{A,B}.md and docs/ROUND_METHOD.md.
+# =====================================================================
+
+# balancing a king lighter is a one- and two-level agreement: the light
+# branch was on the HIGH-level sibling, where partner converts it
+- name: e6_no_light_reopening_double_at_the_three_level
+  hand: "K.KQ942.A52.QT86"
+  dealer: N
+  seat: N
+  vulnerability: EW
+  calls: ["1H", "2S", "P", "3H", "P", "3S", "P", "P"]
+  expect: { call: "P" }
+
+# ...and you cannot take a FOUR-level contract out for takeout
+- name: e6_no_takeout_double_of_a_four_level_contract
+  hand: "K.AQJT3.AJ852.Q3"
+  dealer: E
+  seat: E
+  vulnerability: NS
+  calls: ["1H", "1S", "2H", "3S", "4H", "4S", "P", "P"]
+  expect: { call: "P" }
+
+# with a minor fit the game is 3NT or five of the minor: the uncapped
+# invitational rung outranked both game rungs
+- name: e6_minor_game_outranks_the_invitation
+  hand: "A874.AKJ9.AJ432."
+  dealer: E
+  seat: W
+  calls: ["P", "P", "1D", "P", "2D", "P"]
+  expect: { call: "5D" }
+
+# a one-level rebid in a new suit is not limited to 17: 18-19 with a
+# four-card major had no rule at all
+- name: e6_one_level_rebid_ceiling_with_a_major
+  hand: "J963.AKQ3.QT.AQ9"
+  dealer: S
+  seat: S
+  calls: ["1C", "P", "1D", "P"]
+  expect: { call: "1H" }
+
+# opposite a 15-17 notrump, 18+ is 33 combined and belongs in slam
+- name: e6_stayman_no_fit_eighteen_bids_the_slam
+  hand: "KQ2.AQ62.A843.K2"
+  dealer: N
+  seat: S
+  calls: ["1NT", "P", "2C", "P", "2S", "P"]
+  expect: { call: "6NT" }
+
+- name: e6_stayman_no_fit_sixteen_still_bids_game
+  hand: "KQ2.AQ62.K843.K2"
+  dealer: N
+  seat: S
+  calls: ["1NT", "P", "2C", "P", "2S", "P"]
+  expect: { call: "3NT" }
+
+# the trump-queen clause lived only on the 5H reply; a keycard is already
+# missing, so the queen cannot be missing too in a short fit
+- name: e6_rkc_5D_reply_honours_the_trump_queen
+  hand: "AK3.AJ72.T.AK763"
+  dealer: E
+  seat: W
+  calls: ["P", "P", "1C", "P", "1S", "P", "2H", "P", "2S", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "5S" }
+
+- name: e6_rkc_5D_reply_slam_with_the_queen
+  hand: "AKQ.AJ72.T.AK763"
+  dealer: E
+  seat: W
+  calls: ["P", "P", "1C", "P", "1S", "P", "2H", "P", "2S", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "6S" }
+
+# one keycard opposite a partner who has shown a big hand: "zero or
+# three" can only be three
+- name: e6_rkc_5D_one_keycard_counts_to_four
+  hand: "K873.QJ43.AKQ3.8"
+  dealer: W
+  seat: S
+  calls: ["P", "1C", "P", "1H", "P", "4H", "P", "4NT", "P", "5D", "P"]
+  expect: { call: "6H" }
+
+# 1D - 1H - 2C had no context: too strong for the capped two-level rebid
+# meant no rebid at all
+- name: e6_responder_rebids_over_1D_1H_2C
+  hand: "KT6.KT97653.AJ9."
+  dealer: E
+  seat: W
+  calls: ["1D", "P", "1H", "P", "2C", "P"]
+  expect: { call: "3H" }
+
+# a takeout double asks partner to pick; with a suit of my own I pull it,
+# in a minor exactly as in a major
+- name: e6_pull_partners_double_into_my_own_minor
+  hand: "72.T53.K3.AJ7642"
+  dealer: S
+  seat: N
+  calls: ["P", "1D", "P", "1H", "P", "1S", "2C", "2S", "X", "P"]
+  expect: { call: "3C" }
+
+# the cue ladder stopped at 4D, so a spade void opposite partner's cue
+# had nothing to say
+- name: e6_top_cue_rung_with_hearts_agreed
+  hand: ".KT963.J976.AK62"
+  dealer: S
+  seat: N
+  calls: ["1H", "P", "3S", "P", "4D", "P"]
+  expect: { call: "4S" }
+
+# no notrump with a void - the one game-force landing rule that matches
+# after their double had no shape gate at all
+- name: e6_no_game_forcing_notrump_with_a_void
+  hand: "AKT92.J7653.QJ7."
+  dealer: S
+  seat: W
+  vulnerability: EW
+  calls: ["P", "1S", "P", "2C", "X"]
+  expect: { call: "2H" }
+
+# the 2NT-transfer choice of games had no answering seat
+- name: e6_opener_answers_the_2NT_transfer_choice_of_games
+  hand: "A96.KQ4.AKQJ.J54"
+  dealer: W
+  seat: N
+  calls: ["P", "2NT", "P", "3H", "P", "3S", "P", "3NT", "P"]
+  expect: { call: "4S" }
+
+# 2C makes clubs a BID suit, so no natural club rebid was reachable
+- name: e6_2C_opener_can_show_real_clubs
+  hand: "Q97.AKQ6.A.AK974"
+  dealer: N
+  seat: N
+  calls: ["2C", "P", "2NT", "P"]
+  expect: { call: "3C" }
+
+# opener's 18-21 with a second suit belongs in a jump shift
+- name: e6_major_tree_jump_shift
+  hand: "K2.AQJ75.A7.A764"
+  dealer: N
+  seat: N
+  calls: ["1H", "P", "1S", "P"]
+  expect: { call: "3C" }
