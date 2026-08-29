@@ -41,6 +41,19 @@ def test_total_points_support_aware():
     assert support == 17
 
 
+def test_total_points_does_not_double_count_a_stiff_honour():
+    """shortness_points credits a singleton 3 whatever the card is, so a raw
+    sum made a singleton KING worth six points - three for the honour and
+    three for the shortness that renders it nearly worthless."""
+    # AK863 . K . 9742 . Q84 = 12 HCP, stiff king, spades agreed
+    stiff_k = ev("total_points", "AK863.K.9742.Q84", agreed_suit="S")
+    # the same shape with a worthless singleton is worth the shortness alone
+    stiff_x = ev("total_points", "AK863.2.9742.Q84", agreed_suit="S")
+    assert stiff_k - stiff_x == 2.0, "a stiff king is worth 2 more than a stiff small card, not 3"
+    # and a non-honour singleton is unaffected by the repair
+    assert stiff_x == 9 + 3              # hcp 9 + the stiff small card's 3
+
+
 def test_rule_of_20():
     assert ev("rule_of_20", "AQ752.K9642.4.32") == 9 + 5 + 5  # 19
     assert ev("rule_of_20", "AQJ75.KT642.4.32") == 20

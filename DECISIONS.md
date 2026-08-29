@@ -1447,3 +1447,40 @@ Measured, after the three repairs: same 1000 boards **-754 -> -584 (+170
 paired; 48 up, 29 down)**; held-out fixed corpus **-700 -> -639 (+61
 paired)**.  Like-for-like since head-to-head play began: **-1.474 -> -0.639
 IMPs/board.**
+
+### Two measured experiments on the points estimators (round 6 follow-up)
+
+Expert B's §2 argued the `rule_of_26` question directly, and its verdict was
+*against* the obvious reading: measured across six slam boards, the estimator's
+mean error is **-0.25** - it is not systematically pessimistic, and "repairing
+only its pessimism would make things worse".  What B did name is a **units
+mismatch**: `floor = max(partner_min_hcp, partner_min_points)` mixes an HCP
+floor with a total-points floor.  Each claim was run as its own experiment on
+the held-out corpus, with nothing else in it.
+
+**Experiment 1 - the units-mismatch repair (`floor + 1.5` opposite an
+unbounded opening): -20 IMPs. REVERTED.**  23 boards changed, 5 up, 10 down.
+B flagged the risk direction correctly: it makes `rule_of_26` fire *more*
+often, and `rule_of_26` is the acceptance gate on families the same review
+found already over-bidding.  The estimator is not the lever.
+
+**Experiment 2 - the singleton-honour double count: +1 IMP.  KEPT, on
+explainability, not on score.**  15 boards changed, 7 up, 3 down: noise.
+`shortness_points` credits a singleton 3 whatever the card is, so a raw sum
+made a singleton KING worth **six points** - three for the honour and three
+for the shortness that renders it nearly worthless.  The score does not care;
+`explain_bid` should not justify a bid with points that do not exist, so the
+correction stays and a unit test locks it.
+
+B's literal one-line version of experiment 2 (`total_points` -> `adjusted_hcp`
+in the fit branch) was **not** what got implemented, and the reason is worth
+recording: `adjusted_hcp` also carries a *+0.5 bonus for honours in a long
+suit*, which makes hands **stronger** - the opposite direction from B's own
+evidence, both of whose boards need hands to get weaker.  It broke a measured
+scenario by accepting a limit raise the corpus had established should be
+declined.  Implemented narrowly instead: deduct 1 for a stiff K/Q/J outside
+trumps, the single holding where the two accountings actually overlap.
+
+**An expert's diagnosis and an expert's patch are separate artifacts.**  The
+diagnosis here was right and the patch reached past it; the tests caught the
+difference.

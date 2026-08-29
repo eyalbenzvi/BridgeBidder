@@ -84,7 +84,20 @@ def total_points(hand: Hand, ctx: EvalContext) -> float:
     (or being agreed) and we hold 3+ of it, count shortness instead of length."""
     trump = ctx.agreed_suit
     if trump and hand.suit_length(trump) >= 3:
-        return hand.hcp + shortness_points(hand, ctx)
+        # The two accountings overlap on ONE holding: shortness_points credits
+        # a singleton 3 regardless of which card it is, so a raw sum makes a
+        # singleton KING worth six points - three for the honour and three for
+        # the shortness that renders it nearly worthless.  Deduct for exactly
+        # that, and nothing else: this is not a general hand re-evaluation, it
+        # is the double-count removed.
+        wasted = 0.0
+        for s in SUITS:
+            if s == trump:
+                continue
+            ranks = hand.suit_ranks(s)
+            if len(ranks) == 1 and ranks[0] in (13, 12, 11):  # stiff K/Q/J
+                wasted += 1.0
+        return hand.hcp - wasted + shortness_points(hand, ctx)
     return hand.hcp + dist_points(hand, ctx)
 
 
