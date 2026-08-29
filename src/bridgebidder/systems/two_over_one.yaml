@@ -4932,7 +4932,14 @@ contexts:
         call: 4NT
         priority: 45
         requires:
-          evals: { total_points: [17, 40], controls: [4, 12], rule_of_26: [31, 99],
+          # ONE floor for one convention.  Its sibling gst_rkc_$X - the same
+          # 1430 ask, reached when no suit has been formally agreed - has read
+          # total_points 15+ for several measured rounds, and this one read 17.
+          # Which floor applied depended only on which CONTEXT claimed the
+          # auction, so AGREEING a suit could make the ask harder: a 15-count
+          # with a nine-card fit asked keycards right up until partner's rebid
+          # set trumps, and then signed off in five of a minor instead.
+          evals: { total_points: [15, 40], controls: [4, 12], rule_of_26: [31, 99],
                     "lott_total_trumps(agreed)": [8, 26] }
           # the veto pair is waived for a hand holding 3+ keycards itself:
           # such a hand does not need to identify which cards partner holds,
@@ -10183,7 +10190,14 @@ contexts:
           suits: { C: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: C }
       - id: cl_rebid_D2
         call: 2D
         priority: 29
@@ -10210,7 +10224,14 @@ contexts:
           suits: { D: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: cl_rebid_H2
         call: 2H
         priority: 29
@@ -10237,7 +10258,14 @@ contexts:
           suits: { H: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: cl_rebid_S2
         call: 2S
         priority: 29
@@ -10264,7 +10292,14 @@ contexts:
           suits: { S: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: cl_pass
         call: P
         priority: 20
@@ -10763,7 +10798,14 @@ contexts:
           suits: { C: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ch_rebid_D2
         call: 2D
         priority: 29
@@ -10790,7 +10832,14 @@ contexts:
           suits: { D: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ch_rebid_H2
         call: 2H
         priority: 29
@@ -10817,7 +10866,14 @@ contexts:
           suits: { H: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_rebid_S2
         call: 2S
         priority: 29
@@ -10844,7 +10900,14 @@ contexts:
           suits: { S: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
       # Partner made a TAKEOUT DOUBLE and they bid over it.  The advance is
       # still owed - partner has opening values and shortness in their suit, so
       # a real suit of mine is a bid, not a fourteen-point bid.  general_pull_
@@ -11136,7 +11199,14 @@ contexts:
           suits: { C: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C at the five level: 6+ cards, values for the level"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ch_new_D5
         call: 5D
         priority: 28
@@ -11163,7 +11233,14 @@ contexts:
           suits: { D: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D at the five level: 6+ cards, values for the level"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ch_new_H5
         call: 5H
         priority: 28
@@ -11190,7 +11267,14 @@ contexts:
           suits: { H: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H at the five level: 6+ cards, values for the level"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_new_S5
         call: 5S
         priority: 28
@@ -11217,7 +11301,14 @@ contexts:
           suits: { S: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S at the five level: 6+ cards, values for the level"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_pass
         call: P
         priority: 22
@@ -11647,7 +11738,14 @@ contexts:
           suits: { C: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: C }
       - id: ballow_rebid_D2
         call: 2D
         priority: 29
@@ -11676,7 +11774,14 @@ contexts:
           suits: { D: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: ballow_rebid_H2
         call: 2H
         priority: 29
@@ -11705,7 +11810,14 @@ contexts:
           suits: { H: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ballow_rebid_S2
         call: 2S
         priority: 29
@@ -11734,7 +11846,14 @@ contexts:
           suits: { S: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ballow_pass
         call: P
         priority: 21
@@ -12086,7 +12205,14 @@ contexts:
           suits: { C: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: C }
       - id: balhigh_rebid_D2
         call: 2D
         priority: 29
@@ -12115,7 +12241,14 @@ contexts:
           suits: { D: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: balhigh_rebid_H2
         call: 2H
         priority: 29
@@ -12144,7 +12277,14 @@ contexts:
           suits: { H: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: balhigh_rebid_S2
         call: 2S
         priority: 29
@@ -12173,7 +12313,14 @@ contexts:
           suits: { S: [6, 13] }
           evals: { total_points: [14, 40], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
       # At this height the cheapest bid in a new suit is a four-level
       # bid; without these the toolkit simply had nothing to offer.
       - id: balhigh_new_C4
@@ -12717,7 +12864,14 @@ contexts:
           suits: { C: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(C)": [1, 9] }
         shows: "rebid of my own C: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: C }
       - id: uc_rebid_D2
         call: 2D
         priority: 29
@@ -12750,7 +12904,14 @@ contexts:
           suits: { D: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(D)": [1, 9] }
         shows: "rebid of my own D: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: D }
       - id: uc_rebid_H2
         call: 2H
         priority: 29
@@ -12778,7 +12939,14 @@ contexts:
           suits: { H: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(H)": [1, 9] }
         shows: "rebid of my own H: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: H }
       - id: uc_rebid_S2
         call: 2S
         priority: 29
@@ -12806,7 +12974,14 @@ contexts:
           suits: { S: [6, 13] }
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
-        establishes: { forcing: non_forcing }
+        # A suit named AGAIN at the four level or above is a trump
+        # proposal, not one more competitive noise bid.  Without it the
+        # pair could be in a game force with a suit bid twice and NO
+        # agreed suit, which leaves the whole gf_landing family (gated
+        # on agreed_suit + game_forced) dark - so a FIVE-card heart
+        # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
+        # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_minor_game_5C
         call: 5C
         priority: 28

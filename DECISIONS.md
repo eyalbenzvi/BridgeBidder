@@ -1904,3 +1904,81 @@ slams the system cannot bid (one reviewer quantified them at **-50 IMPs on this
 corpus alone**, 5% of the whole margin), the keycard ask over a standing game,
 and the `weakest_their_stopper` / `suit_length(their)` pair of evaluators that
 are both known to misread and both measured negative when repaired naively.
+
+### Round 9 follow-up: a twice-bid suit in a game force is agreed
+
+Read from one board rather than a triage cluster (852, -15 on the review
+corpus).  After `1H - (P) - 2D - (3S) - P - (P) - 4D - (P)` North held
+`A74.AT972.74.A75` and rebid **4H on a five-card suit opposite a partner with a
+heart VOID** - doubled, down four, -500, while the other table played 3NT for
++660.  It looked like a judgment error and was a starved seat: the ranking was
+4H at fit **0.279**, 5D at **0.00** and 4NT at 0.00, with pass filtered by the
+game force.  One non-zero candidate, so the soft-miss lottery took it.
+
+Three chained defects, and the first is the real one:
+
+- **The diamond suit was never "agreed".**  South had bid diamonds twice, the
+  second time at the four level in a game force, and any partnership plays that
+  as trumps - but the rule that interpreted the 4D was the generic
+  `balhigh_rebid_D4`, which sets no `agreed_suit`.  `gf_landing_minor` is gated
+  `when: { agreed_suit: $m, game_forced: true }`, so the entire landing family -
+  the machinery written for exactly this position, "with a minor agreed in a GF:
+  nine tricks beat eleven" - never went live.  Its `gf_game_5$m` rung
+  (`total_points: [0, 17]`) fits this hand at 1.00 and bids the 5D that was
+  wanted.
+- **`uc_minor_game_5D` is written for a different auction.**  Its gate is
+  `total_points: [17, 40]` and its text reads "accepting to game in the raised
+  minor: 17+ opposite the raise".  In a GAME FORCE there is nothing to accept -
+  the pair is already committed - so demanding 17 points to bid a game you are
+  obliged to reach is a range with no rule.  This turned out **not** to need its
+  own repair: `game_forced` is a context-level condition and not available on a
+  rule, and the GF-reachable rung already exists inside the landing context.
+  Fixing the agreement fixes this by routing.
+- **`uc_rebid_H4` fires on a five-card suit** (it asks for six) and checks
+  nothing about partner's length in it.  It only bit because the first two left
+  the seat empty.
+
+**The fix: `establishes: { agreed_suit: $X }` on the 24 generic own-suit rebid
+rungs at the FOUR and FIVE level**, and at those levels only - at the two and
+three level a rebid is competitive noise, but at the four level you are choosing
+the contract.  One sentence of bridge, and it is what any partnership assumes.
+
+### The sibling floor that fix exposed, and why measuring in two steps mattered
+
+Applied alone the fix measured **+18 held out and -6 on the review corpus** -
+the two corpora disagreeing in sign, which is the signature of a change that is
+noise on net.  Reading the losing boards showed they were not variance: setting
+`agreed_suit` **re-routes the auction out of `general_slam_try` and into
+`rkc_ask`**, and the two contexts state the same convention with different
+floors:
+
+| | total_points | reached when |
+|---|---|---|
+| `gst_rkc_$X` | **15+** | no suit formally agreed |
+| `rkc_4NT` | **17+** | a suit IS agreed |
+
+So **agreeing a suit made the keycard ask harder.**  A 15-count with a nine-card
+club fit asked keycards right up until partner's rebid set trumps, and then
+signed off in five of a minor: board 901's cold 6C became 5C, board 58's 6C
+became 5C.  That is the recurring species - one convention, two floors, and
+which one applies decided by nothing but which context claimed the auction.
+
+Reconciled to 15 (the sibling that several measured rounds have run on, and
+which DECISIONS records as one of the most profitable families in the engine):
+
+| | held-out | review corpus |
+|---|---|---|
+| the agreement fix alone | +18 | **-6** |
+| **plus the reconciled RKC floor** | **+18** | **+8** |
+
+Both corpora agree in sign once the pre-existing inconsistency is repaired.  The
+motivating board goes -15 -> -2, board 409 (the same disease, `2C - 2D - 3D -
+3S - 4D - 4H`) -13 -> 0, and board 901's slam is preserved.
+
+**The lesson worth keeping is about the method, not the bridge.**  The first
+measurement was a -6 that would ordinarily have been reverted as noise.  Reading
+*why* the losing boards lost - rather than accepting the number - found a defect
+that had nothing to do with the change being tested, was worth +14 on its own,
+and had been sitting in the file across every round that measured the keycard
+families.  A fix that measures flat is sometimes a fix standing on top of a
+second bug.

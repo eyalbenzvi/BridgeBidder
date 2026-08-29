@@ -2069,3 +2069,30 @@
   seat: S
   calls: ["1D", "P", "1S", "P", "2NT", "P"]
   expect: { call: "4NT" }
+
+# --- board 852 follow-up: a twice-bid suit in a game force is agreed --------
+
+# North had bid 1H and South a game-forcing 2D and then 4D, so the pair was
+# game-forced with NO agreed suit: the whole gf_landing family is gated on
+# agreed_suit + game_forced and stayed dark, pass was filtered by the game
+# force, uc_minor_game_5D wanted 17+ (North has 11) and the only non-zero
+# candidate left was a FIVE-card heart rebid at fit 0.28 - into a 5-0 fit,
+# doubled, -500, with 3NT cold at the other table
+- name: e9b_twice_bid_suit_in_a_game_force_is_agreed
+  hand: "A74.AT972.74.A75"
+  dealer: N
+  seat: N
+  vulnerability: NS
+  calls: ["1H", "P", "2D", "3S", "P", "P", "4D", "P"]
+  expect: { call: "5D" }
+
+# ... and the sibling floor that repair exposed: the SAME 1430 ask read 15+
+# in gst_rkc_$X and 17+ in rkc_4NT, so which floor applied depended only on
+# which context claimed the auction - agreeing a suit made the ask HARDER
+- name: e9b_one_keycard_ask_one_floor
+  hand: "T72.AQ.KT976.AJ5"
+  dealer: E
+  seat: S
+  vulnerability: NS
+  calls: ["P", "1D", "P", "2C", "P", "2NT", "P", "3C", "P", "3D", "P", "4C", "P"]
+  expect: { call: "4NT" }
