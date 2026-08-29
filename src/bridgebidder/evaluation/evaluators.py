@@ -444,6 +444,18 @@ def trump_queen(hand: Hand, ctx: EvalContext, suit: str = "agreed") -> float:
     return 1.0 if (s and 12 in hand.suit_ranks(s)) else 0.0
 
 
+@register_evaluator("top_honour")
+def top_honour(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    """1 if this suit holds the ace or the king.  This is what a "feature"
+    means in a feature-showing auction: ONE top honour, not two.  Asking
+    for two_of_top3 there silenced every hand with a bare outside ace."""
+    s = _resolve_suit(suit, ctx)
+    if s is None:
+        return 0.0
+    ranks = hand.suit_ranks(s)
+    return 1.0 if (14 in ranks or 13 in ranks) else 0.0
+
+
 @register_evaluator("control_in")
 def control_in(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
     """Controls held in one suit: 2 = first round (ace or void),

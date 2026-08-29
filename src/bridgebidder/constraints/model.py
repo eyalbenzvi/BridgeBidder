@@ -61,6 +61,7 @@ _EVAL_S2 = {
     # three" and every chunky-major denial - and a hand WITHOUT the honours
     # was scoring 0.8 against it, so none of those gates actually gated
     "two_of_top3": 0.05,
+    "top_honour": 0.05,
     "three_of_top5": 0.05,
     "good_suit": 0.05,
 }

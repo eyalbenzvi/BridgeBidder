@@ -1516,3 +1516,98 @@
   hand: "AQ85.4.K72.AQJ96"
   calls: ["1H", "P"]
   expect: { call: "1S" }
+
+# =====================================================================
+# Expert round 6 (triaged 1000, seed 626262).  The theme both experts
+# converged on: CEILINGS.  A dozen ladders capped their top rung at 18
+# and left 19-20 counts with nothing that fitted, so the soft model
+# handed those hands to whatever sign-off missed by the fewest points.
+# The second theme: a gate that mirrors its sibling's gate exactly
+# leaves the seat empty when the sibling declines.
+# See docs/EXPERT_REVIEW_626262_{A,B}.md.
+# =====================================================================
+
+# 4NT-5H says TWO KEYCARDS WITHOUT THE QUEEN.  Counting to five keycards
+# does not conjure the queen: in a seven-card fit it is a trump loser.
+- name: e5_rkc_5H_reply_denies_the_queen
+  hand: "KJT8.AJ874.AQ8.T"
+  dealer: W
+  seat: W
+  calls: ["1H", "P", "2D", "P", "2S", "P", "3S", "P", "4NT", "P", "5H", "P"]
+  expect: { call: "5S" }
+
+# ...and the same ask with the queen in hand still bids it
+- name: e5_rkc_5H_reply_slam_with_the_queen
+  hand: "KQT8.AJ874.AQ8.T"
+  dealer: W
+  seat: W
+  calls: ["1H", "P", "2D", "P", "2S", "P", "3S", "P", "4NT", "P", "5H", "P"]
+  expect: { call: "6S" }
+
+# a "feature" is ONE top honour.  Gating the replies on two_of_top3
+# silenced every maximum whose outside card was a bare ace.
+- name: e5_weak_two_feature_is_one_honour
+  hand: "K3.Q96532.8.AJT3"
+  dealer: S
+  seat: S
+  calls: ["2H", "P", "2NT", "P"]
+  expect: { call: "3C" }
+
+# 20 HCP with six hearts: the 4H rung ran to 40 while every sibling
+# stopped at 18, so the hand signed off in game with 33 combined
+- name: e5_ceiling_1sr_four_hearts
+  hand: "K9.AKQJ42.K52.KJ"
+  calls: ["1C", "P", "1H", "P", "1S", "P"]
+  expect: { call: "2D", forcing: game_forcing }
+
+# 19 opposite a 12-15 minor rebid: a new suit at the two level is
+# forcing and has no ceiling
+- name: e5_ceiling_new_suit_over_minor_rebid
+  hand: "AQT4.KT6.AQ965.A"
+  calls: ["1C", "P", "1S", "P", "2C", "P"]
+  expect: { call: "2D" }
+
+# a takeout double asks partner to pick a suit; with six of my own
+# there is nothing to pick
+- name: e5_takeout_double_denies_a_six_card_suit
+  hand: "AJ.Q42.K9.AJT943"
+  dealer: N
+  seat: E
+  calls: ["2S"]
+  expect: { call: "3C" }
+
+# --- round 6, second pass.  The first fix set gained 223 on the corpus the
+# experts read and LOST 66 on the held-out corpus: three "add a gate" fixes
+# that each looked right on two or three boards were deleting whole families
+# of correct auctions elsewhere.  All three are locked below.
+
+# a long running suit is the BEST hand for a quantitative slam raise, not a
+# disqualified one: a semi_balanced gate here cost five cold 6NTs
+- name: e5b_quantitative_6NT_with_a_long_suit
+  hand: "87.AKQT986.Q5.AK"
+  dealer: W
+  seat: W
+  calls: ["1H", "2S", "3NT", "P"]
+  expect: { call: "6NT" }
+
+# the game-raise slam-try context is MORE SPECIFIC than the general keycard
+# context, so a narrower gate there deletes asks that already worked
+- name: e5b_keycard_ask_survives_the_game_raise_context
+  hand: "AQ2.KQJT7.KJ.QT9"
+  calls: ["1H", "P", "2NT", "P", "3H", "P", "4H", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+- name: e5b_keycard_ask_over_game_raise_without_five_trumps
+  hand: "KQJ872.K4.A.JT75"
+  calls: ["1S", "P", "2NT", "P", "3D", "P", "4S", "P"]
+  expect: { call: "4NT", convention: rkc_1430 }
+
+# a checkback ladder and the seat that answers it are ONE fix: without the
+# answering context opener's reply fell to the generic toolkit and bid 4C
+# over a game-forcing 3S
+- name: e5b_opener_answers_the_3M_checkback
+  hand: "KJ.A4.KJ74.T9863"
+  dealer: N
+  seat: E
+  calls: ["P", "1C", "P", "1S", "P", "1NT", "P", "3S", "P"]
+  expect: { call: "3NT" }

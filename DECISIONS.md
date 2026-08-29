@@ -1387,3 +1387,63 @@ strength forgets to band by shape* (four contexts here had no rung for
 responder's own long suit - invisible to the `gap` lint, which sees
 strength only), and *a gate added to one rule is not added to its
 siblings* (four instances this round).  Those are the next two lints.
+
+## Expert round 6 (triaged 1000, seed 626262)
+
+Both reviewers, working the same triaged clusters independently, named the
+same species: **ceilings**.  A dozen ladders capped their top rung at 18 and
+had nothing above it, so a 19- or 20-count found no rule that fitted and the
+soft model handed the hand to whichever sign-off missed by the fewest
+points.  `r1sr_4H` signed off in game with 33 combined; `rmr_newsuit_D`
+capped a forcing new suit at 12; `fsf_$F`'s shape gates ("no clear natural
+bid") shut out hands whose alternative was not a better natural call but a
+game two levels below the hand.  A ceiling is not a safety limit; above it
+there is no floor, only whatever the fallback machinery invents.
+
+Also fixed, each verified on the board that found it:
+
+- **`rkc5H_slam` ignored the queen the reply had just denied.**  5H says
+  *two keycards without the trump queen*.  Counting to five keycards cannot
+  conjure it: in a seven-card fit it is a trump loser.  The slam now needs
+  the queen in hand or a fit long enough to drop it - and its **sign-off had
+  to become a complete fallback**, because a signoff gated as the exact
+  mirror of the slam rule left the seat with no fitting candidate at all,
+  and the declined slam won the soft-miss lottery anyway.
+- **A "feature" is one top honour.**  All nine `feat_*` replies to the
+  weak-two 2NT ask were gated `two_of_top3` while their own `shows:` text
+  said "ace or king", so every maximum whose outside card was a bare ace
+  answered "minimum, no feature".  New `top_honour` evaluator.
+- **A takeout double must not hide a six-card suit** (`vw2_X`, `oc1D_X`,
+  `oc1H_X`): the double asks partner to pick, and with six of my own there
+  is nothing to pick.  The strong branch still doubles first and bids after.
+
+### The overfitting, and what it cost to find it
+
+The first fix set measured **+223 on the corpus the experts read and -66 on
+the held-out corpus**.  Three "add a gate" fixes, each argued from two or
+three boards, were deleting whole families of correct auctions elsewhere:
+
+1. `qr3_6NT` / `qr3_4NT_quant` gained `semi_balanced`.  Five cold 6NTs died.
+   Thirty-three combined points *with a long running suit* is the best 6NT
+   hand there is, not a disqualified one.
+2. `slam_try_over_game_raise` is a **more specific context** than the general
+   keycard one, so it interprets 4NT after every game raise - and its
+   narrower gate did not add slam tries, it deleted the asks that already
+   worked (three cold slams stopped in game).  A new context that shadows an
+   old one must carry the old gates verbatim as a rung, so it can only ever
+   be a superset.
+3. The 3$M checkback ladder was authored **without the seat that answers
+   it**.  Opener's reply fell to the generic toolkit and bid 4C over a
+   game-forcing 3S.  A ladder and its answering context are one fix.
+
+**A gate justified on two boards needs the held-out corpus before it is
+kept.**  A fix that *adds* a rung can only fill a hole; a fix that *adds a
+gate to an existing rule*, or *adds a more specific context*, subtracts
+behaviour everywhere it reaches, and the corpus that motivated it is the one
+place it is guaranteed to look good.  Those two classes now get measured
+separately.
+
+Measured, after the three repairs: same 1000 boards **-754 -> -584 (+170
+paired; 48 up, 29 down)**; held-out fixed corpus **-700 -> -639 (+61
+paired)**.  Like-for-like since head-to-head play began: **-1.474 -> -0.639
+IMPs/board.**

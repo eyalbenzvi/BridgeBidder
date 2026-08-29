@@ -2459,6 +2459,12 @@
   "constraint": {
    "any_of": [
     {
+     "evals": {
+      "longest_suit_length": [
+       0,
+       5
+      ]
+     },
      "hcp": [
       11,
       16
