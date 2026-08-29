@@ -27,6 +27,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -213,7 +214,131 @@ def lint_soft(contexts: list[Context]) -> list[str]:
     return out
 
 
-LINTS = {"floor": lint_floor, "collide": lint_collide, "gap": lint_gap, "soft": lint_soft}
+
+def _mentioned_suits(r: BidRule) -> set[str]:
+    """Suits the rule's own constraint talks about (length or evaluator)."""
+    out: set[str] = set()
+    for c in _walk(r.requires):
+        out |= set(c.suits)
+        for name in list(c.evals) + list(c.features):
+            for suit in "CDHS":
+                if f"({suit})" in name or f"({suit}," in name or f", {suit})" in name:
+                    out.add(suit)
+    return out
+
+
+def lint_shape(contexts: list[Context]) -> list[str]:
+    """Ladders that band by strength but never band by shape.
+
+    Both reviewers of the seed-515151 match named this species
+    independently: a context whose rules ladder purely on points has no
+    rung for "responder holds his own long suit", so a six-bagger falls
+    through to the catch-all pass.  Four contexts in that match had the
+    defect and the `gap` lint could not see any of them - it reads
+    strength only.
+
+    Flagged: a context of three or more rules where every rule states a
+    strength band and NO rule mentions a suit at all.  Such a ladder can
+    only ever describe how strong the hand is, never what it looks like.
+    """
+    out = []
+    for ctx in contexts:
+        if len(ctx.rules) < 3:
+            continue
+        banded = [r for r in ctx.rules if strength_band(r) is not None]
+        if len(banded) < 3 or len(banded) < 0.6 * len(ctx.rules):
+            continue
+        if any(_mentioned_suits(r) for r in ctx.rules):
+            continue
+        # a ladder whose bids are all in ONE strain is "how high in the suit
+        # we have agreed", which needs no shape rung by construction
+        strains = {r.call.strain for r in ctx.rules
+                   if r.call.is_bid and not r.establishes.asking}
+        if len(strains) < 2:
+            continue
+        out.append(f"[shape]   {ctx.id} ({ctx.pattern!r}): {len(ctx.rules)} rules "
+                   f"ladder on strength alone - no rung mentions a suit, so a "
+                   f"long-suit hand has nothing to bid")
+    return out
+
+
+def lint_siblings(contexts: list[Context]) -> list[str]:
+    """A gate added to one member of a rule FAMILY but not to the others.
+
+    The species both reviewers named.  Every real instance crossed calls
+    or contexts rather than sitting side by side: the four per-suit keycard
+    asks (a combined-trump gate added, the raw length gate left behind),
+    the 2/1 denial written over 1S but not over 1H, a trump gate on the
+    direct raise but not on the ask continuation.  So the grouping key is
+    the rule id with suit letters and level digits normalised away, which
+    is exactly what makes `gst_rkc_C/D/H/S` or `r1H_2C`/`r1S_2C` one
+    family, and the check is whether one member's evaluator gate-set is
+    missing something all the others require.
+
+    Strength terms are excluded: rungs of a ladder differ by strength by
+    design.
+    """
+    STRENGTH = {"total_points", "adjusted_hcp", "rule_of_26",
+                "rule_of_26_sharp", "hcp"}
+
+    def family_key(rid: str) -> str:
+        k = re.sub(r"\$?[A-Z]{1,2}\b", "#", rid)      # $M, $oM, C, D, H, S
+        k = re.sub(r"\d+", "#", k)                    # level digits
+        return k
+
+    fams: dict[str, list[tuple[str, set[str]]]] = defaultdict(list)
+    for ctx in contexts:
+        for r in ctx.rules:
+            gates: set[str] = set()
+            for c in _walk(r.requires):
+                gates |= {eval_base(k) for k in c.evals}
+                gates |= {eval_base(f) for f in c.features}
+            gates -= STRENGTH
+            # context ids carry the expansion in brackets; strip it so the
+            # same rule across expansions lands in one family
+            kind = ("nt" if (r.call.is_bid and r.call.strain == "NT")
+                    else "bid" if r.call.is_bid
+                    else "pass" if r.call.is_pass else "dbl")
+            fams[family_key(r.id) + "|" + kind].append(
+                (f"{ctx.id.split('[')[0]}/{r.id}", gates))
+
+    # Divergences that are deliberate, with the reason.  A lint you cannot
+    # tell "yes, on purpose" is a lint people learn to ignore wholesale.
+    INTENTIONAL = {
+        # round 3: six cards IS the credential for a reopening rebid - the
+        # quality floor was pushing honourless six-baggers into a stopperless
+        # 1NT, so the *2 rungs deliberately dropped what *3/*4 still require
+        "ballow_rebid", "balhigh_rebid",
+    }
+
+    out = []
+    for fam, members in sorted(fams.items()):
+        if any(name.split("/")[-1].rsplit("_", 1)[0] in INTENTIONAL
+               for name, _ in members):
+            continue
+        # one instance per expansion is normal; a family needs >= 3 distinct
+        # gate-set members before a lone odd one out means anything
+        uniq = {frozenset(g) for _, g in members}
+        if len(members) < 3 or len(uniq) < 2:
+            continue
+        common = set.intersection(*(g for _, g in members)) if members else set()
+        union = set().union(*(g for _, g in members))
+        shared_by_most = {
+            gate for gate in union - common
+            if sum(1 for _, g in members if gate in g) >= max(2, len(members) - 1)
+        }
+        if not shared_by_most:
+            continue
+        for name, gates in members:
+            missing = shared_by_most - gates
+            if missing:
+                out.append(f"[sibling] {name}: lacks {sorted(missing)}, required by "
+                           f"the rest of its family ({len(members)} members)")
+    return out
+
+
+LINTS = {"floor": lint_floor, "collide": lint_collide, "gap": lint_gap,
+         "soft": lint_soft, "shape": lint_shape, "sibling": lint_siblings}
 
 
 def main() -> int:

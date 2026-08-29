@@ -55,6 +55,28 @@ def test_discrete_gates_are_sharp(contexts):
     assert L.lint_soft(contexts) == []
 
 
+def test_no_strength_only_ladders(contexts):
+    """No multi-strain ladder bands by strength while ignoring shape.
+
+    Both reviewers of the seed-515151 match named this species: a context
+    whose rules ladder purely on points has no rung for "responder holds
+    his own long suit", so a six-bagger falls through to the catch-all
+    pass.  The `gap` lint cannot see it - it reads strength only.
+    """
+    assert L.lint_shape(contexts) == []
+
+
+def test_rule_families_are_gated_consistently(contexts):
+    """No member of a rule family is missing a gate the rest require.
+
+    The other species both reviewers named, and every real instance crossed
+    calls or contexts: a combined-trump gate added to the keycard asks while
+    the raw length gate stayed, a denial written over 1S but not over 1H,
+    the their-suit stopper sweep that reached uc_nt2/uc_nt3 but not uc_nt1.
+    """
+    assert L.lint_siblings(contexts) == []
+
+
 def test_collide_lint_catches_a_known_collision():
     """The detector is not vacuous: it finds the real historical bug."""
     fixture = ROOT / "tests" / "fixtures" / "lint_collision_fixture.yaml"

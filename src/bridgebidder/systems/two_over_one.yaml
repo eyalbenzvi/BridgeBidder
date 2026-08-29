@@ -3854,7 +3854,7 @@ contexts:
       - id: advH_1S
         call: 1S
         priority: 54
-        requires: { suits: { S: [3, 13] }, hcp: [0, 8] }
+        requires: { suits: { S: [3, 13] }, hcp: [0, 8], evals: { "suit_diff(S,H)": [0, 13] } }
         shows: "0-8, spades (forced)"
         establishes: { forcing: non_forcing }
       - id: advH_2C
@@ -3883,7 +3883,7 @@ contexts:
       - id: advS_2H
         call: 2H
         priority: 54
-        requires: { suits: { H: [3, 13] }, hcp: [0, 8] }
+        requires: { suits: { H: [3, 13] }, hcp: [0, 8], evals: { "suit_diff(H,S)": [0, 13] } }
         shows: "0-8, hearts (forced)"
         establishes: { forcing: non_forcing }
       - id: advS_2C
@@ -10681,7 +10681,7 @@ contexts:
         priority: 27
         requires:
           hcp: [6, 10]
-          evals: { semi_balanced: [1, 1] }
+          evals: { weakest_their_stopper: [0.9, 9], semi_balanced: [1, 1] }
         shows: "natural 1NT: 6-10 balanced"
         establishes: { forcing: non_forcing }
       - id: uc_nt2
