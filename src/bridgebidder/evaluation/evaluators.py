@@ -114,6 +114,18 @@ def rule_of_15(hand: Hand, ctx: EvalContext) -> float:
     return hand.hcp + hand.suit_length("S")
 
 
+@register_evaluator("weakest_unbid_length")
+def weakest_unbid_length(hand: Hand, ctx: EvalContext) -> float:
+    """My length in the SHORTEST suit nobody has bid (0 if every suit is bid).
+    "Four cards in each unbid suit" is what a double of two named suits
+    promises; shortness in one of theirs is the DIRECT seat's test."""
+    shown = set(ctx.partner_suits) | set(ctx.their_suits)
+    if ctx.agreed_suit:
+        shown.add(ctx.agreed_suit)
+    unbid = [s for s in SUITS if s not in shown]
+    return float(min((hand.suit_length(s) for s in unbid), default=0))
+
+
 @register_evaluator("partner_shown_length")
 def partner_shown_length(hand: Hand, ctx: EvalContext, suit: str = "partner") -> float:
     """How many cards partner has PROMISED in a suit.  `lott_total_trumps`

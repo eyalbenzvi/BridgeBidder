@@ -35,6 +35,7 @@ _EVAL_S2 = {
     "stoppers": 0.3,
     "weakest_unshown_stopper": 0.3,
     "suit_length": _S2_SUIT,
+    "weakest_unbid_length": _S2_SUIT,   # combined lengths are counted, not estimated
     # combined trumps are counted, not estimated: a 7-card "fit" missing an
     # 8-trump gate is a different bid, not a near miss
     "lott_total_trumps": 0.4,

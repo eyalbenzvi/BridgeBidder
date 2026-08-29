@@ -2320,3 +2320,132 @@ here is recorded in the file as measured-negative.
 - `prepare_decision`'s `_SETUP_CACHE` is keyed on `id(system)`; loading a
   baseline and a prototype in one process can collide after a GC and produce
   false diffs.  Prototype in separate processes.
+
+## Round 13 (seed 131313): one board at a time, one verdict per decision
+
+A different loop, asked for directly: generate deals, play BEN, and on **every
+board we lose**, sit in each of our seats in turn and give the call exactly one
+verdict — **OK** / **CATEGORY** (the situation was filed as the wrong kind of
+auction) / **EXCEPTION** (the rule is right in general, wrong here) /
+**RULE-WRONG** (wrong wherever it fires).  Accumulate twenty suggested fixes,
+then hand them to an adversarial expert, apply what survives, measure.
+
+`tools/board_critique.py` is the instrument.  `ben_audit.py` ranks leads across
+a corpus; this does the opposite — one board, every call we made, its candidate
+set with fits and priorities, the live contexts, what the engine believed about
+partner *and* about the opponents, and BEN's call from the same seat.
+
+100 deals, seed 131313: **-25 IMPs**, 25 boards lost.  **397 of our decisions
+examined; BEN agreed with 290.**  Of the 107 disagreements **87 were ruled OK** —
+style, a scope-excluded threshold, a rule correct in its own seat, or a
+consequence of an earlier error.  Twenty fixes: 8 CATEGORY, 3 EXCEPTION,
+9 RULE-WRONG.
+
+### The critique killed eleven of the twenty, and six of the kills are on me
+
+**Six findings misquoted the rule they indicted.**  Three kills rest on that
+alone:
+
+- **FIX 3** claimed `ob_raise_4$M` has "no upper bound".  It is
+  `total_points: [19, 24]`, capped, with the reason in a comment.  I read the
+  `shows` text ("19+ support points") and did not open the constraint.
+- **FIX 10** claimed `uc_nt3` says "nothing about partner at all".  It carries
+  `rule_of_26: [24, 99]`, and `rule_of_26` uses partner's midpoint, so it
+  already reads the ceiling.  The real failure on that board is a 0.5-point soft
+  miss scoring 0.946; sharpening it reaches 3 tables / -2 IMPs.
+- **FIX 15 and FIX 18** named the PRIMARY READING rather than the rule that
+  matched.  Board 86 was decided by `cl_new_long2_S_hi` (floor **8**, six-card
+  suit), not `cl_new_S2` (floor 10, fit 0.31); board 67's seat is governed by
+  `ballow_reopen_X`, which exists and correctly declines with four of their suit.
+
+ROUND_METHOD has warned about the primary-reading trap since round 8 and I walked
+into it three times in one round.  **Re-rank every indictment through
+`score_candidates` before writing it down** is now a step, not advice.
+
+The other five kills are data, not misreading:
+
+- **FIX 5** (a floor on `cl_new_$X2` when our side has never bid): the named
+  category — we are silent, they have had a constructive auction — is **21
+  tables at mean -0.19 / par gap +2.43**, above baseline, and the point floor is
+  *anti*-correlated: the 10-11 band scores -0.70 and the 12+ band -1.80.
+- **FIX 13** (loosen `their_fit >= 8` when they have jumped to game) **does not
+  flip its own board** — `ch_raise_lott4_S` scores 0.011 there and fails the
+  sharp `lott >= 10` gate too — and the slice it would add is 8 tables at mean
+  -0.75 against a corpus mean of -0.80.  The restored coin flip, exactly.
+- **FIX 17** (overcall suit-quality siblings): the sandwich ladder is uniformly
+  +0.5 quality at both levels **by design**; the blocked population is 11 tables
+  at par gap +1.00.
+- **FIX 2**, **FIX 8**, **FIX 12**, **FIX 20**: each dies on its own
+  denominator.
+
+Two measurement notes from the critique worth as much as the fixes:
+**`par_gap` in the match rows is N/S-signed at BOTH tables** — read at face value
+it inverts the verdict on three of these families; ours is `+a_par_gap` and
+`-b_par_gap`, baseline **-0.378**.  And **`is_unbid_suit` has no sharp
+tolerance**: the first rule to use it leaks two wrong doubles, because a suit
+that IS bid still scores 0.8 against a `[1,1]` gate.
+
+### What shipped
+
+| bundle | own deals (131313) | review (242424) | held out (828282) |
+|---|---|---|---|
+| A — three `shows` repairs | 0 decisions change | 0 | 0 |
+| B — three starved seats | 0 decisions change | 0 | 0 |
+| C — two starved seats | | -744 -> -738 (+6) | -532 -> -525 (+7) |
+| FIX 6 alone — the sandwich double | | -738 -> **-729** (+9) | -525 (0 boards) |
+| **round total** | **-25 -> +8 (+33)** | **-744 -> -729 (+15)** | **-532 -> -525 (+7)** |
+
+**Bundle A — 46 sentences that did not state the gate that decides them.**
+44 raise rungs carry `rule_of_26` and not one disclosed it; ten four-level rungs
+said "13+ support points" while requiring 11; `cl_raise_C3/D3` said "10+" while
+requiring 8; `ballow_nt2_strong` claimed "partner still unlimited" with no
+condition on partner; `ballow_X` and `balhigh_X` said "values are marked
+opposite a passing partner" while silently demanding shortness in their suit.
+Each sentence is now **regenerated from the rule's own numbers**, so it cannot
+drift again.  Replay: **0 of 10,346 decisions change** (`shows` is read only by
+`explain.py`).  This is the round's largest edit and it is worth shipping on the
+user's standing rule that explainability outranks score — and because three of
+this round's own findings were caused by trusting these sentences.
+
+**Bundle B — three seats that did not exist.**  (a) The 1430 **5C reply shows
+one OR four keycards**, so a sign-off at five of the agreed suit is the asker
+assuming one; with four, only the answerer knows — and that seat matched **no
+context at all**.  (b) `ob_1m1S_2H_reverse` is expanded over both minors and only
+the 1C twin ever got an answering context, so responder **passed a forcing
+reverse**: `pass_forbidden` was set, nothing fit above the 0.30 forced-bid floor,
+and the catch-all took it at 1.00.  (c) The advance of a takeout double said
+"pulling to the cheapest 4+ suit" and implemented *longest*, bidding a minor at
+the three level over a major at the two.  All three reach **0 of 2,000 tables**;
+shipped on structure at zero measured cost, the round 7 / 8 / 11 precedent.
+
+**Bundle C — two invitations nobody could decline.**  (a) `adv1n_2NT_$o` invites
+opposite a 15-18 overcall and had no answering context, so `uc_nt3` (13-19
+balanced) accepted it — four firings in 2,000, **four acceptances**, -12 IMPs.
+The new context declines on a minimum 15 and accepts from 16, which is this
+file's own sibling threshold; a 17 threshold would have flipped one more review
+board and deleted the family's only winner, and choosing it for that reason is
+fitting the corpus, not stating an agreement.  (b) **Eleven with a six-card major
+opposite a 12-14 rebid fitted nothing** — pass, 2M and the game-forcing 3M all
+soft-miss by one and the lottery hands it to the *game force*.  There is nowhere
+to invite (3M is the force, 2NT explicitly denies six), so the sign-off's
+ceiling goes 10 -> 11.  A ceiling, not a floor: partner's shown minimum does not
+move.
+
+**FIX 6, measured alone — the sandwich seat is not the direct seat.**  `sw_X`
+demanded shortness in *opener's* suit, which is the direct-seat requirement in a
+seat where **both** opponents have named a suit.  A double there is takeout of
+both, and what it promises is length in the two unbid suits.  New evaluator
+`weakest_unbid_length` (sharp), added as a second `any_of` branch at the same
+12-point floor.  With three suits still unbid — they responded 1NT — the branch
+is unsatisfiable, which is right: that is a one-suited auction.  Three tables in
+2,000, all currently losing; +9 review, held-out untouched.
+
+### The species this round found, with counts
+
+1. **A force, an ask or an invitation authored without the seat that answers
+   it** — four instances in one hundred deals (the RKC 1-or-4 answerer, the 1D
+   reverse, the 2NT invite over a 1NT overcall, and the forcing new suit over a
+   weak two the critique found while killing FIX 8).  This is now the most
+   common defect species in the file, ahead of "range with no rule".
+2. **A rule whose `shows` sentence does not state the gate that decides it** —
+   46 of them, and they cost this round three false findings.

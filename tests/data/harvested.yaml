@@ -2275,3 +2275,94 @@
   seat: N
   calls: []
   expect: { call: "3H" }
+
+# --- round 13 (seed 131313): board-by-board critique ------------------------
+
+# THE AMBIGUOUS REPLY NEEDS AN ANSWERER.  The 1430 5C reply shows ONE OR FOUR
+# keycards, so a sign-off at five of the agreed suit is the asker assuming ONE.
+# With four, only the answerer knows - and that seat matched no context at all.
+- name: e13_rkc_5C_answerer_corrects_the_signoff
+  hand: "A.AJT6.AJ8.A8542"
+  dealer: W
+  vulnerability: Both
+  seat: N
+  calls: ["P", "1C", "P", "1H", "P", "4H", "P", "4NT", "P", "5C", "P", "5H", "P"]
+  expect: { call: "6H" }
+
+# ... and the one-keycard twin must still pass.  The sign-off rung is a COMPLETE
+# fallback, not the mirror of the slam gate (round 6's rkc5H_signoff lesson).
+- name: e13_rkc_5C_answerer_with_one_keycard_passes
+  hand: "KQT632.86.QJ9.QJ"
+  dealer: S
+  vulnerability: Both
+  seat: E
+  calls: ["P", "1C", "P", "1S", "P", "1NT", "P", "3S", "P", "4NT", "P", "5C", "P", "5S", "P"]
+  expect: { call: "P" }
+
+# A FORCE WITH NO ANSWERING SEAT.  `ob_1m1S_2H_reverse` is expanded over both
+# minors and only the 1C twin had a context, so responder passed a reverse:
+# nothing fit above the forced-bid floor and the catch-all pass took it at 1.00.
+- name: e13_responder_over_the_1D_reverse
+  hand: "Q9752.T76.2.AKQ8"
+  dealer: N
+  vulnerability: EW
+  seat: W
+  calls: ["P", "1D", "P", "1S", "P", "2H", "P"]
+  expect: { call: "2S" }
+
+# THE PULL LADDER SAID "CHEAPEST" AND IMPLEMENTED "LONGEST": four spades at the
+# two level beats five clubs at the three, and partner held AQ76.
+- name: e13_pull_the_double_to_the_cheaper_major
+  hand: "T832.Q64.4.QJT87"
+  dealer: S
+  vulnerability: Both
+  seat: W
+  calls: ["1D", "P", "1H", "P", "2H", "P", "P", "X", "P"]
+  expect: { call: "2S" }
+
+# AN INVITATION ANSWERED BY A RULE THAT ALWAYS SAYS YES IS NOT AN INVITATION.
+# The 1NT overcaller had no seat, so `uc_nt3` accepted on anything from 13 to 19.
+- name: e13_minimum_1NT_overcall_declines_the_invite
+  hand: "AQ54.KQ7.K93.J54"
+  dealer: N
+  seat: E
+  calls: ["1S", "1NT", "P", "2NT", "P"]
+  expect: { call: "P" }
+
+- name: e13_maximum_1NT_overcall_accepts_the_invite
+  hand: "AQ54.KQ7.K93.Q54"
+  dealer: N
+  seat: E
+  calls: ["1S", "1NT", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# ELEVEN WITH A SIX-CARD MAJOR opposite a 12-14 rebid fitted NOTHING - pass, 2S
+# and the game-forcing 3S all soft-missed by one and the lottery handed it to
+# the game force.  There is nowhere to invite, so the sign-off takes it.
+- name: e13_eleven_with_a_six_card_major_signs_off
+  hand: "KQT632.86.QJ9.QJ"
+  dealer: S
+  vulnerability: Both
+  seat: E
+  calls: ["P", "1C", "P", "1S", "P", "1NT", "P"]
+  expect: { call: "2S" }
+
+# THE SANDWICH SEAT IS NOT THE DIRECT SEAT.  Both opponents have named a suit,
+# so the double is takeout of both: four cards in each unbid suit, not shortness
+# in opener's.
+- name: e13_sandwich_double_of_both_their_suits
+  hand: "AQ76.A2.832.K962"
+  dealer: S
+  vulnerability: Both
+  seat: E
+  calls: ["1D", "P", "1H"]
+  expect: { call: "X" }
+
+# ... and with THREE suits still unbid it is a one-suited auction, where the
+# direct-seat shortness test applies and this hand has no double.
+- name: e13_sandwich_double_needs_two_bid_suits
+  hand: "AQ76.A2.832.K962"
+  dealer: N
+  seat: W
+  calls: ["1S", "P", "1NT"]
+  expect: { call: "P" }

@@ -20,6 +20,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 10 (per-decision BEN audit) | 171717 | -535 |
 | 11 | 242424 | -535 (two fixes reverted) |
 | 12 | 242424 (re-review) | -532 (categorization; one large fix reverted) |
+| 13 | 131313 | -525 (board-by-board critique; 11 of 20 fixes killed by review) |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -202,6 +203,27 @@ average -2.00/table, WITHOUT -2.54.
   confident first-divergence list exactly once, at -1 IMP.  Use
   `ben_audit.py` to find the *entry* to a bad auction; use a whole-corpus scan,
   sliced on the new opponent vocabulary, to find defects that live downstream.
+- **Re-rank every indictment through `score_candidates` before writing it
+  down.** The dossier's and the critique tool's `rule` field is the PRIMARY
+  READING - the highest-priority same-call rule - not the rule that matched.
+  Round 13 wrote three findings against the wrong rule because of it, and three
+  more against a `shows` sentence that did not match its own constraint. Open
+  the `requires` block; quote the numbers, not the sentence.
+- **`par_gap` in the match rows is N/S-signed at BOTH tables.** Our gap is
+  `+a_par_gap` and `-b_par_gap`; the corpus baseline is **-0.378**. Read at face
+  value it inverts the verdict on the sandwich seat, `general_pull_or_sit` and
+  `cl_new_*2`.
+- **`is_unbid_suit` has no sharp tolerance** in `_EVAL_S2` and no rule uses it.
+  The first rule to do so will leak: a suit that IS bid still scores 0.8 against
+  a `[1, 1]` gate. Same species as `two_of_top3` in round 5.
+- **The forcing new suit opposite a weak two is passed out.** `rw2_new_*` is
+  `forcing: one_round` and `2$W - P - <new suit> - P - ?` has no context, so a
+  seven-card weak two passes it at `uc_pass` fit 1.00. Fourth instance of the
+  starved-forcing-seat species, found in round 13 while killing a different fix.
+- **`responder_after_minor_rebid` has a ceiling, not a shape hole.** 18 tables,
+  mean -2.78, our gap -5.00: 19- and 23-counts sign off in `rmr_4$M` / `rmr_3$m`
+  because `rmr_4NT` demands `semi_balanced`. Larger than anything round 13
+  shipped.
 - The system cannot bid a grand slam.
 
 ---
