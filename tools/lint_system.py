@@ -294,13 +294,19 @@ def lint_siblings(contexts: list[Context]) -> list[str]:
                 gates |= {eval_base(k) for k in c.evals}
                 gates |= {eval_base(f) for f in c.features}
             gates -= STRENGTH
+            bands: dict[str, tuple[float, float]] = {}
+            for c in _walk(r.requires):
+                for k, v in c.evals.items():
+                    if eval_base(k) not in STRENGTH:
+                        bands[k] = (float(v[0]), float(v[1]))
             # context ids carry the expansion in brackets; strip it so the
             # same rule across expansions lands in one family
             kind = ("nt" if (r.call.is_bid and r.call.strain == "NT")
                     else "bid" if r.call.is_bid
                     else "pass" if r.call.is_pass else "dbl")
+            level = r.call.level if r.call.is_bid else 0
             fams[family_key(r.id) + "|" + kind].append(
-                (f"{ctx.id.split('[')[0]}/{r.id}", gates))
+                (f"{ctx.id.split('[')[0]}/{r.id}", gates, bands, level))
 
     # Divergences that are deliberate, with the reason.  A lint you cannot
     # tell "yes, on purpose" is a lint people learn to ignore wholesale.
@@ -309,31 +315,71 @@ def lint_siblings(contexts: list[Context]) -> list[str]:
         # quality floor was pushing honourless six-baggers into a stopperless
         # 1NT, so the *2 rungs deliberately dropped what *3/*4 still require
         "ballow_rebid", "balhigh_rebid",
+        # the 1430 ANSWERING scheme: 5C = 1-or-4, 5D = 0-or-3, 5H = 2 without
+        # the queen, 5S = 2 with it.  Different bands per call are the whole
+        # convention, not a divergence.
+        "rkc",
     }
 
     out = []
     for fam, members in sorted(fams.items()):
         if any(name.split("/")[-1].rsplit("_", 1)[0] in INTENTIONAL
-               for name, _ in members):
+               for name, *_ in members):
             continue
-        # one instance per expansion is normal; a family needs >= 3 distinct
-        # gate-set members before a lone odd one out means anything
-        uniq = {frozenset(g) for _, g in members}
-        if len(members) < 3 or len(uniq) < 2:
+        # one instance per expansion is normal; a family needs >= 3 members
+        # before a lone odd one out means anything
+        if len(members) < 3:
             continue
-        common = set.intersection(*(g for _, g in members)) if members else set()
-        union = set().union(*(g for _, g in members))
-        shared_by_most = {
-            gate for gate in union - common
-            if sum(1 for _, g in members if gate in g) >= max(2, len(members) - 1)
-        }
-        if not shared_by_most:
-            continue
-        for name, gates in members:
-            missing = shared_by_most - gates
-            if missing:
-                out.append(f"[sibling] {name}: lacks {sorted(missing)}, required by "
-                           f"the rest of its family ({len(members)} members)")
+        # (a) a gate the rest of the family requires and this member lacks
+        uniq = {frozenset(g) for _, g, _, _ in members}
+        if len(uniq) >= 2:
+            common = set.intersection(*(g for _, g, _, _ in members))
+            union = set().union(*(g for _, g, _, _ in members))
+            shared_by_most = {
+                gate for gate in union - common
+                if sum(1 for _, g, _, _ in members if gate in g) >= max(2, len(members) - 1)
+            }
+            for name, gates, _, _ in members:
+                missing = shared_by_most - gates
+                if missing:
+                    out.append(f"[sibling] {name}: lacks {sorted(missing)}, required by "
+                               f"the rest of its family ({len(members)} members)")
+        # (b) the SAME gate carrying a different BAND on one member.  A
+        # presence-only diff cannot see this, and it is how a correction
+        # applied to the major-suit keycard continuations was left off the
+        # minor-suit ones for two rounds: the gate was there in both, but
+        # one still demanded three keycards where the rest asked for two.
+        keys = set().union(*(set(b) for _, _, b, _ in members))
+        for key in sorted(keys):
+            vals = [(name, b[key], lv) for name, _, b, lv in members if key in b]
+            if len(vals) < 3:
+                continue
+            # A band that rises with the call level is a LADDER, not a
+            # divergence: a two-level raise legitimately needs seven
+            # combined trumps where the three-level rung needs eight.
+            by_level = sorted(vals, key=lambda t: t[2])
+            los = [v[0] for _, v, _ in by_level]
+            if len({lv for _, _, lv in vals}) > 1 and los == sorted(los):
+                continue
+            counts: dict[tuple[float, float], int] = defaultdict(int)
+            for _, v, _ in vals:
+                counts[v] += 1
+            if len(counts) < 2:
+                continue
+            majority, n_major = max(counts.items(), key=lambda kv: kv[1])
+            same_level = len({lv for _, _, lv in vals}) == 1
+            # At ONE call level there is no ladder to justify a divergence,
+            # so any split is a finding - including an even one.  (The
+            # major-suit keycard continuations were corrected to two
+            # keycards while the minor-suit ones stayed at three: a 2-2
+            # split that a majority rule would have skipped forever.)
+            if not same_level and n_major < len(vals) - 1:
+                continue  # a genuine per-member ladder
+            for name, v, _ in vals:
+                if v != majority:
+                    out.append(f"[sibling] {name}: gate '{key}' is {list(v)} but "
+                               f"{n_major} of {len(vals)} family members at the "
+                               f"same level use {list(majority)}")
     return out
 
 

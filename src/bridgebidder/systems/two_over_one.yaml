@@ -4877,7 +4877,7 @@ contexts:
       - id: rkc5S_slam_C
         call: 6C
         priority: 60
-        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        requires: { evals: { "keycards(agreed)": [2, 5] } }
         shows: "all five keycards and the queen: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: C }
       - id: rkc5S_signoff_C_nt
@@ -4901,7 +4901,7 @@ contexts:
       - id: rkc5S_slam_D
         call: 6D
         priority: 60
-        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        requires: { evals: { "keycards(agreed)": [2, 5] } }
         shows: "all five keycards and the queen: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: D }
       - id: rkc5S_signoff_D_nt
