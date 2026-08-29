@@ -245,6 +245,10 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
     if cond.is_competitive is not None:
         if auction.is_competitive != cond.is_competitive:
             return False
+    if cond.partner_limited is not None:
+        limited = eval_ctx is not None and eval_ctx.partner_max_hcp <= 17
+        if limited != cond.partner_limited:
+            return False
     if cond.my_last_call_was_double is not None:
         last = None
         for i, c in enumerate(auction.calls):
@@ -316,6 +320,8 @@ def _context_when_holds(ctx: Context, side: SideState, auction: Auction, seat: S
     if w.game_forced is not None and side.game_forced != w.game_forced:
         return False
     if w.asking is not None and side.asking != w.asking:
+        return False
+    if w.is_competitive is not None and auction.is_competitive != w.is_competitive:
         return False
     return True
 

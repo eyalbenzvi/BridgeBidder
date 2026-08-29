@@ -80,6 +80,7 @@ class Conditions:
     partner_last_call_was_double: bool | None = None  # partner's most recent non-pass call was X
     partner_has_acted: bool | None = None          # partner has made a non-pass call
     is_competitive: bool | None = None             # BOTH sides have made a non-pass call
+    partner_limited: bool | None = None            # partner has put a ceiling on their hand
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -109,6 +110,7 @@ class Conditions:
             partner_last_call_was_double=d.pop("partner_last_call_was_double", None),
             partner_has_acted=d.pop("partner_has_acted", None),
             is_competitive=d.pop("is_competitive", None),
+            partner_limited=d.pop("partner_limited", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -139,6 +141,7 @@ class Conditions:
             and self.partner_last_call_was_double is None
             and self.partner_has_acted is None
             and self.is_competitive is None
+            and self.partner_limited is None
             and not self.config
         )
 
@@ -199,6 +202,7 @@ class ContextWhen:
     game_forced: bool | None = None
     asking: str | None = None               # active ask, e.g. "keycards"
     we_hold_contract: bool | None = None    # our own last bid still stands
+    is_competitive: bool | None = None      # both sides have made a non-pass call
 
     @staticmethod
     def from_dict(d: dict | None) -> "ContextWhen":
@@ -208,6 +212,7 @@ class ContextWhen:
             game_forced=d.pop("game_forced", None),
             asking=d.pop("asking", None),
             we_hold_contract=d.pop("we_hold_contract", None),
+            is_competitive=d.pop("is_competitive", None),
         )
         if d:
             raise ValueError(f"Unknown context-when keys: {sorted(d)}")
@@ -216,7 +221,8 @@ class ContextWhen:
     @property
     def is_trivial(self) -> bool:
         return (self.agreed_suit is None and self.game_forced is None
-                and self.asking is None and self.we_hold_contract is None)
+                and self.asking is None and self.we_hold_contract is None
+                and self.is_competitive is None)
 
 
 @dataclass(frozen=True)
@@ -227,6 +233,12 @@ class Context:
     rules: tuple[BidRule, ...]
     description: str = ""
     when: ContextWhen = ContextWhen()
+    # `also_patterns` lets one context own several auction shapes without
+    # duplicating its rungs.  A second context carrying the same rules would
+    # either shadow the first or be shadowed by it; this is the superset-safe
+    # way to say "and this shape too".
+    also_patterns: tuple[str, ...] = ()
+    compiled_also: tuple[CompiledPattern, ...] = ()
 
     def rules_for_call(self, call: Call) -> list[BidRule]:
         return [r for r in self.rules if r.call == call]
@@ -308,6 +320,7 @@ def parse_system(data: dict) -> BiddingSystem:
         for concrete in _expand_context(dict(raw_ctx)):
             cid = str(concrete.pop("id"))
             pattern = str(concrete.pop("pattern"))
+            also = tuple(str(x) for x in (concrete.pop("also_patterns", []) or []))
             description = str(concrete.pop("description", ""))
             when = ContextWhen.from_dict(concrete.pop("when", None))
             rules = tuple(
@@ -321,6 +334,8 @@ def parse_system(data: dict) -> BiddingSystem:
                     id=cid,
                     pattern=pattern,
                     compiled_pattern=compile_pattern(pattern),
+                    also_patterns=also,
+                    compiled_also=tuple(compile_pattern(x) for x in also),
                     rules=rules,
                     description=description,
                     when=when,

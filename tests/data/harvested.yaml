@@ -2230,3 +2230,48 @@
   seat: E
   calls: ["1C", "1S", "2H"]
   expect: { call: "P" }
+
+# THE LAW IS A CATEGORY, NOT A CONTEXT.  The four-level Law raise existed only
+# in `general_competitive_low`; the same position reached one call later lands
+# in `general_competitive_high`, where the only four-level raise was again the
+# combined-values one.  This is board 862 after they raise - the moment the
+# `their_fit >= 8` gate is finally satisfied.
+- name: e12_law_four_level_after_their_raise
+  hand: "AQ9763.T6.K3.KT2"
+  dealer: S
+  vulnerability: Both
+  seat: E
+  calls: ["1C", "1S", "2H", "P", "3H", "P", "4H"]
+  expect: { call: "4S" }
+
+# THE ASK HAS BEEN ANSWERED.  Partner opened a weak two and has therefore
+# already promised six trumps; my doubleton is the eighth.  The ladder asked
+# how long MY suit was and signed off in three with 17 opposite a maximum.
+- name: e12_weak_two_ask_eighth_trump
+  hand: "A6.AK853.AT62.T3"
+  dealer: N
+  vulnerability: EW
+  seat: W
+  calls: ["P", "2S", "P", "2NT", "P", "3C", "P"]
+  expect: { call: "4S" }
+
+# THE LIMIT BID BEATS THE SECOND SUIT.  A semi-balanced 12-14 with 4-4 minors
+# fits both `ob_1NT` and `ob_1D1S_2C` at 1.00, and the undescriptive call won
+# on priority alone.
+- name: e12_limit_bid_beats_second_suit
+  hand: "A6.AJ2.T942.A742"
+  dealer: N
+  seat: N
+  calls: ["1D", "P", "1S", "P"]
+  expect: { call: "1NT" }
+
+# SEVEN CARDS IS THE SUIT QUALITY.  A preempt that needs two of the top three
+# is an opening bid with a long suit.  Seven hearts to the queen, vulnerable,
+# had no rung at all and passed.
+- name: e12_seven_card_suit_is_its_own_quality
+  hand: "9753.Q987654.J.K"
+  dealer: N
+  vulnerability: NS
+  seat: N
+  calls: []
+  expect: { call: "3H" }

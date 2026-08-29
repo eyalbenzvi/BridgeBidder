@@ -114,6 +114,22 @@ def rule_of_15(hand: Hand, ctx: EvalContext) -> float:
     return hand.hcp + hand.suit_length("S")
 
 
+@register_evaluator("partner_shown_length")
+def partner_shown_length(hand: Hand, ctx: EvalContext, suit: str = "partner") -> float:
+    """How many cards partner has PROMISED in a suit.  `lott_total_trumps`
+    bundles partner's length with my own, which is what a raise wants and
+    nothing else does; this asks about partner alone."""
+    s = _resolve_suit(suit, ctx)
+    return float(ctx.partner_min_length.get(s, 0)) if s else 0.0
+
+
+@register_evaluator("partner_shown_max")
+def partner_shown_max(hand: Hand, ctx: EvalContext) -> float:
+    """The ceiling partner has put on their own hand (40 = still unlimited).
+    A combined-values test is only honest opposite a limited partner."""
+    return float(ctx.partner_max_hcp)
+
+
 @register_evaluator("their_shown_hcp")
 def their_shown_hcp(hand: Hand, ctx: EvalContext) -> float:
     """HCP the two opponents have PROMISED between them.  A competitive

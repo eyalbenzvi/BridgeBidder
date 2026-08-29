@@ -412,7 +412,7 @@ contexts:
               - suits: { S: [4, 13] }
                 evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [3, 9]
-          evals: { "suit_quality(C)": [1, 9], "quick_tricks_outside(C)": [0, 2] }
+          evals: { "suit_quality(C)": [0, 9], "quick_tricks_outside(C)": [0, 2] }
         shows: "preempt: 7+ clubs, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -428,7 +428,7 @@ contexts:
               - suits: { S: [4, 13] }
                 evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [5, 9]
-          evals: { "suit_quality(C)": [1.5, 9], "quick_tricks_outside(C)": [0, 2] }
+          evals: { "suit_quality(C)": [1, 9], "quick_tricks_outside(C)": [0, 2] }
         shows: "preempt: 7+ decent clubs, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -444,7 +444,7 @@ contexts:
               - suits: { S: [4, 13] }
                 evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [3, 9]
-          evals: { "suit_quality(D)": [1, 9], "quick_tricks_outside(D)": [0, 2] }
+          evals: { "suit_quality(D)": [0, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "preempt: 7+ diamonds, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -460,7 +460,7 @@ contexts:
               - suits: { S: [4, 13] }
                 evals: { "suit_quality(S)": [1.5, 9] }
           hcp: [5, 9]
-          evals: { "suit_quality(D)": [1.5, 9], "quick_tricks_outside(D)": [0, 2] }
+          evals: { "suit_quality(D)": [1, 9], "quick_tricks_outside(D)": [0, 2] }
         shows: "preempt: 7+ decent diamonds, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -471,7 +471,7 @@ contexts:
           suits: { H: [7, 13] }
           not: { suits: { S: [4, 13] }, evals: { "suit_quality(S)": [1.5, 9] } }
           hcp: [3, 9]
-          evals: { "suit_quality(H)": [1, 9], "quick_tricks_outside(H)": [0, 2] }
+          evals: { "suit_quality(H)": [0, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 7+ hearts, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -482,7 +482,7 @@ contexts:
           suits: { H: [7, 13] }
           not: { suits: { S: [4, 13] }, evals: { "suit_quality(S)": [1.5, 9] } }
           hcp: [5, 9]
-          evals: { "suit_quality(H)": [1.5, 9], "quick_tricks_outside(H)": [0, 2] }
+          evals: { "suit_quality(H)": [1, 9], "quick_tricks_outside(H)": [0, 2] }
         shows: "preempt: 7+ decent hearts, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -493,7 +493,7 @@ contexts:
           suits: { S: [7, 13] }
           not: { suits: { H: [4, 13] }, evals: { "suit_quality(H)": [1.5, 9] } }
           hcp: [3, 9]
-          evals: { "suit_quality(S)": [1, 9], "quick_tricks_outside(S)": [0, 2] }
+          evals: { "suit_quality(S)": [0, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 7+ spades, 3-9 HCP"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
@@ -504,7 +504,7 @@ contexts:
           suits: { S: [7, 13] }
           not: { suits: { H: [4, 13] }, evals: { "suit_quality(H)": [1.5, 9] } }
           hcp: [5, 9]
-          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
+          evals: { "suit_quality(S)": [1, 9], "quick_tricks_outside(S)": [0, 2] }
         shows: "preempt: 7+ decent spades, 5-9 HCP (vulnerable)"
         establishes: { forcing: non_forcing }
         when: { we_vulnerable: true, opening_seat: [1, 2, 3] }
@@ -1922,9 +1922,16 @@ contexts:
         requires: { suits: { $M: [4, 13] }, evals: { total_points: [19, 24] } }
         shows: "game raise: 4 $M support, 19+ support points"
         establishes: { forcing: sign_off, agreed_suit: $M }
+      # THE LIMIT BID BEATS THE SECOND SUIT.  With a semi-balanced minimum and
+      # no fit, 1NT names the hand in one call; the cheap second minor is what
+      # you bid when you cannot.  `ob_1D1S_2C` (priority 57) and this rule both
+      # fit 1.00 on a 4-4 minor two-suiter that is also semi-balanced, and the
+      # undescriptive call won on priority alone.  Raised from 55: a duplicate
+      # rung at 57.5 has identical `requires` and therefore identical effect,
+      # but it splits one call into two readings and loses a denial.
       - id: ob_1NT
         call: 1NT
-        priority: 55
+        priority: 57.5
         # semi-balanced, not balanced: 5-4-2-2 is a 1NT rebid in anyone's
         # system, and requiring at most one doubleton pushed those hands
         # into rebidding a five-card minor instead.
@@ -5925,6 +5932,23 @@ contexts:
         requires: { hcp: [14, 40], evals: { weakest_unshown_stopper: [0.9, 9] } }
         shows: "nine tricks: the unshown suits are stopped"
         establishes: { forcing: sign_off }
+      # THE ASK HAS BEEN ANSWERED.  `w2ac_game_$W` asks how long MY suit is,
+      # opposite a partner who opened a weak two and has therefore already
+      # promised six: my doubleton is the eighth trump.  The generic raises
+      # learned this and say so in their own comments; this ladder never got
+      # the sweep, so a 17-count opposite an answered ask signed off in three.
+      # Additive rather than a widening: loosening `w2ac_game_$W` in place also
+      # loosens the MINOR, where nine tricks beat eleven and 3NT is right.
+      # Hence priority 54.5 - under `w2ac_3NT_$W` (55), over `w2ac_sign_$W` (54).
+      - id: w2ac_game8_$W
+        call: 4$W
+        priority: 54.5
+        when: { partner_suit: $W, is_competitive: false }
+        requires:
+          suits: { $W: [2, 13] }
+          evals: { total_points: [15, 40], "lott_total_trumps($W)": [8, 26], longest_suit_length: [0, 5] }
+        shows: "placing the game opposite the weak two: partner showed six, so my doubleton is the eighth trump"
+        establishes: { forcing: sign_off, agreed_suit: $W }
       - id: w2ac_sign_$W
         call: 3$W
         priority: 54
@@ -9833,6 +9857,21 @@ contexts:
   # an undiscussed fallback.
   # =========================================================================
 
+  # MEASURED AND REVERTED (round 12).  "Contested" really is a property of the
+  # auction rather than of RHO's last call: the pattern below means "RHO just
+  # bid", so the moment RHO passes the position falls to
+  # `general_uncontested_continuation`, whose pattern `... - P - ?` only means
+  # "RHO passed".  Reviewer B measured that slice at 465 tables, mean -1.14
+  # against a corpus mean of -0.80 - the largest single population in the
+  # review, and the diagnosis is correct.  Routing it here anyway
+  # (`also_patterns: ["... - bid<3C - P - ?"]` plus `is_competitive: true`)
+  # measured **-59 paired and -106 held-out** and broke five locked scenarios:
+  # a context that DEFINES a call takes over interpreting it, so every
+  # behaviour authored in the uncontested continuation - the doubler's raise of
+  # a three-level advance, the refusal to bid game opposite a preemptive raise
+  # - silently disappeared.  The toolkit swap is not the repair; porting
+  # individual rungs under `when: { is_competitive: true }` is, and that is
+  # what `uc_raise_lott4_$M` does.
   - id: general_competitive_low
     description: "General competitive agreements after their 1- or 2-level bid"
     pattern: "... - bid<3C - ?"
@@ -10716,6 +10755,21 @@ contexts:
         establishes: { forcing: non_forcing }
         negative_inference_weight: soft
 
+  # MEASURED AND REVERTED (round 12).  "Contested" really is a property of the
+  # auction rather than of RHO's last call: the pattern below means "RHO just
+  # bid", so the moment RHO passes the position falls to
+  # `general_uncontested_continuation`, whose pattern `... - P - ?` only means
+  # "RHO passed".  Reviewer B measured that slice at 465 tables, mean -1.14
+  # against a corpus mean of -0.80 - the largest single population in the
+  # review, and the diagnosis is correct.  Routing it here anyway
+  # (`also_patterns: ["... - bid>=3C - P - ?"]` plus `is_competitive: true`)
+  # measured **-59 paired and -106 held-out** and broke five locked scenarios:
+  # a context that DEFINES a call takes over interpreting it, so every
+  # behaviour authored in the uncontested continuation - the doubler's raise of
+  # a three-level advance, the refusal to bid game opposite a preemptive raise
+  # - silently disappeared.  The toolkit swap is not the repair; porting
+  # individual rungs under `when: { is_competitive: true }` is, and that is
+  # what `uc_raise_lott4_$M` does.
   - id: general_competitive_high
     description: "General competitive agreements after their 3-level-or-higher bid"
     pattern: "... - bid>=3C - ?"
@@ -10878,6 +10932,32 @@ contexts:
           evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
+      # THE LAW AT THE FOUR LEVEL, in the seat where the auction actually
+      # reaches it.  `ch_raise_$M4` tests COMBINED VALUES (rule_of_26 >= 25),
+      # the right test in a constructive auction and the wrong one in a
+      # contested one.  When they have shown an eight-card fit and we hold ten
+      # trumps, the four level is right on shape - whether it makes or it is a
+      # save.  Gates copied verbatim from `cl_raise_lott4_$M` so the category
+      # reads the same everywhere; `is_competitive: true` is what keeps it out
+      # of an uncontested auction, where it has no business firing.
+      - id: ch_raise_lott4_H
+        call: 4H
+        priority: 32
+        when: { partner_suit: H, is_competitive: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { "lott_total_trumps(H)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_raise_lott4_S
+        call: 4S
+        priority: 32
+        when: { partner_suit: S, is_competitive: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { "lott_total_trumps(S)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_raise_S2
         call: 2S
         priority: 30
@@ -11857,6 +11937,32 @@ contexts:
           evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
+      # THE LAW AT THE FOUR LEVEL, in the seat where the auction actually
+      # reaches it.  `ballow_raise_$M4` tests COMBINED VALUES (rule_of_26 >= 25),
+      # the right test in a constructive auction and the wrong one in a
+      # contested one.  When they have shown an eight-card fit and we hold ten
+      # trumps, the four level is right on shape - whether it makes or it is a
+      # save.  Gates copied verbatim from `cl_raise_lott4_$M` so the category
+      # reads the same everywhere; `is_competitive: true` is what keeps it out
+      # of an uncontested auction, where it has no business firing.
+      - id: ballow_raise_lott4_H
+        call: 4H
+        priority: 32
+        when: { partner_suit: H, is_competitive: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { "lott_total_trumps(H)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ballow_raise_lott4_S
+        call: 4S
+        priority: 32
+        when: { partner_suit: S, is_competitive: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { "lott_total_trumps(S)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ballow_raise_S2
         call: 2S
         priority: 30
@@ -12415,6 +12521,32 @@ contexts:
           evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "competitive raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
+      # THE LAW AT THE FOUR LEVEL, in the seat where the auction actually
+      # reaches it.  `balhigh_raise_$M4` tests COMBINED VALUES (rule_of_26 >= 25),
+      # the right test in a constructive auction and the wrong one in a
+      # contested one.  When they have shown an eight-card fit and we hold ten
+      # trumps, the four level is right on shape - whether it makes or it is a
+      # save.  Gates copied verbatim from `cl_raise_lott4_$M` so the category
+      # reads the same everywhere; `is_competitive: true` is what keeps it out
+      # of an uncontested auction, where it has no business firing.
+      - id: balhigh_raise_lott4_H
+        call: 4H
+        priority: 32
+        when: { partner_suit: H, is_competitive: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { "lott_total_trumps(H)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: balhigh_raise_lott4_S
+        call: 4S
+        priority: 32
+        when: { partner_suit: S, is_competitive: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { "lott_total_trumps(S)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: balhigh_raise_S2
         call: 2S
         priority: 30
@@ -12990,6 +13122,32 @@ contexts:
           evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps(H)": [8, 26] }
         shows: "raise of partner's H: 13+ support points and a real trump fit opposite partner's shown range"
         establishes: { forcing: non_forcing, agreed_suit: H }
+      # THE LAW AT THE FOUR LEVEL, in the seat where the auction actually
+      # reaches it.  `uc_raise_$M4` tests COMBINED VALUES (rule_of_26 >= 25),
+      # the right test in a constructive auction and the wrong one in a
+      # contested one.  When they have shown an eight-card fit and we hold ten
+      # trumps, the four level is right on shape - whether it makes or it is a
+      # save.  Gates copied verbatim from `cl_raise_lott4_$M` so the category
+      # reads the same everywhere; `is_competitive: true` is what keeps it out
+      # of an uncontested auction, where it has no business firing.
+      - id: uc_raise_lott4_H
+        call: 4H
+        priority: 32
+        when: { partner_suit: H, is_competitive: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { "lott_total_trumps(H)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_raise_lott4_S
+        call: 4S
+        priority: 32
+        when: { partner_suit: S, is_competitive: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { "lott_total_trumps(S)": [10, 26], total_points: [11, 40], their_fit: [8, 26] }
+        shows: "the Law at the four level: they have a fit and so have we, ten-plus trumps our way - the four level is right on shape, not on combined points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_raise_S2
         call: 2S
         priority: 30

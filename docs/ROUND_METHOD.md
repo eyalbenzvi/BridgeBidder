@@ -19,6 +19,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 9b (agreed-suit follow-up) | - | -558 |
 | 10 (per-decision BEN audit) | 171717 | -535 |
 | 11 | 242424 | -535 (two fixes reverted) |
+| 12 | 242424 (re-review) | -532 (categorization; one large fix reverted) |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -185,6 +186,22 @@ average -2.00/table, WITHOUT -2.54.
   sharp `lott_total_trumps >= 8` gate counts partner's SHOWN minimum, so a
   simple raise (3) plus my own bid suit (4) counts 7 and both the invitational
   and game rungs score ~0.08.  Named independently by both round-8 reviewers.
+- **`general_uncontested_continuation` is dispatched on RHO's last call, not on
+  whether the auction is contested.**  Its `pattern: "... - P - ?"` means "RHO
+  passed"; a `uc_*` rule therefore decides a COMPETITIVE auction on 465 of 2000
+  tables at mean **-1.14** (CI excludes the -0.804 corpus mean), against -0.67
+  on the job it was written for.  The diagnosis is confirmed; the obvious repair
+  is not.  Round 12 routed those positions to the competitive contexts
+  (`also_patterns` + context-level `is_competitive`, both now in the DSL) and
+  measured **-59 paired / -106 held out**, breaking five locked scenarios,
+  because a context that DEFINES a call takes over interpreting it.  Port
+  individual rungs under `when: { is_competitive: true }` instead - that is what
+  `uc_raise_lott4_$M` does, at +12.
+- **First-divergence ranking is blind to defects that only occur late in an
+  auction.**  `uc_pass`, the catch-all of the population above, appears in the
+  confident first-divergence list exactly once, at -1 IMP.  Use
+  `ben_audit.py` to find the *entry* to a bad auction; use a whole-corpus scan,
+  sliced on the new opponent vocabulary, to find defects that live downstream.
 - The system cannot bid a grand slam.
 
 ---

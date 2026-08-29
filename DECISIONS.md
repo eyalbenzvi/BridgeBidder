@@ -2176,3 +2176,147 @@ ratio was not a promise that every audit finding generalises; it was one round's
 result.  The discipline that mattered here was decomposition: the bundle
 measured **-28** held out, and decomposing it (-24, -3, +0) is the only reason
 the round shipped anything at all rather than reverting a mixed batch wholesale.
+
+## Round 12 (seed 242424 re-review): the engine could not say "competitive"
+
+Not a new corpus.  The owner's diagnosis reframed the problem and the round
+tested it: *every board where we lose IMPs may be a **categorization** problem
+- if East on board 862 had categorized the auction as competitive, then 4S
+follows immediately from the Law.  The missing thing is not a rule, it is a
+name for what kind of auction this is.*
+
+The measurement that motivated it: of the 278 decisions in the round-11 audit
+where BEN confidently disagreed with our first divergence, **BEN's call already
+existed as a candidate in 255 (92%)**, at fit >= 0.9 in 105, and **half were
+settled by `priority`** - a static number that sees neither the hand nor the
+auction.  The engine usually has the right rule and picks a different one.
+
+But they do **not** cluster: 278 decisions spread over **223 distinct rule
+pairs**, 186 of them singletons.  The largest apparent pattern (17 decisions,
+-89 IMPs: the catch-all pass beating an available opening at fit 0.70-0.89)
+dies on the denominator - 138 tables corpus-wide at mean **-0.70 against a
+corpus mean of -0.80**, i.e. above baseline.  Per-pair patching has no
+denominator; a category does.
+
+### The gap, and closing it
+
+`Auction.is_competitive` ("both sides have made a non-pass call") existed and
+was read by exactly one thing: the code fallback.  Worse, the inference engine
+has always maintained a **full descriptor for each opponent** - from East's
+seat on 862 it knows South is 10-21 with 3+ clubs and North 10+ with 5+ hearts
+- and every bit of it was dropped at the `EvalContext` boundary.  The system
+could say "partner has values"; it had no way to say "they have values".
+
+Additive, neutral defaults: `EvalContext` gains `is_competitive`,
+`their_shown_count`, `their_min_hcp`, `their_min_length`, `their_max_fit`
+(from `analysis.descriptors[lho|rho]`), plus `partner_max_hcp` and
+`partner_min_length` reached through new evaluators.  Evaluators
+`their_shown_hcp`, `their_fit`, `their_bidders`, `partner_shown_length`,
+`partner_shown_max`.  Rule-level `when` keys `is_competitive` and
+`partner_limited`; context-level `when: is_competitive` and `also_patterns`.
+
+### The seed category, and the correction the measurement forced
+
+`cl_raise_$X4` - the only four-level competitive raise - is gated on
+`rule_of_26 >= 25`, a **combined-values** test.  That is the right question in
+a constructive auction and the wrong one in a competitive one.  Board 862's
+East, eleven trumps and 14 total points, made 24, fitted 0.80, and lost to the
+catch-all pass at 1.00.
+
+Gated on our own ten trumps alone the new Law rung measured **+1 over 1000
+boards**: one good save (+11) against four boards pushed from a making 3H to a
+failing 4H.  Ten trumps *our way* is not the Law.  Adding `their_fit >= 8` -
+the Law is about TOTAL trumps, so bidding one more is only right when **both**
+sides have a fit - kept both wins and removed all four losses: **+12**.  Board
+862 itself now correctly passes, because 4S doubled goes for 800 against their
+making 4H; the gate defers the category one round, to the moment they raise.
+
+### What shipped
+
+| experiment | paired | held out |
+|---|---|---|
+| `cl_raise_lott4_$M`, `their_fit >= 8` | -804 -> -792 (+12) | -535 (0 boards) |
+| the same rung in the four other contexts (reviewer A) | -792 -> -780 (+12) | -535 (0 boards) |
+| reviewer B items 1-3 | -780 -> -744 (+36) | -535 -> **-532** (+3) |
+| **round total** | **-804 -> -744 (+60)** | **-535 -> -532 (+3)** |
+
+1. **The Law at the four level is a category, not a context.**  The seed rung
+   lived only in `general_competitive_low`; the same position one call later,
+   or from the balancing seat, lands elsewhere and meets the combined-values
+   ladder again.  Reviewer A measured the slice (contested, ten disclosed
+   trumps in partner's major, four-level raise legal, we passed) at **16 tables
+   / -93 IMPs / mean -5.81**, and with `their_fit >= 8` at **10 tables / -7.80**
+   - none of them in `general_competitive_low`.  Eight rungs added to
+   `general_competitive_high`, `general_balancing_high`, `general_balancing_low`
+   and `general_uncontested_continuation`, gates copied verbatim so the category
+   reads the same everywhere, `is_competitive: true` keeping the `uc_` copy out
+   of an uncontested auction.  **The minors measured -0.90, i.e. baseline - the
+   rung was deliberately not extended there.**
+2. **Seven cards is the suit quality.**  `<=10 HCP with a seven-card suit` is
+   the worst-behaved sub-population in the whole opening decision: **8 tables at
+   mean -6.00** against a corpus mean of -0.80, invisible inside `open_pass`'s
+   769 firings.  The suit-quality floor on the eight three-level preempts drops
+   (nv 1 -> 0, vul 1.5 -> 1).  The HCP bands are untouched, so partner's shown
+   minimum does not move; the exactly-six weak-two population measured **-0.69,
+   better than baseline**, and was left alone.
+3. **The ask has been answered.**  Partner opened a weak two and has therefore
+   promised six trumps, so my doubleton is the eighth.  `w2ac_game_$W` asked how
+   long MY suit was and a 17-count signed off in three.  New rung
+   `w2ac_game8_$W` at priority 54.5 - under `w2ac_3NT_$W` so nine tricks still
+   beat eleven in a minor, over the sign-off.  A gate given to one rule and not
+   its siblings, for the fourth round running.
+4. **The limit bid beats the second suit.**  `ob_1D1S_2C` (57) and `ob_1NT` (55)
+   both fit 1.00 on a semi-balanced 12-14 with 4-4 minors, and the undescriptive
+   call won on priority alone.  Reviewer B proposed a new rung at 57.5;
+   its `requires` are character-for-character `ob_1NT`'s, so it is a re-rank in
+   additive clothing that splits one call into two readings and drops a denial
+   from the explanation.  Shipped as the one-line equivalent instead:
+   **`ob_1NT` priority 55 -> 57.5**.  Same six tables change, one reading.
+
+### The reverted experiment, and it is the round's most important result
+
+Reviewer B's headline was the largest measured population in either review, and
+the diagnosis is **correct**: `general_uncontested_continuation`, described in
+the file as *"General constructive agreements in an uncontested auction"*, has
+`pattern: "... - P - ?"` - which means *"RHO passed"*, not *"the auction is
+uncontested"*.  One call changes the toolkit:
+
+```
+1H (1S) 2H     - ?  ->  general_competitive_low
+1H (1S) 2H (P) - ?  ->  general_uncontested_continuation
+```
+
+Whole corpus: a `uc_*` rule decides a **competitive** auction on **465 tables at
+mean -1.14** (CI [-1.57,-0.72], excluding the -0.804 corpus mean); on a
+genuinely uncontested auction, 126 tables at **-0.67**, better than baseline.
+`uc_pass` is 86% competitive.  Excess loss on the misapplied slice ~ **-156**.
+
+Routing them - `also_patterns: ["... - bid - P - ?"]` on both competitive
+contexts plus `when: { is_competitive: true }` - measured **-59 paired and -106
+held out**, changed 231 boards, and broke **five locked regression scenarios**:
+the doubler's raise of a three-level advance, the refusal to bid game opposite a
+preemptive raise, a takeout double with their second suit.  A context that
+DEFINES a call takes over interpreting it, so every behaviour authored in the
+uncontested continuation silently disappeared.  Fourth scalp for the shadowing
+trap and the most expensive one.
+
+**A correct categorization diagnosis does not license a toolkit swap.**  The
+repair is to port individual rungs under `when: { is_competitive: true }` - what
+`uc_raise_lott4_$M` does, at +12 - not to re-route the context.  The engine
+capability (`also_patterns`, context-level `is_competitive`) is kept; its use
+here is recorded in the file as measured-negative.
+
+### Method notes
+
+- **First-divergence ranking is blind to defects that only occur late.**
+  `uc_pass` - the catch-all of the largest misapplied population in the engine -
+  appears in the confident first-divergence list **once**, at -1 IMP.  A
+  downstream pass is almost never the first divergence.  Both reviewers found
+  their largest categories by whole-corpus scan, not from the audit rows.
+- **A category is only worth its denominator.**  Two of the three shipped
+  categories reach fewer than ten tables per 2000.  The round's +60 paired is
+  real and its +3 held out is honest: these are correct bridge, narrowly
+  reached.  What generalises is the vocabulary, not the rungs.
+- `prepare_decision`'s `_SETUP_CACHE` is keyed on `id(system)`; loading a
+  baseline and a prototype in one process can collide after a GC and produce
+  false diffs.  Prototype in separate processes.

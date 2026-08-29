@@ -1147,33 +1147,6 @@
     "derived_from_rule": "ob_raise_4S",
     "text": "not: game raise: 4 S support, 19+ support points",
     "weight": "strong"
-   },
-   {
-    "constraint": {
-     "not": {
-      "evals": {
-       "balanced": [
-        1,
-        1
-       ]
-      },
-      "hcp": [
-       18,
-       19
-      ],
-      "not": {
-       "suits": {
-        "S": [
-         4,
-         13
-        ]
-       }
-      }
-     }
-    },
-    "derived_from_rule": "ob_2NT",
-    "text": "not: jump: balanced 18-19, no fit",
-    "weight": "strong"
    }
   ],
   "forcing_status": "non_forcing",

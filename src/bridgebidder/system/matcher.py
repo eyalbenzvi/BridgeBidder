@@ -116,12 +116,26 @@ def pattern_matches(cp: CompiledPattern, stripped_calls: list[str]) -> bool:
     return all(tok.matches(c) for tok, c in zip(cp.tokens, tail))
 
 
+def _best_specificity(ctx, stripped_calls: list[str]) -> int | None:
+    """Highest specificity among the context's patterns that match, or None.
+
+    A context may declare `also_patterns` - extra auction shapes it owns.  The
+    match is the most specific shape that fits, so adding a shape can never
+    make an existing match less specific.
+    """
+    best = None
+    for cp in (ctx.compiled_pattern, *getattr(ctx, "compiled_also", ())):
+        if pattern_matches(cp, stripped_calls):
+            best = cp.specificity if best is None else max(best, cp.specificity)
+    return best
+
+
 def match_all_contexts(contexts, stripped_calls: list[str]) -> list:
     """All matching contexts, most specific first (ties keep file order)."""
     scored = [
-        (ctx.compiled_pattern.specificity, -i, ctx)
+        (spec, -i, ctx)
         for i, ctx in enumerate(contexts)
-        if pattern_matches(ctx.compiled_pattern, stripped_calls)
+        if (spec := _best_specificity(ctx, stripped_calls)) is not None
     ]
     scored.sort(key=lambda t: (t[0], t[1]), reverse=True)
     return [ctx for _, _, ctx in scored]
