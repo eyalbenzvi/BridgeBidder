@@ -13,7 +13,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 4 (triaged 1000) | 515151 | -826 |
 | 5 | 515151 | -700 |
 | 6 | 626262 | -639 |
-| 7 | 747474 | -627 |
+| 7 | 747474 | -621 |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -42,6 +42,7 @@ place a fix is guaranteed to look good, because it is where the fix was found.
    `python3 tools/fuzz_decisions.py --n 300 --strict`.
 7. **Measure twice**: the SAME 1000 boards paired against `<tag>_before`, and
    the held-out corpus (seed 828282) against the previous round's held-out run.
+   The current bar is **-621** (`reports/x3_weak2_heldout.jsonl`).
    Keep or revert on the held-out number.
 8. Preserve both verdicts to `docs/EXPERT_REVIEW_<seed>_{A,B}.md`, add
    regression scenarios to `tests/data/harvested.yaml`, append a `DECISIONS.md`

@@ -1559,9 +1559,18 @@ lesson, and it now has two scalps.
 
 Both reviewers independently marked the weak-two natural overcalls as needing
 their own measurement (one measured the affected population as genuinely split,
-+38 of wins against -78 of losses).  That fix, plus `ch_new_long3`, is in the
-tree but **NOT yet measured** - its first run was reclaimed before writing
-output.  Keep or revert it on the held-out number.
++38 of wins against -78 of losses).  Measured alone on the held-out corpus:
+**-627 -> -621, +6 IMPs over 9 changed boards (4 up, 3 down).  Noise.**
+
+**Kept, on structure rather than score**, the same call as round 6's
+singleton-honour fix: the defence to a weak two had NO natural suit overcall at
+all, while its sibling - the defence to a three-level preempt - has a full set;
+`vw2_pass` at priority 30 outranked the generic toolkit's overcall at 26, so an
+eleven-count with KQJ95 passed 2D out.  That is a hole in the convention card,
+it is explicable in one sentence of bridge, and the superset guards mean the new
+contexts cannot subtract a reading.  The score does not care either way.
+
+Round 7 final held-out standing: **-621 (-0.621 IMPs/board)**.
 
 The method is now written down in `docs/ROUND_METHOD.md` so a session with no
 memory of these rounds can run one correctly.
