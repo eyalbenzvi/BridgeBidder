@@ -655,10 +655,17 @@ contexts:
         requires: { hcp: [8, 9] }
         shows: "invitational, 8-9 HCP (had a 4-card major)"
         establishes: { forcing: invitational }
+      # same arithmetic as stm_6NT_nofit, opposite the 2D denial
+      - id: stm_2D_6NT
+        call: 6NT
+        priority: 64
+        requires: { hcp: [18, 21], evals: { controls: [4, 12] } }
+        shows: "18+ opposite a 15-17 notrump: 33+ combined, bidding the slam"
+        establishes: { forcing: sign_off }
       - id: stm_2D_3NT
         call: 3NT
         priority: 62
-        requires: { hcp: [10, 15] }
+        requires: { hcp: [10, 17] }
         shows: "to play, game values (had a 4-card major)"
         establishes: { forcing: sign_off }
 
@@ -696,10 +703,19 @@ contexts:
         requires: { hcp: [8, 9], suits: { $M: [0, 3] } }
         shows: "invitational, no fit for the major"
         establishes: { forcing: invitational }
+      # Opposite a 15-17 notrump the arithmetic is exact: 16-17 is 31-34 and
+      # belongs in 3NT, 18+ is 33+ and belongs in slam.  The ladder stopped at
+      # 15, so an 18-count with no major fit PASSED opener's 2S with 6NT cold.
+      - id: stm_6NT_nofit
+        call: 6NT
+        priority: 59
+        requires: { hcp: [18, 21], suits: { $M: [0, 3] }, evals: { controls: [4, 12] } }
+        shows: "18+ opposite a 15-17 notrump: 33+ combined, bidding the slam"
+        establishes: { forcing: sign_off }
       - id: stm_3NT_nofit
         call: 3NT
         priority: 57
-        requires: { hcp: [10, 15], suits: { $M: [0, 3] } }
+        requires: { hcp: [10, 17], suits: { $M: [0, 3] } }
         shows: "to play, no fit for the major (opener may correct with the other major)"
         establishes: { forcing: sign_off }
 
@@ -1064,6 +1080,27 @@ contexts:
         shows: "3+ card fit: playing game in the major"
         establishes: { forcing: sign_off, agreed_suit: $M }
       - id: choice_pass
+        call: P
+        priority: 55
+        requires: { suits: { $M: [0, 2] } }
+        shows: "doubleton in responder's major: 3NT stands"
+        establishes: { forcing: sign_off }
+
+  # The 1NT analogue above was authored and its 2NT twin was not: after
+  # 2NT - 3T - 3M - 3NT opener had NO CONTEXT AT ALL, so a hand with three-card
+  # support and an eight-card fit passed 3NT through the code fallback.
+  - id: nt2_transfer_3NT_choice
+    description: "Opener's correction over the choice-of-games 3NT after a 2NT opening"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "2NT - P - 3$T - P - 3$M - P - 3NT - P - ?"
+    rules:
+      - id: nt2_choice_4$M
+        call: 4$M
+        priority: 60
+        requires: { suits: { $M: [3, 5] } }
+        shows: "3+ card fit: playing game in the major"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: nt2_choice_pass
         call: P
         priority: 55
         requires: { suits: { $M: [0, 2] } }
@@ -1758,7 +1795,10 @@ contexts:
       - id: rw2_2NT_ask
         call: 2NT
         priority: 70
-        requires: { hcp: [15, 40] }
+        # not with a VOID in partner's suit: the feature ask is a slam try in
+        # the suit partner preempted, and you cannot ask about a suit you will
+        # never play.  Such a hand has a fit-1.0 forcing new suit of its own.
+        requires: { hcp: [15, 40], suits: { $W: [1, 13] } }
         shows: "strong inquiry (15+), asking for a feature"
         establishes: { forcing: one_round }
         alertable: true
@@ -1855,7 +1895,12 @@ contexts:
       - id: ob_1C1H_1S
         call: 1S
         priority: 60
-        requires: { suits: { S: [4, 13] }, hcp: [10, 17], not: { suits: { H: [4, 13] } } }
+        # A ONE-LEVEL rebid in a new suit is not limited to 17: it is the
+        # cheapest way to show the second suit and opener bids again.  The
+        # 17 cap left 18-19 WITH A FOUR-CARD MAJOR with no rule at all (the
+        # 18-19 balanced 2NT rebid explicitly denies one), so an 18-count
+        # holding 4-4 in the majors bid a generic 3NT over the 1D response.
+        requires: { suits: { S: [4, 13] }, hcp: [10, 19], not: { suits: { H: [4, 13] } } }
         shows: "4+ spades, 10-17, unbalanced or 4-4-x-x"
         establishes: { forcing: non_forcing }
       - id: ob_1C1H_2D_reverse
@@ -1873,7 +1918,12 @@ contexts:
       - id: ob_1D1H_1S
         call: 1S
         priority: 60
-        requires: { suits: { S: [4, 13] }, hcp: [10, 17], not: { suits: { H: [4, 13] } } }
+        # A ONE-LEVEL rebid in a new suit is not limited to 17: it is the
+        # cheapest way to show the second suit and opener bids again.  The
+        # 17 cap left 18-19 WITH A FOUR-CARD MAJOR with no rule at all (the
+        # 18-19 balanced 2NT rebid explicitly denies one), so an 18-count
+        # holding 4-4 in the majors bid a generic 3NT over the 1D response.
+        requires: { suits: { S: [4, 13] }, hcp: [10, 19], not: { suits: { H: [4, 13] } } }
         shows: "4+ spades, 10-17"
         establishes: { forcing: non_forcing }
       - id: ob_1D1H_2C
@@ -1993,6 +2043,24 @@ contexts:
         requires: { suits: { D: [4, 13] }, hcp: [12, 17], not: { any_of: [ { suits: { S: [4, 13] } }, { suits: { C: [5, 13] } } ] } }
         shows: "second suit: 4+ diamonds"
         establishes: { forcing: non_forcing }
+      # Opener's cheap second suit IS limited - partner can pass 2C - so 18-21
+      # belongs in a JUMP shift.  That ladder exists for 1D - 1M - 3C and was
+      # never given to the major tree, so an 18-to-21 count with a second suit
+      # had no rule at all and described itself as "13-19 balanced" by bidding
+      # a generic 3NT.  Not applied to the 2C/2D rungs themselves: widening
+      # those would delete the jump shift by priority.
+      - id: ob_1H1S_3C_jump
+        call: 3C
+        priority: 48
+        requires: { suits: { C: [4, 13] }, hcp: [18, 21], not: { suits: { S: [4, 13] } } }
+        shows: "jump shift: 4+ clubs, 18-21, game forcing"
+        establishes: { forcing: game_forcing }
+      - id: ob_1H1S_3D_jump
+        call: 3D
+        priority: 47
+        requires: { suits: { D: [4, 13] }, hcp: [18, 21], not: { any_of: [ { suits: { S: [4, 13] } }, { suits: { C: [5, 13] } } ] } }
+        shows: "jump shift: 4+ diamonds, 18-21, game forcing"
+        establishes: { forcing: game_forcing }
 
   - id: opener_rebid_1M_1NT
     description: "Opener's rebid over the (semi-)forcing 1NT"
@@ -4747,14 +4815,29 @@ contexts:
       - id: rkc5C_slam
         call: 6$A
         priority: 60
-        requires: { evals: { "keycards(agreed)": [3, 5] } }
+        requires:
+          all_of:
+            - evals: { "keycards(agreed)": [3, 5] }
+            # sibling of rkc5H_slam, which already carries this and whose
+            # clause was never swept onto the other two replies: a keycard is
+            # already unaccounted for, so the trump QUEEN cannot be missing as
+            # well unless the fit is long enough to drop it.  A short fit
+            # missing the queen is a trump loser, not a finesse.
+            - any_of:
+                - evals: { "trump_queen(agreed)": [1, 1] }
+                - evals: { "lott_total_trumps(agreed)": [9, 26] }
         shows: "all/most keycards present: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: $A }
+      # The signoff must be a COMPLETE fallback, not the mirror of the slam
+      # gate: once the slam rule can decline on the trump QUEEN the hand still
+      # holds three keycards, so a keycard-gated signoff leaves the seat with
+      # nothing fitting and the engine invents a call out of thin air.  This is
+      # the same repair rkc5H_signoff already carries.
       - id: rkc5C_signoff
         call: 5$A
         priority: 55
-        requires: { evals: { "keycards(agreed)": [0, 2] } }
-        shows: "two keycards missing: signing off"
+        requires: {}
+        shows: "a keycard or the trump queen missing: signing off"
         establishes: { forcing: sign_off, agreed_suit: $A }
 
   - id: rkc_continue_after_5D
@@ -4780,12 +4863,26 @@ contexts:
         call: 6$A
         priority: 60
         requires:
-          any_of:
-            # four in hand: partner's 0-or-3 is 0 and at most one is missing
-            - evals: { "keycards(agreed)": [4, 5] }
-            # two in hand: opposite shown values the reply can only be 3
-            - hcp: [12, 40]
-              evals: { "keycards(agreed)": [2, 2], rule_of_26: [28, 99] }
+          all_of:
+            - any_of:
+                # four in hand: partner's 0-or-3 is 0 and at most one is missing
+                - evals: { "keycards(agreed)": [4, 5] }
+                # two in hand: opposite shown values the reply can only be 3
+                - hcp: [12, 40]
+                  evals: { "keycards(agreed)": [2, 2], rule_of_26: [28, 99] }
+                # ONE in hand opposite a partner who has SHOWN a big hand:
+                # zero is not credible, so the reply is three - four of the
+                # five are present and exactly one is missing.
+                - hcp: [12, 40]
+                  evals: { "keycards(agreed)": [1, 1], rule_of_26: [31, 99] }
+            # sibling of rkc5H_slam, which already carries this and whose
+            # clause was never swept onto the other two replies: a keycard is
+            # already unaccounted for, so the trump QUEEN cannot be missing as
+            # well unless the fit is long enough to drop it.  A short fit
+            # missing the queen is a trump loser, not a finesse.
+            - any_of:
+                - evals: { "trump_queen(agreed)": [1, 1] }
+                - evals: { "lott_total_trumps(agreed)": [9, 26] }
         shows: "the count says at most one keycard is missing: bidding the slam"
         establishes: { forcing: sign_off, agreed_suit: $A }
       - id: rkc5D_signoff
@@ -5474,6 +5571,26 @@ contexts:
         requires: { suits: { H: [6, 13] } }
         shows: "pulling partner's double back to my own suit"
         establishes: { forcing: non_forcing }
+      # The ladder had adx_pull_my_S and adx_pull_my_H and NO MINOR TWIN, and
+      # every generic minor pull rung below is gated `i_have_acted: false` - so
+      # the player who had actually BID the minor held nothing but the weak-hand
+      # pass, and converted partner's takeout double for penalties holding six
+      # of his own suit.  With a suit of my own I take the double out into it,
+      # in a minor exactly as in a major.  The trump-stack sit outranks these.
+      - id: adx_pull_my_D
+        call: 3D
+        priority: 58.5
+        when: { my_suit: D, cheapest_in_suit: true, their_last_bid_suit: true }
+        requires: { suits: { D: [5, 13] } }
+        shows: "pulling partner's double back to my own suit"
+        establishes: { forcing: non_forcing }
+      - id: adx_pull_my_C
+        call: 3C
+        priority: 58.5
+        when: { my_suit: C, cheapest_in_suit: true, their_last_bid_suit: true }
+        requires: { suits: { C: [5, 13] } }
+        shows: "pulling partner's double back to my own suit"
+        establishes: { forcing: non_forcing }
       - id: adx_pull_S2
         call: 2S
         priority: 58
@@ -5807,6 +5924,26 @@ contexts:
         establishes: { forcing: one_round, agreed_suit: H }
         alertable: true
         convention: cue_bid
+      # The ladder stopped at 4D: with hearts agreed the highest cue is 4S, and
+      # without it a hand holding a spade VOID opposite partner's 4D cue had
+      # nothing to say and signed off in game.  This breaks the file's stated
+      # "a cue chain can never push past 4M" invariant deliberately: a cue above
+      # game is standard and is a slam commitment, which is why it is gated at
+      # 30 combined rather than the 28 the below-game cues use.  The answering
+      # seat already exists - slam_try_over_game_raise's gr_rkc_general_$M reads
+      # keycards(agreed), and this rule's agreed_suit: H makes that resolve to
+      # HEARTS, not to spades.
+      - id: cue_H_S4
+        call: 4S
+        priority: 42
+        when: { standing_bid_level: [4, 4], cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          suits: { H: [2, 13] }
+          evals: { "control_in(S)": [2, 2], total_points: [14, 40], rule_of_26: [30, 99] }
+        shows: "cue bid past game: first-round spade control, slam interest for hearts"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: cue_bid
       - id: cue_H_signoff
         call: 4H
         priority: 34
@@ -6099,7 +6236,15 @@ contexts:
       - id: gf_2NT_natural
         call: 2NT
         priority: 33
-        requires: { evals: { stoppers(their): [0.5, 99] } }
+        # This is the ONLY game-force landing rule whose pattern matches after
+        # their double (the rest are "... - P - ?"), so after a double the whole
+        # GF toolkit collapses onto it - and it had no shape gate at all: a 5-5
+        # opener bid a natural 2NT holding a club void.  The system's own maxim
+        # already says no notrump with a void; this was the one place it was
+        # not enforced.
+        requires:
+          evals: { stoppers(their): [0.5, 99] }
+          not: { evals: { void: [1, 1] } }
         shows: "natural, no fit yet (game force continues)"
         establishes: { forcing: game_forcing }
 
@@ -6710,6 +6855,53 @@ contexts:
         establishes: { forcing: game_forcing, agreed_suit: $m }
 
 
+  # The sibling of `1D - 1S - 2C`, authored without it: with the 1H response
+  # this seat had NO context, and in the generic toolkit two rungs interlock
+  # badly - uc_rebid_H2 is vetoed above 25 combined points, and the rung above
+  # it demands the cheapest bid in the suit, which 3H is not while 2H is still
+  # available.  So a hand TOO STRONG for the capped two-level rebid had no
+  # rebid at all: responder passed 2C holding seven hearts and eleven points.
+  - id: responder_rebid_1D_1H_2C
+    description: "Responder's rebid after 1D - 1H - 2C (opener's second suit)"
+    pattern: "1D - P - 1H - P - 2C - P - ?"
+    rules:
+      - id: r1d1h2c_pass
+        call: P
+        priority: 50
+        requires: { hcp: [6, 9], suits: { C: [4, 13] } }
+        shows: "clubs are as good as anything: passing the second suit"
+        establishes: { forcing: sign_off }
+      - id: r1d1h2c_2D
+        call: 2D
+        priority: 54
+        requires: { hcp: [6, 10], suits: { D: [2, 13] } }
+        shows: "preference back to the first suit: 6-10"
+        establishes: { forcing: sign_off, agreed_suit: D }
+      - id: r1d1h2c_2H
+        call: 2H
+        priority: 55
+        requires: { hcp: [6, 10], suits: { H: [6, 13] } }
+        shows: "to play: 6+ hearts, minimum"
+        establishes: { forcing: sign_off }
+      - id: r1d1h2c_2NT
+        call: 2NT
+        priority: 56
+        requires: { hcp: [11, 12], evals: { semi_balanced: [1, 1] } }
+        shows: "invitational, 11-12 balanced"
+        establishes: { forcing: invitational }
+      - id: r1d1h2c_3NT
+        call: 3NT
+        priority: 57
+        requires: { hcp: [13, 15], evals: { semi_balanced: [1, 1] } }
+        shows: "game values, balanced"
+        establishes: { forcing: sign_off }
+      - id: r1d1h2c_3H
+        call: 3H
+        priority: 59
+        requires: { hcp: [11, 40], suits: { H: [6, 13] } }
+        shows: "6+ hearts, invitational or better"
+        establishes: { forcing: invitational }
+
   - id: responder_after_1D1S_2C
     description: "Responder over opener's 2C second suit (1D - 1S - 2C, not a reverse)"
     # This seat had NO context: five boards ended in a passed-out 2C, one of
@@ -6999,6 +7191,78 @@ contexts:
         requires: { hcp: [6, 21] }
         shows: "placing the game opposite 18-21"
         establishes: { forcing: sign_off }
+
+  # The answering seat for the 1H - 1S jump shift above.  A ladder and the
+  # context that answers it are ONE fix: authored apart, opener's jump falls to
+  # the generic toolkit.  Mirrors responder_after_jump_shift rung for rung, and
+  # its 3NT carries the full band with no shape gate, so the new context cannot
+  # create a hole in what it shadows.
+  - id: responder_after_major_jump_shift
+    description: "Responder opposite opener's 18-21 jump shift after 1H - 1S"
+    expand: { m: [C, D] }
+    pattern: "1H - P - 1S - P - 3$m - P - ?"
+    rules:
+      - id: rmjs_6NT_$m
+        call: 6NT
+        priority: 60
+        requires: { hcp: [14, 21], evals: { semi_balanced: [1, 1], controls: [4, 12] }, not: { suits: { H: [3, 13] } } }
+        shows: "14+ opposite the 18-21 jump shift: 32+ combined"
+        establishes: { forcing: sign_off }
+      - id: rmjs_4H_$m
+        call: 4H
+        priority: 58
+        requires: { suits: { H: [3, 13] }, hcp: [6, 21] }
+        shows: "three-card heart support opposite 18-21: the 5-3 game"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rmjs_3NT_$m
+        call: 3NT
+        priority: 55
+        requires: { hcp: [6, 21] }
+        shows: "placing the game opposite 18-21"
+        establishes: { forcing: sign_off }
+
+  # 2C makes clubs a BID suit, so gf_new_3C's `unbid_suit: C` could never offer
+  # a natural club rebid here: a 22-count with five clubs and four hearts had no
+  # candidate above fit 0.35 and bid 3H on the four-bagger.  Only 3C is defined;
+  # every other call stays with the GF landing contexts that already cover it.
+  - id: opener_rebid_2C_2NT
+    description: "Opener's rebid after 2C - 2NT (balanced positive)"
+    pattern: "2C - P - 2NT - P - ?"
+    rules:
+      - id: r2cnt_3C_nat
+        call: 3C
+        priority: 56
+        requires: { suits: { C: [5, 13] } }
+        shows: "natural, 5+ clubs, game forcing"
+        establishes: { forcing: game_forcing }
+
+  # Responder invites with a natural 2NT in a minor-opening auction and opener
+  # had no context at all, so the generic three-of-a-minor rebid fired -
+  # non-forcing - and was passed out: seventeen points with seven clubs and a
+  # diamond void played 3C with 6C cold.  Every generic uc_rebid_$m4 rung
+  # carries `cheapest_in_suit`, and 3C IS the cheapest, so that ladder can
+  # never climb.  Deliberately ONE rung: 5m is a call the generic toolkit never
+  # offers at this node, so this context shadows nothing.  (The pass-versus-3m
+  # question genuinely splits the corpus and is left alone.)
+  - id: opener_over_invite_2NT_minor
+    description: "Opener over responder's 2NT invite in a minor-opening auction"
+    expand_pairs:
+      - { m: C, M: H, R: 1S }
+      - { m: C, M: H, R: 2C }
+      - { m: C, M: S, R: 2C }
+      - { m: D, M: H, R: 2D }
+      - { m: D, M: S, R: 2D }
+    pattern: "1$m - P - 1$M - P - $R - P - 2NT - P - ?"
+    rules:
+      - id: oim2n_5m_$M$R
+        call: 5$m
+        priority: 61
+        requires:
+          suits: { $m: [6, 13] }
+          hcp: [16, 21]
+          evals: { weakest_unshown_stopper: [0, 0.5] }
+        shows: "no notrump: 6+ $m and 16+, playing the minor game"
+        establishes: { forcing: sign_off, agreed_suit: $m }
 
   - id: jump_shift_quant_accept
     description: "Opener answers the quantitative 4NT over his 18-21 jump shift"
@@ -7673,8 +7937,13 @@ contexts:
       - id: rr1H1SC_2S
         call: 2S
         priority: 55
-        requires: { suits: { S: [6, 13], H: [0, 2] }, evals: { total_points: [6, 10] } }
-        shows: "6+ spades, no heart fit, to play"
+        # FIVE, not six: 1H - 1S - 2m - 2S is preference to my own suit at the
+        # two level and shows five in every standard partnership.  Demanding six
+        # meant the five-card hands bid it anyway on a soft miss, and partner -
+        # reading six - fed a sharp LOTT gate a trump that did not exist and
+        # raised a 5-2 fit to game.
+        requires: { suits: { S: [5, 13], H: [0, 2] }, evals: { total_points: [6, 10] } }
+        shows: "5+ spades, no heart fit, to play"
         establishes: { forcing: sign_off }
       - id: rr1H1SC_2NT
         call: 2NT
@@ -7721,8 +7990,13 @@ contexts:
       - id: rr1H1SD_2S
         call: 2S
         priority: 55
-        requires: { suits: { S: [6, 13], H: [0, 2] }, evals: { total_points: [6, 10] } }
-        shows: "6+ spades, no heart fit, to play"
+        # FIVE, not six: 1H - 1S - 2m - 2S is preference to my own suit at the
+        # two level and shows five in every standard partnership.  Demanding six
+        # meant the five-card hands bid it anyway on a soft miss, and partner -
+        # reading six - fed a sharp LOTT gate a trump that did not exist and
+        # raised a 5-2 fit to game.
+        requires: { suits: { S: [5, 13], H: [0, 2] }, evals: { total_points: [6, 10] } }
+        shows: "5+ spades, no heart fit, to play"
         establishes: { forcing: sign_off }
       - id: rr1H1SD_2NT
         call: 2NT
@@ -10390,16 +10664,22 @@ contexts:
       - id: balhigh_reopen_X
         call: X
         priority: 41
+        # `standing_bid_level: [3]`: you cannot take a FOUR-level contract out
+        # for takeout - partner's answer would be at the five level - so above
+        # the three level this rule was doubling with shortness and no defence.
         when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
-                my_last_call_was_double: false, we_hold_contract: false }
+                my_last_call_was_double: false, we_hold_contract: false,
+                standing_bid_level: [3] }
+        # The light "extreme shortness reopens a level lighter" branch was on
+        # the WRONG SIBLING: balancing a king lighter is a one- and two-level
+        # agreement, and its low-level twin `ballow_reopen_X` never had it.
+        # At the three level the double commits partner to the FOUR level and
+        # partner - who has passed throughout - converts it, so every light one
+        # became a penalty double made on takeout shape: doubling BECAUSE we
+        # have no trump tricks.
         requires:
-          any_of:
-            - hcp: [16, 40]
-              evals: { max_their_suit_length: [0, 2] }
-            # extreme shortness reopens a level lighter
-            - hcp: [12, 40]
-              evals: { max_their_suit_length: [0, 1] }
-          evals: { longest_suit_length: [0, 5] }
+          hcp: [16, 40]
+          evals: { max_their_suit_length: [0, 2], longest_suit_length: [0, 5] }
         shows: "reopening double: 16+, short in their suit, our side already in"
         establishes: { forcing: one_round }
       - id: balhigh_X
@@ -10927,7 +11207,12 @@ contexts:
         establishes: { forcing: non_forcing, agreed_suit: C }
       - id: uc_raise_C3
         call: 3C
-        priority: 31
+        # below uc_nt3 (29) and uc_minor_game_5m (28): with a minor fit the
+        # game is 3NT or five of the minor, so three of a minor is where you
+        # LAND when neither is available, not your first choice.  The major
+        # ladder was already ordered this way; the minor one was not, so the
+        # uncapped invitational rung outranked every game rung below it.
+        priority: 27
         when: { partner_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [3, 13] }
@@ -10958,7 +11243,12 @@ contexts:
         establishes: { forcing: non_forcing, agreed_suit: D }
       - id: uc_raise_D3
         call: 3D
-        priority: 31
+        # below uc_nt3 (29) and uc_minor_game_5m (28): with a minor fit the
+        # game is 3NT or five of the minor, so three of a minor is where you
+        # LAND when neither is available, not your first choice.  The major
+        # ladder was already ordered this way; the minor one was not, so the
+        # uncapped invitational rung outranked every game rung below it.
+        priority: 27
         when: { partner_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [3, 13] }
@@ -11198,7 +11488,12 @@ contexts:
         establishes: { forcing: non_forcing }
       - id: uc_rebid_C3
         call: 3C
-        priority: 29
+        # below uc_nt3 (29) and uc_minor_game_5m (28): with a minor fit the
+        # game is 3NT or five of the minor, so three of a minor is where you
+        # LAND when neither is available, not your first choice.  The major
+        # ladder was already ordered this way; the minor one was not, so the
+        # uncapped invitational rung outranked every game rung below it.
+        priority: 27
         when: { my_suit: C, cheapest_in_suit: true }
         requires:
           suits: { C: [6, 13] }
@@ -11226,7 +11521,12 @@ contexts:
         establishes: { forcing: non_forcing }
       - id: uc_rebid_D3
         call: 3D
-        priority: 29
+        # below uc_nt3 (29) and uc_minor_game_5m (28): with a minor fit the
+        # game is 3NT or five of the minor, so three of a minor is where you
+        # LAND when neither is available, not your first choice.  The major
+        # ladder was already ordered this way; the minor one was not, so the
+        # uncapped invitational rung outranked every game rung below it.
+        priority: 27
         when: { my_suit: D, cheapest_in_suit: true }
         requires:
           suits: { D: [6, 13] }
@@ -12192,14 +12492,24 @@ contexts:
       - id: ob1C1D_1H
         call: 1H
         priority: 62
-        requires: { suits: { H: [4, 13] }, hcp: [12, 17] }
-        shows: "4+ hearts, 12-17"
+        # A ONE-LEVEL rebid in a new suit is not limited to 17: it is the
+        # cheapest way to show the second suit and opener bids again.  The
+        # 17 cap left 18-19 WITH A FOUR-CARD MAJOR with no rule at all (the
+        # 18-19 balanced 2NT rebid explicitly denies one), so an 18-count
+        # holding 4-4 in the majors bid a generic 3NT over the 1D response.
+        requires: { suits: { H: [4, 13] }, hcp: [12, 19] }
+        shows: "4+ hearts, 12-19"
         establishes: { forcing: one_round }
       - id: ob1C1D_1S
         call: 1S
         priority: 61
-        requires: { suits: { S: [4, 13] }, hcp: [12, 17], not: { suits: { H: [4, 13] } } }
-        shows: "4+ spades, 12-17, denies 4 hearts"
+        # A ONE-LEVEL rebid in a new suit is not limited to 17: it is the
+        # cheapest way to show the second suit and opener bids again.  The
+        # 17 cap left 18-19 WITH A FOUR-CARD MAJOR with no rule at all (the
+        # 18-19 balanced 2NT rebid explicitly denies one), so an 18-count
+        # holding 4-4 in the majors bid a generic 3NT over the 1D response.
+        requires: { suits: { S: [4, 13] }, hcp: [12, 19], not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades, 12-19, denies 4 hearts"
         establishes: { forcing: one_round }
       - id: ob1C1D_1NT
         call: 1NT
