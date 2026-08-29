@@ -77,6 +77,7 @@ class Conditions:
     partner_last_suit: str | None = None           # partner's most recent suit bid is this suit
     i_preempted: bool | None = None                # my first call was a preempt (weak 2+/jump overcall)
     my_last_call_was_double: bool | None = None    # my most recent non-pass call was X
+    partner_last_call_was_double: bool | None = None  # partner's most recent non-pass call was X
     partner_has_acted: bool | None = None          # partner has made a non-pass call
     config: dict[str, Any] = field(default_factory=dict)
 
@@ -104,6 +105,7 @@ class Conditions:
             partner_last_suit=d.pop("partner_last_suit", None),
             i_preempted=d.pop("i_preempted", None),
             my_last_call_was_double=d.pop("my_last_call_was_double", None),
+            partner_last_call_was_double=d.pop("partner_last_call_was_double", None),
             partner_has_acted=d.pop("partner_has_acted", None),
             config=d.pop("config", {}) or {},
         )
@@ -132,6 +134,7 @@ class Conditions:
             and self.partner_last_suit is None
             and self.i_preempted is None
             and self.my_last_call_was_double is None
+            and self.partner_last_call_was_double is None
             and self.partner_has_acted is None
             and not self.config
         )

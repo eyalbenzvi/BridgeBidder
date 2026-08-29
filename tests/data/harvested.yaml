@@ -1759,3 +1759,172 @@
   seat: N
   calls: ["1H", "P", "1S", "P"]
   expect: { call: "3C" }
+
+# --- expert round 8 (seed 858585) -------------------------------------------
+
+# the jump rebid was stated in raw HCP and ranked BELOW the simple rebid, while
+# its sibling over the 1NT response uses playing points and outranks it: 15 HCP
+# with seven hearts and a singleton is an eighteen-point hand
+- name: e8_jump_rebid_counts_playing_points
+  hand: "J.AKQT84.JT2.AT2"
+  dealer: N
+  seat: N
+  calls: ["1H", "P", "1S", "P"]
+  expect: { call: "3H" }
+
+# ... but a real minimum still makes the simple rebid, and an eight-card suit
+# still bids the game (a draft at priority 53 broke this one)
+- name: e8_jump_rebid_leaves_the_minimum_alone
+  hand: "J7.AKT982.85.763"
+  dealer: N
+  seat: N
+  calls: ["1H", "P", "1S", "P"]
+  expect: { call: "2H" }
+
+- name: e8_jump_rebid_leaves_the_game_bid_alone
+  hand: ".AKQT9543.AT.Q64"
+  dealer: N
+  seat: N
+  calls: ["1H", "P", "1S", "P"]
+  expect: { call: "4H" }
+
+# Stayman's fit ladder ran 8-9 / 10-15 / 15-17 and stopped: 18 opposite 15-17
+# with a known 4-4 fit had no rule and passed 2H.  The waiver every other
+# keycard ask carries was missing too - T4 is a worthless doubleton and this
+# hand holds three keycards
+- name: e8_stayman_fit_ladder_has_no_ceiling
+  hand: "T4.KQ94.AQJ5.AK6"
+  dealer: N
+  seat: S
+  calls: ["1NT", "P", "2C", "P", "2H", "P"]
+  expect: { call: "4NT" }
+
+# every rung over the negative double was capped at minimum strength, so a
+# 17-count with six clubs had no rule and bid a generic 3NT with their suit
+# wide open (down three, vulnerable)
+- name: e8_opener_has_a_rebid_over_the_negative_double
+  hand: "K7.QJ.KQ5.KQJ764"
+  dealer: W
+  seat: W
+  vulnerability: Both
+  calls: ["1C", "1S", "X", "P"]
+  expect: { call: "3C" }
+
+# responder's 3D jump is forcing and had no answering context at all, so
+# opener's best non-pass fitted 0.28 and the force was legally passed out
+- name: e8_opener_answers_the_forcing_3D_jump
+  hand: "AJ65.K643..AT974"
+  dealer: W
+  seat: N
+  calls: ["P", "1C", "P", "1D", "P", "1H", "P", "3D", "P"]
+  expect: { calls: ["3NT", "3H", "4D"] }
+
+# 15 opposite a shown 20-21 is 35 combined: the ladder offered only an
+# invitation, and no seat existed to accept it
+- name: e8_slam_over_the_completed_2NT_transfer
+  hand: "AQ7.KQ63.K95.Q84"
+  dealer: W
+  seat: S
+  calls: ["P", "2NT", "P", "3D", "P", "3H", "P"]
+  expect: { call: "6NT" }
+
+# the quantitative 4NT over a minor rebid had nobody to accept it: three
+# aces and a six-card suit is a maximum for a 12-15 rebid
+- name: e8_opener_accepts_the_quantitative_4NT
+  hand: "AJ7.A82.8.A98752"
+  dealer: E
+  seat: E
+  calls: ["1C", "P", "1H", "P", "2C", "P", "4NT", "P"]
+  expect: { call: "6NT" }
+
+# the response ladder opposite a preempt topped out at the game raise, so
+# every slam opposite a seven-card suit was signed off by construction
+- name: e8_keycard_ask_opposite_a_preempt
+  hand: "AT6.AKJ8.AT.A754"
+  dealer: N
+  seat: S
+  calls: ["3S", "P"]
+  expect: { call: "4NT" }
+
+# ... and three keycards is NOT enough: opposite a hand that has shown 4-9
+# the reply cannot keep you out of a slam off an ace (this one bid a 6S
+# with eleven tricks in an earlier draft)
+- name: e8_no_keycard_ask_opposite_a_preempt_with_three
+  hand: "KJ7.T8.AKT5.AQJ9"
+  dealer: W
+  seat: E
+  calls: ["3S", "P"]
+  expect: { call: "4S" }
+
+# partner made a takeout double and they bid over it: the advance is still
+# owed, and a seven-card major with nine points had no call at all
+- name: e8_advance_the_takeout_double_when_they_compete
+  hand: "QT76543.K98..986"
+  dealer: E
+  seat: N
+  calls: ["1H", "X", "3H"]
+  expect: { call: "3S" }
+
+# the doubler's 17-19 raises are all cheapest_in_suit-gated, so once the
+# advance is at the three level only the 20+ jump remained and 17 passed
+- name: e8_doubler_raises_a_three_level_advance
+  hand: "K.AQ84.A62.A9754"
+  dealer: S
+  seat: S
+  calls: ["1C", "2S", "P", "P", "X", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+# the context held one rule - the 5m sign-off - so every other hand fell to
+# the generic toolkit and rebid the minor.  AKQJ976 opposite 11-12 is nine
+# tricks, not a 3D rebid
+- name: e8_opener_answers_the_2NT_invite_after_a_minor
+  hand: "92.98.AKQJ976.A7"
+  dealer: N
+  seat: N
+  calls: ["1D", "P", "1H", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# the keycard ask kept a three-card trump floor its own game raise had
+# already dropped to two opposite a SHOWN six-card suit
+- name: e8_slam_try_counts_the_shown_fit_not_my_length
+  hand: "AKJ754.96.A.AKJ3"
+  dealer: N
+  seat: S
+  calls: ["1H", "P", "1S", "P", "2H", "P"]
+  expect: { call: "4NT" }
+
+# a four-level new suit contracts for ten tricks: shortness turned a TEN
+# count into a "fourteen" and it bid 4H over their 3NT for -1100
+- name: e8_four_level_new_suit_needs_high_cards
+  hand: "KT862.AQJ86.T4.T"
+  dealer: S
+  seat: S
+  calls: ["1S", "X", "2S", "3NT"]
+  expect: { call: "P" }
+
+# the strong branch of the takeout double never constrained THEIR suit, so a
+# seventeen-count with AQ976 doubled 1S and heard partner name hearts
+- name: e8_no_takeout_double_holding_five_of_their_suit
+  hand: "AQ976.A82.AK4.Q7"
+  dealer: W
+  seat: N
+  calls: ["1S"]
+  expect: { call: "1NT" }
+
+# banded by strength, never by shape: 5-5 with a singleton had only the
+# catch-all 3NT opposite the game-forcing jump shift
+- name: e8_jump_shift_reply_bands_by_shape
+  hand: "AQT73.T2.9.KQT76"
+  dealer: N
+  seat: W
+  calls: ["P", "1H", "P", "1S", "P", "3C", "P"]
+  expect: { call: "3S" }
+
+# the quantitative raise of 3NT still fires on the canonical 17-opposite-16:
+# the round-8 floor is 31, and a floor of 32 deletes exactly this hand
+- name: e8_quantitative_raise_survives_its_own_floor
+  hand: "AQ52.KJ4.QT9.KJ2"
+  dealer: N
+  seat: N
+  calls: ["P", "P", "1D", "P", "1S", "1NT", "3NT", "P"]
+  expect: { call: "4NT", alertable: true }

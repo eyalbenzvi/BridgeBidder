@@ -250,6 +250,18 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         was_x = last is not None and last.kind == "double"
         if was_x != cond.my_last_call_was_double:
             return False
+    if cond.partner_last_call_was_double is not None:
+        # the mirror of the above: partner's most recent non-pass call was a
+        # double.  An advance is owed to a takeout double whether or not they
+        # compete over it, and the generic competitive rungs cannot tell the
+        # two auctions apart without this.
+        last = None
+        for i, c in enumerate(auction.calls):
+            if auction.seat_of_call(i) == seat.partner and not c.is_pass:
+                last = c
+        was_x = last is not None and last.kind == "double"
+        if was_x != cond.partner_last_call_was_double:
+            return False
     if cond.partner_last_suit is not None:
         # partner's most recent SUIT bid (notrump bids and doubles skipped):
         # when partner has shown several suits, the last one bid is the live

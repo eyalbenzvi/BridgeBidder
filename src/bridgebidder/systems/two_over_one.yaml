@@ -674,13 +674,23 @@ contexts:
     expand: { M: [H, S] }
     pattern: "1NT - P - 2C - P - 2$M - P - ?"
     rules:
+      # Two repairs, both WIDENINGS.  (1) CEILING: with the 4-4 fit the ladder
+      # ran 8-9 / 10-15 / 15-17 and stopped, so 18+ opposite a 15-17 notrump -
+      # 33+ combined with a known eight-card fit - had no rule and passed 2H.
+      # The no-fit half of this same context was given its 18-21 rung a round
+      # ago; this half was never swept.  (2) Every other keycard ask in the file
+      # carries the round-6 waiver: a hand holding three keycards itself gets an
+      # unambiguous answer and may ask with a worthless doubleton.
       - id: stm_rkc_4NT
         call: 4NT
         priority: 73
         requires:
           suits: { $M: [4, 4] }
-          hcp: [15, 17]
-          evals: { controls: [4, 12], "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+          hcp: [15, 21]
+          evals: { controls: [4, 12] }
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards($M)": [3, 5] }
         shows: "RKC 1430 for $M: slam values with the 4-4 fit found by Stayman"
         establishes: { forcing: one_round, agreed_suit: $M, asking: keycards }
         alertable: true
@@ -2025,11 +2035,23 @@ contexts:
         requires: { suits: { H: [6, 13] }, hcp: [10, 15], not: { suits: { S: [4, 13] } } }
         shows: "rebid: 6+ hearts, minimum"
         establishes: { forcing: non_forcing }
+      # Sibling sweep from ob_1M1NT_3$M, the same jump rebid over the 1NT
+      # response, which states the gate in PLAYING points plus suit quality and
+      # outranks the simple rebid instead of sitting under it.  Neither was ever
+      # carried onto the 1H-1S ladder, so 15 HCP with seven hearts and a
+      # singleton - an eighteen-point hand - rebid "minimum" and was passed.
+      # The old HCP band is kept as an any_of branch, so this can only ever be a
+      # superset of the rule it replaces.
       - id: ob_1H1S_3H
         call: 3H
-        priority: 51
-        requires: { suits: { H: [6, 13] }, hcp: [16, 18], not: { suits: { S: [4, 13] } } }
-        shows: "jump rebid: 6+ good hearts, 16-18"
+        priority: 52.5
+        requires:
+          suits: { H: [6, 13] }
+          not: { suits: { S: [4, 13] } }
+          any_of:
+            - { hcp: [16, 18] }
+            - { evals: { total_points: [16, 19] }, features: [ "good_suit(H)" ] }
+        shows: "jump rebid: 6+ good hearts, 16-19 playing strength"
         establishes: { forcing: invitational }
       - id: ob_1H1S_2m
         call: 2C
@@ -3838,8 +3860,11 @@ contexts:
             - hcp: [11, 16]
               suits: { H: [0, 2], S: [3, 4], D: [3, 13], C: [3, 13] }
               evals: { longest_suit_length: [0, 5] }
+            # Sibling hygiene: the same hole in the mirror rule.  No hand in
+            # 2000 tables doubles 1H holding five hearts, so this half has no
+            # measured effect - it is here so the two rules stay identical.
             - hcp: [17, 40]
-              suits: { S: [0, 5] }
+              suits: { S: [0, 5], H: [0, 4] }
               not: { suits: { S: [5, 13] }, evals: { "two_of_top3(S)": [1, 1] } }
         shows: "takeout double: opening values, short hearts, no five-card major (or any 17+)"
         establishes: { forcing: one_round }
@@ -3908,8 +3933,13 @@ contexts:
           any_of:
             - hcp: [11, 16]
               suits: { S: [0, 2], H: [3, 4], D: [3, 13], C: [3, 13] }
+            # The WEAK branch above demands shortness in their suit; the strong
+            # branch constrained only the OTHER major and said nothing about
+            # spades at all, so a seventeen-count holding AQ976 doubled 1S for
+            # takeout and heard partner name hearts.  You do not take a suit out
+            # for takeout while holding five of it.
             - hcp: [17, 40]
-              suits: { H: [0, 5] }
+              suits: { S: [0, 4], H: [0, 5] }
               not: { suits: { H: [5, 13] }, evals: { "two_of_top3(H)": [1, 1] } }
         shows: "takeout double: opening values, short spades, no five-card major (or any 17+)"
         establishes: { forcing: one_round }
@@ -4228,6 +4258,24 @@ contexts:
         requires: { suits: { $m: [5, 13] }, hcp: [12, 15] }
         shows: "5+ $m, minimum"
         establishes: { forcing: non_forcing }
+      # CEILING: every rung above is capped at minimum strength, so a 17-19
+      # opener over partner's negative double had no rule at all and the
+      # generic natural 3NT took the hand (down three on a six-card club suit
+      # with no spade stopper).  Two jump rungs ADDED above the minimum band -
+      # the 12-16 rungs keep their full range underneath, so nothing is
+      # subtracted.
+      - id: onx_jump_$m$M
+        call: "3$m"
+        priority: 59
+        requires: { suits: { $m: [5, 13] }, hcp: [16, 19] }
+        shows: "jump rebid: 5+ $m with 16-19, invitational"
+        establishes: { forcing: invitational }
+      - id: onx_jumpnt_$m$M
+        call: 2NT
+        priority: 58.5
+        requires: { hcp: [18, 19], evals: { weakest_their_stopper: [0.9, 9], semi_balanced: [1, 1] } }
+        shows: "jump: 18-19 balanced with their suit stopped"
+        establishes: { forcing: invitational }
 
   # Opener supports the negative double's implied major over their raise:
   # the double PROMISED the other major, so with four of them and values
@@ -5840,7 +5888,12 @@ contexts:
         priority: 46
         when: { partner_suit: C, partner_last_suit: C, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
-          suits: { C: [3, 13] }
+          # lott_total_trumps is the real fit gate (sharp, eight combined) and
+          # uc_raise_$M4 already counts a DOUBLETON opposite a shown six-card
+          # suit as a fit.  The ask kept the three-card floor its own raise had
+          # dropped, so a nineteen-count with two of partner's rebid suit had a
+          # game raise fitting 1.00 and a keycard ask fitting 0.35.
+          suits: { C: [2, 13] }
           evals: { total_points: [15, 40], controls: [4, 12], rule_of_26_sharp: [31, 99],
                     "lott_total_trumps(C)": [8, 26] }
           any_of:
@@ -5855,7 +5908,12 @@ contexts:
         priority: 46
         when: { partner_suit: D, partner_last_suit: D, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
-          suits: { D: [3, 13] }
+          # lott_total_trumps is the real fit gate (sharp, eight combined) and
+          # uc_raise_$M4 already counts a DOUBLETON opposite a shown six-card
+          # suit as a fit.  The ask kept the three-card floor its own raise had
+          # dropped, so a nineteen-count with two of partner's rebid suit had a
+          # game raise fitting 1.00 and a keycard ask fitting 0.35.
+          suits: { D: [2, 13] }
           evals: { total_points: [15, 40], controls: [4, 12], rule_of_26_sharp: [31, 99],
                     "lott_total_trumps(D)": [8, 26] }
           any_of:
@@ -5870,7 +5928,12 @@ contexts:
         priority: 46
         when: { partner_suit: H, partner_last_suit: H, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
-          suits: { H: [3, 13] }
+          # lott_total_trumps is the real fit gate (sharp, eight combined) and
+          # uc_raise_$M4 already counts a DOUBLETON opposite a shown six-card
+          # suit as a fit.  The ask kept the three-card floor its own raise had
+          # dropped, so a nineteen-count with two of partner's rebid suit had a
+          # game raise fitting 1.00 and a keycard ask fitting 0.35.
+          suits: { H: [2, 13] }
           evals: { total_points: [15, 40], controls: [4, 12], rule_of_26_sharp: [31, 99],
                     "lott_total_trumps(H)": [8, 26] }
           any_of:
@@ -5885,7 +5948,12 @@ contexts:
         priority: 46
         when: { partner_suit: S, partner_last_suit: S, standing_bid_level: [2, 3, 4], we_hold_contract: false }
         requires:
-          suits: { S: [3, 13] }
+          # lott_total_trumps is the real fit gate (sharp, eight combined) and
+          # uc_raise_$M4 already counts a DOUBLETON opposite a shown six-card
+          # suit as a fit.  The ask kept the three-card floor its own raise had
+          # dropped, so a nineteen-count with two of partner's rebid suit had a
+          # game raise fitting 1.00 and a keycard ask fitting 0.35.
+          suits: { S: [2, 13] }
           evals: { total_points: [15, 40], controls: [4, 12], rule_of_26_sharp: [31, 99],
                     "lott_total_trumps(S)": [8, 26] }
           any_of:
@@ -6132,7 +6200,16 @@ contexts:
         priority: 39
         requires:
           hcp: [15, 40]
-          evals: { rule_of_26_sharp: [30, 99] }
+          # Thirty combined is a GAME, not a slam invitation.  At 30 the invite
+          # fired five times in 2000 tables and was declined five times (the
+          # accept rung has never fired), and 4NT and 3NT score identically on
+          # ten, eleven and twelve tricks - so the only thing the invite could
+          # do was turn a making 3NT into a failing 4NT, which is what it did.
+          # The floor is 31, not 32: measured across all five firings, 31 is the
+          # value that excludes the only losing invite (30) while keeping the
+          # winner (31) and the canonical 17-opposite-16 case the convention was
+          # authored for, which the locked scenario reads at exactly 31.
+          evals: { rule_of_26_sharp: [31, 99] }
         shows: "quantitative raise of 3NT: inviting slam, partner passes with a minimum"
         establishes: { forcing: non_forcing }
         alertable: true
@@ -7347,6 +7424,17 @@ contexts:
         requires: { suits: { H: [3, 13] }, hcp: [6, 21] }
         shows: "three-card heart support opposite 18-21: the 5-3 game"
         establishes: { forcing: sign_off, agreed_suit: H }
+      # Banded by strength, never by SHAPE: a 5-5 hand with a singleton had
+      # only the catch-all 3NT and bid it holding a stiff diamond (down three,
+      # 6S cold).  The 3NT rung keeps its full band underneath, so this can
+      # only add a reading, never subtract one; opener's answer comes from the
+      # generic toolkit's raise, which was checked on the motivating board.
+      - id: rmjs_3S_$m
+        call: 3S
+        priority: 56
+        requires: { suits: { S: [5, 13] }, evals: { singleton_or_void: [1, 2] } }
+        shows: "five spades and a singleton: showing the suit instead of bidding notrump"
+        establishes: { forcing: game_forcing }
       - id: rmjs_3NT_$m
         call: 3NT
         priority: 55
@@ -7396,6 +7484,29 @@ contexts:
           evals: { weakest_unshown_stopper: [0, 0.5] }
         shows: "no notrump: 6+ $m and 16+, playing the minor game"
         establishes: { forcing: sign_off, agreed_suit: $m }
+      # The context held that ONE rule, so every hand that was not "6+ minor,
+      # 16-21, no stopper anywhere" fell through to the generic toolkit, which
+      # rebids the minor at the three level and ends the auction.  An invitation
+      # has to be answered: accept with 14+, or with a running minor whose
+      # tricks are already counted (AKQJ976 opposite an 11-12 invite is nine
+      # tricks and was bidding 3D), decline with a minimum.
+      - id: oim2n_3NT_$M$R
+        call: 3NT
+        priority: 58
+        requires:
+          any_of:
+            - hcp: [14, 21]
+            - suits: { $m: [6, 13] }
+              evals: { "suit_quality($m)": [3, 9] }
+        shows: "accepting the 11-12 invite"
+        establishes: { forcing: sign_off }
+      - id: oim2n_pass_$M$R
+        call: P
+        priority: 50
+        requires: { hcp: [10, 13] }
+        shows: "declining the invite: minimum opener"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
 
   - id: jump_shift_quant_accept
     description: "Opener answers the quantitative 4NT over his 18-21 jump shift"
@@ -7413,6 +7524,74 @@ contexts:
         priority: 55
         requires: { hcp: [18, 19] }
         shows: "minimum jump shift: declining"
+        establishes: { forcing: sign_off }
+
+  # r1c1d_3D_$M is FORCING one round and had no answering seat at all, so
+  # opener's best non-pass candidate fitted 0.28 - below the 0.3 "nothing fits
+  # anywhere" threshold - and the documented escape hatch passed the force out.
+  # A nineteen-count's forcing jump died in 3D with 6NT cold.
+  - id: opener_over_1C1D_3D_jump
+    description: "Opener over responder's forcing 3D jump rebid (1C - 1D - 1M - 3D)"
+    expand: { M: [H, S] }
+    pattern: "1C - P - 1D - P - 1$M - P - 3D - P - ?"
+    rules:
+      - id: o1c1d3d_rebid_$M
+        call: "3$M"
+        priority: 59
+        requires: { suits: { $M: [5, 13] } }
+        shows: "5+ $M opposite the forcing jump"
+        establishes: { forcing: game_forcing }
+      - id: o1c1d3d_4D_$M
+        call: 4D
+        priority: 58
+        requires: { suits: { D: [3, 13] } }
+        shows: "diamond support opposite the forcing jump: setting trumps"
+        establishes: { forcing: game_forcing, agreed_suit: D }
+      - id: o1c1d3d_3NT_$M
+        call: 3NT
+        priority: 56
+        requires: {}
+        shows: "no fit for the running diamonds and no second suit: 3NT"
+        establishes: { forcing: sign_off }
+
+  # A quantitative 4NT is only an invitation if somebody can ACCEPT it.  Three
+  # of the file's quantitative raises already ship with their answering seat
+  # (rjsq / rrntq / rjrbq); these two did not, so every invitation was declined
+  # by construction - opener's only candidate was the code fallback pass.
+  - id: quant_accept_after_minor_rebid
+    description: "Opener answers the quantitative 4NT over his 12-15 minor rebid"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 2$m - P - 4NT - P - ?"
+    rules:
+      - id: rmrq_accept
+        call: 6NT
+        priority: 60
+        requires: { evals: { total_points: [15, 40] } }
+        shows: "maximum for the 12-15 minor rebid: accepting the slam invite"
+        establishes: { forcing: sign_off }
+      - id: rmrq_decline
+        call: P
+        priority: 55
+        requires: {}
+        shows: "minimum for the minor rebid: declining"
+        establishes: { forcing: sign_off }
+
+  - id: quant_accept_after_2NT_transfer
+    description: "Opener answers the quantitative 4NT after the completed 2NT transfer"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "2NT - P - 3$T - P - 3$M - P - 4NT - P - ?"
+    rules:
+      - id: nt2trq_accept_$M
+        call: 6NT
+        priority: 60
+        requires: { hcp: [21, 40] }
+        shows: "maximum 2NT opening: accepting the slam invite"
+        establishes: { forcing: sign_off }
+      - id: nt2trq_decline_$M
+        call: P
+        priority: 55
+        requires: {}
+        shows: "minimum 2NT opening: declining"
         establishes: { forcing: sign_off }
 
   - id: quant_accept_after_1NT_rebid
@@ -8431,6 +8610,23 @@ contexts:
           hcp: [15, 40]
         shows: "new suit opposite the preempt: 5+ S, 15+, forcing"
         establishes: { forcing: one_round }
+      # CEILING: the ladder topped out at the game raise, so a twenty-count with
+      # a nine-card fit opposite a SEVEN-card suit had no rung above 4C and every
+      # slam opposite a preempt was signed off by construction.  Gated on the
+      # COUNTED fit and on holding four of the five keycards myself - opposite a
+      # hand that has shown 4-9 HCP, three is not enough for the reply to keep
+      # you out of a slam off an ace.
+      - id: rp3_C_rkc
+        call: 4NT
+        priority: 66
+        requires:
+          suits: { C: [2, 13] }
+          evals: { total_points: [19, 40], "lott_total_trumps(C)": [9, 26],
+                   "keycards(C)": [4, 5] }
+        shows: "keycard ask opposite the preempt: a nine-card fit and four of the five keycards"
+        establishes: { forcing: one_round, agreed_suit: C, asking: keycards }
+        alertable: true
+        convention: rkc_1430
       - id: rp3_C_game
         call: 3NT
         priority: 64
@@ -8473,6 +8669,23 @@ contexts:
           hcp: [15, 40]
         shows: "new suit opposite the preempt: 5+ S, 15+, forcing"
         establishes: { forcing: one_round }
+      # CEILING: the ladder topped out at the game raise, so a twenty-count with
+      # a nine-card fit opposite a SEVEN-card suit had no rung above 4D and every
+      # slam opposite a preempt was signed off by construction.  Gated on the
+      # COUNTED fit and on holding four of the five keycards myself - opposite a
+      # hand that has shown 4-9 HCP, three is not enough for the reply to keep
+      # you out of a slam off an ace.
+      - id: rp3_D_rkc
+        call: 4NT
+        priority: 66
+        requires:
+          suits: { D: [2, 13] }
+          evals: { total_points: [19, 40], "lott_total_trumps(D)": [9, 26],
+                   "keycards(D)": [4, 5] }
+        shows: "keycard ask opposite the preempt: a nine-card fit and four of the five keycards"
+        establishes: { forcing: one_round, agreed_suit: D, asking: keycards }
+        alertable: true
+        convention: rkc_1430
       - id: rp3_D_game
         call: 3NT
         priority: 64
@@ -8515,6 +8728,23 @@ contexts:
           hcp: [15, 40]
         shows: "new suit opposite the preempt: 5+ S, 15+, forcing"
         establishes: { forcing: one_round }
+      # CEILING: the ladder topped out at the game raise, so a twenty-count with
+      # a nine-card fit opposite a SEVEN-card suit had no rung above 4H and every
+      # slam opposite a preempt was signed off by construction.  Gated on the
+      # COUNTED fit and on holding four of the five keycards myself - opposite a
+      # hand that has shown 4-9 HCP, three is not enough for the reply to keep
+      # you out of a slam off an ace.
+      - id: rp3_H_rkc
+        call: 4NT
+        priority: 66
+        requires:
+          suits: { H: [2, 13] }
+          evals: { total_points: [19, 40], "lott_total_trumps(H)": [9, 26],
+                   "keycards(H)": [4, 5] }
+        shows: "keycard ask opposite the preempt: a nine-card fit and four of the five keycards"
+        establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
+        alertable: true
+        convention: rkc_1430
       - id: rp3_H_game
         call: 4H
         priority: 64
@@ -8557,6 +8787,23 @@ contexts:
           hcp: [15, 40]
         shows: "new suit opposite the preempt: 5+ H, 15+, forcing"
         establishes: { forcing: one_round }
+      # CEILING: the ladder topped out at the game raise, so a twenty-count with
+      # a nine-card fit opposite a SEVEN-card suit had no rung above 4S and every
+      # slam opposite a preempt was signed off by construction.  Gated on the
+      # COUNTED fit and on holding four of the five keycards myself - opposite a
+      # hand that has shown 4-9 HCP, three is not enough for the reply to keep
+      # you out of a slam off an ace.
+      - id: rp3_S_rkc
+        call: 4NT
+        priority: 66
+        requires:
+          suits: { S: [2, 13] }
+          evals: { total_points: [19, 40], "lott_total_trumps(S)": [9, 26],
+                   "keycards(S)": [4, 5] }
+        shows: "keycard ask opposite the preempt: a nine-card fit and four of the five keycards"
+        establishes: { forcing: one_round, agreed_suit: S, asking: keycards }
+        alertable: true
+        convention: rkc_1430
       - id: rp3_S_game
         call: 4S
         priority: 64
@@ -10198,6 +10445,149 @@ contexts:
           evals: { total_points: [14, 40], rule_of_26: [26, 99], "suit_quality(S)": [1, 9] }
         shows: "rebid of my own S: 6+ cards, values for the level opposite partner's shown range"
         establishes: { forcing: non_forcing }
+      # Partner made a TAKEOUT DOUBLE and they bid over it.  The advance is
+      # still owed - partner has opening values and shortness in their suit, so
+      # a real suit of mine is a bid, not a fourteen-point bid.  general_pull_
+      # or_sit covers "... - X - P - ?" only; when they compete the seat falls
+      # here, and the generic new-suit rungs below demand 14+ total points (a
+      # floor calibrated for a partner who OVERCALLED), so a seven-card major
+      # with nine points had no call at all and the catch-all pass swallowed it.
+      # The 8-point floor is deliberate and not cosmetic: same-call rules merge
+      # into a disjunction for the partner model, so a rung with NO floor lowers
+      # partner's shown minimum for that call everywhere.  Six cards (not five)
+      # keeps these rungs off the advances the existing ladder already handles.
+      - id: ch_advance_x3_C
+        call: 3C
+        priority: 28.5
+        when: { unbid_suit: C, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { "suit_quality(C)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x4_C
+        call: 4C
+        priority: 28.5
+        when: { unbid_suit: C, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { "suit_quality(C)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x3_D
+        call: 3D
+        priority: 28.5
+        when: { unbid_suit: D, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { "suit_quality(D)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x4_D
+        call: 4D
+        priority: 28.5
+        when: { unbid_suit: D, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { "suit_quality(D)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x3_H
+        call: 3H
+        priority: 28.5
+        when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { "suit_quality(H)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x4_H
+        call: 4H
+        priority: 28.5
+        when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { "suit_quality(H)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x3_S
+        call: 3S
+        priority: 28.5
+        when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { "suit_quality(S)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: ch_advance_x4_S
+        call: 4S
+        priority: 28.5
+        when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { "suit_quality(S)": [1.5, 9], total_points: [8, 40] }
+        shows: "answering partner's takeout double in my own suit, forced by the double"
+        establishes: { forcing: non_forcing }
+      # ... and the NEGATIVE double promised the unbid major, so opener answers
+      # it in that major with four cards, exactly as adx_neg_major_$M does when
+      # they pass instead of competing.  Gates carried verbatim from that rule,
+      # so this can only be a superset of the auction it mirrors.
+      - id: ch_neg_major_H2
+        call: 2H
+        priority: 30
+        when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: true }
+        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        shows: "answering partner's negative double in the major it promised"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_neg_major_H3
+        call: 3H
+        priority: 30
+        when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: true }
+        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        shows: "answering partner's negative double in the major it promised"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_neg_major_H4
+        call: 4H
+        priority: 30
+        when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: true }
+        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        shows: "answering partner's negative double in the major it promised"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ch_neg_major_S2
+        call: 2S
+        priority: 30
+        when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: true }
+        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        shows: "answering partner's negative double in the major it promised"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ch_neg_major_S3
+        call: 3S
+        priority: 30
+        when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: true }
+        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        shows: "answering partner's negative double in the major it promised"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: ch_neg_major_S4
+        call: 4S
+        priority: 30
+        when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: true }
+        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        shows: "answering partner's negative double in the major it promised"
+        establishes: { forcing: non_forcing, agreed_suit: S }
       # At this height the cheapest bid in a new suit is a four-level
       # bid; without these the toolkit simply had nothing to offer.
       - id: ch_new_C4
@@ -10206,6 +10596,12 @@ contexts:
         when: { unbid_suit: C, cheapest_in_suit: true, partner_has_acted: true }
         requires:
           suits: { C: [5, 13] }
+          # A four-level new suit contracts for ten tricks, and that needs
+          # honest high cards.  Shortness points turned a TEN-count into a
+          # fourteen and it bid 4H over their 3NT with partner having already
+          # raised spades: doubled, down five, -1100.  Measured on its own
+          # experiment: held-out neutral, review corpus +15.
+          hcp: [12, 40]
           evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
         shows: "natural C at the cheapest level: 5+ cards, 14+ points"
         establishes: { forcing: non_forcing }
@@ -10215,6 +10611,12 @@ contexts:
         when: { unbid_suit: D, cheapest_in_suit: true, partner_has_acted: true }
         requires:
           suits: { D: [5, 13] }
+          # A four-level new suit contracts for ten tricks, and that needs
+          # honest high cards.  Shortness points turned a TEN-count into a
+          # fourteen and it bid 4H over their 3NT with partner having already
+          # raised spades: doubled, down five, -1100.  Measured on its own
+          # experiment: held-out neutral, review corpus +15.
+          hcp: [12, 40]
           evals: { total_points: [14, 40], "suit_quality(D)": [1.5, 9] }
         shows: "natural D at the cheapest level: 5+ cards, 14+ points"
         establishes: { forcing: non_forcing }
@@ -10224,6 +10626,12 @@ contexts:
         when: { unbid_suit: H, cheapest_in_suit: true, partner_has_acted: true }
         requires:
           suits: { H: [5, 13] }
+          # A four-level new suit contracts for ten tricks, and that needs
+          # honest high cards.  Shortness points turned a TEN-count into a
+          # fourteen and it bid 4H over their 3NT with partner having already
+          # raised spades: doubled, down five, -1100.  Measured on its own
+          # experiment: held-out neutral, review corpus +15.
+          hcp: [12, 40]
           evals: { total_points: [14, 40], "suit_quality(H)": [1.5, 9] }
         shows: "natural H at the cheapest level: 5+ cards, 14+ points"
         establishes: { forcing: non_forcing }
@@ -10233,6 +10641,12 @@ contexts:
         when: { unbid_suit: S, cheapest_in_suit: true, partner_has_acted: true }
         requires:
           suits: { S: [5, 13] }
+          # A four-level new suit contracts for ten tricks, and that needs
+          # honest high cards.  Shortness points turned a TEN-count into a
+          # fourteen and it bid 4H over their 3NT with partner having already
+          # raised spades: doubled, down five, -1100.  Measured on its own
+          # experiment: held-out neutral, review corpus +15.
+          hcp: [12, 40]
           evals: { total_points: [14, 40], "suit_quality(S)": [1.5, 9] }
         shows: "natural S at the cheapest level: 5+ cards, 14+ points"
         establishes: { forcing: non_forcing }
@@ -11375,6 +11789,23 @@ contexts:
         requires: { suits: { S: [4, 13] }, evals: { total_points: [17, 19] } }
         shows: "raise of the advance: 17-19 with 4-card support"
         establishes: { forcing: non_forcing, agreed_suit: S }
+      # When partner's advance is already at the THREE level - the normal case
+      # over a preempt - the 17-19 raise rungs above are unreachable, because
+      # their call is no longer the cheapest bid in the suit, so a seventeen-
+      # count facing a forced advance had only the 20+ jump and passed.  A
+      # ceiling again; this is the rung above it, gated on the counted LOTT fit
+      # rather than on four-card support, because the advance already promised
+      # length.
+      - id: uc_doubler_game3_H
+        call: 4H
+        priority: 35
+        when: { partner_suit: H, my_last_call_was_double: true, we_hold_contract: false,
+                standing_bid_level: [3] }
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [17, 40], "lott_total_trumps(H)": [8, 26] }
+        shows: "raising partner's three-level advance to game: 17+ and a real fit"
+        establishes: { forcing: sign_off, agreed_suit: H }
       - id: uc_doubler_game_H
         call: 4H
         priority: 35
@@ -11382,6 +11813,23 @@ contexts:
         requires: { suits: { H: [4, 13] }, evals: { total_points: [20, 40] } }
         shows: "jump to game opposite the advance: 20+ with 4-card support"
         establishes: { forcing: sign_off, agreed_suit: H }
+      # When partner's advance is already at the THREE level - the normal case
+      # over a preempt - the 17-19 raise rungs above are unreachable, because
+      # their call is no longer the cheapest bid in the suit, so a seventeen-
+      # count facing a forced advance had only the 20+ jump and passed.  A
+      # ceiling again; this is the rung above it, gated on the counted LOTT fit
+      # rather than on four-card support, because the advance already promised
+      # length.
+      - id: uc_doubler_game3_S
+        call: 4S
+        priority: 35
+        when: { partner_suit: S, my_last_call_was_double: true, we_hold_contract: false,
+                standing_bid_level: [3] }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [17, 40], "lott_total_trumps(S)": [8, 26] }
+        shows: "raising partner's three-level advance to game: 17+ and a real fit"
+        establishes: { forcing: sign_off, agreed_suit: S }
       - id: uc_doubler_game_S
         call: 4S
         priority: 35
@@ -12600,6 +13048,15 @@ contexts:
         priority: 56
         requires: { suits: { $M: [5, 5] }, hcp: [4, 40], evals: { semi_balanced: [1, 1] } }
         shows: "choice of games with exactly 5 $M opposite 20-21"
+        establishes: { forcing: sign_off }
+      # 15 opposite a shown 20-21 is 35-36 combined: the invite is not the bid,
+      # the slam is.  Added as a RUNG ABOVE the invite rather than as a cap on
+      # it, so no strength band is left without a rule.
+      - id: nt2_tr_6NT
+        call: 6NT
+        priority: 59
+        requires: { hcp: [15, 40], evals: { semi_balanced: [1, 1] } }
+        shows: "33+ combined opposite 20-21: bidding the slam"
         establishes: { forcing: sign_off }
       - id: nt2_tr_slam
         call: 4NT

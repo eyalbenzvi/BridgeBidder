@@ -1574,3 +1574,169 @@ Round 7 final held-out standing: **-621 (-0.621 IMPs/board)**.
 
 The method is now written down in `docs/ROUND_METHOD.md` so a session with no
 memory of these rounds can run one correctly.
+
+## Expert round 8 (triaged 1000, seed 858585)
+
+Baseline **-710 IMPs**, 322 losing boards, 20 clusters, two independent expert
+reviews (`docs/EXPERT_REVIEW_858585_{A,B}.md`).
+
+Measured: same 1000 boards **-710 -> -527 (+183 paired; 20 up, 1 down)**;
+held-out fixed corpus **-621 -> -612 (+9 paired; 7 up, 5 down)**.  Like-for-like
+since head-to-head play began: **-1.474 -> -0.612 IMPs/board.**
+
+Both reviewers ruled the three biggest clusters NOTHING-WRONG, independently and
+from the same data: `all-pass` is 553 tables at a mean of **-0.69** against a
+corpus-wide table mean of **-0.71** - a quarter of the corpus, sampled, not a
+loss concentration; `uc_nt3`'s entire net across 2000 tables is **-61** against
+a cluster headline of 141, spread over **23 distinct auction families** (a
+symptom for the fourth round running); and `uc_raise_H4` (-1.07/table) and
+`uc_raise_S4` (+0.27) are character-for-character identical rules, so the gap
+between the twins is the auctions, not a sibling asymmetry.  Between them the
+two reviewers killed eighteen hypotheses with data.
+
+### The species this round: an invitation nobody could accept
+
+Four separate positions turned out to be a bid that forces or invites, authored
+without the seat that answers it - round 6's "a ladder and its answering context
+are one fix", found four more times:
+
+- **`rmr_4NT` and `nt2_tr_slam`** are quantitative invitations, and no context
+  matched their auctions at all, so opener's only candidate was the code
+  fallback pass.  Every invitation was declined by construction.  Three sibling
+  quantitative raises in the file (`rjsq`, `rrntq`, `rjrbq`) already ship with
+  their accept context; these two did not.  Both authored, plus the missing
+  `nt2_tr_6NT` rung ABOVE the invite - 15 opposite a shown 20-21 is 35 combined,
+  which is a slam, not an invitation.
+- **`r1c1d_3D_$M` is forcing one round** and had no answering seat, so opener's
+  best non-pass candidate fitted 0.28 - below the documented 0.3 "nothing fits
+  anywhere" threshold - and the escape hatch legally passed the force out.  A
+  19-count's forcing jump died in 3D with 6NT cold.
+- **`opener_over_invite_2NT_minor` contained exactly one rule**, the 5m sign-off,
+  so every hand that was not "6+ minor, 16-21, no stopper" fell to the generic
+  toolkit and rebid the minor.  AKQJ976 opposite an 11-12 invite is nine tricks
+  and was bidding 3D.
+
+### Ceilings and sibling gates, still paying (rounds 6 and 7's species)
+
+- **Stayman's ladder has a ceiling on the FIT half only.**  With a 4-4 fit the
+  rungs ran 8-9 / 10-15 / 15-17 and stopped; the no-fit half of the same context
+  was given its 18-21 rung a round ago and this half was never swept, so 18
+  opposite a 15-17 notrump with a known eight-card fit passed 2H.  The same rule
+  was also missing the round-6 keycard waiver every other ask carries.
+- **`resp_preempt_*` topped out at the game raise**, so every slam opposite a
+  seven-card suit was signed off by construction.  BOTH reviewers found this hole
+  independently and proposed different gates; the merged rule takes the counted
+  nine-card fit plus **four** of the five keycards, because the three-keycard
+  draft bid a 6S with eleven tricks (a measured -12) and the alternative gate
+  excluded that board only by a one-point total-points margin.  Opposite a hand
+  that has shown 4-9 HCP, three keycards is not enough for the reply to keep you
+  out of a slam off an ace.
+- **`ob_1H1S_3H` states its gate in raw HCP and ranks below the simple rebid**,
+  while its exact sibling over the 1NT response uses playing points plus suit
+  quality and outranks it.  15 HCP with seven hearts and a singleton is an
+  eighteen-point hand and was rebidding "minimum".
+- **`gst_rkc_$X` kept a three-card trump floor its own game raise had dropped
+  to two** opposite a SHOWN six-card suit.
+- **`opener_over_negative_double` capped every rung at 16**, so 17-19 had no
+  rule and the generic 3NT took the hand.
+- **The strong branch of `oc1S_X`/`oc1H_X` never constrained THEIR suit.**  The
+  weak branch demands shortness; the strong branch constrained only the other
+  major, so a seventeen-count holding AQ976 doubled 1S for takeout and heard
+  partner name hearts.  Exactly two of 31 firings hold five of their suit and
+  they carry -17 of the family's -20.
+
+### The advance that is owed when they compete
+
+`general_pull_or_sit` covers `... - X - P - ?` only.  When RHO **bids** over
+partner's takeout double there was no advance context at all, so the seat fell
+to `general_competitive_high`, whose new-suit rungs demand 14+ total points - a
+floor calibrated for a partner who OVERCALLED - and a seven-card major with nine
+points had no call.  Authored with a new `partner_last_call_was_double` engine
+condition (the mirror of `my_last_call_was_double`), the negative-double answer
+carrying `adx_neg_major_$M`'s gates verbatim so it can only be a superset, and
+the doubler's missing three-level game raise: his 17-19 rungs are all
+`cheapest_in_suit`-gated and therefore unreachable once the advance is already at
+the three level, so a seventeen-count facing a forced advance passed.
+
+The 8-point floor on the new rungs is not cosmetic and is worth recording:
+same-call rules merge into a disjunction for the partner model, so a rung with no
+floor lowers partner's shown minimum for that call **everywhere**.  Without it a
+cold 4S elsewhere in the corpus turned into a pass, because partner's 3S dropped
+from a shown 10 to a shown 0 and `rule_of_26` stopped opening.
+
+### Measured as their own experiments, and what that decided
+
+Five changes were held out of the batch and measured alone on the held-out
+corpus, either because a reviewer flagged them high-variance or because the two
+reviewers disagreed.  Three were kept and two were reverted, and both reverts
+are the round's real lesson.
+
+**REVERTED - the keycard ask over a game raise (-17 held-out).**  This is the one
+place the two reviews contradicted each other, and the disagreement was the
+signal.  B measured the family at 16 asks for -35 IMPs, observed correctly that
+after a 4M game raise the sign-off is 5M - one level above the contract we
+already owned, so the ask is weakly dominated unless it reaches a slam - and
+proposed gating it on three keycards, worth +14 on the review corpus.  A refused
+to propose any gate there, having tried and rejected three separators (HCP does
+not separate: losers 18/13/15/13/14, winners 16/16; keycards-in-hand does not
+separate: losers 3/2/2/2/2, winners 2/2) and having noted that the only thing
+that does separate - partner's fast-arrival cap - is invisible because
+`total_points` has a floor channel in the partner model but no ceiling.
+Measured alone on the held-out corpus the gate is **-17**, and the mechanism is
+exactly the one this file already warns about: `gr_rkc_general_$M` exists as the
+round-6 superset guard, so gating it does not add slam tries, it **deletes the
+asks that already worked** - three cold slams (boards 25, 68, 660, all making
+twelve tricks) stopped in game to save two five-level sign-offs.  The file's own
+comment on that rung says so in as many words.  A was right, and the reason the
+project runs two independent reviewers is that one of them refused.
+
+**REVERTED - a sharp tolerance for `weakest_their_stopper` (-9 held-out).**  The
+diagnosis is certainly correct and is recorded as a confirmed open item: the
+evaluator gates 27 rules - every generic natural notrump in a competitive
+auction - on `[0.9, 9]`, and it has **no sharp tolerance registered** in
+`_EVAL_S2` while both its siblings `stoppers` and `weakest_unshown_stopper`
+carry 0.3.  On the default sigma a hand with NO stopper in their suit scores
+**0.835** against that gate and a partial stopper (Qx/Jxx) **0.965**, so none of
+those gates actually gate; the engine bids 3NT saying "their suits stopped"
+while holding Q4.  But the repair as applied is a class-wide gate with no floor
+beneath it: measured, the wins are real (four hopeless notrumps not bid) and the
+losses are the seat left behind picking a worse suit contract - 2H becoming 4H
+down, a 4S off five where 5D made.  A predicted this precisely ("real
+correctness repair, real risk of trading bad games for starved seats").  A fix
+that changes a whole class needs a floor for the whole class, which is round 4's
+lesson; the seats it starves have to be authored first.
+
+**KEPT on a neutral held-out number**, all three measured at exactly 0 held-out
+and positive on the review corpus, the same call as round 6's singleton-honour
+fix and round 7's weak-two overcalls: the 12-HCP floor on a four-level new suit
+in competition (+15 review; shortness turned a ten-count into a "fourteen" and it
+bid 4H over their 3NT for -1100), the takeout-double repair above (+17 review),
+and a shape rung on the jump-shift reply ladder (+4 review; banded by strength,
+never by shape, so 5-5 with a singleton had only the catch-all 3NT).
+
+### An expert's patch reached one point past the diagnosis, and a test caught it
+
+B's `qr3_4NT_quant` finding is sound and settles a DELETE-THE-RULE candidate this
+file has carried for two rounds: the invite fired five times in 2000 tables and
+was declined five times, the accept rung has **never** fired, and 4NT and 3NT
+score identically on ten, eleven and twelve tricks - so the only thing the invite
+could do was turn a making 3NT into a failing 4NT, which is what it did.  The
+proposed floor of 32 combined broke a locked regression scenario.  Measured
+across all five firings plus the scenario, the losing invite reads **30**, the
+winning one **31**, and the canonical 17-opposite-16 case the convention was
+authored for reads **31** exactly.  The floor is 31: it excludes the only losing
+invite, keeps the winner, and keeps the convention.  Round 6 recorded that "an
+expert's diagnosis and an expert's patch are separate artifacts"; this is the
+same lesson a second time, and the regression suite is what caught it.
+
+### Method note
+
+The two corpora agreed in sign for the second round running, and the review
+corpus's +183 against the held-out +9 is the usual and expected gap: the review
+corpus is where the fixes were found.  The held-out gain is small and inside the
+noise of a single 1000-board match, which is the honest reading of a round whose
+biggest three clusters were correctly ruled NOT to be defects.  Both reviewers
+were briefed with round 6's shadowing lesson as a hard constraint and both spent
+as much effort killing hypotheses as proposing fixes - eighteen non-findings
+between them, including four prototypes each reviewer built, measured worse, and
+reported rather than shipped.
