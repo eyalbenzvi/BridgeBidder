@@ -1583,3 +1583,94 @@ needs the matching `opener_over_cue_raise_*` answering context — the cue-bid
 raise is the single most common competitive convention in the file and only two
 of its dozen positions are authored.
 
+## Board 959 — margin -12
+
+**Seat/call that went wrong.** Table A, call 3, **S bids 1S** (`sw_1S`,
+"sandwich overcall: good 5+ spades, 8-16") in the sandwich seat after
+`1D - P - 1H`, holding `AKQJT854..2.J932` — an **eight-card solid spade suit**
+and a heart void.  BEN bids 4S.  N/S make twelve tricks in spades; we defended
+4H for +100 instead of scoring +680.
+
+**The missing agreement (one sentence).** The sandwich seat's pre-emptive ladder
+**stops at the three level** — `sw_3S` is "seven-card suit, 3-10" and an
+eight-card suit with 11 HCP scores 0.800 against it, so the whole pre-emptive
+family misses the fast path and a one-level overcall at fit 1.00 wins; the
+direct seat has `oc1$o_4$M_preempt` for exactly this hand and the sandwich seat
+has no four-level rung at all.
+
+**EXACT YAML.**  Two rungs into `sandwich_seat`, after `sw_3S`:
+
+```yaml
+      - id: sw_4H
+        call: 4H
+        priority: 69.7
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [8, 13] }
+          evals: { total_points: [5, 40], "suit_quality(H)": [2, 9] }
+        shows: "sandwich preemptive jump to game: an eight-card major between two bidding opponents"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: sw_4S
+        call: 4S
+        priority: 69.7
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [8, 13] }
+          evals: { total_points: [5, 40], "suit_quality(S)": [2, 9] }
+        shows: "sandwich preemptive jump to game: an eight-card major between two bidding opponents"
+        establishes: { forcing: sign_off, agreed_suit: S }
+```
+
+**THE ANSWERING SEAT.**  `forcing: sign_off` — a pre-empt to game asks nothing,
+and partner's onward seat is `general_competitive_high` / `general_their_double`,
+both authored.
+
+**WHAT IT ENDANGERS** (every rung in `sandwich_seat` my 69.7 can outrank):
+
+* `sw_X` (70, **above**) — a takeout of both their suits still wins; my rung
+  requires an eight-card suit, which is not a takeout hand anyway.
+* `sw_3S`/`sw_3C` (69.5, below) — the seven-card version.  Mine requires **eight**
+  cards, so the two are disjoint on length.  Verified: with a seven-card suit the
+  engine's answer is unchanged.
+* `sw_2S_jump` (69, below) — six cards; disjoint.
+* `sw_1S`/`sw_2S` (68/66, below) — the target.  A one-level overcall on an
+  eight-card solid suit against two bidding opponents hands them the auction; the
+  whole value of the hand is pre-emptive.
+* `sw_pass` (30, below).
+* Fallback: `4S`/`4H` in this seat were not covered by any `sandwich_seat` rung
+  before, so this **does** delete the code fallback for those calls in this
+  context.  That is acceptable and I checked it: the `when: { unbid_suit }` plus
+  the eight-card gate means the rung is only offered where a four-level major
+  jump is legal at all, and the fallback layer's own four-level offering in a
+  contested sandwich seat is `quiet`.
+
+**VERIFIED.**  Before: `1S` (`sw_1S`, fit 1.000 / 68).  After: `4S` (`sw_4S`, fit
+1.000 / 69.7).  Regression traced with a seven-card suit: unchanged.
+
+**TEMPLATE.**  Both majors written out inside the existing
+`expand: { o: ... }` of `sandwich_seat`, guarded by `when: { unbid_suit }`.
+Expand the same idea to the **minors** at the five level (`sw_5C`/`sw_5D` on a
+nine-card suit) and — more valuable — to the **balancing** seat, which likewise
+tops out at three: `ballow_4$M_preempt` does not exist.
+
+## Board 967 — NOTHING-WRONG (competitive lens)
+
+**Verdict.** Constructive board.  Table A, call 7: S with `QJ75.2.T653.AQT6`
+raises partner's **reverse** to `3D` through `uc_raise_D3` (priority 27) while
+the context's own `rrevd_3NT` (63) sits at fit 0.134 and `rrevd_2S` (66) at
+0.349 — the generic toolkit annexing a reverse auction — and the pair then
+Blackwoods into 6D for -100 where 3NT makes ten.  Responder's ladder over a
+reverse, and the keycard ask that should not have fired, are the constructive
+reviewer's ground.
+
+**What I checked on the competitive side.**  All five of our table-B calls are
+passes BEN also makes at 1.00 in an uncontested 1D-1S-2H-3NT auction; E has 7 HCP
+with `K8743` clubs and W 7 with `A9842` spades, both **non-vulnerable against
+vulnerable** — the one vulnerability where a light overcall is tempting.  I
+checked both: `oc1D_pass` is right for E (a five-card club suit headed by the
+king at the two level over 1D is the classic losing overcall), and `sw_pass` is
+right for W (`A9842` in the sandwich seat over 1D-P-1S, with spades **bid on my
+left**, is not an overcall in any system).  Both seats are correctly silent.
+
+**NOTHING-WRONG** from the competitive/matchpoint discipline.
+

@@ -747,3 +747,171 @@ the pair; write it as `expand_pairs` over (m, M, short-suit) with the level
 spelled out, since `call: $L$X` does not expand.
 
 ---
+
+## Board 559 — margin -13
+
+**Seat/call:** table A call 5, N bids **4H** on `9.AKT732.AQT87.6` after
+`P 1H 1S 2S P` (`uc_raise_H4`, fit 1.000, prio 32 — a *generic* rung). Partner
+has just made a **cue-bid raise** (`r1H1S_cue`, "limit raise or better in
+hearts", `forcing: one_round`) and **no context in the file answers it.**
+
+That is the mandate's central defect, stated as a fact: the file contains **five**
+cue-raise rules — `r1H1S_cue`, `nx_1m1H_cue`, `nx_1m1S_cue`, `r1M2x_cue`,
+`advo_cue` — and **zero** contexts whose pattern answers any of them. Every one
+is a force landing in `general_uncontested_continuation`, where the best rung is
+a raise by level. `uc_raise_H4` fires on **30 tables at mean -0.70**; it is not a
+bad rule, it is standing in an empty seat.
+
+**The missing agreement.** Opposite the cue-bid raise, opener's jump to four of a
+side suit is shortness with slam interest; three of the major is a minimum;
+four of the major is game with nothing extra.
+
+### YAML — new context (opener answers the cue-bid raise)
+
+```yaml
+  - id: opener_after_cue_raise_1H1S
+    description: "Opener answers responder's cue-bid raise 1H - (1S) - 2S"
+    pattern: "1H - 1S - 2S - P - ?"
+    rules:
+      - id: ocr_splinter_4C
+        call: 4C
+        priority: 50
+        requires: { suits: { H: [5, 13], C: [0, 1] }, evals: { total_points: [14, 40] } }
+        shows: "shortness slam try opposite the cue-bid raise: singleton or void in clubs"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+        alertable: true
+        convention: splinter
+      - id: ocr_splinter_4D
+        call: 4D
+        priority: 50
+        requires: { suits: { H: [5, 13], D: [0, 1] }, evals: { total_points: [14, 40] } }
+        shows: "shortness slam try opposite the cue-bid raise: singleton or void in diamonds"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+        alertable: true
+        convention: splinter
+      - id: ocr_game_4H
+        call: 4H
+        priority: 45
+        requires: { evals: { total_points: [14, 40] } }
+        shows: "accepting the limit raise: game, no slam try"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: ocr_min_3H
+        call: 3H
+        priority: 44
+        requires: { evals: { total_points: [12, 13] } }
+        shows: "minimum opening: partner passes with a bare limit raise"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: ocr_floor_3H
+        call: 3H
+        priority: 20
+        requires: {}
+        shows: "no better description opposite the cue-bid raise"
+        establishes: { forcing: invitational, agreed_suit: H }
+        negative_inference_weight: soft
+```
+
+**THE ANSWERING SEAT for the splinter** (the force inside the force):
+
+```yaml
+  - id: responder_after_cue_raise_splinter_1H
+    description: "Responder answers opener's shortness slam try over the cue-bid raise"
+    expand: { X: [C, D] }
+    pattern: "1H - 1S - 2S - P - 4$X - P - ?"
+    rules:
+      - id: rcrs_wasted_4H
+        call: 4H
+        priority: 47
+        requires: { evals: { wasted_in_partner_shortness: [3, 40] } }
+        shows: "wasted honours opposite the shortness: the agreed game is enough"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rcrs_rkc
+        call: 4NT
+        priority: 45
+        requires:
+          evals: { controls: [3, 12], wasted_in_partner_shortness: [0, 2], total_points: [11, 40] }
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards(H)": [3, 5] }
+        shows: "RKC 1430 for hearts opposite the shortness slam try"
+        establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: rcrs_signoff_4H
+        call: 4H
+        priority: 34
+        requires: {}
+        shows: "signing off in the agreed game"
+        establishes: { forcing: sign_off, agreed_suit: H }
+        negative_inference_weight: soft
+```
+
+**What it endangers.** The new context has specificity 1005 and therefore takes
+3H, 4H, 4C and 4D away from `general_uncontested_continuation` at this node.
+Priced against the rungs **below** as well as above: `uc_raise_H3` (31) and
+`uc_raise_H4` (32) are replaced by `ocr_min_3H` / `ocr_game_4H`, whose bands are
+the same shape but keyed to *partner having promised a limit raise or better*
+rather than to a generic support count; `ocr_floor_3H` with `requires: {}` means
+the 3H seat can never be starved, and `ocr_game_4H` with a bare
+`total_points: [14, 40]` means the 4H seat cannot be either. `uc_new_D3` (27),
+`uc_rebid_H3` (29) and the natural three-level calls are not defined here and
+fall through unchanged — verified in the candidate list.
+
+**VERIFIED and the board is recovered.** N bids 4C at fit 1.000 / prio 50 (with
+`ocr_game_4H` right behind at 1.000/45, so the choice is `is_clear`). Rolled
+out: `1H - (1S) - 2S - 4C - 4H - 4NT - 5H - 6H`, thirteen tricks. Table A goes
+from +710 to **+1460** and the board's -13 goes to zero.
+
+**TEMPLATE.** This is the highest-yield expansion in my slice, because the same
+empty seat exists behind **every** cue raise:
+`"1$m - 1H - 2H - P - ?"` and `"1$m - 1S - 2S - P - ?"` (`expand: { m: [C, D] }`,
+answering `nx_1m1H_cue` / `nx_1m1S_cue`), `"1$M - 2$x - 3$x - P - ?"`
+(`r1M2x_cue`), and `"1$o - 1$v - P - 2$o - P - ?"` (`advo_cue`). Five contexts ×
+five rungs plus five answering contexts × three — about **forty rules from one
+agreement**, and every one of them is a seat that today passes a force out or
+hands it to a generic raise.
+
+---
+
+## Board 679 — margin -13
+
+**Seat/call:** table A call 3, S overcalls **1NT** on `QT.KJ985.K85.AKJ` over
+1D (`oc1D_1NT`, prio 82, fit 1.000) instead of 1H. **Competitive** — overcall
+selection.
+
+What I checked: `oc1D_1H` fits 0.800 (17 HCP against a 8-16 band) and
+`oc1D_X` fits 1.000 at prio 72, so the 1NT wins on priority, not on fit. With a
+good five-card major and 17 balanced-ish, the 1NT overcall is a legitimate style
+choice, and DECISIONS fixes the 1NT overcall range at 15-18 deliberately.
+
+**Best constructive-discipline observation.** The consequence is constructive:
+after a 1NT overcall the file has `advance_1NT_overcall` (5 rules) and
+`advance_1NT_overcall_invite` (2 rules) — **no Stayman and no transfers**, so a
+5-3 major fit behind a 1NT overcall is unfindable, which is what happened
+(2NT then 3NT, five tricks, while 4H was cold on the other table's cards). The
+agreement that pays here is "systems on over a 1NT overcall", not a change to
+the overcall.
+
+**VERDICT: NOTHING-WRONG on the call (competitive); the real gap is the
+seven-rule advance ladder behind it.**
+
+---
+
+## Board 761 — margin -13
+
+**Seat/call:** table A call 5, S bids 3D in the balancing seat on
+`A.874.AKJ96.KQ85` after `1S X 2S P P` (`ballow_new_D3`). **Purely
+competitive** — a reopening decision after our own takeout double was passed.
+
+What I checked: `ballow_reopen_X2` ("a SECOND double: 19+") fits 0.409 on a
+17-count, `ballow_pass` 1.000, `ballow_new_D3` 1.000. Nothing is starved; this
+is a judgement between three fitting calls.
+
+**Best constructive-discipline observation.** `ballow_reopen_X2`'s 19+ floor is
+a **ceiling defect in reverse**: the second double is the only way to show
+17-18 with three-suited shape, and the band starts one point above the hands
+that hold it. Same species as the ceilings in rounds 6 and 7, in the balancing
+family rather than a constructive one.
+
+**VERDICT: NOTHING-WRONG (competitive).**
+
+---
