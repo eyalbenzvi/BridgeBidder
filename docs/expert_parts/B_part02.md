@@ -21,8 +21,11 @@ traced through `repro.rank()` / `sweep.deciding_rule()`.  **All twenty were then
 loaded SIMULTANEOUSLY** — one file, 20 new agreements, 18 new contexts, 6 rungs
 added to existing contexts — and:
 
-* all **30** seat checks (the trying seat AND the answering seat of each) still
-  produce the intended call, so there is no cross-interference between them;
+* all **37** seat checks (the trying seat AND the answering seat of each, plus
+  the "must NOT change" controls — a 14-count that must still rebid 2C, a
+  three-card fit that must still raise, a major weak two that must still bid
+  4M, the locked six-card-major game try) produce the intended call, so there is
+  no cross-interference between the twenty proposals;
 * the batch parses (`load_system` on the patched file, 0 duplicate ids);
 * **`python3 -m pytest -q` against the patched system: 768 passed, 0 failed.**
   An earlier draft of the trial bid broke exactly one locked scenario
