@@ -30,8 +30,8 @@ def main(path: str) -> None:
     rows = [json.loads(l) for l in open(path)]
     dd = EndplayDD(cache_size=len(rows) + 10)
     deals = [{s: Hand.parse(r["hands"][s.value]) for s in Seat} for r in rows]
-    for i in range(0, len(deals), 200):
-        dd.prefetch(deals[i:i + 200])
+    for i in range(0, len(deals), 32):        # DDS caps a batch at 32 tables
+        dd.prefetch(deals[i:i + 32])
 
     bands: dict[str, list] = {"12-13": [], "11": [], "<=10": []}
     for r, deal in zip(rows, deals):
