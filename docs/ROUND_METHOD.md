@@ -24,6 +24,14 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 14 | 151515 | **-474** (8 of 20 killed by review; the biggest single gain was a broken locked test) |
 | 15 | 161616 (1000 deals) | **-474** (no movement: 4 of 6 killed, 1 reverted; the rule-level defect supply is exhausted) |
 | 16 | - (no new deals) | **-474** (two experiments, two informative negatives: the code fallback is not attributable; arbitration measured for the first time and reverted) |
+| 17 | - | **-474** (byte-identical engine; the screen shipped, the slam build reverted) |
+| 18 | 575757 | **-533 held out**, but the build is accepted on the 12,000-board POOL at **+305, t = +2.67, CI [+79, +532]** - see below |
+
+**FROM ROUND 18 THE HELD-OUT CORPUS IS NO LONGER THE DECISION RULE.**  It has
+been the decision rule sixteen times, so -474 is a running maximum of a
+ratcheted walk.  Acceptance is the 12,000-board pool, whose seeds have never
+decided anything; the three 1,000-board corpora TOGETHER resolved round 18's
+build at t = 0.19 with an interval from -121 to +145, i.e. not at all.
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -94,6 +102,47 @@ tolerance in `constraints/model.py` `_EVAL_S2`, where a one-point miss really
 fails.  Every generic context ends in a catch-all pass with `requires: {}` that
 fits 1.00, so **any hole in an authored ladder becomes a PASS by construction**:
 `all-pass` and `fallback` in a dossier name STARVED SEATS, not bad rules.
+
+## THE LESSON OF ROUND 18: A CONVENTION PAYS, A GENERIC RUNG DOES NOT
+
+Round 18 authored 765 rules from 410 expert proposals over 302 lost boards and
+screened them by subject on a 12,000-board pool.  The result contradicts the
+density thesis as stated:
+
+| subject | rules | changed boards | delta | t |
+|---|---|---|---|---|
+| the four generic competitive contexts | 204 | **3,497** | **-1,107** | **-3.18** |
+| the same, minus the 19 double rungs | 191 | 2,810 | -122 | -0.42 |
+| **support doubles + the seat that answers them** | **257** | 216 | **+200** | **+2.55** |
+| the starved answering seats | 302 | 231 | +105 | +1.26 |
+
+**The bigger batch is the one that lost.**  Volume is not the active
+ingredient.  What separates them is that batch 2 is ONE NAMED CONVENTION with
+its answering seat, while batch 1 is rungs spread across contexts that are
+dispatched on the SHAPE OF THE AUCTION rather than on an agreement - so a rung
+added there fires in auctions its author never saw.
+
+Three corollaries, each measured:
+
+1. **`cfr.py` saying "an alternative beats this call" does not license a
+   RULE.**  A rollout substitutes one call while partner reads it with the
+   UNMODIFIED system, so it measures unilateral deviation.  `ch_pass` really is
+   beaten by acting (+1.90 +/- 0.66, n=67) and replacing it still cost 1,107
+   IMPs.
+2. **A post-hoc attribution must be screened, not believed.**  Batch 1's slices
+   said the doubles lost and the raises gained; removing every double rung took
+   the build from +305 to -122.
+3. **`coverage.py`'s KNOWS bucket was an artefact until round 18 split out
+   VACUOUS.**  A rule with an empty `requires` fits 1.00 against every hand, so
+   every catch-all pass scored as an agreement.  Live decisions: KNOWS 76.0%,
+   **VACUOUS 22.5%**, GUESSES 1.4%, NOTHING 0.1%.
+
+**And the most repeated error in this project is now priority-by-reasoning-
+upward.**  Three of round 18's rungs were caught by locked scenarios AFTER an
+expert editor reviewed them, every one a rung placed above the call it should
+sit under.  At 7,000 rules that rate is unmanageable by review: the next
+constraint is a priority-conflict tool and a shadowing invariant, not another
+expert.
 
 ## THE LESSON OF ROUND 17: DENSITY, NOT RUNGS
 
