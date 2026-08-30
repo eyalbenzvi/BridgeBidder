@@ -119,6 +119,22 @@ here is written around:
   ladder or it silently becomes the ladder.  Prototyped and corrected on
   board 900's answering context.
 
+* **Rule ids need not be unique after expansion.**  The base file already has
+  **300** duplicated rule ids (`r1m_1H`, `r1m_raise3`, `rr_nt_pass` …), because
+  a rule id with no template var is shared across its context's expansion.
+  Only *context* ids are checked.  So `r1m_1H_light` appearing once per minor
+  is house style, not a defect.
+
+## Combined-patch check
+
+All fourteen proposals were applied to **one** copy of the YAML and loaded
+together: **572 contexts (+55) and 2,460 rules (+116)**, no loader error, no
+new duplicate context id.  Every one of the fourteen was then re-traced under
+the combined patch and each still produces its intended call, so the proposals
+do not interfere with one another.  The two that share a context
+(`opener_over_negative_double`, boards 372 and 475) were checked against each
+other's board explicitly.
+
 ---
 
 ## Board 900 — margin -3
@@ -421,10 +437,11 @@ Prototyped against a patched copy.  BEFORE: `P` (`r1H_pass` 1.000/15;
 
 ### TEMPLATE
 
-Give the twin to `resp_1S` (`r1S_1H_light` is NOT the analogue — over 1S the
-light response would be at the **two** level and is not free; the correct twin
-is that `resp_1m`'s `r1m_1S` already carries this branch, see below).  In fact
-`r1m_1S` already contains exactly this idea —
+No `expand` on `resp_1H`, so this is one hand-written rung.  There is **no
+twin in `resp_1S`**, and that is deliberate: over a 1S opening the light
+response would have to be 2H, at the two level, which is not free.  The
+agreement only applies where the response is available at the one level.  Note
+that `r1m_1S` already contains exactly this idea —
 `hcp: [5,40], suits: {S:[5,13]}, singleton_or_void: [1,1]` — so this proposal
 is the **sibling sweep of a light branch the file already has for one seat and
 not the other.**  No `expand` needed: two hand-written rungs, one in `resp_1H`
@@ -1235,15 +1252,14 @@ answering context exists.
 
 Table A call 1: N overcalls `2D` over 1H with `QJ2.T84.AQT64.Q3` — 11 HCP, a
 five-card suit headed by AQT, `oc1H_2D` fit 1.000 at priority 65.  BEN passes.
-A two-level overcall on a bare 11 with 4-3-5-1... 3-3-5-2 shape and two
+A two-level overcall on a bare eleven with 3-3-5-2 shape and two
 queen-doubletons is a style question at the bottom of the overcall's own range,
 and the overcall's floor is the competitive reviewer's.
 
 **What I checked in my discipline.**  S's raise to 3D at call 3
-(`uc_raise_D3`) is the only constructive-flavoured call and it is right on
-`AK93.QJ53.873.95`… it is in fact a three-card raise of a two-level overcall
-made by `general_uncontested_continuation`, which is dispatch-by-RHO-passed
-again.  Routing that is on the do-not-re-propose list.
+(`uc_raise_D3`, fit 0.42) is the only constructive-flavoured call: a three-card
+raise of a two-level overcall, decided by `general_uncontested_continuation`
+because RHO happened to pass - dispatch-by-RHO-passed again.  Routing that is on the do-not-re-propose list.
 
 **VERIFIED** (traced).  **TEMPLATE:** n/a.
 

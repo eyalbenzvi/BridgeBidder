@@ -1931,3 +1931,133 @@ After: `2D` (`sw_2D_two`, fit 1.000 / 65.5).  Regression traced.
 `balancing_suits_*`; that is roughly a dozen rules from one agreement, and it is
 the direct-seat companion to board 292's suit-quality floor.
 
+## Board 384 — margin -11
+
+**Seat/call that went wrong.** Table A, call 4, **N bids 2S**
+(`adx_neg_major_S2`) answering partner's negative double of their 2H overcall of
+our 1NT, holding `AQT65.J3.AK3.KT6` — a 17-count with a **five-card** spade
+suit.  BEN bids 3S.  The undisclosed maximum then drove the pair into 6S for
+-50 where the other table played 4S for +450.
+
+**The missing agreement (one sentence).** The answer to a negative double has
+**no range**: `adx_neg_major_$M2` and `adx_neg_major_$M3` have byte-identical
+`requires` (`4+ cards, 11+ HCP`) and **both** carry `cheapest_in_suit: true`, so
+the jump answer is structurally unreachable whenever the cheap one is legal and
+the doubler can never distinguish eleven from seventeen.
+
+**EXACT YAML.**  Two rungs into `general_pull_or_sit`, after
+`adx_neg_major_$M3`.  Note the deliberate absence of `cheapest_in_suit` — a jump
+is by definition not the cheapest bid, which is why the existing 3S rung is dead:
+
+```yaml
+      - id: adx_neg_major_jump_H3
+        call: 3H
+        priority: 63
+        when: { unbid_suit: H, their_last_bid_suit: true, i_have_acted: true }
+        requires: { suits: { H: [5, 13] }, hcp: [16, 40] }
+        shows: "answering the negative double with a jump: a five-card major and a maximum, so partner can raise to game and stop"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: adx_neg_major_jump_S3
+        call: 3S
+        priority: 63
+        when: { unbid_suit: S, their_last_bid_suit: true, i_have_acted: true }
+        requires: { suits: { S: [5, 13] }, hcp: [16, 40] }
+        shows: "answering the negative double with a jump: a five-card major and a maximum, so partner can raise to game and stop"
+        establishes: { forcing: invitational, agreed_suit: S }
+```
+
+**THE ANSWERING SEAT** (`forcing: invitational`, so it is owed).  The negative
+doubler over the jump answer lands in `general_uncontested_continuation`, which
+already contains `uc_raise_$M4` (game, 11+ support points, fit 1.00 on this
+board's S hand) and `uc_pass`; I traced that the seat is populated and did not
+author a new context.  What the invitation buys is that S's 4S is now a
+**sign-off after a shown maximum** instead of the start of a slam hunt.
+
+**WHAT IT ENDANGERS** (`general_pull_or_sit`, at or below 63):
+
+* `adx_sit` (61) and `adx_neg_major_$M2/3` (62), **below** mine — the cheap
+  answer loses only hands with a **five-card** major and **16+**, which are
+  exactly the hands the cheap answer misdescribes.
+* `adx_pull_major_$M3` (58.5/58.6, my board-26 proposal) and `adx_pull_$X3/4`
+  (58/54) — those carry `i_have_acted: false`; mine carries
+  `i_have_acted: true`, so the two families are structurally disjoint.
+* `adx_nt` (56) / `adx_pass_min` (52) — a 16+ hand with a five-card major is not
+  a 9-12 notrump nor a minimum.
+* Fallback: `3S`/`3H` in this seat are already covered by the (dead but present)
+  `adx_neg_major_$M3`, so no code fallback is deleted.
+
+**VERIFIED.**  Before: `2S` (`adx_neg_major_S2`, fit 1.000 / 62).  After: `3S`
+(`adx_neg_major_jump_S3`, fit 1.000 / 63).  Regression traced: an 11-count with
+**four** spades still answers 2S (my rung falls to 0.143).
+
+**SCOPE NOTE.**  The rest of table A's auction — `gr_rkc_S` asking over partner's
+4S, and `rkc5H_slam` bidding 6S on a 5H reply — is the documented open item "the
+keycard ask over a game raise is a measured loss but no gate on it survives".
+Not mine, and not re-proposed.
+
+**TEMPLATE.**  Both majors written out.  The same range split is missing on the
+**minor** answers (`adx_pull_$m3/4` have no maximum branch) and on the
+`advance_weak2_double_*` contexts, where the answer to a double of a weak two has
+the identical flat structure.
+
+## Board 385 — margin -11
+
+**Seat/call that went wrong.** Table A, call 3, **N cue-bids 2S** (`adv_cue`,
+"game-forcing values, no clear direction") advancing partner's takeout double of
+1S, holding `KQ5.T976.KJ7.A87` — 13 HCP, balanced, **K-Q-x in their suit**.  The
+cue bid started an auction with no direction and we played 4S (our side!) for
+-100; 3NT makes ten tricks and is +430 at the other table.
+
+**The missing agreement (one sentence).** `advance_takeout_double` goes
+`adv_1NT` (6-10 with a stopper), `adv_2NT` (11-12 with a stopper) and then
+**nothing natural** — there is no 3NT advance at all, so every 13+ hand, stopper
+or no stopper, is funnelled into the game-forcing cue bid.
+
+**EXACT YAML.**  One rung into `advance_takeout_double`, after `adv_2NT`:
+
+```yaml
+      - id: adv_3NT
+        call: 3NT
+        priority: 76
+        requires:
+          hcp: [13, 16]
+          features: [ "stopper($o)" ]
+          evals: { semi_balanced: [1, 1] }
+        shows: "13-16 balanced with their suit stopped: nine tricks in notrump, so name the contract instead of cue-bidding for a direction I do not need"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT.**  `forcing: sign_off` — it names the contract, which is
+the entire point of the rung, so none is owed.  That is also the argument for it
+over the cue bid: `adv_cue` is `game_forcing` and its answering ladder
+(`advance_takeout_double_suits_$o`) can only guess a strain we have already
+found.
+
+**WHAT IT ENDANGERS** (`advance_takeout_double` and the `advS_*` suit context):
+
+* `adv_cue` (75, **below** my 76) — the only rung that loses hands, and it loses
+  exactly the 13-16 balanced hands **with a stopper in their suit**.  Verified:
+  a 13-count with no spade stopper (`765.KQ76.KJ7.A87`) still cue-bids at fit
+  1.000, and a 17+ hand keeps the cue bid because my band tops at 16.
+* `adv_2NT` (56) and `adv_1NT` (55), below — capped at 12 and 10; disjoint.
+  Verified: an 11-12 hand's behaviour is unchanged.
+* `adv_pass_penalty` (30) — needs five of their suit; disjoint.
+* `advS_3H_jump` (60), `advS_2H`/`2C`/`2D` (54/50/51) — the "0-8 forced" and
+  "9-11 invitational" suit answers, all far below and all capped under 12.
+* Fallback: `3NT` in this seat was NOT covered by any rung of
+  `advance_takeout_double` before, so this rung **does** remove the code
+  fallback's 3NT there.  That is the intent — the fallback was the only way 3NT
+  could ever be bid — and the `stopper($o)` + `semi_balanced` gate keeps the rung
+  from being offered on shapely hands.
+
+**VERIFIED.**  Before: `2S` (`adv_cue`, fit 1.000 / 75).  After: `3NT`
+(`adv_3NT`, fit 1.000 / 76).  Both regressions traced.
+
+**SCOPE NOTE.**  Table B's first divergence is E passing `A9863.A3.852.QJ2` in
+first seat where BEN opens 1S — an opening-style question, excluded.
+
+**TEMPLATE.**  The rung sits inside the existing `expand: { o: [C, D, H, S] }`,
+so one rule becomes four.  Expand the same ceiling repair to
+`advance_reopening_double` and `advance_balancing_double_$o` (both go 1NT/2NT and
+stop) and to `advance_weak2_double_$W`, which likewise has no natural 3NT.
+

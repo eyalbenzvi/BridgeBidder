@@ -9,11 +9,12 @@ control-showing that separates a minimum from a slam-going hand **below game**.
 | | |
 |---|---|
 | boards in dossier | 38 |
-| proposals with exact YAML | **20** |
-| of those, traced through `repro`-equivalent ranking on a patched copy of the file | **18 VERIFIED** |
+| boards with an implementable proposal | **19** (18 full agreements + 1 gate-only finding, board 59) |
+| of those, traced through ranking on a patched copy of the file | **18 VERIFIED** |
 | proposals that recover the board's IMPs in a full engine-vs-engine rollout | **13** |
-| NEGATIVE results reported rather than shipped | **3** (boards 222-alt, 443, 762) |
-| NOTHING-WRONG / competitive (reviewer A's territory) | **18** |
+| NEGATIVE results reported rather than shipped | **4** (222-alt jump shift, 443, 614-alone, 762) |
+| NOTHING-WRONG / competitive (reviewer A's territory) | **19** |
+| new contexts / new rules if the whole slice ships | **+49 / +158** (517→566, 2,344→2,502) |
 
 **Method note — how "VERIFIED" was obtained.** `choose_bid` accepts a
 `system_path`, so every proposal below was written into a *copy* of
@@ -169,9 +170,9 @@ five losers — not only on high-card points.
         requires:
           suits: { $m: [7, 13] }
           hcp: [11, 15]
-          evals: { ltc: [0, 5] }
+          evals: { ltc: [0, 4] }
           not: { suits: { $M: [4, 13] } }
-        shows: "jump rebid on playing strength: a seven-card $m, at most five losers"
+        shows: "jump rebid on playing strength: a seven-card $m, at most four losers"
         establishes: { forcing: invitational }
 ```
 
@@ -200,6 +201,8 @@ nothing without this, so it ships in the same proposal:
 * `ob_rebid_2$m` (prio 50) — a seven-card suit with three losers is not a
   "minimum rebid"; the six-card 12-15 hands it was written for miss the new
   rung's length gate and still fit 1.000 (traced: `5.732.KQ6.AQJ865` still bids 2C).
+  **The loser gate is 4, not 5, and that number was set by a measured
+  interaction, not by taste** — see Appendix 2.
 * `ob_rebid_3$m` (49) — different band (16-18 HCP with six cards); untouched.
 * `ob_raise_2$M/3$M/4$M` (80/78/76) — all deny-gated by `not: {suits: {$M: [4,13]}}`.
 * `ob_1NT` (57.5) / `ob_2NT` (56) — both need `semi_balanced` / `balanced`,
@@ -2100,3 +2103,35 @@ Three things I would tell whoever implements this:
   rules for that reason and one of them does nothing except exist.
 * **Verify with `use_arbitration: False`.** `choose_bid` defaults to `True`;
   the match does not. I lost one reading to this and it looked like a bad rule.
+
+
+## Appendix 2 — the whole slice applied at once, and the one interaction it exposed
+
+Every proposal above was also applied **simultaneously** to one copy of the file
+and loaded: **566 contexts / 2,502 rules** (from 517 / 2,344), i.e. **+49
+contexts and +158 rules out of 20 agreements** — which is roughly the templating
+ratio the scale-up plan assumes, obtained on a real slice rather than estimated.
+No duplicate ids, no parse errors, and all seventeen traced boards reproduce
+their individual rollouts **except one**:
+
+**Board 614's `ob_rebid_shape3_$m` and board 222's `rmr_newsuit_extras_$oM`
+collide.** Board 222's opener holds `.Q65.A43.KQJ9543` — seven clubs, **five**
+losers — so at `ltc: [0, 5]` the shape jump rebid fires there too, the auction
+becomes `1C - 1S - 3C - 3NT` (+690 instead of +650), and the `1m - 1S - 2m` node
+where the board-222 repair lives is never reached: board 222 stays at **-13**
+instead of going to zero. Tightening the gate to `ltc: [0, 4]` separates them —
+board 614's opener has **three** losers and still jumps, board 222's has five and
+still rebids 2C — and with that single change both boards behave as reported.
+Re-verified on the combined file (566 / 2,502, loads clean).
+
+Two things follow that whoever consolidates should carry forward:
+
+* **The interaction was invisible board by board.** Both rungs are correct
+  bridge, both were traced, both fire at fit 1.000, and together they cost a
+  board that either one alone recovers. The unit of verification has to be the
+  whole batch, not the rung — which is round 17's conclusion arriving from the
+  authoring side rather than the measurement side.
+* **The gate that resolved it is a trick count, not a point count.** Three
+  losers opposite a one-level response is a jump; five is a rebid. Where two
+  constructive rungs competed for one seat in this file, the loser count
+  separated them cleanly and the point count could not have.

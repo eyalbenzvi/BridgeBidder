@@ -8,6 +8,7 @@ is reused.
 
 import gc
 import weakref
+from pathlib import Path
 
 import pytest
 
@@ -20,6 +21,7 @@ from bridgebidder.inference.engine import (
     build_eval_ctx,
     prepare_decision,
 )
+from bridgebidder.api import choose_bid
 from bridgebidder.system.dsl import Conditions, load_system
 
 
@@ -83,3 +85,42 @@ def test_setup_cache_token_is_never_reused():
 
     c = load_system(config_overrides={"nt_with_5M": True})
     assert _system_token(c) != dead_token                 # never handed out twice
+
+def test_two_systems_in_one_process_do_not_alias(tmp_path):
+    """Two different systems must not share cached decisions.
+
+    This is the end-to-end version of the token test above, and it is the
+    shape the bug actually took in practice: a round-18 reviewer prototyping
+    against a patched COPY of the YAML got results from the wrong system in
+    the same process, which produced two phantom regression failures.
+    `tools/tune.py` and every "screen a patched copy" workflow do exactly this.
+    """
+    base_path = Path("src/bridgebidder/systems/two_over_one.yaml")
+    text = base_path.read_text()
+
+    # make the rule that decides this seat unfittable, so the two systems MUST
+    # disagree - demoting its priority would not do, since it is the only
+    # candidate above the 0.9 fast path and priority never gets consulted
+    anchor = "      - id: oc1D_X\n        call: X\n        priority: 72\n        requires:"
+    assert text.count(anchor) == 1
+    patched = tmp_path / "patched.yaml"
+    patched.write_text(text.replace(anchor, anchor + "\n          hcp: [30, 40]"))
+
+    def ask(system_path):
+        req = {"hand": "KJ4.AQ52.KQ9.A83",
+               "auction_state": {"dealer": "N", "vulnerability": "None",
+                                 "seat": "E", "calls": ["1D"]}}
+        if system_path:
+            req["system_path"] = str(system_path)
+        return choose_bid(req)["chosen_call"]
+
+    # interleaved, so a stale cache entry would be caught in either direction
+    first_base = ask(None)
+    first_mod = ask(patched)
+    second_base = ask(None)
+    second_mod = ask(patched)
+
+    assert first_base == "X"                       # the takeout double
+    assert first_mod == "1NT"                      # it no longer fits
+    assert second_base == first_base
+    assert second_mod == first_mod

@@ -19,11 +19,19 @@ by 4M the information exchange has already failed.
 scratch copy of `two_over_one.yaml`, loaded with `load_system(path=…)`, and
 traced through `repro.rank()` / `sweep.deciding_rule()`.  **All twenty were then
 loaded SIMULTANEOUSLY** — one file, 20 new agreements, 18 new contexts, 6 rungs
-added to existing contexts — and all 30 seat checks (the trying seat and the
-answering seat of each) still produce the intended call.  The batch parses, and
-there is no cross-interference between the proposals.  Where a rung is placed
-above an existing one I list what it can outrank and why mine is the better
-description.
+added to existing contexts — and:
+
+* all **30** seat checks (the trying seat AND the answering seat of each) still
+  produce the intended call, so there is no cross-interference between them;
+* the batch parses (`load_system` on the patched file, 0 duplicate ids);
+* **`python3 -m pytest -q` against the patched system: 768 passed, 0 failed.**
+  An earlier draft of the trial bid broke exactly one locked scenario
+  (`rebids::opener_game_try_after_single_raise`) and that failure is reported in
+  full under board 90 together with the narrowing that fixes it — round 14's
+  lesson, taken literally: a locked scenario is a measurement.
+
+Where a rung is placed above an existing one I list what it can outrank and why
+mine is the better description of the hand.
 
 ## The three agreements that matter most in this slice
 
@@ -464,5 +472,294 @@ not propose the gate: `DECISIONS.md` records that "a takeout double must not
 hide a six-card suit" was measured with whole-corpus data in round 7 and killed
 (doubles WITH a 6+ suit average -2.00/table, WITHOUT -2.54), and a
 length-in-their-suit gate is the same species.
+
+---
+
+## Board 12 — PROPOSAL — advancing partner's balancing 2NT over their weak two
+
+**Seat/call that went wrong.** Table B, call 5, **E** after `2D - P - P - 2NT -
+P`, holding `K86532.J9864.T.J` — 5 HCP, six spades and five hearts.  The engine
+bid **3NT** via `uc_nt_raise3` (down three) because
+`advance_2NT_over_weak_two` is patterned `2$X - 2NT - P - ?` — the DIRECT 2NT
+only — and the balancing sequence `2$X - P - P - 2NT - P - ?` has no context at
+all.  `context_at` returns `['general_uncontested_continuation']`.
+
+**The missing agreement.** Opposite partner's balancing notrump over their weak
+two, a five-card major is shown at the three level before notrump is considered,
+and 3NT needs eight.
+
+```yaml
+  - id: advance_balancing_2NT_over_weak_two
+    description: "Advancing partner's balancing 2NT over their weak two"
+    expand: { X: [D, H, S] }
+    pattern: "2$X - P - P - 2NT - P - ?"
+    rules:
+      - id: a2nb_pass_$X
+        call: P
+        priority: 20
+        requires: {}
+        shows: "not enough for game opposite the balancing 2NT"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+      - id: a2nb_3NT_$X
+        call: 3NT
+        priority: 55
+        requires: { hcp: [8, 40], not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] } }
+        shows: "game opposite the balancing notrump, no five-card major"
+        establishes: { forcing: sign_off }
+      - id: a2nb_3H_$X
+        call: 3H
+        priority: 56
+        when: { unbid_suit: H }
+        requires: { suits: { H: [5, 13] }, evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "five-plus hearts: showing the major before notrump"
+        establishes: { forcing: one_round }
+      - id: a2nb_3S_$X
+        call: 3S
+        priority: 56.5
+        when: { unbid_suit: S }
+        requires: { suits: { S: [5, 13] }, evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "five-plus spades: showing the major before notrump"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.** 3H and 3S are `forcing: one_round`, and the seat that
+answers them ALREADY EXISTS: `nt2_stayman_placement` does not reach here, but
+`weak2_ask_continuation` does not either — what does is the generic notrump
+opener's ladder plus, more precisely, the same reply structure the direct-2NT
+advance uses.  I traced it: after `2D - P - P - 2NT - P - 3S - P - ?` the
+balancer's candidates come from `general_uncontested_continuation` with
+`uc_raise_S3`/`uc_raise_S4` fitting on three-card support, which is a real
+answer but a thin one.  **If this ships, ship it with a matching
+`balancer_over_major_advance` context** (`2$X - P - P - 2NT - P - 3(H|S) - P -
+?`: raise to game with three-card support, 3NT with a doubleton) — I have not
+authored that here because it belongs to the same subject and one board should
+not carry two contexts it did not need.  The 3S bid on this board is passed by
+nobody: partner is 19-21 and will act.  Mark that as the one loose end in this
+proposal.
+
+**What it endangers.**
+* `uc_nt_raise3` (3NT, prio 26.5) — the round-14 rung that was re-ranked to
+  26.5 precisely so it would stop outranking natural suit bids.  Here it is
+  still raising a natural 2NT to game on **five HCP**; `a2nb_3NT_$X` replaces it
+  with an 8-point floor.  Strictly a subtraction of bad 3NTs.
+* `uc_pass` (P, prio 18) — replaced by an identical `requires: {}` pass at 20,
+  soft negative inference, so nothing is starved.
+* `uc_new_H3` / `uc_new_S3` (5+ cards, 14+ points) — my rungs are broader (any
+  strength with a five-card major opposite a 19-21 balance), which is right:
+  opposite a balancing 2NT the major is shown, not suppressed.
+
+**VERIFIED.**  E → `a2nb_3S_D` 3S at fit 1.000 (the six-card spade suit
+outranks the five-card heart suit through `suit_diff`, matching the system's own
+"higher of unequal length" rule).  3S makes nine; 3NT went down three.
+
+**TEMPLATE.**  `expand: { X: [D, H, S] }` as written (3 contexts, 12 rules).
+The same twin is owed to every direct-seat advance context whose balancing
+sibling is missing; `advance_2NT_over_weak_two` is the one this board proves.
+
+---
+
+## Board 90 — PROPOSAL — the file's first help-suit trial bid, with the seat that answers it
+
+**Seat/call that went wrong.** Table A, call 6, **N** after `P - P - 1H - 1NT -
+2H - P`, holding `KT53.AQJT9.AQ2.6` — 16 HCP, five hearts, four spades, a
+singleton club.  The engine bid **4H** via `uc_raise_H4` and went down one with
+partner holding `A84.765.3.JT9754`: five HCP and a wasted club length opposite
+the singleton.
+
+**The missing agreement — and it is the round-17 headline.**  Opposite a single
+raise, three of a side suit is a **help-suit game try**, so a shapely
+sixteen-to-nineteen asks instead of guessing.  `trial / help-suit game try` is at
+**zero rules** in the file today; `responder_rebid_after_1M_raise` gives opener
+exactly three choices (pass 12-16, a blunt 3M on 17-18, 4M on 19-24) and no way
+to ask a question.
+
+```yaml
+  - id: help_suit_game_try
+    description: "Opener's help-suit trial bid after 1M - 2M"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+      - { M: S, x: H }
+    pattern: "1$M - P - 2$M - P - ?"
+    also_patterns: [ "1$M - act - 2$M - P - ?" ]
+    rules:
+      - id: hst_try_$M$x
+        call: 3$x
+        priority: 55
+        requires:
+          suits: { $M: [5, 5], $x: [3, 4] }
+          evals: { total_points: [16, 19], singleton_or_void: [1, 2] }
+        shows: "help-suit game try: 16-19 with exactly five $M, a side shortage and three or four $x - asking for help in $x (with six of the major the blunt 3$M try is enough)"
+        establishes: { forcing: invitational, agreed_suit: $M }
+        alertable: true
+```
+
+**THE ANSWERING SEAT** — the try is an invitation and is worthless without it:
+
+```yaml
+  - id: responder_over_help_suit_try
+    description: "Responder answers opener's help-suit trial bid"
+    expand_pairs:
+      - { M: H, x: C }
+      - { M: H, x: D }
+      - { M: S, x: C }
+      - { M: S, x: D }
+      - { M: S, x: H }
+    pattern: "1$M - P - 2$M - P - 3$x - P - ?"
+    also_patterns: [ "1$M - act - 2$M - P - 3$x - P - ?" ]
+    rules:
+      - id: hsta_decline_$M$x
+        call: 3$M
+        priority: 50
+        requires: {}
+        shows: "declining the trial bid: no help in $x"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: hsta_accept_$M$x
+        call: 4$M
+        priority: 55
+        requires:
+          any_of:
+            - all_of:
+                - suits: { $x: [3, 13] }
+                - evals: { total_points: [7, 40] }
+            - all_of:
+                - suits: { $x: [2, 13] }
+                - evals: { total_points: [9, 40] }
+        shows: "accepting: three or more $x (real help), or a maximum raise without it"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+```
+
+`expand_pairs` deliberately lists only try suits BELOW the trump suit, so the
+decline (3M) is always available — a 3S try over 1H would make the sign-off 4H,
+i.e. the game the try was avoiding.
+
+**What it endangers.**  This is the one proposal in the slice that outranks a
+sign-off, so it is priced in full.
+* `op_after_raise_game` (4M, prio 54, 19-24 total points) — at 19 both fit and
+  mine wins.  **The bridge:** with 5-4-3-1 and nineteen *support* points opposite
+  a 6-9 raise the extra values are distributional, game is not cold, and the
+  standard action is a trial bid — a minimum raise then stops in three.  With no
+  shortage, `singleton_or_void: [1, 2]` (sharp, σ²=0.05) vetoes hard and the
+  game bid is untouched: verified on a balanced 19, which still bids 4H.
+* `op_after_raise_inv` (3M, prio 52, 17-18) — mine outranks it, and a named
+  suit is strictly more informative than a blunt raise.
+* **`uc_new_$x3` (three of a new suit, "5+ cards, 14+ points") is NOT
+  endangered**: my rung requires exactly three or four cards in the try suit, so
+  the two rules cannot both fit the same hand.  That is deliberate — it removes
+  the shadowing hazard entirely.
+* `uc_raise_H3` / `uc_raise_H4` / `uc_pass` in the competitive twin: outranked
+  at 55, and a 16-19 shapely hand opposite a raise is better described by a
+  question than by a jump to game.
+* **A locked scenario found the boundary and I moved to preserve it.**  With
+  `suits: { $M: [5, 13] }` the rung took
+  `rebids::opener_game_try_after_single_raise` (`AQJ752.A64.K42.9`, expecting
+  3S) and bid 3D instead.  Gating the trump suit to exactly five restores it:
+  with a six-card major you hold your own source of tricks and 3M is a
+  sufficient try.  **767 passed / 1 failed before the narrowing; the narrowing
+  is in the YAML above.**
+
+**VERIFIED.**  N → `hst_try_HD` 3D at fit 1.000 (both the competitive seat on
+this board and the uncontested twin).  Answering seat: a singleton diamond
+declines (3H, fit 1.000 vs 0.279), `Q83` accepts (4H, fit 1.000), a void with
+nine points declines.  On the board the auction becomes 1H (1NT) 2H - 3D - 3H:
++140 instead of -50.
+
+**TEMPLATE.**  `expand_pairs` over the five (major, lower side suit) pairs —
+exactly the set `opener_over_second_suit_raise` already uses — times the two
+patterns, i.e. **5 contexts × 1 rule + 5 contexts × 2 rules across two auction
+shapes**.  The natural extension, which I did NOT author here, is the
+short-suit try (3 of a singleton) as a second family; it wants its own subject
+and its own screen.
+
+---
+
+## Board 94 — PROPOSAL — responder's rebid after opener answers the negative double with 1NT
+
+**Seat/call that went wrong.** Table B, call 7, **E** after `P - 1C - 1S - X -
+P - 1NT - P`, holding `9.AKT6.6432.AK75` (14 HCP).  Opener has just shown 12-14
+balanced with the spades stopped; 26+ combined is a game.  The engine bid **2C**
+via `uc_doubler_raise_C`.  `context_at` returns
+`['general_uncontested_continuation']` — the seat has no context.
+
+**The missing agreement.** Opposite opener's 12-14 notrump reply to a negative
+double, responder invites with 11-12 and bids game with 13+ — the plain
+invitational ladder that every other 1NT rebid in the file already has.
+
+```yaml
+  - id: responder_over_1NT_after_negative_double
+    description: "Responder's rebid after opener answers the negative double with 1NT"
+    expand_pairs:
+      - { m: C, M: H, oM: S }
+      - { m: D, M: H, oM: S }
+      - { m: C, M: S, oM: H }
+      - { m: D, M: S, oM: H }
+    pattern: "1$m - 1$M - X - P - 1NT - P - ?"
+    rules:
+      - id: rnx1nt_pass_$m$M
+        call: P
+        priority: 50
+        requires: {}
+        shows: "8-10: the 12-14 notrump is high enough"
+        establishes: { forcing: sign_off }
+      - id: rnx1nt_2NT_$m$M
+        call: 2NT
+        priority: 54
+        requires: { hcp: [11, 12] }
+        shows: "invitational: 11-12 opposite the 12-14 notrump"
+        establishes: { forcing: invitational }
+      - id: rnx1nt_3NT_$m$M
+        call: 3NT
+        priority: 55
+        requires: { hcp: [13, 17] }
+        shows: "game: 13+ opposite the 12-14 notrump"
+        establishes: { forcing: sign_off }
+      - id: rnx1nt_3$m
+        call: 3$m
+        priority: 53
+        requires: { suits: { $m: [5, 13] }, hcp: [11, 40], evals: { weakest_their_stopper: [0, 0.6] } }
+        shows: "five-card support for opener's minor with their suit unstopped: inviting in the minor"
+        establishes: { forcing: invitational, agreed_suit: $m }
+```
+
+**THE ANSWERING SEAT.** The 2NT rung is an invitation and it is answered by an
+already-existing family only in the uncontested shapes, so **ship it with**
+`opener_over_negdouble_2NT` (`1$m - 1$M - X - P - 1NT - P - 2NT - P - ?`:
+pass 12-13, 3NT 14 with their suit still stopped) — a two-rung mirror of
+`opener_over_pref_2NT`, which is the file's own precedent.  On this board the
+3NT rung is what fires and no reply is owed.
+
+**What it endangers.**  New context, previously no rules.
+* `uc_doubler_raise_C` (2C, prio 34) — not defined by my context, so it
+  survives; it simply stops winning when a descriptive notrump call fits.
+* `uc_pass` (P, prio 18) — replaced by a `requires: {}` pass; exact superset.
+* `uc_nt2` / `uc_nt3` — replaced by bands tied to the *shown* 12-14, which is
+  the whole point: the generic notrump rungs guess at the partnership total,
+  and here it is known.
+* Note `weakest_their_stopper` is used only on the minor-suit rung and only as a
+  soft preference; `ROUND_METHOD.md` records that it has no sharp tolerance, so
+  I have NOT leaned any of the notrump rungs on it.
+
+**VERIFIED.**  E → `rnx1nt_3NT_CS` 3NT at fit 1.000, prio 55.  3NT makes nine
+(+600 our way) instead of 2H making ten (+170).
+
+**TEMPLATE.**  `expand_pairs` over the four (minor opening, major overcall)
+combinations already used by `opener_over_negative_double` — 4 contexts, 16
+rules, plus 4 more for the 2NT answer.
+
+---
+
+## Board 133 — NOTHING-WRONG (competitive)
+
+RHO opens a weak 2S; both auctions are competitive from call 0.  Checked
+`vw2_X` (fit 1.000) on `53.KT963.AKQJ2.Q` against the two natural 3-level bids
+(both also fit 1.000, at priority 26 against the double's 70) — a takeout double
+on a 5-5 red two-suiter with 15 is orthodox, and the loss came later when
+`ch_pass` had to guess over 4S.
+
+**Constructive observation.** None; our side never has an uncontested
+constructive sequence on this board.
 
 ---

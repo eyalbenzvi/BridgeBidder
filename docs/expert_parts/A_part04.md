@@ -1,6 +1,6 @@
 # Expert A (competitive / matchpoint duplicate) — dossier part 4
 
-38 boards, -235 IMPs.  **30 proposals, 8 NOTHING-WRONGs.**  22 proposals were
+38 boards, -235 IMPs.  **30 proposals, 8 NOTHING-WRONGs.**  23 proposals were
 traced through a patched copy of the system (`load_system()` on a scratch YAML)
 and are labelled VERIFIED; the rest are UNTESTED and say so.
 
@@ -731,11 +731,12 @@ hand that is not 5-5); `sw_1S`/`sw_1H` (68); `sw_2*` (66, same calls, 5+ and
 `sw_3*` (69.5 — those are preemptive shapes with fewer values); `sw_pass` (30).
 2$L is already covered by `sw_2$L`, so no fallback is deleted.
 
-**UNTESTED.**  I checked the candidate table in the dossier (`sw_X` 1.000/70,
-`sw_2C` 1.000/66) and the rule bodies, but did not run the patched system on
-this board.  Honest caveat: BEN's choice here is 2D, a Michaels cue, which is
-scope-excluded; my rung reaches the same hand type by a route the system
-already speaks.
+**VERIFIED.**  Base `X` (`sw_X`, fit 1.000, prio 70); patched `2C`
+(`sw_two_suiter_CH`, fit 1.000, prio 71); `sw_2C` stays at 66 beneath it.
+Honest caveat: BEN's choice here is 2D, a Michaels cue, which is scope-excluded;
+my rung reaches the same hand type by a route the system already speaks, and I
+did not simulate the rest of the auction (partner holds six spades and three
+hearts, so the 2C advance may still land badly).
 
 **Template:** six written-out rules (see above) — the context's existing
 `expand: { o: [C, D, H, S] }` blocks a second context-level expansion, and
@@ -1548,3 +1549,234 @@ time.  The answering rung: `expand: { M: [H, S] }` plus the
 `general_competitive_low/high` twins.
 
 ---
+
+## Board 704 — margin -6
+
+**Seat/call:** North, call 0 — first seat, non-vulnerable, with
+`J87652.K.T.QJT75`: **six spades and five clubs**, 7 HCP (10 total points).
+We passed; `open_weak_2S_nv` fit 0.757.  The blocker, measured:
+`suit_quality(S)` = **0.5** against the rule's `[1, 9]`.  Everything else
+passes (`hcp` 7, `quick_tricks_outside(S)` 0.0, exactly six spades, one heart).
+
+**Missing agreement:** the suit-quality bar on a weak two is standing in for
+playing tricks — and a five-card side suit supplies them directly.  6-5 comes
+alive; a six-card suit with nothing else does not.
+
+```yaml
+# context: openings, inserted before `- id: open_weak_2S_vul`
+      - id: open_weak_2S_65_nv
+        call: 2S
+        priority: 65.5
+        requires:
+          suits: { S: [6, 6], H: [0, 3] }
+          hcp: [5, 10]
+          evals: { "quick_tricks_outside(S)": [0, 2] }
+          any_of: [ { suits: { C: [5, 13] } }, { suits: { D: [5, 13] } } ]
+        shows: "weak two on shape: six spades and a five-card minor - the second suit supplies the playing tricks the suit-quality bar was standing in for"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+```
+
+Priority 65.5 is deliberately BELOW `open_weak_2S_nv` (66): where the ordinary
+disciplined weak two fits, it stays primary.
+
+**THE ANSWERING SEAT:** `resp_weak2`, `resp_weak2_major_game`,
+`resp_weak2_newsuit_S`, `weak2_ask_continuation` and `weak2_feature_answer_S`
+are all authored, and `preemptor_discipline` stops the opener bidding again.
+Nothing new is needed — which is why widening a preempt is affordable here and
+was not in the slam family.
+
+**What it endangers:** `open_weak_2S_nv` (66 — above it, untouched);
+`open_3S_nv` (60 — a seven-card hand, disjoint by the `S: [6, 6]` gate);
+`open_1S_rule20` (79) and `open_1S` (81) — both above, so a hand worth a one-bid
+still opens one; `open_1C_rule20` (71) and `open_1C` (73) — also above, and this
+hand fails both; `open_pass` (20).  In practice it only takes the pass.  2S is
+already covered by `open_weak_2S_nv`, so no fallback is deleted.
+**The cost to state:** it legalises a weak two on a poor suit, which is a real
+loosening of the "weak twos are disciplined" agreement in `DECISIONS.md`.  The
+5-card-side-suit gate is the whole justification and must not be dropped.
+
+**VERIFIED.**  Base `P`; patched `2S` (`open_weak_2S_65_nv`, fit 1.000).
+Regression: `J87652.K42.T3.QJ` (no five-card side suit) still passes.
+
+**Template:** `open_weak_2H_65_nv` and `open_weak_2D_65_nv` are the siblings
+(with the appropriate other-major cap), plus the vulnerable twins at
+`hcp: [7, 10]` — although at these colours I would ship non-vulnerable only.
+
+---
+
+## Board 713 — margin -6 — a sibling-gate finding, and a NEGATIVE prototype
+
+**Seat/call:** South, call 5 — `(P) 1H (2S) (P) (P) ?` with
+`A.AKQJ94.A542.93`: 18 HCP, a **singleton ace of spades**, `AKQJ94`.  We bid
+**3H** (`ballow_rebid_H3`, fit 1.000) for -50; passing 2S out was worth +100
+(they are vulnerable and take seven tricks).
+
+**The finding:** `ballow_reopen_X` scored **0.349** on an 18-count with a
+singleton in their suit, because it carries `evals: { longest_suit_length: [0, 5] }`
+— "a takeout double must not hide a six-card suit".  **Round 7 ruled against
+exactly that clause with whole-corpus data** (doubles WITH a 6+ suit averaged
+-2.00 a table, WITHOUT -2.54) and removed it from the sibling rules; it survives
+on `ballow_reopen_X`, `ballow_reopen_X2`, `balhigh_reopen_X` and
+`balhigh_reopen_X2`.  That is a lint-class inconsistency of the kind the
+`sibling` linter exists to catch.
+
+**NEGATIVE PROTOTYPE RESULT — I built the repair and it makes THIS board worse.**
+An additive `ballow_reopen_X_long` (16+, `max_their_suit_length: [0, 2]`,
+`longest_suit_length: [6, 13]`, priority 41) fires cleanly:
+
+```yaml
+# context: general_balancing_low, inserted before `- id: ballow_X`
+      - id: ballow_reopen_X_long
+        call: X
+        priority: 41
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: false, we_hold_contract: false }
+        requires:
+          hcp: [16, 40]
+          evals: { max_their_suit_length: [0, 2], longest_suit_length: [6, 13] }
+        shows: "reopening double with a long suit of my own: 16+, short in their suit - partner names the strain and I can always correct to my six-card suit"
+        establishes: { forcing: one_round }
+```
+
+Traced: South now doubles (fit 1.000), and North (`98763.T5.97.KT86`, 3 HCP)
+advances **3C** at `adreo_suit_C_H` — a 4-3 club fit, two off for -100, WORSE
+than the -50 we scored.  So: the sibling gate is a real defect and the round-7
+ruling applies to it, but **board 713 is not the evidence for fixing it**, and I
+am not shipping it off one board.  Recommendation: measure it as its own
+experiment across all four rules, with the `advance_reopening_double`
+one-level advances from board 758 in place first.
+
+**Answering seat:** `advance_reopening_double`, already authored (and repaired
+by the board-758 proposal).
+
+**UNTESTED as a gain; VERIFIED as a loss on this board.**
+
+**Template:** the same clause removal / additive twin on all four reopening
+doubles.
+
+---
+
+## Board 725 — margin -6
+
+**Seat/call:** North, call 3 — `(P) 1NT (P) ?` with `T7532.Q9542.T83.`:
+**exactly 5-5 in the majors**, 2 HCP.  We transferred to hearts (`nt_transfer_H`,
+priority 88, fit 1.000) and played 2H for -100; 2S makes nine.
+
+**Missing agreement:** with 5-5 in the majors opposite 1NT you transfer to the
+HIGHER suit — you can still show hearts below game, and on a bust you simply
+pass 2S.  `nt_transfer_H` (88) and `nt_transfer_S` (87) both fit 1.000 on a 5-5
+hand and the tie went to the higher-priority heart transfer.  This is the third
+instance in this dossier of the same 5-5 ordering defect (see boards 272 and
+191); round 10 fixed it for `r1m_1H`/`r1m_1S` and the sweep never reached the
+notrump or overcall ladders.
+
+```yaml
+# context: resp_1NT, inserted before `- id: nt_transfer_H`
+      - id: nt_transfer_S_55
+        call: 2H
+        priority: 89
+        requires: { suits: { S: [5, 13], H: [5, 13] }, evals: { "suit_diff(S,H)": [0, 0] } }
+        shows: "Jacoby transfer to spades with exactly 5-5 in the majors: transfer to the HIGHER suit so hearts can still be shown below game"
+        establishes: { forcing: one_round }
+        convention: jacoby_transfer
+        announce: "transfer"
+```
+
+(The additive `suit_diff(S,H): [0, 0]` form is used rather than tightening
+`nt_transfer_H`, so 6-5 and 5-4 hands keep the heart transfer.)
+
+**THE ANSWERING SEAT:** unchanged — `nt_transfer_accept_S` completes to 2S, and
+`nt_after_transfer` owns responder's rebid.  The transfer is already
+`forcing: one_round` and its acceptance is `requires: {}`.
+
+**What it endangers:** `nt_transfer_H` (88, same shape only when 5-5 exactly);
+`nt_stayman` (85 — a 5-5 major hand is a transfer hand, not a Stayman hand);
+`nt_pass` (25).  It cannot reach `nt_2NT_inv`, `nt_3NT`, the bails or the
+quantitative rungs, all of which deny a five-card major.  2H is already covered
+by `nt_transfer_S`, so no fallback is deleted.
+
+**VERIFIED.**  Base `2D` (`nt_transfer_H`, fit 1.000, prio 88); patched `2H`
+(`nt_transfer_S_55`, fit 1.000, prio 89).  N/S make nine tricks in spades
+against seven in hearts.
+
+**Template:** the identical rung in `resp_2NT` (`nt2_transfer_S_55`,
+`call: 3H`) and in `r2c_2NT_transfer_reply`; and the same ordering repair is
+owed to `sw_1H`/`sw_1S` (both 68), `ballow_new_H1`/`ballow_new_S1` (both 25) and
+`oc*_1H`/`oc*_1S` (both 71 — board 272).
+
+---
+
+## Board 782 — margin -6 — NOTHING-WRONG (competitive)
+
+The first divergence is North's response to `1H` on `T63.QT3.KQJ.KJ75` — a flat
+4-3-3-3 twelve-count with three-card support choosing `r1H_2C` (2/1 GF,
+priority 75, fit 1.000) over `r1H_limit_raise` (62, fit 0.800) and `r1H_1NT`
+(40, fit 0.800).  That is the constructive responding ladder — whether a
+balanced 12 with three trumps and no ruffing value is a 2/1 or a limit raise —
+and it belongs to the other reviewer.
+
+Competitively I checked both of our seats at table B.  `oc1H_pass` for West on
+`74.98.T95432.A82` is right.  East's sandwich `2S` on `AKQ95.765.76.Q94` after
+`1H P 1NT` (`sw_2S`, "good 5+ spades, 11-17") is a legitimate matchpoint action
+at both-vulnerable with `AKQ95` — BEN passes, but the suit is exactly what the
+rule's `suit_quality` gate is for, and it cost nothing: we passed thereafter and
+N/S bid their own 3H.  The board is lost at table A on a constructive choice.
+Nothing to propose.
+
+---
+
+## Summary table
+
+| board | seat/call | agreement | verdict |
+|---|---|---|---|
+| 632 | S, `cl_pass` over `1D (2C)` | jump raise on the fit (`cl_raise_fit3_$X`) | VERIFIED |
+| 707 | S, `xd_rebid_D2` | jump rebid over their double (`xd_rebid_jump_$X`) | VERIFIED (0 IMPs here) |
+| 758 | N, `ballow_nt1` | reopening double on shape + the missing 1-level advances | VERIFIED |
+| 788 | N, `advH_1S` | jump advance on a fifth trump | VERIFIED |
+| 894 | N, `xd_run_C2` | discriminating weak pass over their double | VERIFIED |
+| 922 | N, `nx_1m1S_pass` | preemptive raise of partner's minor | VERIFIED |
+| 988 | S, `balhigh_rebid_H4` | partner already declined: do not bid it a third time | VERIFIED |
+| 0 | W, `ballow_X` | a seven-card suit names its own trumps | VERIFIED (+ negative result) |
+| 55 | S, `cl_new_long2_D_hi` | vulnerable two-level discipline in a live auction | VERIFIED |
+| 83 | — | — | NOTHING-WRONG |
+| 93 | — | — | NOTHING-WRONG |
+| 116 | E, `oc1H_pass` | takeout double on shape at 10-11 | VERIFIED (call only) |
+| 132 | — | — | NOTHING-WRONG |
+| 188 | N, `uc_raise_H4` | the Law at the three level (`uc_raise_law3_$M`) | VERIFIED |
+| 191 | S, `sw_X` | with 5-5 bid your suits | VERIFIED |
+| 247 | S, `nxj_X` | trap pass + the reopening double that converts it | VERIFIED |
+| 267 | — | — | NOTHING-WRONG |
+| 272 | S, `oc1D_1H` | 5-5 majors: overcall the higher | VERIFIED |
+| 274 | N, `balhigh_nt3` | a penalty double in the balancing-high context | VERIFIED |
+| 297 | N, `cl_negative_X1` | raising an overcall beats a responsive double | VERIFIED |
+| 343 | — | — | NOTHING-WRONG |
+| 348 | — | — | NOTHING-WRONG |
+| 369 | — | — | NOTHING-WRONG |
+| 390 | S, `ballow_pass` | the Law in the balancing seat (`their_fit >= 8`) | VERIFIED |
+| 425 | S, `open_pass` | the side-major veto must not fire in spades | VERIFIED |
+| 445 | — | — | NOTHING-WRONG |
+| 494 | N, `xd_pass` | 3C Stayman over interference + the placement seat | VERIFIED |
+| 535 | S, `ch_free_3H` | raise partner's known six-card suit on a doubleton | VERIFIED |
+| 558 | N, `cl_pass` | `general_after_redouble` stops matching once they bid | UNTESTED (own round) |
+| 563 | — | — | NOTHING-WRONG |
+| 570 | S, `advo_1NT` | natural six-card advance of an overcall | VERIFIED |
+| 655 | N, `cl_pass` | the Law once partner has agreed my overcalled suit | VERIFIED (0 IMPs here) |
+| 658 | W, `uc_pass` | **the free bid at the one level is FORCING** | VERIFIED (mechanism) |
+| 690 | N, `nx_1m1S_X` | 6-5 jump shift + the Law game raise opposite it | VERIFIED, +840 pts |
+| 704 | N, `open_pass` | weak two on 6-5 shape | VERIFIED |
+| 713 | S, `ballow_rebid_H3` | the six-card veto on the reopening doubles | NEGATIVE result |
+| 725 | N, `nt_transfer_H` | 5-5 majors: transfer to the higher | VERIFIED |
+| 782 | — | — | NOTHING-WRONG |
+
+## The one cross-cutting repair I would ship first
+
+**The 5-5 ordering defect** (boards 272, 725, and 191 by family).  Round 10
+fixed `r1m_1H`/`r1m_1S`, and a later round fixed `cl_new_H1`/`cl_new_S1` with a
+comment saying the sweep was never done.  It still has not been:
+`oc*_1H`/`oc*_1S` are both 71, `sw_1H`/`sw_1S` both 68, `ballow_new_H1`/`_S1`
+both 25, `balhigh_new_H1`/`_S1` both 25, `ch_new_H1`/`_S1` both 25, and
+`nt_transfer_H`/`nt_transfer_S` are 88/87 — in every one of those pairs a 5-5
+hand ties at fit 1.000 and the LOWER suit wins on call rank.  Six two-line
+additive rungs, zero conventions invented, and every one of them is the same
+sentence of bridge the file already writes.

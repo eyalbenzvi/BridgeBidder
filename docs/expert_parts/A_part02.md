@@ -1719,3 +1719,262 @@ would therefore have to carry all of `cl_new_$X2`'s gates verbatim as shadow
 rungs — the round-7 trap — and this board is not the evidence that it pays.
 
 ---
+
+## Board 773 — margin -10
+
+**Seat/call that went wrong:** table A, call 5, **South passes 3H** holding
+`K93.876.54.AQ943` (9 HCP, three trumps) after `P – P – 2S – 3H(partner) – P`.
+4H makes twelve (+680); we played 3H for +230.
+
+**Missing agreement:** partner's THREE-level overcall of a weak two promises a
+good six-card suit and eleven-plus points; with three trumps and eight support
+points that is a game, and the seat has no context of its own.
+
+South falls to `general_uncontested_continuation`.  `uc_raise_H4` needs
+`rule_of_26 >= 25` and South's 10 support points opposite a shown 11 make 23,
+fit **0.328**; `uc_raise_lott4_H` needs their fit, fit 0.000.  Whole candidate
+set: pass at 1.000 and two dead raises.
+
+### YAML — a NEW context, immediately BEFORE `advance_weak2_double_raised`
+
+```yaml
+  - id: advance_weak2_three_level_overcall
+    description: "Advancing partner's three-level overcall of their weak two"
+    expand_pairs:
+      - { W: D, X: C }
+      - { W: H, X: C }
+      - { W: H, X: D }
+      - { W: S, X: C }
+      - { W: S, X: D }
+      - { W: S, X: H }
+    pattern: "2$W - 3$X - P - ?"
+    rules:
+      - id: aw3_game_$X
+        call: 4$X
+        priority: 60
+        when: { standing_bid_strain: [H, S] }
+        requires:
+          suits: { $X: [3, 13] }
+          evals: { total_points: [8, 40], "lott_total_trumps($X)": [8, 26] }
+        shows: "raising the three-level overcall to game: three trumps and eight support points opposite a good six-card suit and eleven points"
+        establishes: { forcing: non_forcing, agreed_suit: $X }
+      - id: aw3_game5_$X
+        call: 5$X
+        priority: 58
+        when: { standing_bid_strain: [C, D] }
+        requires:
+          suits: { $X: [3, 13] }
+          evals: { total_points: [13, 40], "lott_total_trumps($X)": [9, 26] }
+        shows: "raising the three-level minor overcall to game: eleven tricks need a real fit and real values"
+        establishes: { forcing: non_forcing, agreed_suit: $X }
+      - id: aw3_pass_$X
+        call: P
+        priority: 55
+        requires: {}
+        shows: "nothing to add to partner's three-level overcall"
+        establishes: { forcing: sign_off, agreed_suit: $X }
+```
+
+`when: { standing_bid_strain: [H, S] }` on the game rung and `[C, D]` on the
+five-level rung make each self-selecting inside the same `expand_pairs`, so the
+"4D is a game" defect of board 175 cannot be reproduced here.
+
+**Answering seat:** none — the pass rung closes the ladder and both bids name
+the final contract.
+
+**What it endangers.**  Specificity 1003 against
+`general_uncontested_continuation`'s 2, so this context owns P, 4$X and 5$X on
+exactly the six `2W – 3X – P – ?` auctions:
+* `uc_raise_$X4` (32) and `uc_raise_lott4_$X` (32) — both already dead here
+  (0.328 / 0.000) because they price the advance against partner's SHOWN
+  minimum, and a three-level overcall of a weak two has an authored 11-point,
+  good-six-card floor that the generic ladder never reads.
+* `uc_pass` (18) — replaced by `aw3_pass_$X`, `requires: {}`, so no starvation.
+* `uc_nt3` (29) keeps 3NT; `gst_rkc_$X` (46) keeps 4NT.
+* **No fallback hazard** — P and 4$X were already covered here.
+
+**VERIFIED,** with a control: South bids `4H` at fit 1.000 / prio 60,
+`clear=True`; a 3-HCP advancer (`K93.876.54.98543`) passes at `aw3_pass_H`
+1.000 with the game rung at 0.028.
+
+**Template:** `expand_pairs` over the six (weak-two suit, overcall suit)
+combinations, copied verbatim from `defense_vs_weak2_overcalls3` so the
+question and its answer are templated the same way.
+
+---
+
+## Board 789 — margin -10 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Both auctions uncontested.  Our E/W hands are
+`J98732.QJ.J8.QT9` (7 HCP) and `AT.76542.Q43.742` (6 HCP); the opening seat
+(`open_pass`, BEN 0.74), the direct seat over 1C (`oc1C_pass`, 1.00), the
+sandwich seat over 1H (`sw_pass`, 0.67) and the seats over 2D/3D/3NT
+(`ch_pass`, 1.00) all match BEN.  East's six spades at favourable vulnerability
+are the one arguable action, and BEN declines it twice.
+
+The loss is North's `2H` on `54.AK983.T976.J5` opposite South's REVERSE — the
+`rrev_*` ladder — and South's later `3C` and pass with 19 HCP.  Constructive.
+
+---
+
+## Board 790 — margin -10 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Uncontested both ways.  Our E/W calls at table B are
+`oc1C_pass` (1.00), `sw_pass` (0.98) and `ch_pass` (1.00) on 12 and 5 HCP;
+East's `T63.AJ9.AQJ2.854` in the sandwich seat is the only hand with a case for
+acting, and BEN passes it at 0.98.
+
+The dossier's first divergence is South's opening pass on
+`75.832.K4.AKT976` — a rule-of-20 threshold, explicitly scope-excluded — and
+the rest is responder's preference after `1S – 1NT – 2S`.
+
+---
+
+## Board 791 — margin -10
+
+**Seat/call that went wrong:** table A, call 3, **South bids 4C** holding
+`AQ.AK5.7.J976532` (14 HCP, **seven clubs**, 18 support points, `rule_of_26`
+30, a ten-card fit) after `P – 1C(partner) – 1D`.  5C makes eleven (+600); 4C
+made eleven for +150.
+
+**Missing agreement: four of a minor buys nothing three does not.**  With a
+ten-card minor fit and the values for eleven tricks, the competitive raise is
+to FIVE — `general_competitive_low` and `general_competitive_high` top out at
+`cl_raise_$m4` / `ch_raise_$m4` and have no minor-game rung at all.
+
+This is a sibling gap with a named twin: `uc_minor_game_5C` / `uc_minor_game_5D`
+exist at priority 28 in `general_uncontested_continuation` ("accepting to game
+in the raised minor: 17+ opposite the raise") and were never given competitive
+counterparts.  `grep -n "cl_minor_game"` returns nothing.
+
+### YAML — into the EXISTING context `general_competitive_low`
+
+```yaml
+      - id: cl_minor_game_5C
+        call: 5C
+        priority: 27.5
+        when: { partner_suit: C, we_hold_contract: false }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [15, 40], rule_of_26: [26, 99], "lott_total_trumps(C)": [10, 26] }
+        shows: "eleven tricks in the minor: a ten-card fit and the values, where four of a minor buys nothing three does not"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: cl_minor_game_5D
+        call: 5D
+        priority: 27.5
+        when: { partner_suit: D, we_hold_contract: false }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [15, 40], rule_of_26: [26, 99], "lott_total_trumps(D)": [10, 26] }
+        shows: "eleven tricks in the minor: a ten-card fit and the values, where four of a minor buys nothing three does not"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+```
+
+Gates deliberately a shade tighter than `uc_minor_game_5$m` (which asks 17
+total points and `rule_of_26 >= 29`): in a contested auction partner's shown
+minimum is understated, so 15 and 26 with a TEN-card fit is the honest
+equivalent.  All three evaluators are counted rather than estimated —
+`lott_total_trumps` carries sharp 0.4 tolerance, so a nine-card fit scores 0.08.
+
+**Answering seat:** none — five of a minor is a final contract and the rung is
+`non_forcing` with an agreed suit.
+
+**What it endangers, in `general_competitive_low`:**
+* `cl_raise_C4` / `cl_raise_D4` (27) — the target.  One sentence: four of a
+  minor is neither game nor a partscore worth reaching, so with the values for
+  eleven tricks and a ten-card fit the only useful call is five.
+* `cl_raise_$m3` (31) and `cl_raise_$m2` (30) sit ABOVE it, so a hand short of
+  15 support points still stops at the three level — which is right, and is why
+  I did not simply re-rank `cl_raise_$m4`.
+* `cl_nt3` (29) is above it: with a stopper and a balanced hand 3NT is still the
+  primary reading, and nine tricks beat eleven.
+* `cl_pass` (20).
+* **Fallback hazard: real.**  5C/5D are not currently covered in this context,
+  so these rungs delete the code fallback for them wherever `partner_suit`
+  holds.  The 15-point / ten-trump gates make the window small; screen it.
+
+**VERIFIED.**  South bids `5C` at fit 1.000 / prio 27.5, `clear=True`, with
+`cl_raise_C4` 1.000/27 immediately behind.
+
+**Template:** the two rungs above, plus the identical pair
+`ch_minor_game_5$m` in `general_competitive_high` and `balhigh_minor_game_5$m`
+in `general_balancing_high` — the same gap exists in all three.
+
+---
+
+## Board 800 — margin -10
+
+**Seat/call that went wrong:** table A, call 6, **South passes 3S out** holding
+`J2.K9832.A72.654` after `1H(partner) – 2S – 3H(mine) – 3S – P – P`.  4H by
+North makes ten (+420); we defended 3S making for -140.
+
+**Missing agreement: the Law push.**  Once I have already raised, and they have
+competed one more, the four level does not need my values a second time — ten
+trumps our way and eight theirs is the whole argument.
+
+`balhigh_raise_lott4_H` fits **0.409** and the only gate it fails is
+`total_points >= 11`; South has nine.  The file's own comment explains the
+floor — "the 11-point floor matches the sibling, so partner's shown minimum for
+4M does not move" — which is a partner-model reason, not a bridge one, and it
+is asking South for values he has already shown with the 3H raise.
+
+**Deliberately NOT proposed:** relaxing `their_fit >= 8`.  The comment on
+`cl_raise_lott4_H` records that measurement — "without it the rung fired on OUR
+ten trumps alone and measured +1 over 1000 boards; it pushed a making 3H to a
+failing 4H as often as it found a good save."  Their fit here is **9**, so the
+Law's premise is satisfied; it is only the point floor that blocks.
+
+### YAML — into the EXISTING context `general_balancing_high`
+
+```yaml
+      - id: balhigh_lott_push_H
+        call: 4H
+        priority: 32.5
+        when: { partner_suit: H, is_competitive: true, i_have_acted: true }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { "lott_total_trumps(H)": [10, 26], their_fit: [8, 26], total_points: [6, 40] }
+        shows: "the Law push after they compete one more: my raise already showed the hand, ten trumps our way and eight theirs, so nobody sells out at the three level"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: balhigh_lott_push_S
+        call: 4S
+        priority: 32.5
+        when: { partner_suit: S, is_competitive: true, i_have_acted: true }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { "lott_total_trumps(S)": [10, 26], their_fit: [8, 26], total_points: [6, 40] }
+        shows: "the Law push after they compete one more: my raise already showed the hand, ten trumps our way and eight theirs, so nobody sells out at the three level"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+```
+
+`i_have_acted: true` is what distinguishes it from its sibling and what makes
+the low floor honest: this is the second time I bid, not the first.  FIVE trumps
+(not four) keeps it off the hands `balhigh_raise_lott4_$M` already serves.
+
+**Answering seat:** none — it names game in a contested auction and partner has
+already passed.
+
+**What it endangers, in `general_balancing_high`:**
+* `balhigh_raise_lott4_$M` (32) — same call, so no behaviour changes on the
+  hands it already fits; mine only reaches the 6-10 point hands it declines.
+* `balhigh_raise_$M4` (32) and `balhigh_rebid_$M4` (29) — same call again.
+* `balhigh_reopen_X` / `balhigh_X` (40 / 41) stay above: a hand with defence
+  still doubles rather than pushing.
+* `balhigh_pass` (21) — the target.
+* **The one real risk, stated plainly:** same-call rules merge into a
+  disjunction in the partner model, so a 6-point floor on 4H lowers partner's
+  shown minimum for four of the major.  `i_have_acted: true` scopes it to the
+  second-bid seat, but the partner model may not condition on that; if a
+  consolidator wants to be safe, set the floor at 8 rather than 6 — this board
+  is fixed either way, since South has nine.
+* **No fallback hazard:** 4H/4S already covered here.
+
+**VERIFIED,** with a control: South bids `4H` at fit 1.000 / prio 32.5,
+`clear=True`; the same hand with only four trumps (`J2.K983.A72.6543`) still
+passes, my rung at 0.029.
+
+**Template:** the `_H` / `_S` pair above, and the same pair in
+`general_competitive_high` (`ch_lott_push_$M`) for the case where they compete
+without passing it round.
+
+---
