@@ -466,3 +466,406 @@ NOTHING-WRONG.
 system; `oc1C_1H` fits 0.757.  With 5-5 the higher suit first is right and the
 file does it.  There is no constructive seat on this board — the auction is
 `P P 1C 1S 3C P P P`.
+
+---
+
+## Board 279 — margin -1
+
+**Seat/call.** West, call 4: `1C P 1H P` → `ob_rebid_2C` rebids 2C on
+`4.J97.AQT5.AKJ93` (15 HCP, 1=3=4=5).  BEN bids 1NT (0.88).
+
+**NOTHING-WRONG on the call.**  1NT with a singleton spade is not a rebid I will
+endorse against BEN's 0.88; `ob_1NT` correctly fits 0.000 here because the hand
+is not semi-balanced, and 2C (5+ clubs, minimum) is the mainstream call.
+`ob_1C1H_2D_reverse` fits 0.409 and should: 4-5 in the minors with 15 is not a
+reverse.  The 1 IMP is 2C-making-nine (+110) against 1NT-making-nine (+150).
+
+**The family agreement this board names, which does NOT fire on this hand.**
+`opener_rebid_1m_1M`'s raise ladder is `2$M` 12-15, `3$M` 16-18, `4$M` 19-24 —
+**pure point count, no shape channel at all.**  Mini-splinters are at zero rules
+in the file.  Opener with four-card support, a singleton and 15-17 has no way to
+separate himself from a 4-3-3-3 twelve-count until game has already been bid.
+The board's West holds only three hearts, so the rung below would not have
+fired; I am proposing it as the family agreement and saying so.
+
+**EXACT YAML** — new context (only the `1m - 1H` half templates cleanly: after
+`1$m - 1S`, `2H` is already the reverse `ob_1m1S_2H_reverse`):
+
+```yaml
+  - id: opener_minisplinter_1m_1H
+    description: "1m - 1H - 2S: mini-splinter, four hearts and short spades"
+    expand: { m: [C, D] }
+    pattern: "1$m - P - 1H - P - ?"
+    rules:
+      - id: ob_mini_2S_$m
+        call: 2S
+        priority: 79
+        requires:
+          suits: { H: [4, 13], S: [0, 1] }
+          evals: { total_points: [15, 18], singleton_or_void: [1, 4] }
+        shows: "mini-splinter: 4+ hearts, a singleton or void in spades, 15-18 support points"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: mini_splinter
+```
+
+**THE ANSWERING SEAT — SHIPS WITH IT.**  A mini-splinter is an invitation with
+a shape attached; the whole value is responder's ability to devalue wasted
+spade honours:
+
+```yaml
+  - id: responder_over_minisplinter
+    description: "Responder answers the 1m - 1H - 2S mini-splinter"
+    expand: { m: [C, D] }
+    pattern: "1$m - P - 1H - P - 2S - P - ?"
+    rules:
+      - id: rms_3H_$m
+        call: 3H
+        priority: 55
+        requires: { hcp: [6, 8] }
+        shows: "minimum response: declining the mini-splinter"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rms_4H_$m
+        call: 4H
+        priority: 58
+        requires:
+          hcp: [9, 13]
+          evals: { wasted_in_partner_shortness: [0, 1] }
+        shows: "accepting: nothing wasted opposite the spade shortness"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: rms_3S_$m
+        call: 3S
+        priority: 57
+        requires: { hcp: [9, 13], evals: { wasted_in_partner_shortness: [2, 12] } }
+        shows: "values, but wasted in spades: 3H or 4H is opener's choice"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: rms_cue_4$m
+        call: 4$m
+        priority: 60
+        requires: { hcp: [14, 40], evals: { controls: [4, 12] } }
+        shows: "slam interest opposite the shortness: cue-bidding the first-round control"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+      - id: rms_floor_$m
+        call: 3H
+        priority: 40
+        requires: {}
+        shows: "no other description: three hearts is the landing spot"
+        establishes: { forcing: sign_off, agreed_suit: H }
+```
+
+The `requires: {}` floor is the round-6 `rkc5H_signoff` lesson: no seat starved.
+
+**WHAT IT ENDANGERS.**
+* `uc_new_S2` / `uc_new_S2_hi` (prio 26/26.5) lose the 2S call at this node —
+  they read a jump by OPENER as "natural spades, 5+ cards", which opener cannot
+  hold (with 5 spades and 4 hearts he opens 1S).
+* `ob_raise_3$M` (78) is directly below it: a 15-18 hand with four trumps and a
+  stiff spade is described far better by naming the shortness than by a number.
+* `ob_raise_2$M` (80) still outranks it, so the plain 12-15 minimum raise is
+  untouched — the new rung's `total_points >= 15` floor cannot reach it.
+* `ob_1C1H_1S` / `ob_1D1H_1S` (60) show FOUR spades; my rung requires 0-1, so
+  they are structurally disjoint.
+* `ob_raise_4$M` (76) keeps 19+.
+
+**TEMPLATE.**  `expand: { m: [C, D] }` as written.  The natural extensions, in
+order of confidence: the same rung in `opener_rebid_1H_1S` (`1H - 1S - 3m` as
+the short-suit jump) and the full splinter one level higher (`3S`, 19+), which
+would give the file its first shortness channel in the commonest auction of all.
+
+**VERIFIED / UNTESTED.**  Candidate set at the node VERIFIED (the dossier's own
+table, re-read); everything else UNTESTED.  **Explicit negative:** it does not
+fire on this board's hand.
+
+---
+
+## Board 285 — margin -1
+
+**Seat/call.** West, call 6: `1D P 1S P 2D P` → `rmr_4S` bids 4S on
+`AQJT94.KQ.KQ.765` (17 HCP, six spades).  BEN bids 3S (0.89).  4S made ten
+(+620); BEN's 3NT made eleven (+660).
+
+**NOTHING-WRONG on the call** — 4S with a chunky six-card major and 17 opposite
+a 12-15 minor rebid is the expert bid, and 3NT beat it by a double-dummy trick,
+not by a better auction.
+
+**But the board exposes a real inversion, and that is my proposal.**
+In `responder_after_minor_rebid` the ladder is:
+
+| rule | call | band | prio |
+|---|---|---|---|
+| `rmr_4$M` | 4$M | 6+ major, **13-40** | **58** |
+| `rmr_3$M` | 3$M | 6+ major, 10-12 | 57 |
+| `rmr_4NT` | 4NT | 17-19 semi-balanced, quantitative | **56** |
+
+Traced on this hand: `hcp = 17`, `total_points = 19`, `semi_balanced = 1.0`,
+`controls = 4`, `ltc = 6`.  **`rmr_4NT` fits 1.000 and loses on priority to a
+sign-off.**  Since a six-card major is the commonest shape that produces a slam
+opposite a six-card minor, the context's ONLY slam try is unreachable exactly
+where it is most wanted — the round-14 `uc_nt_raise3` error (pricing a rung
+against the one above it and not the ones below) with the signs reversed.
+
+**EXACT YAML** — a one-line re-rank plus a ceiling that keeps the sign-off
+primary for the hands that should sign off:
+
+```yaml
+      - id: rmr_4$M
+        call: 4$M
+        priority: 55.5          # was 58
+        requires: { suits: { $M: [6, 13] }, hcp: [13, 40] }
+        shows: "6+ $M, game values"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+```
+
+Nothing else changes: `rmr_4NT` (56) now outranks it, and `rmr_4NT`'s own gate
+(17-19 AND semi-balanced) is what confines the change to the slam-try
+population.  13-16, and every 17-19 that is not semi-balanced, still bid 4$M.
+
+**THE ANSWERING SEAT — ALREADY EXISTS, and I checked it.**
+`context_at('1D P 1S P 2D P 4NT P')` → **`quant_accept_after_minor_rebid[D,S]`**,
+with `rmrq_accept` (6NT, fit 1.000, prio 60) and `rmrq_decline` (P, fit 1.000,
+prio 55).  This is the rare case where the ask, the answer and the sign-off are
+all authored and only the priority stops the conversation happening.
+
+**WHAT IT ENDANGERS.**  `rmr_4$M` is the rung being moved, so price it against
+everything it now sits below and above: `rmr_4NT` (56) takes 17-19
+semi-balanced — one sentence: 29-34 combined points opposite a limited rebid is
+a slam invitation, not a game.  `rmr_3$M` (57) is above it but banded 10-12, so
+disjoint.  `rmr_3NT` (55) is now only half a point below: a 13-18 hand with six
+of a major and no slam interest must still prefer the major, and it does,
+because 55.5 > 55.  `rmr_gf3_$m` (57) needs a minor fit and 19+, untouched.
+
+**WITHDRAWN (negative result).**  My first draft added a *forcing* 3$M rung at
+16-19.  I withdrew it: `rmr_3$M` already means "invitational, 10-12", and a
+second meaning on the same call leaves opener a seat he cannot answer soundly —
+he would have to guess which band he faces before choosing between pass and 4M.
+
+**VERIFIED / UNTESTED.**  The inversion, the fit of `rmr_4NT` (1.000) and the
+existence of the answering context are all VERIFIED by trace.  The re-rank
+itself UNTESTED; it is the cheapest change in this whole part and should be
+screened on its own.
+
+---
+
+## Board 286 — margin -1
+
+**Seat/call.** North, call 2: over their 1NT we pass with `98742.AJ72.AK6.3`
+(12 HCP, 5-4 majors, singleton club).  BEN bids 2D (0.93 — a transfer/two-suited
+call in whatever defence BEN plays).
+
+**Purely competitive**, and the divergence is a convention we scoped out on
+purpose ("Defense to their 1NT: natural", DONT/Cappelletti explicitly rejected
+for explainability).  NOTHING-WRONG.
+
+**What I checked.**  `v1NT_2S` fits 0.200 (it wants 5+, usually 6, spades and
+8-15 — the shape is there, the "usually 6" is not), `v1NT_X` 0.134, `v1NT_2H`
+0.070.  Nothing in the natural defence describes 5-4 majors, which is precisely
+the hand every two-suited defence was invented for.  This is a convention
+addition, not a constructive gap, and it is excluded.
+
+---
+
+## Board 295 — margin -1
+
+**Seat/call that went wrong.** West, call 8: `1D P 1S P 2D P 2NT P` → opener
+PASSES the invitational 2NT on `JT7.42.AQJ863.K9` (11 HCP, six diamonds,
+`42` in hearts).  BEN bids 3D (0.43).  We play 2NT for nine tricks; the
+constructive point stands regardless of the trick count.
+
+**The missing agreement.** Declining an invitational 2NT is not the same as
+passing it: with a six-card minor and a side suit wide open, three of the minor
+is the decline.
+
+**Traced (VERIFIED).**  Context `opener_over_invite_2NT_minor[D,S,2D]`.  It has
+exactly three rungs — `oim2n_5m` (6+ minor, 14-21, no stopper), `oim2n_3NT`
+(accept, 14-21), `oim2n_pass` (decline, 10-13).  Evaluators on this hand:
+`hcp = 11`, **`weakest_unshown_stopper = 0.0`** (hearts `42`),
+`suit_quality(D) = 2.5`, `total_points = 13`.  So the context can decline only
+by passing, and the one rung that consults the stopper needs 14+.
+
+**EXACT YAML** — a fourth rung in the existing context (its
+`expand_pairs` already covers the five (m, M, R) combinations):
+
+```yaml
+      - id: oim2n_3$m_$M$R
+        call: 3$m
+        priority: 51
+        requires:
+          suits: { $m: [6, 13] }
+          hcp: [10, 13]
+          evals: { weakest_unshown_stopper: [0, 0.5] }
+        shows: "declining the invite, but not in notrump: 6+ $m with a side suit wide open"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+```
+
+`weakest_unshown_stopper` carries sharp tolerance 0.3 in `_EVAL_S2` (it is
+`weakest_THEIR_stopper` that does not gate), so this clause really gates.
+
+**THE ANSWERING SEAT.**  `forcing: sign_off` — and I checked it rather than
+assuming: at `1D P 1S P 2D P 2NT P 3D P`, responder's `uc_pass` fits **1.000**,
+so the seat is covered and no new context is needed.
+
+**WHAT IT ENDANGERS.**
+* `oim2n_pass_$M$R` (50) — loses the 10-13 hands with six of the minor and an
+  unstopped suit; one sentence: partner invited game in notrump and I am telling
+  him notrump is the wrong strain, which is more information than a pass.
+* `oim2n_3NT_$M$R` (58) and `oim2n_5m_$M$R` (61) are both above it and both
+  floored at 14, so the accept and the minor game are untouched.
+* It defines a call (`3$m`) that the generic toolkit currently supplies through
+  `uc_rebid_$m3`; that rung reads "6+ cards, values for the level", which is the
+  same hand described worse.
+
+**TEMPLATE.**  `expand_pairs` inherited — five rules for free.  The twin worth
+authoring next is the same decline after a MAJOR opening's 2NT invite.
+
+**VERIFIED / UNTESTED.**  Context, rung inventory and all four evaluator values
+VERIFIED; rung UNTESTED.
+
+---
+
+## Board 328 — margin -1
+
+**Seat/call.** North, call 4: `1D X 1S X` → `xd_pass` sits for their double on
+`AKT5.973.KQ632.6` (12 HCP, four-card spade support for partner's 1S).  BEN
+bids 2S (0.98).
+
+**Competitive** (their second double of our free response).  NOTHING-WRONG on
+the constructive machinery, but this is the same species as boards 730 and 754
+and I record it as such.
+
+**What I checked.**  `xd_raise_S2` fits **0.000** — it wants "3+ trumps, 6-9
+support points", and this hand has twelve, so the *minimum* raise denies a hand
+too good for it while nothing above it fits either (`xd_jumpraise_S3` needs
+"4+ trumps, 10+" and fits 0.082 because it also demands a jump).  The result is
+a hole between 9 and 10 support points in the doubled-auction raise ladder, and
+a hole is a pass by construction.  The general repair is the one I propose on
+board 730: **opener's whole natural rebid structure is unauthored after RHO
+doubles responder's one-level response**, and `general_after_their_double`'s
+run/rebid rungs are standing in for it.  I put the proposal on 730 because
+there the missing call (a four-card major at the one level) is unambiguous.
+
+---
+
+## Board 356 — margin -1
+
+**Seat/call.** North, call 4: `P 1D 1H 2C` → `cl_raise_H2` raises partner's
+heart overcall to 2H on `9543.Q83.Q4.JT96` (5 HCP, three
+trumps).  BEN passes (1.00).
+
+**Purely competitive** (advancing an overcall in a live auction).
+NOTHING-WRONG from my discipline.
+
+**What I checked.**  `cl_raise_H2` fits 1.000 on "3+ trumps, 6-9 support points,
+7+ combined trumps" — the hand has 5 HCP and `Q83`, i.e. six support points at
+best, so it is inside the band by the softest possible margin and the raise is a
+judgment call, not a defect.  Nothing constructive is at stake; the auction is
+competitive from call 2 onwards.
+
+---
+
+## Board 361 — margin -1
+
+**Seat/call that went wrong.** West, call 6: `P P 1S P 1NT P` → `ob_1M1NT_2S`
+rebids 2S on `KQJ654.QJ84.Q.Q7` (13 HCP, **6-4** in the majors).  BEN bids 2H
+(0.99).  We play 2S for eight tricks (+110); the 2H route plays 3H for nine
+(+140).
+
+**The missing agreement.** With six spades and four hearts and a minimum,
+opener's rebid over the forcing notrump is 2H — responder can pass it, raise it,
+or take a two-level preference back to spades, and the file forbids exactly this
+hand from bidding it.
+
+**Traced (VERIFIED).**  The rule that should own the call,
+`ob_1S1NT_2H`, carries `not: { suits: { S: [6, 13] } }` — an explicit denial of
+the 6-4 shape — and fits **0.100**.  Evaluators: `hcp = 13`,
+`total_points = 15`, `good_suit(S) = 1.0`.  So `ob_1M1NT_3S` (16-19 playing
+strength) misses by one point at fit 0.800 and `ob_1M1NT_2S` wins at 1.000.
+The context's own comment says the 5-4 rung was authored because "a 5-4 major
+hand had nothing to say and the generic 3NT took over: on the BEN match that
+jump was the single most expensive call in the rulebook" — the 6-4 hand is the
+same argument, one card longer.
+
+**EXACT YAML** — an additive sibling in the existing context
+`opener_rebid_1S_1NT_second_major` (do NOT relax `ob_1S1NT_2H`'s denial; a new
+rung is additive, a widened gate is not):
+
+```yaml
+      - id: ob_1S1NT_2H_64
+        call: 2H
+        priority: 54.5
+        requires:
+          suits: { S: [6, 13], H: [4, 4] }
+          evals: { total_points: [12, 15] }
+        shows: "six spades and exactly four hearts, minimum: the second suit first, spades are still there at the two level"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT — SHIPS WITH IT, and it is currently starved.**
+I traced `1S - P - 1NT - P - 2H - P - ?` with the board's own responder hand
+(`3.AT52.8742.AJ94`): `context_at` → `['general_uncontested_continuation',
+'general_slam_try']`, and the winner is **`uc_raise_H4` at fit 1.000, prio 32** —
+a four-level raise on nine points opposite a shown minimum.  That is the whole
+reason 2H is dangerous today and the reason the 6-4 denial was probably written.
+
+```yaml
+  - id: responder_over_second_suit_1M1NT
+    description: "Responder's preference after 1S - 1NT - 2H (or 1H - 1NT - 2m)"
+    pattern: "1S - P - 1NT - P - 2H - P - ?"
+    rules:
+      - id: rss_pass_H
+        call: P
+        priority: 52
+        requires: { suits: { H: [3, 13] }, hcp: [6, 8] }
+        shows: "hearts are as good as anything: passing the second suit"
+        establishes: { forcing: sign_off }
+      - id: rss_2S
+        call: 2S
+        priority: 54
+        requires: { suits: { S: [2, 13] }, hcp: [6, 10] }
+        shows: "preference back to the six-card suit: 6-10"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: rss_3H
+        call: 3H
+        priority: 56
+        requires: { suits: { H: [4, 13] }, hcp: [9, 11] }
+        shows: "four-card support for the second suit, maximum: inviting game"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: rss_3S
+        call: 3S
+        priority: 55
+        requires: { suits: { S: [3, 13] }, hcp: [9, 11] }
+        shows: "three-card support for the six-card suit, maximum: inviting game"
+        establishes: { forcing: invitational, agreed_suit: S }
+      - id: rss_floor
+        call: P
+        priority: 40
+        requires: {}
+        shows: "no better description: the second suit stands"
+        establishes: { forcing: sign_off }
+```
+
+On the board this puts responder in 3H (four trumps, 9 HCP) and opener, a dead
+minimum, passes — 3H for nine tricks, which is BEN's +140.
+
+**WHAT IT ENDANGERS.**
+* `ob_1M1NT_2$M` (54) — loses 6-4 minimums; one sentence: with 6-4 the second
+  suit is free, because spades are still available at the two level and a
+  preference costs nothing.
+* `ob_1M1NT_3$M` (56) is above it and keeps 16-19; `ob_1M1NT_4$M` (57) keeps
+  20+; `ob_1M1NT_2C`/`2D` (52/53) are below it and describe 3-card and 4-card
+  minors, which a 6-4 major hand should never prefer.
+* The new answering context takes P, 2S, 3H and 3S from
+  `general_uncontested_continuation` at that node — and that is the point: it
+  removes `uc_raise_H4`'s fit-1.000 four-level raise on nine points.
+* `ob_1S1NT_2H` (53.5) is untouched: my rung requires six spades, its denial
+  excludes them, so the two are disjoint by construction.
+
+**TEMPLATE.**  The 2H rung is single-suit by nature (`1H - 1NT - 2S` would be a
+reverse), so no expansion.  The ANSWERING context should be templated across
+every `1M - 1NT - <second suit>` node:
+`expand_pairs: [{M: S, X: 2C}, {M: S, X: 2D}, {M: S, X: 2H}, {M: H, X: 2C}, {M: H, X: 2D}]`
+with `pattern: "1$M - P - 1NT - P - $X - P - ?"` — that seat is starved for all
+five, not only for 2H, and it is where the 1NT-rebid family loses its boards.
+
+**VERIFIED / UNTESTED.**  The 0.100 fit, the explicit 6-card denial, the
+evaluator values and the starved answering seat (including `uc_raise_H4` at fit
+1.000) are all VERIFIED by trace.  Both new pieces UNTESTED.

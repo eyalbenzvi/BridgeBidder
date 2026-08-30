@@ -810,3 +810,303 @@ become four.  The same pair belongs in `general_after_redouble` for the
 non-minor-opening cases.
 
 ---
+## Board 376 — W, call 11 (table B): `X` should be `P`
+
+**Seat/call that went wrong.**  Table B, W, `1C P 1H P 1S P 2H P 2S P P — ?` with
+`Q9.J8.KJT4.A9654` (11 HCP).  `ballow_X` balanced with a takeout double;
+partner (who had passed five times) sat with `KT43` of spades and 2S **made**
+doubled, -470.
+
+**The missing agreement.** A takeout double must be short in EVERY suit they have
+bid, not only in the last one — with five cards in the suit opener named, the
+double is not takeout, and the only unbid suit is the one partner will not have.
+
+**The defect is a sibling gate, the species `DECISIONS.md` records for round 7.**
+`ballow_reopen_X` and `balhigh_reopen_X` both carry
+`evals: { max_their_suit_length: [0, 2], longest_suit_length: [0, 5] }`.
+`ballow_X` and `balhigh_X` — the *commonest* doubles in the file — check only
+`standing_suit_length`, i.e. the last bid suit.  W's spades were a doubleton, so
+the gate passed while W held **A9654 of the opener's clubs**.
+
+```yaml
+  # context: general_balancing_low, rule ballow_X — add one line to `requires`
+      - id: ballow_X
+        call: X
+        priority: 40
+        when: { their_last_bid_suit: true, side_has_acted: false }
+        requires:
+          evals: { max_their_suit_length: [0, 3] }     # <-- NEW
+          any_of:
+            - hcp: [11, 40]
+              evals: { standing_suit_length: [0, 2] }
+            - hcp: [9, 40]
+              evals: { standing_suit_length: [0, 1] }
+        shows: "balancing double: values are marked opposite a passing partner, at most a doubleton in their suit (a singleton at 9+) and no long holding in any suit they bid"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.**  Unchanged — `advance_reopening_double` and
+`general_pull_or_sit` already answer the double; this narrows *when* the question
+is asked, it does not create a new one.
+
+**WHAT IT SUBTRACTS** (it is a gate, so this is the whole cost):
+
+* Balancing doubles made holding **four or more cards in a suit the opponents bid
+  earlier in the auction**.  Those are exactly the doubles partner converts to
+  penalties — as here — because he reads the double as promising the unbid suits
+  and finds we have none to offer.
+* It does **not** touch the three-card case (`[0, 3]`, not `[0, 2]`): a three-card
+  holding in their opened minor is normal on a takeout double and is preserved.
+  Verified with `Q9.J83.KJT42.A96` (three clubs), which still doubles at fit 1.000.
+* It does not reach `ballow_reopen_X`/`ballow_reopen_X2` (they already carry a
+  stricter version of the same gate) or `balhigh_X` unless the same line is added
+  there, which it should be.
+* Nothing becomes uncovered: `X` is still defined by three rules in the context,
+  so no code fallback is created or deleted.
+
+**VERIFIED.**  Base: `X ballow_X fit=1.000 prio=40` chosen.  Patched: fit collapses
+to **0.015** and `P ballow_pass fit=1.000` is chosen — which is BEN's call at
+confidence 0.99 and worth -110 instead of -470.
+
+**TEMPLATE.**  Not a template: the identical line goes on `balhigh_X`
+(`general_balancing_high`), whose `requires` is `hcp: [14, 40]` +
+`standing_suit_length: [0, 2]` and has the same hole.  Two rules, one line each.
+Consider auditing `cl_takeout_X` @36 for the same omission in a separate ticket —
+I have not traced it.
+
+---
+
+## Board 488 — S, call 10 (table A): `3S` should be `P`
+
+**Seat/call that went wrong.**  Table A, S, `P P 1S 2S P 2NT P 3C P P — ?` with
+`AQJT74.JT.93.A53` (12 HCP, six spades).  `balhigh_rebid_S3` rebid the suit in the
+passout seat; partner holds a **singleton spade** and 3S was three off, -150.
+
+**The missing agreement.** In the passout seat, with a partner who has never bid
+and no fit anywhere, my own six-card suit is not a reason to compete at the three
+level against opponents who have shown a two-suiter and stopped.
+
+**Why the existing floor cannot stop it.**  `balhigh_rebid_S3` is
+`total_points`-gated only ("values for the level opposite partner's shown range"),
+and opposite a silent partner "partner's shown range" is zero, so a 12-count with
+six spades fits it 1.000.  The only pass in the context is `balhigh_pass`
+(`requires: {}`, priority 21), a floor that can never outrank anything.
+
+```yaml
+  # context: general_balancing_high   (insert before `- id: balhigh_raise_C2`)
+      - id: balhigh_pass_silent_partner
+        call: P
+        priority: 29.5
+        when: { partner_has_acted: false, side_has_acted: true }
+        requires:
+          hcp: [0, 15]
+          evals: { lott_total_trumps: [0, 7] }
+        shows: "partner has never bid and we have no known fit: their contract stands"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  None — a pass in the passout seat ends the auction.
+`side_has_acted: true` restricts it to auctions where *I* have already bid (so it
+never silences a genuine first balancing action), and `partner_has_acted: false`
+is the whole premise.
+
+**WHAT IT ENDANGERS:**
+
+* `balhigh_rebid_S3`/`H3`/`D3`/`C3` @29 — repeating my suit at the three level with
+  a silent partner and a seven-trump maximum; the sharp `lott_total_trumps: [0, 7]`
+  gate means it only fires when we have NO known eight-card fit.
+* `balhigh_nt3` @29 — 3NT on 13-15 opposite a partner who never bid is a
+  25-point contract on 15 points.  The `hcp: [0, 15]` ceiling is exactly the line:
+  with 16+ we still bid (verified: a 17-count with the same shape still bids 3S).
+* `balhigh_new_*3` @27, `balhigh_new_*4` @28, `balhigh_nt1/nt2` @27/28,
+  `balhigh_pass` @21 — all below it; introducing a new suit at the three level
+  opposite silence is the same error one suit over.
+* Rungs it does NOT outrank, correctly: `balhigh_raise_*3` @31,
+  `balhigh_raise_lott4_*` @32 (these need a partner suit and so cannot co-fire
+  with `partner_has_acted: false`), `balhigh_X` @40, `balhigh_reopen_X` @41.
+* PASS is already covered by `balhigh_pass`, so no fallback is deleted.
+
+**VERIFIED.**  Base: `3S balhigh_rebid_S3 fit=1.000`.  Patched:
+`P balhigh_pass_silent_partner fit=1.000 prio=29.5` chosen — BEN's call at 0.97.
+Regression: the same shape with 17 HCP (`AQJT74.JT.K3.AK5`) still bids 3S, the
+new pass dropping to fit 0.134.
+
+**TEMPLATE.**  Ship the twin `ballow_pass_silent_partner` in
+`general_balancing_low` at priority 29.5 with the identical gates.  Do **not**
+put it in `general_competitive_low/high` — there the auction is still live and
+passing is not the last word.
+
+---
+
+## Board 544 — W, call 3 (table B): `P` should be `X`
+
+**Seat/call that went wrong.**  Table B, W, `2H P P — ?` with `A.AQ96.KJ43.AJ84`
+(**19 HCP, 1-4-4-4**).  `ballow_pass` passed out their weak two.  We scored -100
+defending 2H; the other table's E/W bid and made 4S for 450.
+
+**The missing agreement.** In the balancing seat 17+ has to act whatever the
+shape — the double is made on strength when it cannot be made on shortness,
+exactly as `oc1S_X`'s `hcp: [17, 40]` branch already does in the direct seat.
+
+**The defect is another sibling gap.**  Every direct-seat takeout double in the
+file carries a strength branch with no shape condition:
+`oc1S_X: any_of: [ {11-16, short spades, 3+ elsewhere}, {17+, ...} ]`.
+`ballow_X` has **no such branch** — it requires `standing_suit_length: [0, 2]`
+unconditionally, so a 19-count holding A-Q-9-6 of their hearts fits it **0.015**
+and the seat falls through to a pass at fit 1.00.
+
+```yaml
+  # context: general_balancing_low   (insert before `- id: ballow_raise_C2`)
+      - id: ballow_X_strong
+        call: X
+        priority: 32.5
+        when: { their_last_bid_suit: true, side_has_acted: false }
+        requires:
+          hcp: [17, 40]
+          evals: { longest_suit_length: [0, 4] }
+        shows: "too strong to pass out: 17+ in the balancing seat with no long suit of my own"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.**  `forcing: one_round`, and the answering seat is authored
+in two places: `advance_weak2_double_H` (`2H - X - P - ?`, a full suit/notrump
+ladder) and `general_pull_or_sit`.  This is the reason the rung is safe to add —
+the conversation it opens already has a second half, which is exactly what round
+17's cue-bid experiment did not.
+
+**WHAT IT ENDANGERS** — and the priority is chosen carefully, at **32.5, below the
+natural notrump and below any five-card suit**:
+
+* `ballow_pass` @21 — passing out a weak two with 19 HCP is the error.
+* `ballow_new_*3` @27, `ballow_nt1` @27, `ballow_nt2`/`ballow_nt3` @28/29,
+  `ballow_rebid_*` @29 — all describe hands with a suit or a stopper to show; a
+  1-4-4-4 19-count has neither and double is the only call that shows the values.
+* `ballow_raise_*` @30-32 — these need a partner suit, and `side_has_acted: false`
+  means partner has none.
+* Rungs it does NOT outrank, deliberately: **`ballow_nt2_balance` @33**
+  (15-21 balanced with a stopper — 2NT is the better call with that hand, verified:
+  `A54.AQ96.KJ3.AJ8` still bids 2NT), `ballow_X` @40 and `ballow_reopen_X` @41
+  (the shape-based doubles stay primary).
+* The `longest_suit_length: [0, 4]` gate is what keeps the natural suit rungs
+  alive: verified, `AKJ85.A6.KQ43.J8` (17 HCP, five spades) is unaffected.
+* `X` is already covered by three rules here, so no fallback is deleted.
+
+**VERIFIED.**  Base: `P ballow_pass fit=1.000` (X at 0.015).  Patched:
+`X ballow_X_strong fit=1.000 prio=32.5` chosen — BEN's call at 0.89.
+Regressions: balanced-18 still bids 2NT; five-card-suit-17 unchanged; a 15-count
+with the same 1-4-4-4 shape (`A.AQ96.KJ43.QJ84`) — **this one now doubles too**,
+because 17 is a soft floor and 15 misses it by two.  That is the honest risk in
+this rung and the reason to measure it rather than assume it.
+
+**TEMPLATE.**  Ship the twin `balhigh_X_strong` in `general_balancing_high`
+(same gates; `balhigh_X`'s own floor is already 14, so set this one at 18+ there
+to keep the bands from overlapping).  No suit expansion.
+
+---
+
+## Board 797 — NOTHING-WRONG (competitive); a soft-miss inside an uncontested Stayman auction
+
+**What I checked.**  Both tables are uncontested from the first call.  At table B
+the divergence is E's `3NT` over partner's `3S` invitation after
+`1NT P 2C P 2S P 3S P`, with `A864.A85.K53.A72` (15 HCP, **four-card spade
+support**).  The candidate list is the textbook soft-miss lottery the ledger
+describes: `uc_pass` fit 1.000 @18, `uc_nt3` fit **0.946** @29, `uc_raise_S4`
+fit 0.605 @32 — the winner clears the 0.9 fast path by four hundredths and the
+call that is right on the cards (4S, ten tricks) is the one that misses.  The
+structural cause is that the seat answering a 3M raise after Stayman has no
+context (`stayman_invite_accept_2S` covers only the 2NT invitation), so a
+game-force landing decision is made by the generic notrump ladder.  That is the
+constructive reviewer's board and the documented soft-miss open item.
+
+At table A our three competitive decisions over their 1NT-Stayman auction
+(`v1NT_pass` with `J9.K7.AT84.KQ985`, then `cl_pass`, `cl_pass`) are all correct:
+S has 13 HCP but a five-card club suit and no fit, both opponents are limited and
+bidding, and N holds 4 HCP.  There is no balancing seat (they bid 3S and it was
+passed to N, not to S).
+
+**Observation.**  The only competitive note is that our seat over their 1NT
+opening is `defense_vs_1NT` and it has no rung at all for a 13-count with a good
+five-card minor.  `v1NT_pass` is right at these colours (both vulnerable) but the
+context is thin.
+
+**VERIFIED** in the negative sense (traced S's seat over 1NT and N's two passes).
+
+---
+
+## Board 897 — E, call 4 (table B): `P` should be `3S`
+
+**Seat/call that went wrong.**  Table B, E, `P 2H X 3H — ?` with
+`A9762.5.KT42.J64` (8 HCP, **five spades, a singleton in their suit**), opposite
+partner's takeout double of the weak two.  `ch_pass`.  We defended 3H for +100
+where 4S makes ten tricks (BEN bids 3S at 0.68).
+
+**The missing agreement.** After partner's takeout double of a weak two and their
+raise, advancer bids his five-card major at the THREE level — the raise does not
+release me from answering the double.
+
+**Why the rung does not exist — a starved seat, precisely.**
+`advance_weak2_double_raised` (`2$W - X - bid - ?`) has three rules:
+`aw2r_4S_$W`, `aw2r_4H_$W` and the responsive double.  Both suit rungs carry
+`cheapest_in_suit: true`, and over a raise to **3H** the cheapest spade call is
+3S, not 4S — so both are structurally dead and the context can only double or
+fall through.  The context was written for `2H - X - 4H - ?` and never for the
+commoner `2H - X - 3H - ?`.
+
+```yaml
+  # context: advance_weak2_double_raised   (expand: { W: [D, H, S] })
+  # insert before `- id: aw2r_responsive_X`
+      - id: aw2r_3S_$W
+        call: 3S
+        priority: 57
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires: { suits: { S: [5, 13] }, hcp: [8, 40] }
+        shows: "advance in the long major over their raise"
+        establishes: { forcing: non_forcing }
+      - id: aw2r_3H_$W
+        call: 3H
+        priority: 56
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires: { suits: { H: [5, 13] }, hcp: [8, 40] }
+        shows: "advance in the long major over their raise"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing`, and the doubler's seat is
+`general_competitive_high` — `ch_raise_S3/S4`, `ch_raise_lott_S4`,
+`ch_neg_major_S*` and `ch_pass` are all live, so the 3S advance can be raised to
+game or passed.  Gates and bands are copied verbatim from the existing
+`aw2r_4S_$W` / `aw2r_4H_$W` so the pair is a strict level-mirror, which is also
+what the `sibling` lint wants to see.
+
+**WHAT IT ENDANGERS** — note that this rung takes over `3S`/`3H` in this context,
+so the rules it displaces are in the LESS specific `general_competitive_high`:
+
+* `ch_free_3S` @30 ("free bid: 5+ good spades over their jump, 10+", fit 0.606
+  here) — becomes covered.  My band (5+ spades, 8+, no suit-quality test) is a
+  superset in strength and a subset in quality, so a ragged five-card major with
+  12 HCP will now bid 3S where it previously doubled.  Opposite a takeout double
+  that is the better call, but it IS the subtraction to name.
+* `ch_advance_x3_S` @28.5 ("answering partner's takeout double in my own suit",
+  fit 0.264) — same call, strictly worse fit on this hand.
+* `aw2r_responsive_X` @55 — it already denies a five-card major
+  (`not: { any_of: [ {S: [5,13]}, {H: [5,13]} ] }`), so the two can never co-fit.
+  Verified: with only **four** spades the responsive double still wins.
+* `ch_pass` @22 — passing partner's takeout double of a weak two with five spades
+  is the error.
+* Fallback: `3S` was not a covered call in this context, so this rung does delete
+  the 3S code fallback after `2$W - X - bid`.  The sharp `suits: { S: [5, 13] }`
+  gate keeps the suppression away from every hand the rung wants.
+
+**VERIFIED.**  Base: `P ch_pass fit=1.000`.  Patched: `3S aw2r_3S_H fit=1.000
+prio=57` chosen.  Regressions: four spades → responsive double, unchanged;
+`2H - X - 4H` → still `4S aw2r_4S_H`, so the four-level twins are untouched.
+
+**A note on table A of the same board, which I checked and am NOT proposing.**
+N's `3H` (`cl_raise_lott3_H`, four trumps and 7 HCP with Q-J-T of spades) over
+their 2NT overcall of our weak two is the raise the ledger has already ruled on
+twice; it also happens to be the wrong side of the Law (partner showed six, I hold
+four, so the Law level is FOUR).  Raising to four with three defensive tricks is
+not obviously right either, and `cl_raise_lott3_$M` is on the do-not-re-propose
+list, so I leave it.  The real hole on this board is the advancer's, above.
+
+---

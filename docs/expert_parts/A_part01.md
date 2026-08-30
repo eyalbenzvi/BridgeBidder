@@ -841,3 +841,196 @@ the same two-rung answering context — roughly 60 rules for the family, which i
 exactly the density the round-17 correction asks for, and all of it in
 *contested* auctions below game.
 
+## Board 679 — margin -13
+
+**Seat/call that went wrong.** Table A, call 5, **N bids 2NT** (`adv1n_2NT_D`)
+opposite partner's 1NT overcall, holding `AK952.7642.63.Q4` — five spades and
+four hearts.  We played 3NT for eight tricks (-100); S has `KJ985` and 4H makes
+eleven (+650 at the other table).  The root is one rung earlier in the *system*,
+not in the auction: N had no way to ask.
+
+**The missing agreement (one sentence).** **There is no Stayman (and no
+transfer) after a 1NT overcall** — `advance_1NT_overcall` contains three weak
+0-7 sign-offs, an 8-9 invitational 2NT and a 10-15 3NT, so every 4-4 and 5-4
+major fit opposite a 15-18 overcall is unfindable by construction.
+
+**EXACT YAML.**  One rung into `advance_1NT_overcall`, plus the two contexts
+that make it a closed conversation:
+
+```yaml
+      - id: adv1n_2C_$o
+        call: 2C
+        priority: 60
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          hcp: [8, 40]
+          any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ]
+        shows: "Stayman opposite the 1NT overcall: at least one four-card major, invitational values or better"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: stayman
+```
+
+**THE ANSWERING SEAT** (mandatory — 2C is `forcing: one_round`):
+
+```yaml
+  - id: advance_1NT_overcall_stayman
+    description: "The 1NT overcaller answers Stayman"
+    expand: { o: [C, D, H, S] }
+    pattern: "1$o - 1NT - P - 2C - P - ?"
+    rules:
+      - id: a1nst_2H_$o
+        call: 2H
+        priority: 61
+        when: { unbid_suit: H }
+        requires: { suits: { H: [4, 13] } }
+        shows: "four or more hearts"
+        establishes: { forcing: non_forcing }
+      - id: a1nst_2S_$o
+        call: 2S
+        priority: 60
+        when: { unbid_suit: S }
+        requires: { suits: { S: [4, 13] } }
+        shows: "four or more spades, denying four hearts"
+        establishes: { forcing: non_forcing }
+      - id: a1nst_2D_$o
+        call: 2D
+        priority: 55
+        when: { unbid_suit: D }
+        requires: {}
+        shows: "no four-card major to show"
+        establishes: { forcing: non_forcing }
+      - id: a1nst_2NT_$o
+        call: 2NT
+        priority: 54
+        requires: {}
+        shows: "no four-card major to show, and the cheap denial is not available"
+        establishes: { forcing: non_forcing }
+
+  - id: advance_1NT_stayman_fit
+    description: "Advancer after the 1NT overcaller shows a major"
+    expand_pairs:
+      - { o: C, M: H }
+      - { o: C, M: S }
+      - { o: D, M: H }
+      - { o: D, M: S }
+      - { o: H, M: S }
+      - { o: S, M: H }
+    pattern: "1$o - 1NT - P - 2C - P - 2$M - P - ?"
+    rules:
+      - id: a1nsf_game_$o$M
+        call: 4$M
+        priority: 60
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [9, 40] } }
+        shows: "the fit is found: game opposite the 15-18 overcall"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: a1nsf_invite_$o$M
+        call: 3$M
+        priority: 58
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [8, 8] } }
+        shows: "the fit is found but only eight points: inviting"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: a1nsf_3NT_$o$M
+        call: 3NT
+        priority: 56
+        requires: { suits: { $M: [0, 3] }, hcp: [10, 15] }
+        shows: "no fit after all: game in notrump"
+        establishes: { forcing: sign_off }
+      - id: a1nsf_2NT_$o$M
+        call: 2NT
+        priority: 54
+        requires: { suits: { $M: [0, 3] }, hcp: [8, 9] }
+        shows: "no fit after all: the invitation stands"
+        establishes: { forcing: invitational }
+```
+
+(`a1nsf_invite_$o$M`'s 3M invitation is answered by the overcaller's existing
+`general_uncontested_continuation` raise ladder; the 2NT invitation keeps its
+existing acceptor `advance_1NT_overcall_invite` only when 2C was not used, which
+is a gap worth closing in the same batch — a `1$o - 1NT - P - 2C - P - 2$M - P - 2NT - P - ?`
+twin of `a1ninv_*`.)
+
+**WHAT IT ENDANGERS.**
+
+* `adv1n_2S_$o` (58) / `adv1n_2H_$o` (57) / `adv1n_2D_$o` (56) — all carry
+  `hcp: [0, 7]`, and my rung has an 8-point floor, so the sets are disjoint.
+* `adv1n_2NT_$o` (55) and `adv1n_3NT_$o` (54), **below** mine — these lose exactly
+  the hands with a four-card major, which is the whole point: 3NT on a 5-4 major
+  hand opposite a 15-18 overcall is the losing matchpoint contract, and this board
+  is the demonstration (-100 versus +650).
+* Fallback: `2C` in this seat was previously covered by `uc_new_C2`, so nothing
+  is deleted.
+* The `when: { unbid_suit: C }` guard means the rung is silent over a 1C opening,
+  where 2C is not available — that is the one expansion of the four that is
+  structurally dead, correctly.
+
+**VERIFIED — the whole conversation.**  `P P 1D 1NT P` → N bids `2C`
+(`adv1n_2C_D`, 1.000/60); S answers `2H` (`a1nst_2H_D`, 1.000/61); N bids `4H`
+(`a1nsf_game_DH`, 1.000/60).  4H makes eleven tricks, i.e. the +650 the other
+table scored.
+
+**TEMPLATE.**  `expand: { o: [C, D, H, S] }` on the two new contexts (matching
+the existing `advance_1NT_overcall`), plus the six-way `expand_pairs` shown.  The
+matching **transfer** structure (2D/2H showing the major) is the natural second
+half and should be authored in the same batch; so should the same Stayman for the
+**balancing** 1NT overcall (`1$o - P - P - 1NT - P - ?`), which has the same hole.
+
+## Board 761 — margin -13
+
+**Seat/call that went wrong.** Table A, call 9, **S doubles 3S**
+(`balhigh_reopen_X`) on `A.874.AKJ96.KQ85` after `1S - X - 2S - P - P - 3D - 3S - P - P`.
+That is our side's **third** action on the same hand, partner has never made a
+call, and 3S doubled made ten tricks: **-930**, where the other table played 3S
+undoubled for -170.
+
+**The missing agreement (one sentence).** When I have already doubled for
+takeout *and* then bid a suit of my own, and partner has still never found a
+call, a further double is not takeout — partner has denied the values to answer
+the first one, so the hand is a defensive hand and the auction is over.
+
+**EXACT YAML.**  One rung into `general_balancing_high`, immediately before
+`balhigh_reopen_X`.  Its `when` is `balhigh_reopen_X`'s own `when` plus two
+clauses, so its firing set is a strict subset of that rule's:
+
+```yaml
+      - id: balhigh_partner_silent_pass
+        call: P
+        priority: 41.5
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: false, we_hold_contract: false,
+                partner_has_acted: false, i_have_acted: true }
+        requires:
+          evals: { longest_suit_length: [0, 6] }
+        shows: "I have already doubled and then bid my own suit and partner has never found a call: a third action is a phantom, so defend"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+**THE ANSWERING SEAT.**  None owed — it is a pass that ends the auction.
+
+**WHAT IT ENDANGERS.**  Because the `when` is a subset of `balhigh_reopen_X`'s,
+the only rules it can outrank are those that could fire in that same seat:
+
+* `balhigh_reopen_X` (41) and `balhigh_reopen_X2` (41) — the target.  The 16+ and
+  19+ reopening doubles are right when partner may still have a hand; they are
+  wrong when partner has passed my takeout double **and** their raise.
+* `balhigh_rebid_$X4` (29), `balhigh_nt3` (29), `balhigh_new_$X3/4` (27/28) — a
+  fourth call in a third strain opposite a partner who has passed twice is a
+  worse description than defending.  The `longest_suit_length: [0, 6]` clause
+  deliberately steps aside for a genuine seven-card suit (verified: fit drops to
+  0.015 and the rung stops competing).
+* `balhigh_pass` (21) — same call.
+* Fallback: `P` is already covered by `balhigh_pass`; nothing is deleted.
+
+**VERIFIED.**  Before: `X` (`balhigh_reopen_X`, fit 1.000 / 41) — the -930.
+After: `P` (`balhigh_partner_silent_pass`, fit 1.000 / 41.5), which reproduces
+the other table's 3S-for-170 and flattens the board.  Two regressions traced:
+with partner having acted (`1S X 2D P 3S P P`) the rung is not offered at all,
+and with a seven-card diamond suit it stands down.
+
+**TEMPLATE.**  Add the identical rung to `general_balancing_low`
+(`ballow_partner_silent_pass`, same `when`, priority just above
+`ballow_reopen_X`) — that is where the same species costs a partscore instead of
+a game — and to `general_competitive_high` for the direct seat.  No suit or
+vulnerability expansion: the agreement is about the auction, not the cards.
+
