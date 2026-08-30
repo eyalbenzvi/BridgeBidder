@@ -63,6 +63,22 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "src"))
 
 VERDICT_FLOOR = 8          # refuse to call a winner below this many changed boards
+SYSTEM_YAML = ROOT / "src" / "bridgebidder" / "systems" / "two_over_one.yaml"
+
+
+def system_fingerprint() -> str:
+    """sha1 of the system file.
+
+    `load_system` caches on (path, mtime) and a screen loads the system once
+    per pool file, so ANY edit to the tree while a screen is running silently
+    changes what is being measured half-way through.  A screen that ran during
+    a two-minute `git checkout` of the YAML reported 0 changed boards on a
+    corpus that actually changes 6, and looked exactly like a real null.  The
+    fingerprint is checked in every worker and again at the end, so that
+    failure is loud instead of plausible.
+    """
+    import hashlib
+    return hashlib.sha1(SYSTEM_YAML.read_bytes()).hexdigest()[:12]
 
 
 # --------------------------------------------------------------------------
@@ -71,7 +87,7 @@ VERDICT_FLOOR = 8          # refuse to call a winner below this many changed boa
 
 def _replay_file(args):
     """Re-play one pool file under the current system.  Runs in a subprocess."""
-    path, quiet = args
+    path, quiet, fp = args
     import match_ben as M
     from compare_ben import Ben
     from bridgebidder.domain.cards import Hand
@@ -81,6 +97,9 @@ def _replay_file(args):
     from bridgebidder.system.dsl import load_system
 
     system = load_system()
+    if system_fingerprint() != fp:
+        raise SystemExit(f"the system file changed under this screen "
+                         f"({fp} -> {system_fingerprint()}): the measurement is void")
     ben = Ben()
     dd = EndplayDD()
     out = []
@@ -258,14 +277,18 @@ def cmd_run(a) -> None:
         files = [f for f in files if f.name in keep]
     if not files:
         sys.exit(f"no pool files under {a.pool}")
-    print(f"screening {len(files)} pool file(s) with {a.jobs} job(s)")
+    fp = system_fingerprint()
+    print(f"screening {len(files)} pool file(s) with {a.jobs} job(s) | system {fp}")
     t0 = time.time()
     if a.jobs > 1:
         import multiprocessing as mp
         with mp.get_context("spawn").Pool(a.jobs) as pool:
-            parts = pool.map(_replay_file, [(f, False) for f in files])
+            parts = pool.map(_replay_file, [(f, False, fp) for f in files])
     else:
-        parts = [_replay_file((f, False)) for f in files]
+        parts = [_replay_file((f, False, fp)) for f in files]
+    if system_fingerprint() != fp:
+        sys.exit(f"the system file changed during this screen ({fp} -> "
+                 f"{system_fingerprint()}): the measurement is void, re-run it")
     recs = [r for part in parts for r in part]
     print(f"replayed {len(recs)} boards in {time.time() - t0:.0f}s")
     s = summarise(recs, a.label)
