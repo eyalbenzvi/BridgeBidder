@@ -5,7 +5,94 @@ Everything labelled **VERIFIED** was traced through a patched *copy* of
 `two_over_one.yaml` in the scratchpad (`fast_decision` + `score_candidates`);
 the repo file is untouched.
 
-*(summary written at the end of the pass — see "Summary" below)*
+## Summary
+
+**38 boards, -389 IMPs.  26 proposals, 12 NOTHING-WRONGs.**  Every proposal is
+**VERIFIED**: traced through `prepare_decision` + `fast_decision` on a patched
+copy, and eleven of them with an explicit control hand showing the rung stays
+off the population it must not touch.
+
+**Whole-batch verification, done once at the end and worth more than any single
+trace.**  All 26 proposals were applied to one copy of the file together
+(517 -> 534 contexts, 2,344 -> 2,452 rules; it loads):
+
+* all **38** board traces still produce the intended call, so the proposals do
+  not interfere with each other;
+* **all 516 locked regression scenarios in `tests/data/` pass**, against a
+  baseline of 516/516.  The only changed scenario decision is
+  `r2_no_fallback_4NT_over_their_game`, P -> X, and X is inside its accepted set.
+
+That check earned its keep: the FIRST draft broke **three** locked scenarios,
+from two rungs, and both breaks were real bridge errors on my part.
+`ch_takeout_X_acted` doubled with a five-card major (fixed by copying `oc1S_X`'s
+own "a takeout double must not hide a five-card major" clause) and
+`uc_rebid_game_$M4` bid game opposite a CAPPED preemptive raise (fixed by
+`partner_shown_max: [12, 40]`, which reads 8 in the locked scenario and 40 on
+the board that motivated the rung).  Details are in boards 856 and 396.
+
+**Two guardrail hits — the dossier's `rule` field is the primary reading, and it
+was wrong twice in my slice:**
+* board 953, `cl_raise_lott4_H` (fit 0.034) — the chooser is `cl_raise_H4` at
+  1.000, and 4H is the RIGHT contract;
+* boards 12 and 255, `cl_new_D3` (fit 0.102 / 0.409) — the chooser is
+  `cl_new_long3_D_hi` at 1.000, whose 11-point / 1.0-quality calibration is the
+  thing that needs a vulnerability term.
+
+### The three agreements that matter most in this slice
+
+**1. The overcall ladder has ONE branch where it needs three (5 boards).**
+`suit_quality >= 1.5` is the gate on every simple overcall and on the generic
+new-suit rungs, and it kills five boards here: 532 (6-5 shape, `A9753` scores
+1.0), 858 (12 HCP and 2.5 quick tricks, `T8762` scores 0.5), 953 (6-5 on seven
+points), plus 269 and 400, where the same texture gate keeps responder from
+making a free bid on `A9743` with 14 HCP.  The repair is three same-call
+sibling branches per suit — **good suit** (existing), **values** (5+, 11-16,
+2 quick tricks), **shape** (6+, 6-10, LTC <= 6) — all placed BELOW the existing
+rung, all leaving `covered` untouched, so none of them can delete a fallback.
+Biggest single family in my slice and the cheapest to ship.
+
+**2. Five conversations the file opens and never closes (5 boards).**
+487 (`2W – P – 4W – ?`: pass and a double, nothing else), 253 (the doubler bids
+his own suit over my forced advance), 636 (opener rebids his weak two after my
+forcing new suit — `DECISIONS.md`'s "the forcing new suit opposite a weak two is
+passed out", one station further down), 773 (advancing a three-level overcall of
+a weak two), 957 (they doubled our cue-raise, partner made the forced retreat,
+and we raise again on values we already showed).  In each the seat's whole
+candidate set is a fit-1.00 pass plus rubble.  **Every one of my new contexts
+ships a `requires: {}` pass rung**, so the seat can never be starved, and every
+rung is `non_forcing` or `sign_off` — no new question is asked anywhere in this
+document that does not already have an authored answer, and where an answer had
+to be checked (94, 622, 708) I traced partner's actual hand through it.
+
+**3. "Four of a minor is not a game" (2 boards, 3 ladders).**  Board 175:
+`w2ac_game_$W` bids `4$W` and its context expands over `[D, H, S]`, so the
+answer to the feature ask opposite a weak two in DIAMONDS is 4D at priority 56,
+outranking the 3NT that scores 400.  Board 791: `cl_raise_$m4` tops out the
+competitive minor raise at four, where `uc_minor_game_5$m` exists in the
+uncontested twin and `grep -n cl_minor_game` returns nothing.  The fix pattern
+is the same in both and in the two new contexts I wrote:
+`when: { standing_bid_strain: [H, S] }` / `[C, D]` makes a rung self-selecting
+inside a suit-expanded context, so one ladder can bid four of a major and five
+of a minor without a second context.
+
+### Also worth the consolidator's time
+
+* **The vulnerable three-level phantom** (boards 12 AND 255, one rung, both
+  traced): `cl_new_long3_$X`'s 11-point / quality-1.0 calibration has no
+  vulnerability term, and vulnerable against a side that has found a fit it is
+  worth -170 and -650 on these two boards.  Two boards for one rung is the
+  strongest evidence in my slice.
+* **A takeout double registers THREE suits as partner's suits** (board 695),
+  with `partner_min_length` of 3 in the suit the opponents OPENED, so every
+  `uc_raise_*` and `uc_minor_game_5$m` rung goes live in all of them.  I have a
+  measured negative to go with it: my own advance-of-a-double rung is verified
+  to fire and then reaches `5D` two calls later.  **Do not ship that one rung
+  until the partner model or the continuation seats are fixed** — it is the
+  round-17 "question with no answer" failure, reproduced.
+* Three boards in this slice (598, 606, 879) are lost by a chooser sitting
+  BELOW the 0.9 fast path inside the opener's-rebid family.  That is the
+  soft-miss lottery, it is the same family three times, and it belongs to the
+  constructive reviewer as a cluster rather than as three boards.
 
 ---
 
@@ -311,10 +398,11 @@ own round"; it is not on the do-not-re-propose list.
           hcp: [13, 40]
           evals: { "standing_suit_length": [0, 2], quick_tricks: [2, 12],
                    longest_suit_length: [0, 6] }
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
           any_of:
             - suits: { S: [4, 13] }
             - suits: { H: [4, 13] }
-        shows: "opener's second double: extra values, short in their suit, a four-card major to offer"
+        shows: "opener's second double: extra values, short in their suit, a four-card major to offer and no five-card major of my own"
         establishes: { forcing: one_round }
 ```
 
@@ -343,6 +431,14 @@ needed, which is exactly the round-17 test this proposal has to pass.
 
 **VERIFIED.**  North doubles at fit 1.000, prio 34, `clear=True`
 (`ch_pass` 1.000/22, `ch_penalty_X` 0.349/38).
+
+**The `not:` clause was put there by a broken locked scenario, not by me.**  My
+first draft omitted it and broke `e9_higher_of_equal_length_at_the_four_level`:
+`5.AKQ93.AT983.AK` over `2C – P – 2D – 3S` doubled instead of bidding 4H.  The
+clause is the file's own doctrine, copied from `oc1S_X` — "a takeout double
+asks partner to pick a suit, so it must not be hiding a five-card major of its
+own: partner will name the other one".  Board 856's North is 4=2=2=5, so it is
+untouched.  With the clause the whole 516-scenario regression suite passes.
 
 **Template:** no `expand` in this context; write the rung once here and once in
 `general_competitive_low`.  The `any_of` covers both majors, so no per-suit
@@ -1131,8 +1227,8 @@ Three game rungs, all dead, and `uc_pass` at 1.000 takes the seat.
         requires:
           suits: { S: [6, 13] }
           evals: { "lott_total_trumps(S)": [9, 26], total_points: [14, 40],
-                   controls: [5, 12], ltc: [0, 7] }
-        shows: "partner raised my six-card major in competition: nine trumps, fourteen support points and five controls is a game, whatever the point-count test says about his minimum"
+                   controls: [5, 12], ltc: [0, 7], partner_shown_max: [12, 40] }
+        shows: "partner raised my six-card major in competition and the raise was not a capped preemptive one: nine trumps, fourteen support points and five controls is a game"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_rebid_game_H4
         call: 4H
@@ -1141,8 +1237,8 @@ Three game rungs, all dead, and `uc_pass` at 1.000 takes the seat.
         requires:
           suits: { H: [6, 13] }
           evals: { "lott_total_trumps(H)": [9, 26], total_points: [14, 40],
-                   controls: [5, 12], ltc: [0, 7] }
-        shows: "partner raised my six-card major in competition: nine trumps, fourteen support points and five controls is a game, whatever the point-count test says about his minimum"
+                   controls: [5, 12], ltc: [0, 7], partner_shown_max: [12, 40] }
+        shows: "partner raised my six-card major in competition and the raise was not a capped preemptive one: nine trumps, fourteen support points and five controls is a game"
         establishes: { forcing: non_forcing, agreed_suit: H }
 ```
 
@@ -1168,6 +1264,17 @@ compete) are already authored in `ch_raise_*`.
   `AJT732.974.32.J5` (three controls) still passes, my rung at fit 0.000.
 
 **VERIFIED.**  East bids `4S` at fit 1.000 / prio 32.5, `clear=True`.
+
+**`partner_shown_max: [12, 40]` was added because a locked scenario caught the
+first draft.**  Without it the rung broke `r6_no_game_opposite_preemptive_raise`
+and `ben2_no_rebid_to_game_over_a_preemptive_raise` (the same hand,
+`AKJ8752.A5.K7.94`, over `P – P – 1S – X – 3S – P`), which is the "counted
+opposite what partner has SHOWN, not in a vacuum" lock from round 6.  The
+separator is exact and it is a sentence of bridge: over a takeout double a jump
+raise is a capped preemptive raise and the model knows it — `partner_shown_max`
+is **8** there and **40** on board 396, where partner had to jump to three only
+because they overcalled at the three level.  A gate at 12 scores the locked hand
+0.028.  With it, all 516 regression scenarios pass.
 
 **Template:** the `_H` / `_S` pair above; the minors are deliberately excluded
 (four of a minor is not a game — see board 175).  The same pair belongs in
