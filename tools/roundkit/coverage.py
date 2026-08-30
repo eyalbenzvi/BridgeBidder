@@ -85,10 +85,17 @@ def main() -> None:
                        else "(code fallback)")
                 if cand.rule is None:
                     b = "NOTHING"
-                elif choice.fit >= FAST_PATH:
-                    b = "KNOWS"
-                else:
+                elif choice.fit < FAST_PATH:
                     b = "GUESSES"
+                elif cand.rule.requires.is_trivial:
+                    # `requires: {}` fits 1.00 against every hand, so a
+                    # catch-all pass or an unconditioned sign-off scores as a
+                    # perfect fit while describing nothing.  Counting those as
+                    # KNOWS is what makes an under-specified file look covered:
+                    # they are the starved seats, not the agreements.
+                    b = "VACUOUS"
+                else:
+                    b = "KNOWS"
                 buckets[b] += 1
                 by_ctx[ctx][b] += 1
                 # how much choice did the seat actually have?
@@ -99,11 +106,13 @@ def main() -> None:
     n = sum(buckets.values())
     print(f"\n=== {a.rows}: {n} of our decisions "
           f"{'(live only)' if a.live_only else ''} ===\n")
-    for b in ("KNOWS", "GUESSES", "NOTHING"):
+    for b in ("KNOWS", "VACUOUS", "GUESSES", "NOTHING"):
         print(f"  {b:9s} {buckets[b]:6d}  {100 * buckets[b] / n:5.1f}%")
-    backlog = buckets["GUESSES"] + buckets["NOTHING"]
-    print(f"\n  the authoring backlog (GUESSES + NOTHING): {backlog} "
+    backlog = buckets["GUESSES"] + buckets["NOTHING"] + buckets["VACUOUS"]
+    print(f"\n  the authoring backlog (VACUOUS + GUESSES + NOTHING): {backlog} "
           f"({100 * backlog / n:.1f}% of decisions)")
+    print(f"  of which VACUOUS - a rule fits 1.00 because it requires nothing: "
+          f"{buckets['VACUOUS']}")
 
     print("\n  authored rules offered at the seat (any fit):")
     for k in sorted(alts):
@@ -114,12 +123,14 @@ def main() -> None:
     print("  a context high on this list is a subject where the file has run")
     print("  out of vocabulary; the repair is MORE RULES, not a better rule.\n")
     ranked = sorted(by_ctx.items(),
-                    key=lambda kv: -(kv[1]["GUESSES"] + kv[1]["NOTHING"]))
-    print(f"  {'context':46s} {'guess':>6} {'none':>6} {'knows':>6}")
+                    key=lambda kv: -(kv[1]["GUESSES"] + kv[1]["NOTHING"]
+                                     + kv[1]["VACUOUS"]))
+    print(f"  {'context':46s} {'vacuous':>8} {'guess':>6} {'none':>6} {'knows':>6}")
     for ctx, c in ranked[:a.top]:
-        if not (c["GUESSES"] + c["NOTHING"]):
+        if not (c["GUESSES"] + c["NOTHING"] + c["VACUOUS"]):
             break
-        print(f"  {ctx:46s} {c['GUESSES']:>6} {c['NOTHING']:>6} {c['KNOWS']:>6}")
+        print(f"  {ctx:46s} {c['VACUOUS']:>8} {c['GUESSES']:>6} "
+              f"{c['NOTHING']:>6} {c['KNOWS']:>6}")
 
 
 if __name__ == "__main__":

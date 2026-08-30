@@ -1,3 +1,4 @@
+README.md
 pyproject.toml
 src/bridgebidder/__init__.py
 src/bridgebidder/api.py
@@ -34,3 +35,16 @@ src/bridgebidder/system/__init__.py
 src/bridgebidder/system/dsl.py
 src/bridgebidder/system/matcher.py
 src/bridgebidder/systems/two_over_one.yaml
+tests/test_arbitration.py
+tests/test_constraints.py
+tests/test_corpus_gate.py
+tests/test_domain.py
+tests/test_dsl.py
+tests/test_evaluators.py
+tests/test_invariants.py
+tests/test_lints.py
+tests/test_performance.py
+tests/test_property.py
+tests/test_regression.py
+tests/test_sampler.py
+tests/test_snapshots.py
