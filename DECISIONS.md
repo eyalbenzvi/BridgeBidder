@@ -2928,3 +2928,62 @@ responding contexts, the 2C tree, the game-force family after a double.
 
 Item 2 was rebuilt on that basis - see `docs/ROUND_17_REPORT.md` for the
 batch's measured result.
+
+### The ablation: rounds 11-16 were REAL, +53 IMPs per 1000 boards
+
+Round 10 (`d775ad0`) against HEAD on five seeds that were never a decision rule
+for either version - the only unbiased estimate in this project.
+
+| seed | HEAD | round 10 | delta | changed |
+|---|---|---|---|---|
+| 313131 | -882 | -919 | +37 | 23 |
+| 323232 | -705 | -772 | +67 | 28 |
+| 343434 | -643 | -718 | +75 | 23 |
+| 353535 | -847 | -889 | +42 | 24 |
+| 363636 | -657 | -699 | +42 | 39 |
+
+**Pooled +263 over 5,000 boards.  Seed-level mean +53 per 1,000 boards,
+t = 6.86, 95% CI [+31, +74]; bootstrap [+40, +67].  All five seeds positive.**
+
+**This contradicts the consolidated review's central suspicion.**  The review
+argued the ledger's +61 across rounds 11-16 was mostly a selection premium
+against an expectation of ~+85.  It was not: the unbiased interval CONTAINS
+the ledger's own +61.  What round 17 established is narrower and still true -
+*individual* rounds are not separately resolvable (round 14's +51 is t = 1.73)
+and the loop has stopped paying NOW - not that the past record was fictitious.
+
+### Item 2's batch, and the correction that matters more than it
+
+The above-game conversation (2 contexts, 16 rules) plus a 5NT king ask in all
+four major RKC continuations with the seat that answers it (the file's first
+seven-level rules; slam machinery 119 -> 145) screened at **-41 IMPs over 69
+changed boards, t = -0.57, CI [-179, +101]. REVERTED.**  The engine ends the
+round byte-identical to `e97dd06`.
+
+Post-hoc, as a lead and not a verdict (best of three slices): king ask / grand
+slam +52 over 18 boards, above-game cue -25 over 9, trick-currency 4NT -68
+over 35.  The round's biggest board is +26 on `2NT 3C 3H 4H 4NT 5C 5NT 7H`, the
+file's first grand slam, and it made.
+
+**The correction, from the project owner, and it is the round's real output:**
+slam machinery does not live above game.  It lives at the TWO, THREE and FOUR
+level, in the constructive sequences that separate a minimum from a slam-going
+hand before game is reached.  Every above-game move measures negative because
+by 4S the information exchange has already failed - passing is right there
+precisely because the auction never described the hands.  The vocabulary count
+proves it: **trial bids 0, serious/frivolous 3NT 0, mini-splinters 0,
+fit-showing jumps 0, control-showing raises 0.**
+
+And it generalises past slam: the file needs two to three times as many rules
+overall.  See `docs/PLAN_SCALE_THE_SYSTEM.md`.
+
+### Not completed when the session ended
+
+* Item 3: `roundkit/cfr.py` written and committed, unrun.
+* Item 4: applied, blast radius measured at **216 changed decisions per 1,000
+  boards** with both halves (the reviewer's prototype was 61 for the generation
+  half alone), then reverted unmeasured.  **It is the one remaining change with
+  enough blast radius to resolve 1 IMP/board at full power - measure it first.**
+* Item 5: both bugs diagnosed, patches written, not applied.  `partner_limited`
+  reads `eval_ctx` where the parameter is `ctx` (NameError for the first rule to
+  use it); `_SETUP_CACHE` keys on `id(system)` holding no reference.

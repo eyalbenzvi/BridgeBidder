@@ -164,8 +164,179 @@ Traced: e10 board 192a, the review's headline board, now runs
 And with a cue forced in, partner answers 5C with **5S at fit 1.00** instead of
 passing it out.
 
-*(the batch's screened number follows)*
+### The batch, measured — **REVERTED**
+
+Two contexts and sixteen rules for the above-game conversation, plus a 5NT
+king ask in all four major-suit RKC continuations with the seat that answers
+it (the file's first seven-level rules; slam machinery 119 → 145).  All checks
+clean: 766 passed, lint unchanged at 223 findings, fuzz identical to baseline.
+
+**Screened on the fresh 9,000-board pool: -41 IMPs over 69 changed boards
+(16 up, 23 down, 30 same margin), t = -0.57, 95% bootstrap CI [-179, +101].
+REVERT.**
+
+Post-hoc attribution of those 69 boards, recorded as a **lead and not a
+verdict** — it is the best of three slices, which is exactly the selection
+premium this round exists to stop:
+
+| slice | n | total | mean |
+|---|---|---|---|
+| king ask / grand slam | 18 | **+52** | +2.89 ± 1.98 |
+| above-game cue | 9 | -25 | -2.78 ± 1.60 |
+| trick-currency RKC (4NT) | 35 | -68 | -1.94 ± 1.53 |
+
+The round's largest single board is **+26** on `2NT 3C 3H 4H 4NT 5C 5NT 7H` —
+the file's first grand slam, and it made.
+
+The engine's behaviour at the end of the round is byte-identical to `e97dd06`.
+The tree is preserved in the history so a later round can resurrect rather
+than re-derive it.
+
+### Why this does not refute the density thesis — and where it was aimed wrong
+
+Going from 119 slam rules to 145 is still a stub, and a stub measuring zero is
+what the thesis predicts.  But the more important correction came from the
+project owner mid-round, twice, and both times I had it wrong:
+
+1. **The unit of work in a thin subject is a closed conversation, not a rung.**
+   Measured: a cue bid above game costs -9.8 IMPs a seat *because no seat
+   answers it*.
+2. **Slam machinery does not live above game at all.**  It lives at the two,
+   three and four level, in the constructive sequences that separate a
+   minimum from a slam-going hand *before* game is reached.  My whole build
+   was in the wrong territory, which is exactly why every move there measured
+   negative: by 4S the information exchange has already failed, and passing is
+   right precisely because the auction never described the hands.
+
+A grep of the convention vocabulary confirms it, and this is the most useful
+single output of the round:
+
+| convention | rules |
+|---|---|
+| splinter | 18 |
+| Jacoby 2NT | 20 |
+| cue bid | 60 |
+| jump shift | 18 |
+| **trial / help-suit game try** | **0** |
+| **serious / frivolous 3NT** | **0** |
+| **mini-splinter** | **0** |
+| **fit-showing jump** | **0** |
+| **control-showing raise** | **0** |
+
+3. **And the claim generalises beyond slam:** the file needs two to three
+   times as many rules overall.  `docs/PLAN_SCALE_THE_SYSTEM.md` is the
+   proposal that follows from it.
 
 ---
 
-*(items 3-5, the ablation, and the closing sections follow as they are measured)*
+## The ablation: what rounds 11-16 actually bought — **REAL, +53 per 1000 boards**
+
+Round 10 (`d775ad0`) against HEAD, on five seeds that were never a decision
+rule for either version.  This is the only unbiased estimate in the project.
+
+| seed | HEAD | round 10 | delta | boards changed |
+|---|---|---|---|---|
+| 313131 | -882 | -919 | **+37** | 23 |
+| 323232 | -705 | -772 | **+67** | 28 |
+| 343434 | -643 | -718 | **+75** | 23 |
+| 353535 | -847 | -889 | **+42** | 24 |
+| 363636 | -657 | -699 | **+42** | 39 |
+
+**Pooled: +263 IMPs over 5,000 boards.  Seed-level mean +53 per 1,000 boards,
+t = 6.86, 95% CI [+31, +74]; seed bootstrap [+40, +67].  All five seeds
+positive.**
+
+**This contradicts the consolidated review's central suspicion, and it should
+be said loudly.**  The review argued that the ledger's +61 across rounds 11-16
+was mostly a selection premium against an expectation of ~+85.  It was not.
+The unbiased interval **contains the ledger's own +61**, so the rounds were
+roughly as good as claimed.  What round 17 established is narrower and still
+true: *individual* rounds are not separately resolvable (round 14's +51 is
+t = 1.73), and the loop has stopped paying *now* — not that its past record
+was fictitious.  The prior session's two partial seeds are reproduced exactly
+(313131 = +37).
+
+---
+
+## Items 3, 4 and 5 — not completed
+
+Honest statement of what was left undone when the session was stopped.
+
+* **Item 3 (per-decision regret).**  `roundkit/cfr.py` is written, committed
+  and unrun — rollouts with BEN in the opponents' seats, the fit floor and the
+  never-take-the-max discipline inherited from `regret.py`, and an
+  `is_closing` flag so round 16's failure mode can be split out.  Its
+  acceptance test (reproduce the sign of round 14's fixes) is probably not
+  satisfiable at 1,000 boards: those fixes touch 15 boards, far below the
+  n ≈ 40 firings the reviewer's own variance estimate requires.
+* **Item 4 (unconditional code fallback).**  Applied and its blast radius
+  measured — **216 changed decisions per 1,000 boards with both halves**,
+  against the reviewer's prototype of 61 for the generation half alone, so the
+  interpretation half cascades hard through partner's model.  Reverted, not
+  measured in IMPs.  **This is the one change in the round with enough blast
+  radius (~1,300 changed boards in a 12k pool) to resolve a 1 IMP/board effect
+  at full power** — it should be measured first in any successor session.
+* **Item 5.**  Both bugs were diagnosed and their patches written but not
+  applied: `partner_limited` reads `eval_ctx` where the parameter is named
+  `ctx`, so the first YAML rule to use it raises `NameError`; and
+  `_SETUP_CACHE` keys on `id(system)` while holding no reference, so a
+  rebuilt system can inherit a dead one's identity (`tools/tune.py:211` does
+  exactly that).  The fix is a `WeakKeyDictionary` of stable tokens.
+
+---
+
+## Held out, before and after
+
+**-474 before, -474 after.**  Nothing shipped that changes a call, so the
+number is not merely unchanged — the engine is byte-identical to `e97dd06`.
+
+Do I believe it?  Yes, with a caveat that matters more than the number: -474
+is a **running maximum of a ratcheted walk**, because that corpus has been the
+decision rule sixteen times.  The ablation above is the first estimate in the
+project that is not.
+
+---
+
+## Everything killed, with the number that killed it
+
+| | number |
+|---|---|
+| the review's five-level cue ladder above game | **-9.8 IMPs a seat** (5C), -10.0 (5D) — no seat answers a cue above game |
+| six of the major, direct | -6.8 IMPs a seat |
+| a trick-currency keycard ask over partner's game raise | **-42 IMPs / 39 boards, t = -0.70** |
+| the whole above-game slam conversation, 28 rules | **-41 IMPs / 69 boards, t = -0.57** |
+| the 4NT gate `controls>=5 & ltc<=6 & trumps>=8` | signs invert between corpora: e10 +2.20, held -3.35 |
+| loosening the king ask to six losers | broke two locked scenarios, one a real board recorded as making exactly twelve tricks |
+
+---
+
+## What I would do next, and what I now think is wrong with the plan
+
+**What is wrong with the plan.**  Its item 2 aims at the wrong territory.  It
+prescribes a five-level cue ladder above game; measurement says every move
+there loses, and the reason is that the slam has already been missed by then.
+Its items 3 and 5 are instruments and refinements for a loop that the ablation
+shows is now flat.  Item 1 was right and is done.  Item 4 is right, cheap, and
+is the only remaining item with the statistical power to prove itself.
+
+**What I would do next, in order.**
+
+1. **Measure item 4 properly.**  One hour with the screen, ~1,300 changed
+   boards, enough power to resolve 1 IMP/board.  It also removes the trap that
+   makes bulk authoring dangerous.
+2. **Run `roundkit/coverage.py`** (written, never run): bucket every decision
+   into *knows* (a rule fits ≥ 0.9), *guesses* (soft-miss lottery), *nothing*
+   (code fallback), and rank contexts by backlog.  That converts "the file
+   needs 2-3× the rules" into a ranked authoring list.
+3. **Then stop editing rungs.**  `docs/PLAN_SCALE_THE_SYSTEM.md` sets out the
+   alternative: 400-800 *agreements* templated into 7,000-12,000 rules, from a
+   convention-card audit, BEN distillation, expert-corpus mining and
+   per-case simulation, validated at *subject* granularity with the screen.
+
+**The honest summary of this session.**  One asset shipped — a measurement
+that is exact, cheap and states its own resolution — plus one clean positive
+result (the ablation) and five clean negatives.  No behaviour change.  The two
+findings that matter came from the project owner, not from me: that a thin
+subject needs a closed conversation rather than a rung, and that the system is
+under-specified across the board rather than mis-specified in places.  I spent
+most of the session building in the wrong territory before that landed.
