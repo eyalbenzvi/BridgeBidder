@@ -1422,3 +1422,308 @@ recording it as the agreement the context needs rather than as this board's fix.
 Ship it with a board that has the values, or as part of the transfer subject.
 
 ---
+
+## Board 636 — PROPOSAL — opener's rebid after the forcing new suit opposite his weak two
+
+**Seat/call that went wrong.** Table B, call 5, **E** after `P - 2H - P - 3C -
+P`, holding `Q.KQJ862.84.J942` — four-card club support opposite partner's
+`rw2_new_H_C`, which the file itself labels *"new suit opposite the weak two:
+5+ C, 12+, **forcing one round**"*.  The engine bid **3H** via `uc_rebid_H3` and
+W passed; 6C is cold.
+
+This is `ROUND_METHOD.md`'s open item verbatim — *"The forcing new suit opposite
+a weak two is passed out.  `rw2_new_*` is `forcing: one_round` and
+`2$W - P - <new suit> - P - ?` has no context"* — the **fourth** recorded
+instance of the starved-forcing-seat species, and still unrepaired.
+
+**The missing agreement.** Opposite the forcing new suit, opener raises with
+three-card support, offers 3NT with a running suit and a maximum, and otherwise
+repeats his weak two.
+
+```yaml
+  - id: weak2_opener_over_new_suit
+    description: "Opener's rebid after the forcing new suit opposite his weak two"
+    expand_pairs:
+      - { W: D, R: 2H, N: H, RR: 3H, RB: 3D }
+      - { W: D, R: 2S, N: S, RR: 3S, RB: 3D }
+      - { W: D, R: 3C, N: C, RR: 4C, RB: 3D }
+      - { W: H, R: 2S, N: S, RR: 3S, RB: 3H }
+      - { W: H, R: 3C, N: C, RR: 4C, RB: 3H }
+      - { W: H, R: 3D, N: D, RR: 4D, RB: 3H }
+      - { W: S, R: 3C, N: C, RR: 4C, RB: 3S }
+      - { W: S, R: 3D, N: D, RR: 4D, RB: 3S }
+      - { W: S, R: 3H, N: H, RR: 4H, RB: 3S }
+    pattern: "2$W - P - $R - P - ?"
+    rules:
+      - id: rw2o_rebid_$W$N
+        call: $RB
+        priority: 50
+        requires: {}
+        shows: "no fit and no feature: repeating the weak two"
+        establishes: { forcing: non_forcing, agreed_suit: $W }
+      - id: rw2o_raise_$W$N
+        call: $RR
+        priority: 60
+        requires: { suits: { $N: [3, 13] } }
+        shows: "three-card support for partner's forcing new suit"
+        establishes: { forcing: one_round, agreed_suit: $N }
+      - id: rw2o_3NT_$W$N
+        call: 3NT
+        priority: 58
+        requires:
+          hcp: [9, 10]
+          features: [ "three_of_top5($W)" ]
+          suits: { $W: [6, 13] }
+          not: { suits: { $N: [3, 13] } }
+        shows: "a maximum weak two with a running suit and no fit: offering 3NT"
+        establishes: { forcing: sign_off }
+```
+
+`expand_pairs` carries four extra variables per row — `$R` the forcing call,
+`$N` its strain, `$RR` the raise one level higher, `$RB` the cheapest repeat of
+the weak two — because `call: $L$X` does not expand and the raise level differs
+per row.  Rule ids end in `$W$N`, and `$W$N` is two adjacent vars, which the
+loader's `\$([A-Za-z_][A-Za-z0-9_]*)` regex splits correctly (verified: 9
+contexts, 27 rules, no duplicate ids).
+
+**THE ANSWERING SEAT — already authored, and I traced it.**  `rw2o_raise_$W$N`
+is `forcing: one_round`, and the seat that answers it is the existing keycard
+family: after `P - 2H - P - 3C - P - 4C - P` the asker's candidates come from
+`gst_rkc_C` at fit 1.000, and the `rkc_response` / `rkc_continue_after_5*` /
+`rkc_minor_after_*` ladders complete the conversation.  The sign-off
+(`rw2o_rebid_$W$N`) carries `requires: {}` so the seat can never be starved.
+
+**What it endangers.**
+* `uc_rebid_H3` (3H, prio 29) — replaced by `rw2o_rebid_$W$N` at the same call
+  with a `requires: {}` floor, so it is a strict superset; the raise simply
+  outranks it when there is a fit.
+* `uc_pass` — the context does not define P at all, deliberately: opposite a
+  forcing bid there is no pass to offer.
+* `rw2_pass` and the rest of `resp_weak2_newsuit_*` are in a different seat and
+  untouched.
+* **The rung I am least sure of is `rw2o_3NT_$W$N`.**  `three_of_top5` is sharp
+  (σ² = 0.05) so the gate does gate, but a 9-count with `KQJ862` and no outside
+  stopper will offer 3NT opposite a 12-count.  It is orthodox opposite a
+  game-forcing new suit and I have left it in; if the screen dislikes the
+  subject, drop this rung first — the raise and the repeat alone are the closed
+  conversation.
+
+**VERIFIED.**  E → `rw2o_raise_HC` 4C at fit 1.000, prio 60; W
+(`AJ84..AK65.AQT85`) → `gst_rkc_C` 4NT at fit 1.000, i.e. the existing slam
+ladder picks the auction up.  A weak two with no club fit still repeats 3H.
+EW make twelve tricks in clubs; we played 3H making ten.
+
+**TEMPLATE.**  `expand_pairs` over the nine (weak two, forcing new suit) pairs —
+**9 contexts, 27 rules from one idea**, and it closes the file's fourth recorded
+starved force.
+
+---
+
+## Board 695 — NOTHING-WRONG (competitive)
+
+The seat is the balancing chair: S with `7.AKQJ943.K.J873` after `1D - P - P`.
+`bal_X` (fit 1.000, prio 70) beat `bal_D_1H` (fit 1.000, prio 68) — a pure
+priority question between two calls that both fit, inside the balancing family.
+Competitive.
+
+**Constructive observation.** With a seven-card suit and fourteen points the
+balancing 1H is the more descriptive call and the double is the one that loses
+the suit, but the balancing ladder is not my subject and re-ranking `bal_X` under
+`bal_D_1H` would touch every balancing seat in the file.  Flagged for the
+competitive reviewer, not proposed.
+
+---
+
+## Board 708 — PROPOSAL — the seat that answers partner's balancing 2NT
+
+**Seat/call that went wrong.** Table A, call 6, **S** after `1NT - 2S - P - P -
+2NT - P`, holding `Q.J863.JT96.QJ54` (7 HCP).  Partner has just balanced with
+`ballow_nt2_strong` — *"natural 2NT: 17-21 balanced with their suit stopped"* —
+and S **passed** at `uc_pass` fit 1.000.  The only other candidate in the whole
+seat is `uc_nt_raise3` at fit 0.409.  3NT makes nine.
+
+**The missing agreement.** Opposite partner's strong balancing 2NT, seven is
+enough for game, and a five-card major is shown first.
+
+```yaml
+  - id: responder_over_balancing_2NT
+    description: "Responder answers partner's balancing 2NT after our side was overcalled"
+    pattern: "... - bid<3C - P - P - 2NT - P - ?"
+    rules:
+      - id: rb2n_pass
+        call: P
+        priority: 22
+        requires: {}
+        shows: "nothing opposite the balancing 2NT"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+      - id: rb2n_3NT
+        call: 3NT
+        priority: 40
+        requires:
+          hcp: [7, 40]
+          not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
+        shows: "seven-plus opposite the strong balancing notrump: the game"
+        establishes: { forcing: sign_off }
+      - id: rb2n_3H
+        call: 3H
+        priority: 42
+        when: { unbid_suit: H }
+        requires: { suits: { H: [5, 13] }, hcp: [6, 40], evals: { "suit_diff(H,S)": [0, 13] } }
+        shows: "five-plus hearts opposite the balancing notrump: showing the major first"
+        establishes: { forcing: one_round }
+      - id: rb2n_3S
+        call: 3S
+        priority: 43
+        when: { unbid_suit: S }
+        requires: { suits: { S: [5, 13] }, hcp: [6, 40], evals: { "suit_diff(S,H)": [1, 13] } }
+        shows: "five-plus spades opposite the balancing notrump: showing the major first"
+        establishes: { forcing: one_round }
+```
+
+The pattern reads exactly one auction shape: RHO bid below 3C, I passed, LHO
+passed, **partner** balanced 2NT, RHO passed.  It is `...`-prefixed
+(specificity 7) so it sorts below every anchored context and can never steal a
+call one of them defines, but above `general_uncontested_continuation`
+(specificity 2), which is what it is there to replace.
+
+**THE ANSWERING SEAT.** 3H and 3S are `forcing: one_round`.  I traced the
+balancer's reply and it comes from the generic toolkit (`uc_raise_S3` /
+`uc_raise_S4` on three-card support), which is an answer but a thin one.  **The
+loose end, stated rather than hidden:** ship this with a matching
+`balancer_over_major_advance` (`... - bid<3C - P - P - 2NT - P - 3(H|S) - P - ?`:
+game with three-card support, 3NT with a doubleton).  On board 708 the 3NT rung
+is what fires and no reply is owed.
+
+**What it endangers.**
+* `uc_pass` (P, prio 18, `requires: {}`) — replaced by an identical
+  `requires: {}` pass at 22 with soft negative inference: exact superset.
+* `uc_nt_raise3` (3NT, prio 26.5) — replaced by a rung with a stated floor and a
+  major-suit veto.  This is the rung round 14 had to re-rank because it was
+  outranking natural suit bids; here it is raising to game with no floor at all.
+* `uc_new_H3` / `uc_new_S3` ("5+ cards, 14+ points") — my rungs are broader
+  opposite a 17-21 balance, which is right: partner has the values, I have the
+  shape.
+* **The known risk, stated:** `ballow_nt2` shows 15-21 and `ballow_nt2_strong`
+  17-21, and `when:` cannot tell me which rule partner used, so a 7-count
+  opposite a minimum 15 is an overbid.  I set the floor at 7 because a partner
+  who balanced at the two level is odds-on for the top of his range; if the
+  screen dislikes the subject, raise it to 8 before dropping the context.
+
+**VERIFIED.**  S → `rb2n_3NT` 3NT at fit 1.000.  3NT makes nine (+600) instead
+of 2NT+2 (+150).
+
+**TEMPLATE.**  One `...`-anchored context covers every overcalled opening, so no
+expansion is needed for the shape.  The natural extension is the same ladder
+after a balancing 1NT and a balancing 3NT.
+
+---
+
+## Board 728 — PROPOSAL — the 2C tree's missing landing ladder
+
+**Seat/call that went wrong.** Table A, call 8, **N** after `P - P - 2C - P - 2D
+- P - 3C - P`, holding `T9.T97.AT53.J875` — 5 HCP opposite a natural,
+game-forcing 3C.  The engine bid **3H** via `gf_new_3H`, inventing a three-card
+suit, and the auction ran 3H - 3S - 4C - 4NT - 5C - **6C, down one**.  This is
+`ROUND_METHOD.md`'s *"`2C - 2NT` positive-response continuations have no landing
+ladder, so the engine walks 3C-3D-4C-4D-4H inventing a suit each turn"*, in the
+2D-waiting branch.
+
+**The missing agreement.** Opposite opener's natural game-forcing rebid after
+2C - 2D, responder's 3NT is a **second negative** — no ace, no king, no fit
+worth showing — and the raise promises four-card support and a control.
+
+```yaml
+  - id: responder_over_2C_suit_rebid
+    description: "Responder's landing ladder after 2C - 2D - opener's natural suit"
+    expand_pairs:
+      - { R: 2H, N: H, RR: 3H, G: 4H }
+      - { R: 2S, N: S, RR: 3S, G: 4S }
+      - { R: 3C, N: C, RR: 4C, G: 5C }
+      - { R: 3D, N: D, RR: 4D, G: 5D }
+    pattern: "2C - P - 2D - P - $R - P - ?"
+    rules:
+      - id: r2cr_3NT_$N
+        call: 3NT
+        priority: 50
+        requires: {}
+        shows: "second negative: no ace, no king and no fit worth showing - 3NT is the landing spot"
+        establishes: { forcing: sign_off }
+      - id: r2cr_raise_$N
+        call: $RR
+        priority: 56
+        requires:
+          suits: { $N: [4, 13] }
+          hcp: [6, 40]
+          evals: { controls: [2, 12] }
+        shows: "four-card support and a real card: setting trumps below game"
+        establishes: { forcing: game_forcing, agreed_suit: $N }
+```
+
+**THE ANSWERING SEAT** — the raise is game-forcing and the seat was **completely
+empty**: I traced `2C - P - 2D - P - 3C - P - 5C - P` and `context_at` returned
+`[]`, with a bare `FALLBACK` pass the only candidate.  So:
+
+```yaml
+  - id: opener_over_2C_trump_agreement
+    description: "Opener after responder sets trumps below game in the 2C auction"
+    expand_pairs:
+      - { R: 2H, N: H, RR: 3H, G: 4H }
+      - { R: 2S, N: S, RR: 3S, G: 4S }
+      - { R: 3C, N: C, RR: 4C, G: 5C }
+      - { R: 3D, N: D, RR: 4D, G: 5D }
+    pattern: "2C - P - 2D - P - $R - P - $RR - P - ?"
+    rules:
+      - id: o2ct_game_$N
+        call: $G
+        priority: 50
+        requires: {}
+        shows: "no slam interest opposite the positive raise: the game in the agreed suit"
+        establishes: { forcing: sign_off, agreed_suit: $N }
+      - id: o2ct_rkc_$N
+        call: 4NT
+        priority: 58
+        requires: { evals: { controls: [9, 12], ltc: [0, 3] } }
+        shows: "nine controls and three losers opposite a raise showing a control: keycard ask"
+        establishes: { asking: keycards, agreed_suit: $N }
+```
+
+The keycard gate is deliberately severe — nine controls and three losers — for
+the reason `ROUND_METHOD.md` records: after a 2C opening partner's shown minimum
+is **zero**, so every strength-based gate in this tree is unreachable and only a
+count of one's own cards can carry the decision.
+
+**What it endangers.**
+* `gf_new_3H` / `gf_new_3S` (prio 36) — the rules that invented a suit here.
+  My 3NT is a `requires: {}` landing at fit 1.000, so it wins whenever nothing
+  descriptive fits, which is exactly the population that was inventing suits.
+* `uc_raise_C4` (4C, prio 27) — replaced by `r2cr_raise_$N`, which requires a
+  control and so cannot fire on the bust that lost this board.
+* `uc_pass` — not defined by either context; the 2C auction is forcing.
+* `rkc_4NT` / `gst_rkc_C` — untouched at other seats; inside the new answering
+  context the sign-off at $G is the `requires: {}` floor and 4NT must clear a
+  nine-control gate, so a 22-count with eight controls signs off in 5C rather
+  than reaching six.
+
+**VERIFIED.**  N → `r2cr_3NT_C` 3NT at fit 1.000 (the raise falls to 0.800 on a
+5-count); an 8-count with the same four clubs does raise to 4C, and opener then
+lands in 5C via `o2ct_game_C`.  3NT makes ten (+430) instead of 6C down (-50).
+
+**TEMPLATE.**  `expand_pairs` over opener's four natural rebids — 4 contexts × 2
+rules for the landing plus 4 × 2 for the answer.  The same idea is owed to the
+`2C - 2NT` branch (`opener_rebid_2C_2NT`), which has one rule and no answering
+seat at all.
+
+---
+
+## Board 773 — NOTHING-WRONG (opening style, scope-excluded)
+
+The divergence is W's pass in third seat on `QJT64.9.AJT932.8`
+(`open_1S_third_light` at fit 0.606, `open_weak_2S_nv` at 0.349).  That is an
+opening-style threshold, which `EXPERT_BRIEF_R18.md` puts on the do-not-propose
+list.
+
+**Constructive observation.** None: everything after the opening decision is
+competitive.
+
+---

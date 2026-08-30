@@ -1978,3 +1978,173 @@ passes, my rung at 0.029.
 without passing it round.
 
 ---
+
+## Board 823 — margin -10
+
+**Seat/call that went wrong:** table A, call 3, **South bids 2H** holding
+`.AKJT8.AJ.AQJ743` — 20 HCP, 5-6 in hearts and clubs, a **spade void**, and
+**three losers** — in the sandwich seat after `1C – P – 1D`.  4H makes eleven
+(+650); 2H made eleven for +200.
+
+**Missing agreement:** the sandwich seat has no rung above 17 points, so a
+three-loser 20-count is decided by a soft-miss lottery — every candidate is
+below the fast path: `sw_2H` **0.134**, `sw_X` 0.100, `sw_1H` 0.028,
+`sw_pass` 0.000.  With four losers or fewer and a five-card major, bid the
+game.
+
+Two things are wrong at once and only one is fixable here.  `sw_2H`'s band is
+11-17.  `sw_X` has a 17+ branch, but the rule carries a top-level
+`not: { longest_suit_length: [6, 13] }` veto and South holds six clubs, so the
+strong branch is unreachable — and "a takeout double must not hide a six-card
+suit" is on the do-not-re-propose list, so I am not touching the veto.
+
+**Why a game bid rather than a strong-and-forcing one.**  I traced the
+alternatives: after a hypothetical `3H` invitation, North's advance seat
+(`T652.Q96.K743.92`, three trumps) returns `uc_pass` at fit 1.000 with **every
+other candidate at 0.000** — `uc_raise_H3`, `uc_raise_H4`, `uc_raise_lott4_H`,
+all dead.  The advance of a sandwich overcall is completely unauthored, so an
+invitation would be passed out.  Round 17's rule applies: close the
+conversation instead of opening one.
+
+### YAML — into the EXISTING context `sandwich_seat`
+
+```yaml
+      - id: sw_4H_strong
+        call: 4H
+        priority: 67
+        when: { unbid_suit: H }
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [18, 40]
+          evals: { ltc: [0, 4], "suit_quality(H)": [2, 9] }
+        shows: "sandwich seat with four losers and a five-card major: bid the game, because nothing below it can be answered"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: sw_4S_strong
+        call: 4S
+        priority: 67
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [18, 40]
+          evals: { ltc: [0, 4], "suit_quality(S)": [2, 9] }
+        shows: "sandwich seat with four losers and a five-card major: bid the game, because nothing below it can be answered"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+```
+
+Majors only — four of a minor is not a game (board 175).
+
+**Answering seat:** none, by design; it names game and is `non_forcing` with an
+agreed suit.
+
+**What it endangers, in `sandwich_seat`:**
+* `sw_X` (70), `sw_3$M` (69.5), `sw_$M2_jump` (69), `sw_1$M` (68) all sit ABOVE
+  it, so whenever any of them actually fits it still wins — this rung only
+  collects hands the whole ladder misses.  With `ltc <= 4` and 18+ HCP that is
+  a very small and very specific population.
+* `sw_2$M` (66) and `sw_pass` (30) sit below: 2H on a three-loser 20-count is
+  a two-level bid on a hand that can take ten tricks opposite a bust.
+* **Fallback hazard: real but tiny.**  4H/4S are not currently covered in
+  `sandwich_seat`, so the rungs delete the code fallback for those calls in
+  every sandwich seat where the major is unbid.  `hcp >= 18` plus `ltc <= 4` is
+  about as narrow as a gate gets.
+
+**VERIFIED.**  South bids `4H` at fit 1.000 / prio 67, `clear=True`, against a
+field whose best rival is 0.134.
+
+**Template:** the `_H` / `_S` pair; the context already carries
+`expand: { o: [C, D, H, S] }` for the OPENER's suit, so each rung becomes four
+and `when: { unbid_suit: $M }` removes the impossible ones.
+
+**Second finding, offered to whoever holds the sandwich seat next.**  The
+advance of a sandwich overcall is a completely empty seat (every candidate
+0.000 above).  That is a whole missing context, not a rung, and it is why no
+forcing sandwich action can pay yet.
+
+---
+
+## Board 858 — margin -10
+
+**Seat/call that went wrong:** table A, call 2, **North passes 1C** holding
+`JT.T8762.KQ73.AQ` (12 HCP, 2.5 quick tricks, five hearts).  BEN overcalls
+`1H` at **1.00** — its highest confidence in this slice.
+
+**Missing agreement:** a ONE-level overcall needs opening values **or** a good
+suit, not both — five hearts and twelve points with two and a half quick tricks
+is an overcall however ragged `T8762` looks.
+
+`oc1C_1H` requires `suit_quality(H) >= 1.5`; `T8762` scores **0.5**, so the
+rule fits 0.757 and `oc1C_pass` at 1.000 wins.  This is the **third** board in
+my slice killed by the same texture gate (532 at the two level on 6-5 shape,
+953 at the one level on a six-card suit), which is why I treat it as one family
+rather than three fixes.
+
+### YAML — into the EXISTING context `overcalls_of_1C`
+
+```yaml
+      - id: oc1C_1H_values
+        call: 1H
+        priority: 69
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [11, 16]
+          evals: { quick_tricks: [2, 12] }
+        shows: "one-level overcall on values: five hearts and opening strength, where the suit does not have to be good"
+        establishes: { forcing: non_forcing }
+```
+
+**The family, stated once.**  The overcall ladder should have three branches per
+suit, not one:
+
+| branch | gate | boards |
+|---|---|---|
+| good suit (existing) | 5+, 8-16 HCP, `suit_quality >= 1.5` | — |
+| **values** (new) | 5+, 11-16 HCP, `quick_tricks >= 2` | 858 |
+| **shape** (new) | 6+, 6-10 HCP, `ltc <= 6` | 953 |
+| **shape, two level** (new) | 5+, 11-17 HCP, 13+ total points, `ltc <= 6` | 532 |
+
+All three new branches sit at 69 / 63 — under the existing rung, so the good
+suit keeps the primary reading — and none of them changes `covered`.
+
+**Answering seat:** none; `non_forcing`, and the advance ladder already exists.
+The 11-16 floor keeps partner's shown minimum for 1H where it is.
+
+**What it endangers, in `overcalls_of_1C`:**
+* `oc1C_1H` (71) and `oc1C_1D` / `oc1C_1S` (70 / 71) — all above; a good suit
+  or a better suit still wins on priority.
+* `oc1C_X` (72) above — a genuine takeout shape still doubles.
+* `oc1C_2H_jump` (60) and `oc1C_3H_preempt` (58) below, but they describe 3-10
+  HCP and my floor is 11, so they are unreachable from my band.
+* `oc1C_pass` (25) — the target.
+* **Controlled**: a 9-HCP hand with the same ragged suit
+  (`JT.T8762.K973.Q2`) still passes — **verified**, my rung out of the running,
+  `oc1C_1H` at 0.310.
+* **No fallback hazard:** 1H already covered.
+
+**VERIFIED.**  North bids `1H` at fit 1.000 / prio 69, `clear=True`.
+
+**Honest note on attribution.**  Table A's -630 (3NT by East making ten) may
+well survive the overcall; the measurable half of this board is at table B,
+where our own East passes `2C` with 14 HCP and misses 3NT — a constructive
+miss.  I propose the overcall on the strength of BEN's 1.00 and of the
+three-board family, not on this board's IMPs alone.
+
+**Template:** twelve rungs (four overcall contexts x three non-opened suits) or
+one `expand_pairs` refactor, as on boards 532 and 953.
+
+---
+
+## Board 879 — margin -10 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Uncontested at both tables.  Our E/W hands are
+`9543.AJ9.543.863` (5 HCP) and `J2.K72.A9762.JT5` (9 HCP); `open_pass`,
+`oc1S_pass`, `sw_pass` and `ch_pass` are all fit 1.000 and BEN agrees at 1.00
+on every one.  There is no overcall, no balancing seat and no double to make.
+
+The loss is North's `2C` rebid on `AKQT6.864.8.AKQ9` (18 HCP, 5-4) where the
+jump to 3C is right: `ob_1M1NT_2C` wins at fit **0.800** while
+`ob_1M1NT_3S` / `_4S` sit at 0.349 — the opener's-rebid ceiling, and the third
+board in my slice decided by a sub-fast-path chooser in that family (see also
+598 and 606).  Worth passing to the constructive reviewer as a cluster rather
+than three separate boards.
+
+---

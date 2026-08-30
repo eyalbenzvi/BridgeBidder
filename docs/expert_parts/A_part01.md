@@ -2061,3 +2061,160 @@ so one rule becomes four.  Expand the same ceiling repair to
 `advance_reopening_double` and `advance_balancing_double_$o` (both go 1NT/2NT and
 stop) and to `advance_weak2_double_$W`, which likewise has no natural 3NT.
 
+## Board 422 — margin -11
+
+**Seat/call that went wrong.** Table A, call 10, **N doubles 3H**
+(`balhigh_reopen_X`) after `P - P - 1S(mine) - X - 2D - 2H - 3C(mine) - 3H - P - P`,
+holding `AK975.6.AT.KQJ76` — I have already bid **two suits**, and I hold a
+**singleton** in their trump suit.  3H doubled made eleven tricks: **-730**,
+against -200 for the same contract undoubled at the other table.
+
+**The missing agreement (one sentence).** Once I have bid my own hand, a double
+of their contract is a **penalty** double and needs trump tricks — with a
+singleton in their suit I have none, and `balhigh_reopen_X`'s only shape test
+(`max_their_suit_length: [0, 2]`) treats that shortness as a *reason to double*,
+which is precisely the error the file's own comment on that rule describes
+("doubling BECAUSE we have no trump tricks").
+
+**EXACT YAML.**  One rung into `general_balancing_high`, immediately before
+`balhigh_reopen_X`.  Its `when` is `balhigh_reopen_X`'s own `when` with
+`i_have_acted: true` added, so its firing set is a strict subset:
+
+```yaml
+      - id: balhigh_no_defence_pass
+        call: P
+        priority: 41.5
+        when: { their_last_bid_suit: true, side_has_acted: true, we_bid_last: false,
+                my_last_call_was_double: false, we_hold_contract: false, i_have_acted: true }
+        requires:
+          evals: { standing_suit_length: [0, 1], longest_suit_length: [0, 6] }
+        shows: "I have already bid my hand and I am void or singleton in their trump suit: a double now would be made because I have no trump tricks, so defend quietly"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+**THIS SUPERSEDES BOARD 761's PROPOSAL.**  `balhigh_no_defence_pass` fires on
+board 761 as well (verified below), and it does not depend on whether partner has
+acted, which is what board 761's `balhigh_partner_silent_pass` could not
+generalise past.  **Ship this one, not both** — two pass rungs at 41.5 in the same
+context would be a priority tie.
+
+**THE ANSWERING SEAT.**  None owed — a pass that ends the auction.
+
+**WHAT IT ENDANGERS** (subset-of-`balhigh_reopen_X` reasoning):
+
+* `balhigh_reopen_X` (41) and `balhigh_reopen_X2` (41) — the target, and only on
+  hands with **0-1** cards in their suit, i.e. the hands with no defensive trump
+  trick at all.  A doubleton or better still doubles: verified with
+  `AK9.762.AT.KQJ76` (three hearts) — my rung falls to fit 0.015.
+* `balhigh_rebid_$X3/4` (29) and `balhigh_nt3` (29) — a third suit or a notrump
+  bid after two suits shown and a singleton in theirs is worse than defending.
+  The `longest_suit_length: [0, 6]` clause deliberately stands aside for a
+  seven-card suit.
+* `balhigh_pass` (21) — same call.
+* Fallback: `P` is already covered.
+
+**VERIFIED on two boards.**  Board 422 before: `X` (`balhigh_reopen_X`, fit 1.000
+/ 41) = -730.  After: `P` (`balhigh_no_defence_pass`, fit 1.000 / 41.5) = -200,
+matching the other table.  Board 761 (`A.874.AKJ96.KQ85` over `1S X 2S P P 3D 3S P P`):
+also switches from `X` to `P`, -930 to -170.  Regression traced.
+
+**SECOND OBSERVATION (table A, call 4).**  S runs to `2D` (`xd_run_D2`) on
+`4.72.QJ97632.T85` — 3 HCP — over their takeout double of partner's 1S.  This is
+the **same species as board 886's second observation**: the `xd_run_*` rungs
+(priority 25, no point floor at all) were written for escaping a *penalty* double
+and they outrank `rdx_pass` (priority 20) in the responder-over-a-takeout-double
+seat.  I checked the mechanics before proposing anything: adding a pass rung to
+`resp_over_double_S` does **not** work — that context ties `resp_1x_over_X` on
+specificity, loses on file order, and its `P` is never offered (traced: the rung
+loads and never appears among the candidates).  Any repair must go into
+`resp_1x_over_X` itself, either as a `rdx_pass_weak` rung at priority 26 or as a
+re-rank of `rdx_pass`.  I flag it for the consolidator with that mechanism
+attached rather than proposing it blind, because a preemptive `3D` — not a pass —
+is arguably the right call on a seven-card suit and the two repairs pull opposite
+ways.
+
+**TEMPLATE.**  No suit templating.  Add the identical rung to
+`general_balancing_low` (`ballow_no_defence_pass`, just above `ballow_reopen_X`)
+and to `general_competitive_high` above `ch_penalty_X`, whose `standing_suit_length: [3, 13]`
+gate is the *right* test and shows what `balhigh_reopen_X` is missing.
+
+## Board 426 — margin -11
+
+**Seat/call that went wrong.** Table B, call 13, **W passes** (`adx_pass_min`)
+holding `432.J9763.K93.AQ` after partner's balancing double of `2S` in the
+auction `P P 1C P 1H P 1S P 2S P P X`.  Sitting a **takeout** double with three
+small trumps: 2S doubled made ten tricks, **-670**.  BEN bids 3H at 0.98.
+
+**The missing agreement (one sentence).** The pull ladder can only name an
+**unbid** suit — every `adx_pull_$X3` carries `when: { unbid_suit: $X }` — so
+when the opponents have bid three suits (1C, 1H, 1S) the advancer has no rung at
+all, and a five-card holding in a suit **they bid and abandoned** is not a place
+the system can go.
+
+**EXACT YAML.**  Two rungs into `general_pull_or_sit`, after `adx_pass_min`.
+`standing_bid_strain` excludes the suit they are actually playing, so the rung
+can never raise their contract:
+
+```yaml
+      - id: adx_pull_dead_H3
+        call: 3H
+        priority: 57
+        when: { their_last_bid_suit: true, i_have_acted: false, cheapest_in_suit: true,
+                standing_bid_strain: [C, D, S] }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [0, 11], standing_suit_length: [0, 3] }
+        shows: "answering the double in a five-card suit they bid and abandoned: with no unbid suit to name, my own length is still the place to play"
+        establishes: { forcing: non_forcing }
+      - id: adx_pull_dead_S3
+        call: 3S
+        priority: 57
+        when: { their_last_bid_suit: true, i_have_acted: false, cheapest_in_suit: true,
+                standing_bid_strain: [C, D, H] }
+        requires:
+          suits: { S: [5, 13] }
+          evals: { total_points: [0, 11], standing_suit_length: [0, 3] }
+        shows: "answering the double in a five-card suit they bid and abandoned: with no unbid suit to name, my own length is still the place to play"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing`; the doubler's continuation is
+`general_competitive_high`, authored.
+
+**WHAT IT ENDANGERS** (`general_pull_or_sit`, at or below 57):
+
+* `adx_sit` (61, **above**) — four-plus real trumps behind them still sits.  That
+  is the correct order: my rung fires only with three or fewer of their trumps
+  (`standing_suit_length: [0, 3]`), so the two are nearly disjoint and where they
+  overlap the sit wins.
+* `adx_neg_major_$M2/3` (62/63) — `i_have_acted: true`; disjoint from mine.
+* `adx_pull_major_$M3` (58.5/58.6, my board-26 rungs) and `adx_pull_$X3` (58) —
+  **above** mine, so a genuine unbid four-card major is still preferred to a
+  five-card dead suit.  That ordering is deliberate and it is the bridge: answer
+  the double where partner asked first.
+* `adx_nt` (56) and `adx_pull_$X4` (54) — below.  A five-card major beats a
+  9-12 notrump on a hand with three small in their suit, and beats a four-level
+  minor.
+* `adx_pass_min` (52, below) — the target.
+* **Fallback:** `3H`/`3S` here were previously covered by `adx_pull_$X3` only when
+  the suit was unbid; where it was bid, this rung **does** claim a call the code
+  fallback owned.  That is the whole point — the fallback's answer was `P`.
+
+**VERIFIED.**  Before: `P` (`adx_pass_min`, fit 1.000 / 52).  After: `3H`
+(`adx_pull_dead_H3`, fit 1.000 / 57).  3H by W goes down two for -200 against
+-670 for the doubled partscore.
+
+**NEGATIVE RESULT.**  I first went after the balancing double itself
+(`ballow_X`, E's `AJ.KQ5.J876.T865`).  It does not stand up: `ballow_X` requires
+11+ with at most a doubleton in their suit, E is exactly that, and balancing over
+a raised two-level partscore is the textbook position for the call.  Every gate I
+could write (a `their_fit >= 8` veto, a flat-hand veto) subtracts from the most
+standard action in competitive bridge to fix one board where the dummy had ten
+tricks.  The defect is on the **answering** side, which is what I propose.
+
+**TEMPLATE.**  Both majors written out.  The minors need the same treatment at
+the four level (`adx_pull_dead_$m4`), and the identical `unbid_suit`-only
+restriction exists in `advance_weak2_double_*` and `advance_reopening_double`,
+where it is worth the same rungs.
+

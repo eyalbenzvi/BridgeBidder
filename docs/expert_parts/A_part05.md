@@ -1393,3 +1393,258 @@ still unbid (over 2D the denial is both majors, over 2H it is spades, over 2S it
 is hearts).
 
 ---
+
+## Board 755 — -5; table A, call 7, the negative doubler corrects partner's 1NT to 2D on six points
+
+`P 1D (1H) X P 1NT P — ?`, S `QJ43.T82.KT87.87`, 6 HCP.  S doubled (showing four
+spades), partner rebid 1NT denying them, and S now "raises" to 2D on four small.
+`uc_raise_D2` fits 1.00 at 30.  W then bid 2H and made nine tricks (-140); 1NT
+was our contract.
+
+**Missing agreement.**  My double already showed my values and my shape; with a
+minimum I pass partner's rebid instead of correcting it.
+
+**YAML** — context `general_uncontested_continuation`, insert before `uc_pass`:
+
+```yaml
+      - id: uc_pass_after_my_double
+        call: P
+        priority: 30.5
+        when: { my_last_call_was_double: true, we_bid_last: true }
+        requires:
+          evals: { total_points: [0, 8] }
+        shows: "my double already showed my values: a minimum does not correct partner's rebid"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat.**  None owed (a pass).
+
+**Endangers.**
+* `uc_raise_$X2` (30) — the rung it beats, and only for hands of eight support
+  points or fewer that have already doubled.
+* `uc_new_*` (26-27.5), `uc_nt2` (28), `uc_nt3` (29) — outranked; none of them
+  describes a six-count that has already doubled.
+* `uc_raise_$X3` (31) and above — untouched, so a doubler with real extras still
+  competes.
+* No fallback deleted (P covered by `uc_pass`).
+
+**VERIFIED.**  base `2D [uc_raise_D2] fit=1.00 p=30` -> patched
+`P [uc_pass_after_my_double] fit=1.00 p=30.5`.
+
+**Template.**  Single suit-independent rung.  The twins belong in
+`general_competitive_low/high` and `general_balancing_low/high` (`cl_`, `ch_`,
+`ballow_`, `balhigh_` prefixes, identical bodies) — five rungs in all.
+
+---
+
+## Board 838 — -5; table B, call 5, W invents a five-level club sacrifice with no fit
+
+`1D (1H) X (2H) 4S — ?`, W `8.AT653.K.KT9752`, 10 HCP, six clubs but
+`lott_total_trumps(C) = 6` — partner has never mentioned clubs.  `ch_new_C5_hi`
+fits 1.00 at 28.5; 5C doubled is -800 against their vulnerable game.
+Whole-corpus record of the family: `ch_new_C5` **2 tables, -15, mean -7.50**.
+
+**Missing agreement.**  A new suit at the five level over their game commits
+eleven tricks opposite a hand that has never supported it — that needs a
+seven-card suit, not a six-card one.
+
+**YAML** — context `general_competitive_high`, edit all eight rungs
+`ch_new_$X5` and `ch_new_$X5_hi` (`$X` in C, D, H, S):
+
+```yaml
+      - id: ch_new_C5
+        call: 5C
+        priority: 28
+        when: { unbid_suit: C, cheapest_in_suit: true, partner_has_acted: true }
+        requires:
+          suits: { C: [7, 13] }
+          evals: { total_points: [14, 40], "suit_quality(C)": [1.5, 9] }
+        shows: "natural C at the five level: 6+ cards, 14+ points, partner has bid"
+        establishes: { forcing: non_forcing }
+```
+
+(only the `suits:` line changes, `[6, 13]` -> `[7, 13]`, in each of the eight;
+the `shows:` text should be updated to "7+ cards" when it is applied.)
+
+**What it SUBTRACTS.**  Five-level new-suit bids on six-card suits.  Two firings
+in this corpus, both losers, totalling -15.
+
+**Answering seat.**  None — a restriction.  The seat falls to `ch_pass` (22),
+which is authored.
+
+**Endangers.**  Nothing gains rank.  `ch_rebid_$X5` (29) is untouched — a suit I
+have already bid is a different case and partner has heard it.  `ch_penalty_X`
+(38) and `ch_negative_X3` (33) are above and untouched.
+
+**VERIFIED.**  base `5C [ch_new_C5_hi] fit=1.00 p=28.5` -> patched
+`P [ch_pass] fit=1.00 p=22` (patched top candidate; `ch_new_C5_hi` drops to
+0.349).
+
+**Two negative results on this board, reported not shipped.**  (i) My first
+draft was a PASS rung gated on `partner_shown_length: [0, 2]` — that evaluator
+takes no suit argument by default and resolves to partner's FIRST shown suit, so
+it was measuring partner's hearts while I was inventing clubs; it could never
+fire.  (ii) My second draft gated the five-level bids on
+`we_vulnerable: false` — but on this board the save was at FAVOURABLE
+vulnerability and cost only 120, so the colours are not the agreement.  The fit
+is.
+
+**Template.**  Eight one-line edits inside an untemplated context; the same
+change belongs on `ballow_new_$X4` / `balhigh_new_$X4`'s five-level equivalents
+if any are ever written.
+
+---
+
+## Board 871 — -5; table A, call 3, S makes a negative double holding six hearts
+
+`P 1D (1S) — ?`, S `95.AJ6542.K7.J87`, 9 HCP, **six hearts**,
+`total_points = 11`, `suit_quality(H) = 1.5`.  `nx_1m1S_X` ("negative double:
+4+ hearts, 6+ HCP") fits 1.00 at priority 80 and buries `nx_1m1S_2H` (78).  The
+auction then wanders 2D-2H-3D-3H-4D for -100 where 3D makes.  Whole-corpus
+record of `nx_1m1S_X`: **21 tables, -21, mean -1.00**.
+
+**Missing agreement.**  A six-card major is a suit, not a shape: bid it, because
+the negative double promises only four and partner will play me for four.
+
+**YAML** — context `resp_1m_over_1S` (templated on `$m`), insert before
+`nx_1m1S_2H`:
+
+```yaml
+      - id: nx_1m1S_2H_long
+        call: 2H
+        priority: 81
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [8, 40], "suit_quality(H)": [1, 9] }
+        shows: "a six-card heart suit: bid it, because the negative double promises only four"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat.**  None owed — `non_forcing`, and opener's continuations over
+a free 2H are already authored (`onx_*` / `uc_*`).  Note the deliberate
+`non_forcing`: the existing `nx_1m1S_2H` is declared forcing at 10+, and this
+rung is the weaker long-suit sibling that partner may pass.
+
+**Endangers.**
+* `nx_1m1S_X` (80) — the only rung it outranks, and only with SIX hearts.  This
+  is not the round-14 `nxj_X` longest-suit cap that measured -5 and was
+  reverted: nothing is gated, the double keeps every 4- and 5-card holding, and
+  the landing seat (a natural 2H) already exists and is already authored.
+* `nx_1m1S_2H` (78) — same call; mine is its long-suit, lower-strength sibling,
+  so nothing new is covered and no fallback dies.
+* `nx_1m1S_wj_H` (56, the weak jump to 3H) — below; with 11 points and a decent
+  suit the two-level free bid is the better description, and the weak jump keeps
+  everything under 8.
+* `nx_1m1S_cue` (70), `nx_1m1S_3NT` (52) — untouched.
+
+**VERIFIED.**  base `X [nx_1m1S_X] fit=1.00 p=80` -> patched
+`2H [nx_1m1S_2H_long] fit=1.00 p=81`.
+
+**Template.**  The context is already expanded on `$m`, so this single rung
+serves `1C - 1S` and `1D - 1S`.  The twin over a 1H overcall is
+`nx_1m1H_1S_long` (call 1S, six spades) in `resp_1m_over_1H`, at priority 79
+above `nx_1m1H_X` (80)… note that over 1H the natural bid is at the ONE level
+and already outranks nothing, so the twin needs priority 81 as well.
+
+---
+
+## Board 885 — -5; table A, call 3, sandwich double with a five-card major
+
+`(1S) P (1NT) — ?`, N `A5.AKJ92.A654.65`, 16 HCP, five hearts.  `sw_X` fits 1.00
+at 70 and buries `sw_2H` (66); partner then passed with a minimum and W bid 3S.
+`sw_X`'s own `requires` already carries `not: { evals: { longest_suit_length:
+[6, 13] } }` — the file has ALREADY decided that a long suit should be bid, and
+stopped one card short.  Whole-corpus record: **23 tables, -39, mean -1.70**.
+
+**Missing agreement.**  Between two bidding opponents a five-card major is a
+bid, not a double: the double asks partner to choose among suits and I already
+know which one I want.
+
+**YAML** — context `sandwich_seat`, edit `sw_X`'s denial:
+
+```yaml
+      - id: sw_X
+        call: X
+        priority: 70
+        requires:
+          not:
+            any_of:
+              - evals: { longest_suit_length: [6, 13] }
+              - suits: { H: [5, 13] }
+              - suits: { S: [5, 13] }
+          any_of:
+            - hcp: [12, 16]
+              suits: { $o: [0, 2] }
+              evals: { longest_suit_length: [4, 13] }
+            # (remaining branches unchanged)
+```
+
+**What it SUBTRACTS.**  Sandwich doubles on hands with a five-card major.  The
+seat they fall to is `sw_1H`/`sw_1S` (68) or `sw_2H`/`sw_2S` (66), both
+authored, both natural.  I deliberately did NOT extend the denial to five-card
+minors: a five-card minor between two bidders is rarely the right contract and
+the double keeps more options.
+
+**Answering seat.**  None — a restriction; the advance ladders
+(`advance_sandwich_*`) are unchanged.
+
+**Endangers.**  Nothing gains rank.  `sw_2$X_jump` (69), `sw_3$X` (69.5) are
+above and untouched.
+
+**VERIFIED.**  base `X [sw_X] fit=1.00 p=70` -> patched
+`2H [sw_2H] fit=1.00 p=66`.
+
+**Template.**  One edit inside a context already expanded on `$o`; the denial is
+suit-independent.  Note this composes with board 300's `max_their_suit_length`
+gate on `sw_2$X` — a hand with five hearts where hearts is THEIR suit now
+neither doubles (it has a five-card major) nor bids (the values are wasted), and
+passes, which is right.
+
+---
+
+## Board 926 — -5; table B, call 5, advancer bids a three-card major over a five-card diamond suit
+
+`1C P 1S X P — ?`, W `T43.765.AQ642.T2`, 6 HCP, **five diamonds**, three small
+hearts.  `advsw_C1S_H` ("cheapest major") fits 1.00 at 55 and we play hearts;
+E raises and 3H is down one.  `advance_sandwich_C_1S` has three rules — a
+cheapest-suit ladder — and no rung at all for a suit of my own.
+
+**Missing agreement.**  Advancing partner's sandwich double, a five-card suit
+of my own outranks the cheapest three-card major: partner promised support for
+all the unbid suits, so I name the one I actually hold.
+
+**YAML** — context `advance_sandwich_C_1S`, insert before `advsw_C1S_H`:
+
+```yaml
+      - id: advsw_C1S_own5_D
+        call: 2D
+        priority: 60
+        requires:
+          suits: { D: [5, 13] }
+          evals: { "suit_diff(D, H)": [1, 13], "suit_diff(D, S)": [1, 13] }
+        shows: "my own five-card diamond suit, longer than either major: advance the double in the suit I actually hold"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat.**  None owed (non-forcing; the doubler's continuations are the
+generic `uc_*` / `cl_*` ladders).
+
+**Endangers.**
+* `advsw_C1S_H` (55) — the cheapest-major rung, and only when my minor is
+  strictly longer than both majors, which is exactly when the major is a
+  three-card fiction.
+* The rest of the three-rule context (all at or below 55).
+* No fallback deleted: 2D is already covered by the corresponding
+  cheapest-suit rung in this context.
+* The `suit_diff` pair is what keeps a 5-5 or 5-4 major hand out of it.
+
+**VERIFIED.**  base `2H [advsw_C1S_H] fit=1.00 p=55` -> patched
+`2D [advsw_C1S_own5_D] fit=1.00 p=60`.
+
+**Template.**  The agreement is `expand_pairs` over the nine
+`advance_sandwich_$o_$v` contexts x the two or three suits that are unbid in
+each — about 20 rungs.  They are nine separate untemplated contexts today, and
+this is the single largest templating win available in this slice: nine
+three-rule contexts that should be one templated context with six rungs.
+
+---
