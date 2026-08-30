@@ -1461,3 +1461,366 @@ the single named convention in round 17's zero-list that this slice touches most
 often.
 
 ---
+
+## Board 326 — margin -11
+
+**Seat/call:** table A call 0, S **passes** on `Q7542.AQT53.K87.` — 11 HCP, 5-5
+in the majors, rule of 20 satisfied (11 + 10 = 21). `open_pass` fits 1.000 and
+scores 0.760; `open_1S` fits 0.800 and scores **0.754**. The whole board turns
+on six thousandths of blended score.
+
+What I checked: `open_1S_rule20` fits 0.757, not 1.000, because it carries a
+suit-quality requirement that Q7542 fails. So the light-opening rung exists and
+the *shape* hand cannot reach it.
+
+**Opening-style / rule-of-20 thresholds are on the do-not-re-propose list**, so I
+am not proposing a change. The observation worth recording is narrower and is not
+a threshold: the rule-of-20 rungs gate on **suit quality of the suit being
+opened**, which is the right test for a one-suiter and the wrong test for a
+**two-suiter**, where the playing strength comes from the second suit. A 5-5
+eleven-count is a mainstream opening on shape whatever the spot cards are. If
+anyone reopens the light-opening question, that is the axis — not the point
+count.
+
+**VERDICT: NOTHING-WRONG (scope-excluded); the finding is that the rule-of-20
+rungs have no two-suiter branch.**
+
+---
+
+## Board 381 — margin -11
+
+**Seat/call:** table A call 3, N passes in the sandwich seat on
+`.A9653.KQJ872.T4` (`sw_pass`, fit 1.000; `sw_2D` fits 0.800). **Purely
+competitive.**
+
+What I checked: `sw_2D` requires "good 5+ diamonds, 11-17" and N has KQJ872 with
+10 HCP — one point under the floor — so the catch-all pass wins the soft-miss
+lottery. A textbook 6-5 with a void.
+
+**Best constructive-discipline observation.** Same axis as board 326: the
+sandwich ladder bands on HCP with a `good_suit` gate and has no **shape** branch,
+so a 6-5 with a void has to borrow points it does not have. Every family in this
+part that loses a board to a one-point soft miss loses it because the rung is
+banded on high cards where the hand's value is distributional. That is the
+single most common mechanism I saw across the 38 boards, constructive and
+competitive alike.
+
+**VERDICT: NOTHING-WRONG (competitive).**
+
+---
+
+## Board 384 — margin -11
+
+**Seat/call:** table A call 4, N answers partner's negative double with **2S**
+on `AQT65.J3.AK3.KT6` — 17 HCP, five spades — via `adx_neg_major_S2`, whose band
+is `hcp: [11, 40]` with no upper limit and whose 3S twin carries the identical
+band plus `cheapest_in_suit: true`, so it is unreachable. `adx_neg_major_S2`
+fires on **4 tables at mean -3.75**. Partner then jumps to game on eleven, N
+cannot tell a minimum from a maximum, asks for keycards, and we play 6S for
+eleven tricks.
+
+**The missing agreement.** The answer to a negative double is banded: cheapest
+with a minimum, **jump with 16+ and a five-card suit**.
+
+### YAML — into the existing context `general_pull_or_sit`
+
+```yaml
+      - id: adx_neg_major_jump_H
+        call: 3H
+        priority: 63
+        when: { unbid_suit: H, their_last_bid_suit: true, i_have_acted: true, standing_bid_level: [2, 2] }
+        requires: { suits: { H: [5, 13] }, hcp: [16, 40] }
+        shows: "jump answer to the negative double: a five-card heart suit and 16+"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: adx_neg_major_jump_S
+        call: 3S
+        priority: 63
+        when: { unbid_suit: S, their_last_bid_suit: true, i_have_acted: true, standing_bid_level: [2, 2] }
+        requires: { suits: { S: [5, 13] }, hcp: [16, 40] }
+        shows: "jump answer to the negative double: a five-card spade suit and 16+"
+        establishes: { forcing: invitational, agreed_suit: S }
+```
+
+Note the deliberate absence of `cheapest_in_suit` — that gate is what makes the
+existing `adx_neg_major_$M3` rungs dead, since 2S is always the cheap spade bid
+when the standing bid is 2H.
+
+**THE ANSWERING SEAT.** The jump is invitational and it is answered by rungs that
+already exist (`uc_doubler_game_S` raises to game, `uc_pass` declines). The
+mechanism that pays here is the **negative inference**, and it is worth spelling
+out because it is why this rung fixes the board: once N has shown 16+, partner's
+raise to game is *limited*, `rule_of_26_sharp` for N drops below `gr_rkc_S`'s
+floor of 30, and the keycard ask stops firing **without any gate being added to
+it**. Describing before asking is what turns the ask off.
+
+**What it endangers.**
+* `adx_neg_major_S2` / `_H2` (62) — outranked only at 16+ with a five-card suit;
+  the 11-15 hands the rules were written for (the file's comment ties the floor
+  to the 11-HCP takeout double) still fit 1.000 and still bid two.
+* `adx_neg_major_S3` / `_H3` (62) — same call as my rung; they carry
+  `cheapest_in_suit: true` and are unreachable at this node, so nothing is taken.
+* `adx_pull_my_S3` / `adx_pull_H3` (60/57) and the rest of the pull ladder — all
+  below, and all describe a hand *pulling* the double rather than answering it.
+* `adx_sit` (61) — above my rung, so a genuine trump stack still sits.
+* 3S/3H were already covered here by the `_S3` / `_H3` rungs, so **no code
+  fallback is deleted**.
+
+**VERIFIED and the board is recovered.** N bids 3S at fit 1.000 / prio 63.
+Rolled out: `1NT - (2H) - X - P - 3S - P - 4S - P - P`, eleven tricks. Table A
+goes from 6S-down-one (-50) to **+450**; the board's -11 goes to zero.
+
+**TEMPLATE.** The two rules as written cover both majors. The same "band the
+answer to the double" idea belongs in `advance_takeout_double_suits_*`
+(four contexts) and `advance_reopening_double`, where the cheapest-suit advance
+is likewise 0-8 with a jump at 9-11 but nothing above.
+
+---
+
+## Board 385 — margin -11
+
+**Seat/call:** table A call 5, S bids **3S** on `T4.KQJ.AQ93.KT63` after his own
+takeout double and advancer's **game-forcing cue** 2S (`gf_pref_3S`, fit 0.349
+— another soft-miss). The cue `adv_cue` is `forcing: game_forcing` and
+**nothing in the file answers it**: `1$o - X - P - 2$o - P - ?` has no context,
+so the generic game-force landing rules decide, and "preference to partner's
+major" put us in a 4-3 spade game.
+
+This is the same defect as board 559 in the doubler's seat rather than opener's:
+a force with no answering seat.
+
+### YAML — two new contexts
+
+```yaml
+  - id: doubler_over_advance_cue_suit
+    description: "The takeout doubler answers advancer's game-forcing cue: a real suit"
+    expand: { o: [C, D, H, S], X: [C, D, H, S] }
+    pattern: "1$o - X - P - 2$o - P - ?"
+    rules:
+      - id: dacs_3$X
+        call: 3$X
+        priority: 60
+        when: { unbid_suit: $X, cheapest_in_suit: true }
+        requires: { suits: { $X: [5, 13] } }
+        shows: "answering the game-forcing cue with my real suit: 5+ $X"
+        establishes: { forcing: game_forcing }
+
+  - id: doubler_over_advance_cue_nt
+    description: "The takeout doubler answers advancer's game-forcing cue: notrump"
+    expand: { o: [C, D, H, S] }
+    pattern: "1$o - X - P - 2$o - P - ?"
+    rules:
+      - id: dacn_3NT_$o
+        call: 3NT
+        priority: 55
+        requires: { hcp: [14, 40], evals: { weakest_unshown_stopper: [0.9, 9] } }
+        shows: "game-forcing values opposite the cue, their suit stopped: 3NT"
+        establishes: { forcing: sign_off }
+      - id: dacn_floor_$o
+        call: 3NT
+        priority: 20
+        requires: {}
+        shows: "no better description opposite the game-forcing cue"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+**THE ANSWERING SEAT for `dacs_3$X`.** It is game-forcing with a named suit, and
+`gf_landing_*` plus `cue_bidding_*` already answer a game force with a shown
+suit; the rollout confirms the auction terminates properly rather than drifting.
+
+**What it endangers.** Specificity 1006, so these contexts own 3C/3D/3H/3S/3NT at
+this node. Below them: `gf_pref_3S` (37) and `gf_new_3$X` (36) — the doubler's
+own five-card suit is a strictly better description than "preference" to a suit
+advancer merely cued; `uc_nt2` (28) and `uc_nt3` (29) are a different call or
+outranked. `dacn_floor_$o` with `requires: {}` keeps the 3NT seat alive. Note the
+duplicate-3NT hazard: only the *first* expanded `$X` context could own 3NT, which
+is why 3NT lives in its own `expand: { o }` context — a template detail that
+would otherwise bite.
+
+**VERIFIED and the board is recovered.** Rolled out, the auction becomes
+`1S - X - P - 2S - P - 3NT` (ten tricks) instead of
+`… 3S - P - 4S` (eight tricks). Table A goes from -100 to **+430**; the board's
+-11 goes to zero. (Also traced on a doubler holding a real six-card club suit —
+`A7.KJ4.65.KQJ652` — which correctly bids 3C at fit 1.000.)
+
+**TEMPLATE.** As written: `expand: { o, X }` gives 16 contexts × 1 rule plus 4
+contexts × 2 rules. The same missing answering seat exists behind
+`advance_cue_doubled`'s cue and behind `advo_cue`; see board 559 for the full
+list of unanswered cues.
+
+---
+
+## Board 422 — margin -11
+
+**Seat/call:** table A call 4, S runs to **2D** on `4.72.QJ97632.T85`
+(3 HCP) over their takeout double of our 1S (`xd_run_D2`, fit 1.000; `rdx_pass`
+also 1.000, prio 20). **Purely competitive** — a runout, decided on priority
+between two fit-1.000 rules.
+
+What I checked: both candidates fit perfectly; there is no missing rung, only a
+ranking question, and running with a seven-card suit and three points is
+defensible bridge that happens to have gone badly here.
+
+**Best constructive-discipline observation.** The system has no **weak jump
+response** over the double: `resp_1M_over_X_jordan` gives 2NT (limit+), a
+preemptive raise and a redouble, but a seven-card suit with 3 HCP has to choose
+between a quiet 2D and a pass. In an uncontested auction that hand bids 3D
+(preemptive); over a double it cannot. Sibling gap between the contested and
+uncontested responding ladders.
+
+**VERDICT: NOTHING-WRONG (competitive).**
+
+---
+
+## Board 426 — margin -11
+
+**Seat/call:** table A call 10, N bids **3S** on `K986.8.A42.KJ432` after
+`1C - 1H - 1S - 2S` — via `uc_raise_S3` at **fit 0.946**, i.e. a generic
+support-count raise scraping over the fast-path threshold. `uc_raise_S3` fires
+on **13 tables at mean -1.85**.
+
+The auction `1$m - 1H - 1S - 2S` — responder has raised opener's **second**
+suit — **has no context in the file at all**. And the one place where the same
+decision *is* authored, `responder_rebid_after_1M_raise` (`1M - 2M`), has
+exactly three rungs: pass, 3M, 4M. **There is no help-suit game try anywhere in
+the system**; round 17 counted it at zero rules and this is what that costs: the
+only game try available is a raise, which tells partner nothing about *where*
+the values are needed.
+
+**The missing agreement.** Three of a new suit below the agreed major is a
+help-suit game try: shortness or losers there, spades agreed, 14-18 support
+points — and partner accepts on help in that suit or on a maximum.
+
+### YAML — new context (opener's trial bid)
+
+```yaml
+  - id: opener_trial_after_second_suit_raise
+    description: "Opener's help-suit game try after responder raises the second suit"
+    expand: { m: [C, D] }
+    pattern: "1$m - P - 1H - P - 1S - P - 2S - P - ?"
+    rules:
+      - id: otr_trial_3C
+        call: 3C
+        priority: 53
+        requires:
+          suits: { S: [4, 13], C: [3, 6] }
+          evals: { total_points: [14, 18] }
+          not: { evals: { "two_of_top3(C)": [1, 1] } }
+        shows: "help-suit game try: club losers, spades agreed, 14-18 support points"
+        establishes: { forcing: invitational, agreed_suit: S }
+        alertable: true
+      - id: otr_trial_3D
+        call: 3D
+        priority: 52.5
+        requires:
+          suits: { S: [4, 13], D: [3, 6] }
+          evals: { total_points: [14, 18] }
+          not: { evals: { "two_of_top3(D)": [1, 1] } }
+        shows: "help-suit game try: diamond losers, spades agreed, 14-18 support points"
+        establishes: { forcing: invitational, agreed_suit: S }
+        alertable: true
+      - id: otr_trial_3H
+        call: 3H
+        priority: 52
+        requires:
+          suits: { S: [4, 13], H: [3, 6] }
+          evals: { total_points: [14, 18] }
+          not: { evals: { "two_of_top3(H)": [1, 1] } }
+        shows: "help-suit game try: heart losers, spades agreed, 14-18 support points"
+        establishes: { forcing: invitational, agreed_suit: S }
+        alertable: true
+      - id: otr_game_4S
+        call: 4S
+        priority: 54
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [19, 40] } }
+        shows: "bidding the game opposite the raise"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: otr_pass
+        call: P
+        priority: 50
+        requires: {}
+        shows: "no game try: passing the raise"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+*(The three trial priorities are 53 / 52.5 / 52 rather than all 53 on purpose:
+`fast_decision` marks a decision unclear when two fit-1.000 candidates producing
+different calls tie on priority, and that hands the seat to arbitration —
+which `match_ben` does not run. My first draft tied them at 53 and the harness
+reported a pass. Give sibling rungs distinct priorities.)*
+
+**THE ANSWERING SEAT — this is the half that makes the trial bid worth
+anything:**
+
+```yaml
+  - id: responder_answers_trial_bid
+    description: "Responder accepts or declines opener's help-suit game try"
+    expand_pairs:
+      - { m: C, x: C }
+      - { m: C, x: D }
+      - { m: C, x: H }
+      - { m: D, x: C }
+      - { m: D, x: D }
+      - { m: D, x: H }
+    pattern: "1$m - P - 1H - P - 1S - P - 2S - P - 3$x - P - ?"
+    rules:
+      - id: rtb_accept_$x
+        call: 4S
+        priority: 55
+        requires:
+          any_of:
+            - suits: { $x: [0, 2] }
+              evals: { total_points: [8, 40] }
+            - evals: { "top_honour($x)": [1, 1], total_points: [8, 40] }
+            - evals: { total_points: [10, 40] }
+        shows: "accepting the game try: help in $x, or a maximum raise"
+        establishes: { forcing: sign_off, agreed_suit: S }
+      - id: rtb_decline_$x
+        call: 3S
+        priority: 50
+        requires: {}
+        shows: "declining the game try: no help in $x and a minimum raise"
+        establishes: { forcing: sign_off, agreed_suit: S }
+        negative_inference_weight: soft
+```
+
+**What it endangers.** The trial context has specificity 1009 and takes 3C, 3D,
+3H, 4S and P away from `general_uncontested_continuation` at this node.
+Priced downward as well as upward: `uc_raise_S3` (31) and `uc_raise_S4` (32) are
+what it replaces, and a raise by level is a strictly worse description than
+naming the suit where the values are needed; `uc_rebid_C3` (27) and `uc_new_D3`
+(27) lose 3C/3D here, and `otr_pass` with `requires: {}` plus `otr_game_4S`'s
+bare 19+ band mean neither the pass seat nor the game seat can be starved.
+`uc_pass` (18) is displaced by `otr_pass` at the same meaning. The answering
+context likewise carries `rtb_decline_$x` at `requires: {}`.
+
+**VERIFIED.** N bids 3C (fit 1.000, prio 53); S with `QT75.AT42.QT5.97` — a
+doubleton club, i.e. a ruffing value — accepts with 4S (fit 1.000, prio 55).
+Rolled out: `1C - 1H - 1S - 2S - 3C - 4S`, **ten tricks**. Table A goes from
+3S (+170) to **4S (+420)**.
+
+**Honest accounting of the board.** Board 426's -11 was lost at *table B*, to a
+balancing double (`ballow_X`) of 2S that turned +140 into +670 for the other
+side — a competitive defect, A's territory. The trial bid gains about 250 points
+at table A, i.e. roughly a third of the margin. I am proposing it anyway,
+because it is the largest missing agreement in my discipline anywhere in this
+dossier and this is the board that exposes it.
+
+**TEMPLATE — the biggest one in this part.** The identical three-rung idea goes
+into:
+* `responder_rebid_after_1M_raise` (`1$M - P - 2$M - P - ?`, `expand: { M: [H, S] }`)
+  with the three non-trump suits — this is the canonical 1M-2M trial bid and it
+  is simply absent; and its answering context
+  `"1$M - P - 2$M - P - 3$x - P - ?"` alongside the existing
+  `responder_over_game_try`, which today answers only the 3M raise;
+* `responder_rebid_after_raise` (`1$m - 1$M - 2$M`), opener's game try after
+  raising responder's major;
+* `opener_after_limit_raise` (`1$M - 3$M`), where 3NT / four-of-a-minor as a
+  "shall we?" is the same conversation one level up.
+
+Counting the contexts: about **10 trial contexts × 3 rungs + 10 answering
+contexts × 2 rungs ≈ 50 rules from one agreement**, in a subject that today has
+**zero**.
+
+---

@@ -12,9 +12,9 @@ that separates a minimum from a slam-going hand BEFORE game is reached.
 | boards reviewed | **38** |
 | proposals (one per board) | **31** |
 | NOTHING-WRONG | **7** (85, 113, 20, 306, 538, 544, 897) |
-| VERIFIED (proposed `requires` traced through the live `EvalContext` at the real seat) | **26** |
-| UNTESTED | 5 |
-| negative prototypes reported rather than shipped | 2 (boards 376, 897) |
+| VERIFIED (proposed `requires` traced through the live `EvalContext` at the real seat) | **28** |
+| UNTESTED | 3 (boards 44, 79, 13 — three brand-new contexts whose patterns I could not build read-only) |
+| negative prototypes reported rather than shipped | 3 (boards 376, 528, 897) |
 
 ### The three agreements that matter most in this slice
 
@@ -2396,3 +2396,186 @@ partner's raise and pass ladders already own the seat.
 = 20 rules from one idea.
 
 ---
+
+## Board 528 — margin -7
+
+**Seat/call that went wrong:** table A, call 10, **South passes** on
+`Q642.742.K52.KJ7` after `1C P 1S X 2S P P X P 3H`.  Partner's **support
+double** showed exactly three spades, so we hold seven counted trumps and
+nine support points, and the opponents have doubled twice and bid a suit.
+`ch_raise_S3` scores **0.800** — one point short of its 10-point floor and
+one trump short of its eight-trump floor — and `ch_pass` at 1.00 takes it.
+
+**The missing agreement:** the competitive raise ladder is calibrated to a
+*raise*, not to a **support double**, and a support double is the file's own
+most precise length statement (`DECISIONS.md`: "X/XX = exactly 3-card
+support, any strength").  Seven known trumps and a fourth trump of my own is
+a competitive raise on the Law; nine points is not the question.
+
+**Context:** `general_competitive_high` (and the `cl_` twin).
+
+```yaml
+      # THE SUPPORT DOUBLE IS THE FILE'S MOST PRECISE LENGTH STATEMENT and no
+      # raise rung is keyed to it.  ch_raise_$M3 wants ten support points and
+      # eight counted trumps; after a support double we know SEVEN exactly,
+      # and a fourth trump of my own with nine points is a competitive raise
+      # by the Law, not a pass.
+      - id: ch_raise_law3_$M
+        call: 3$M
+        priority: 31.5
+        when: { partner_suit: $M, is_competitive: true, cheapest_in_suit: true,
+                we_hold_contract: false }
+        requires:
+          suits: { $M: [4, 13] }
+          evals: { total_points: [7, 10], "lott_total_trumps($M)": [7, 26] }
+        shows: "competitive raise on four trumps: seven counted, 7-10 points, they are bidding"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+```
+
+**Answering seat:** `non_forcing` and limited (7-10); opener's continuation is
+`general_competitive_high` / `general_balancing_high`, both authored.
+
+**What it endangers, in `general_competitive_high`:**
+* `ch_pass` (22) — with four trumps opposite a shown three and a live
+  auction, passing them into 3H is the losing action.
+* `ch_raise_$M3` (31) — the same call with a higher floor; the two are
+  disjoint at 10 points, and mine only reaches the band the other cannot.
+* `ch_nt3` (29), `ch_new_$X3/_hi` (27 / 27.5), `ch_rebid_$M3` (29) — all
+  describe something other than the fit we have already found.
+* It sits **below** `ch_raise_$M4` (32), `ch_raise_lott_$M4` (32) and
+  `ch_penalty_X` (38), so a genuine game raise, a Law-level raise and a trump
+  stack all keep their hands.
+
+**VERIFIED.**  `{suits: {S: [4,13]}, evals: {total_points: [7,10],
+"lott_total_trumps(S)": [7,26]}}` scores **fit 1.000** on `Q642.742.K52.KJ7`
+at the real seat (total_points 9, seven counted trumps).  Note the first
+draft of this gate carried `their_fit: [8, 26]` and scored **0.028** — the
+opponents' shown fit here is only 4, because they have doubled rather than
+raised.  That is a **negative prototype**: `their_fit` is the wrong gate in a
+double-and-bid auction, and I removed it rather than shipping it.
+
+**Template:** `expand: { M: [H, S] }` in `cl_`, `ch_` and `balhigh_` = six
+rules; the minor twin at 3$m adds six more.
+
+---
+
+## Board 538 — margin -7
+
+**NOTHING-WRONG (constructive).**  The first divergence is West passing in
+first seat on `KT3.QJT743.65.73` (6 HCP, six hearts, vulnerable) where BEN
+opens a weak 2H.  `open_weak_2H_vul` scores **0.800** — the vulnerable weak
+two is disciplined to **7-10 HCP with two of the top three**, an explicit
+`DECISIONS.md` agreement ("weak twos are disciplined... vulnerable tightens
+to 7-10 with 2 of the top 3"), and `QJT743` has neither seven points nor two
+of the top three.
+
+The rule is doing exactly what the system says it should.  Whether the
+discipline is right is a preempt-style question and belongs to the
+competitive reviewer; nothing in the constructive machinery is missing here.
+
+What else I checked: table B's second decision (East passing partner's
+3C preempt with `A864.A85.K53.A72`-shaped values) is the same family as board
+587 below and is covered by that proposal; table A is BEN's auction from
+call 1 onward.
+
+---
+
+## Board 587 — margin -7
+
+**Seat/call that went wrong:** table A, call 3, **South passes** on
+`AKJ8.632.A864.AJ` after `P 3C P`.  Seventeen HCP, the ace of partner's
+seven-card suit, spades and diamonds stopped — and `rp3_C_game` (3NT) scores
+**0.067** because its gate is `weakest_unshown_stopper: [0.9, 9]`, which
+demands **all three** side suits stopped and South's hearts are `632`.
+`rp3_C_pass` fits 1.00 and we played 3C for +150 while 3NT is ten tricks.
+
+**The missing agreement:** 3NT opposite a preempt is a **counting** decision —
+a source of tricks plus enough stoppers — and the file's only 3NT rung
+demands perfection in every side suit.  The practical agreement is: a fitting
+top honour in partner's seven-card suit, sixteen-plus, and **two of the three**
+side suits stopped.
+
+**Context:** `resp_preempt_C` and `resp_preempt_D` (existing; the major-suit
+twins keep their present gate — a stopper argument is about notrump, not
+about a major-suit game, which is the file's own note).
+
+```yaml
+      # THE ALL-OR-NOTHING STOPPER GATE.  rp3_C_game wants EVERY unshown suit
+      # stopped, so a 17-count with a fitting ace in partner's seven-card suit
+      # and two of the three side suits stopped scored 0.067 and passed a
+      # ten-trick 3NT.  Opposite a preempt 3NT is a counting decision: the
+      # source of tricks first, then two stoppers, then the gamble.
+      - id: rp3_C_3NT_source
+        call: 3NT
+        priority: 61
+        requires:
+          suits: { C: [2, 13] }
+          evals: { total_points: [16, 40], "lott_total_trumps(C)": [9, 26] }
+          features: [ "top_honour(C)" ]
+          any_of:
+            - evals: { "stoppers(S)": [1, 1], "stoppers(H)": [1, 1] }
+            - evals: { "stoppers(S)": [1, 1], "stoppers(D)": [1, 1] }
+            - evals: { "stoppers(H)": [1, 1], "stoppers(D)": [1, 1] }
+        shows: "3NT on a source of tricks: a fitting top honour opposite the seven-card suit, 16+, and two of the three side suits stopped"
+        establishes: { forcing: sign_off }
+```
+The `resp_preempt_D` twin is the same rule with C→D and the `any_of` triple
+built from S, H, C.  `stoppers` is registered sharp (s2 = 0.3), so these
+gates really gate — unlike `weakest_their_stopper`.
+
+**Answering seat:** none — a sign-off in game, and the preemptor's seat over
+our 3NT is correctly silent (`we_hold_contract` is true once partner's game
+bid stands, so the generic toolkit is switched off and the code fallback
+passes).  This is the one place where "no answering seat" is the right
+answer rather than the round-17 failure mode.
+
+**What it endangers, in `resp_preempt_C`:**
+* `rp3_C_pass` (40) — its `any_of` branch `weakest_unshown_stopper: [0, 0.5]`
+  fits **1.00** on exactly the hands this rule is about, which is why the
+  seat passed; 61 beats 40 and takes them.
+* It sits **below** `rp3_C_D` / `_H` / `_S` (62), so a genuine 5+ side suit
+  with 15+ still forces with the new suit first — correct, because that
+  auction can still reach 3NT afterwards.
+* It sits **below** `rp3_C_rkc` (66), so the nine-card-fit slam try is
+  untouched.
+* Against the file, `uc_raise_C4` (27) and `uc_minor_game_5C` (28) are
+  different calls and unaffected.
+
+**VERIFIED.**  The whole `requires` block above scores **fit 1.000** on
+`AKJ8.632.A864.AJ` at the real seat (total_points 17, `lott_total_trumps(C)`
+9, `top_honour(C)` 1, `stoppers(S)` 1 and `stoppers(D)` 1, `stoppers(H)` 0),
+against `rp3_C_game` 0.067 and `rp3_C_pass` 1.000/40.
+
+**Template:** two rules (C and D contexts — they are not templated).  The
+same "source of tricks" idea is owed to `resp_preempt_H` / `resp_preempt_S`
+in the *minor-suit-game* form and to the four-level preempt responses; those
+are four more rules and a separate agreement.
+
+---
+
+## Closing note for the consolidator
+
+Three of these proposals are the same rung wearing different clothes and
+should be merged before implementation:
+
+* **boards 100, 107, 325, 528** all add an invitational or Law-based raise
+  into the generic families.  They are four disjoint `when` clauses on one
+  idea — *"the raise ladder's gates are calibrated to a constructive auction
+  opposite an unlimited partner, and every other auction (a forced reply, an
+  overcall, a rebid suit, a support double) needs the counted fit instead of
+  the points estimate."*  One family of eight to twelve rules would carry all
+  four boards.
+* **boards 114 and 217** are the two halves of the same context
+  (`opener_neg_double_over_raise`): the cue with 18+, and the pass with a
+  minimum.  Ship them together or neither — the cue without the floor makes
+  the over-bidding worse, and the floor without the cue silences the monster.
+* **boards 7 and 114** share one `expand_pairs` table in
+  `neg_double_3level_m`; write it once.
+
+And one thing I could not do from inside the constructive lane, which the
+round should note: **boards 85, 306, 353 and 455 all turn on a soft-miss
+between 0.40 and 0.80 in a seat whose ladder has a points floor the system's
+own opening rules contradict.**  That is not four agreements, it is one
+systematic sweep — every `hcp: [12, ...]` floor in an opener-rebid context,
+against a system that opens ten-counts by the rule of 20 — and it is
+mechanically checkable without any bridge judgement at all.

@@ -1307,3 +1307,344 @@ it rather than write it.
 **VERIFIED** (traced).  **TEMPLATE:** n/a.
 
 ---
+
+## Board 735 — margin -2
+
+**Seat/call that went wrong:** S, call 3 — `P` (`r1m_pass`, "0-5 HCP: too weak
+to respond") on `KT8.9872.QT74.86` opposite partner's 1C.  Opener held
+`QJ3.AJ5.K83.AK32` — **eighteen** HCP — and the auction died at 1C for +70.
+BEN responds 1H, opener jumps to 2NT, and 2NT makes eight tricks for +120.
+
+**The missing agreement.**  A four-card major and five HCP answers a *minor*
+opening at the one level: the response costs nothing, opener's 1NT/2NT rebids
+are limited so he cannot punish it, and passing an unlimited minor opening on
+five HCP buries every 4-4 major fit and every 18-count.
+
+The file already believes this for spades — `r1m_1S` carries a light branch
+`hcp: [5,40], suits: {S:[5,13]}, singleton_or_void: [1,1]` — and never carried
+the idea to hearts or to the flat 5-count.  Same species as board 152.
+
+### YAML — one additive rung in `resp_1m`, immediately above `r1m_1NT`
+
+```yaml
+      - id: r1m_1H_light
+        call: 1H
+        priority: 75
+        requires: { suits: { H: [4, 13] }, hcp: [5, 5], not: { suits: { S: [5, 13] } } }
+        shows: "courtesy response: a four-card heart suit and five HCP - one level is nearly free opposite an unlimited minor"
+        establishes: { forcing: one_round }
+        negative_inference_weight: soft
+```
+
+`priority: 75` is deliberately **below** `r1m_1H` (76), so every 6+ hand is
+still read by the existing rule and this rung can only fire where that one
+soft-misses; and below `r1m_1S` (77), so 5-5 and 4-4-with-longer-spades are
+unaffected.  `negative_inference_weight: soft` keeps opener from crediting six.
+
+### THE ANSWERING SEAT
+
+`forcing: one_round`, and the answering seat is **already authored and
+verified**: `opener_rebid_1m_1M` plus `opener_rebid_1C_1H_extras`.  I traced
+opener's actual hand through it — `QJ3.AJ5.K83.AK32` rebids **2NT**
+(`ob_2NT` 1.000/56, "jump: balanced 18-19, no fit"), and responder's five-count
+passes.  That is BEN's auction and BEN's +120.
+
+### WHAT IT ENDANGERS
+
+* `r1m_pass` (15) — subtracted for exactly the 5-HCP hands with four hearts.
+  That is the agreement.
+* `r1m_1NT` (45) — outranked, but it requires "no 4-card major", so it cannot
+  fit the same hand.
+* `r1m_2over1` (70), `r1m_raise3` (52), `r1m_2NT` (54), `r1m_3NT` (55) — all
+  need 10+ or 12+ HCP and cannot fit a five-count.
+* `r1C_1D` (74) — outranked.  With four hearts, Walsh says show the major
+  anyway, so this is the correct order.
+* **The 18-19 rebid is the hazard to watch, and it is a real one:** see board
+  739, where the same light response reaches a seat that mis-ranks the jump
+  shift above the 2NT rebid.  These two proposals must ship together.
+
+### VERIFIED
+
+Prototyped.  BEFORE `P` (`r1m_pass` 1.000/15, `r1m_1H` 0.800/76 — a one-point
+soft miss).  AFTER **`1H`** (`r1m_1H_light` 1.000/75), then opener's **2NT**.
+Regressions: a four-count with the same shape still passes (new rung fits
+0.409); a seven-count is still read by `r1m_1H` at fit 1.000.
+
+### TEMPLATE
+
+`resp_1m` already carries `expand: { m: [C, D] }`, so this single rung becomes
+two rules and covers both minor openings.  The spade twin already exists inside
+`r1m_1S`; the 1H-opening twin is board 152's rung.  Three authored rungs cover
+the whole "light one-level response" agreement.
+
+---
+
+## Board 739 — margin -2
+
+**Seat/call that went wrong:** the same passed response as board 735 (S,
+`K75.9765.853.QT2`, five HCP with four hearts, opposite N's **nineteen**-count
+`Q8.AT4.KQT7.AKJ8`) — but this board's own finding is what happens *after* the
+light response is put in, and it is a defect that exists today.
+
+**Traced with board 735's rung applied:** `1D - P - 1H - P - ?` on a
+**19-count, 2-3-4-4 balanced** produces **`3C`** — `ob_1D1H_3C_jump`, "jump
+shift: 4+ clubs, 18+, game forcing", priority **57**, fit 1.000 — beating
+`ob_2NT` ("jump: balanced 18-19, no fit") at **56**.  A game-forcing jump shift
+opposite a courtesy response is a disaster, and it is the same defect as board
+900 one level higher: **the second-minor rung outranks the limit bid.**
+
+Whole-corpus denominator: `ob_1D1H_3C_jump` fires on **3 tables for -11 IMPs,
+mean -3.67** — and its sibling `ob_1H1S_3C_jump` already sits at **48**, below
+`ob_1H1S_2NT` at 54.  The 1H-1S ladder got this right and the 1m-1M ladder
+never did.
+
+**The missing agreement.**  With 18-19 balanced and no fit, opener's jump to
+2NT is the limit bid and it outranks the game-forcing jump shift; the jump
+shift is for the hand that cannot say 2NT.
+
+### YAML — two numbers, a sibling sweep
+
+```yaml
+# context: opener_rebid_1D_1H_extras
+      - id: ob_1D1H_3C_jump
+        call: 3C
+        priority: 55.5        # was 57 — below ob_2NT (56)
+
+# context: opener_rebid_1D_1S_2C
+      - id: ob_1D1S_3C_jump
+        call: 3C
+        priority: 55.5        # was 56 — it tied ob_2NT
+```
+
+### THE ANSWERING SEAT
+
+Not a force or an ask; but the seat that answers 2NT matters and it is
+authored: `responder_after_jacoby_reply`… no — the relevant context is the
+18-19 jump rebid's continuation, and I traced it: responder's five-count over
+`1D - 1H - 2NT` bids **P** at `r2ntj_pass` (1.000/40), with `r2ntj_3NT`,
+`r2ntj_3H` and `r2ntj_4M` above it for real hands.  The ladder exists and
+behaves.
+
+### WHAT IT ENDANGERS
+
+* `ob_1D1H_3C_jump` / `ob_1D1S_3C_jump` themselves: they lose only the hands
+  that are **balanced 18-19**, because `ob_2NT` requires `balanced: true` and
+  denies four cards in responder's major.  An unbalanced 19 with 4-4 minors
+  still jump-shifts (traced).  A 20-21 balanced hand also still jump-shifts,
+  because `ob_2NT` caps at 19 — that band is arguably a separate ceiling and I
+  am not touching it here.
+* Below them: `ob_rebid_2$m` (50) and `ob_rebid_3$m` (49) — both require a
+  five- or six-card minor and are unaffected.
+* Above them: `ob_1D1H_1S` / `ob_1D1H_2C` (60 / 57, and see board 900) and the
+  raises at 76-80 — all unchanged, so the four-card major and the trump fit are
+  still shown first.
+
+### VERIFIED
+
+Prototyped with board 735's rung.  BEFORE `3C` (`ob_1D1H_3C_jump` 1.000/57).
+AFTER **`2NT`** (`ob_2NT` 1.000/56), responder passes, and 2NT by N makes nine
+tricks for +150 against our +90 — BEN's exact table-B result.
+
+### TEMPLATE
+
+Two numbers; no templating.  But it is one instance of a **pattern worth
+sweeping mechanically**: in every `opener_rebid_*` context, the balanced-limit
+rebid (1NT / 2NT) should outrank the second-suit and jump-shift rungs and be
+outranked by the raises and the cheap major.  Boards 900 and 739 are two of the
+three places where that ordering is wrong; `ob_1D1S_2C` (57 under `ob_1NT`'s
+57.5) is the one place it is already right.
+
+---
+
+## Board 848 — margin -2
+
+**Seat/call that went wrong:** E, table B, call 9 — `3NT` (`stmi_2D_3NT`,
+"accepting the invite: 16-17", priority 58, fit 1.000) on
+`Q74.AK6.AQ63.J43` after `1NT - 2C - 2D - 2NT`.  Seven tricks.  BEN passes; the
+other table played 2NT for one down.
+
+**The missing agreement.**  A 4-3-3-3 sixteen-count is a fifteen: with no
+five-card suit, no ruffing value and a wasted jack-doubleton, opener declines
+the invitation.  The invitational/game boundary in notrump is a *total-points*
+decision, and the shape adjustment is the oldest one in the book.
+
+`stmi_2D_3NT` fires on **5 tables for -5 IMPs, mean -1.00**; `stmi_2D_pass` on
+1 table for 0.
+
+### YAML — one additive rung above `stmi_2D_3NT`
+
+```yaml
+      - id: stmi_2D_pass_flat
+        call: P
+        priority: 61
+        requires: { hcp: [16, 16], shapes: [ "4333" ] }
+        shows: "a flat 4-3-3-3 sixteen is a fifteen: decline the invitation"
+        establishes: { forcing: sign_off }
+```
+
+### THE ANSWERING SEAT
+
+`sign_off`, and it is a pass — the auction ends.  No answering seat is owed,
+and none of the seats below it can be starved because `stmi_2D_pass` (60) and
+`stmi_2D_3NT` (58) both remain.
+
+### WHAT IT ENDANGERS
+
+* `stmi_2D_pass` (60) — same call, narrower reason; no behaviour change.
+* `stmi_2D_3NT` (58) — subtracted for **exactly** 4-3-3-3 sixteen-counts.
+  Everything else in 16-17 still accepts: I traced a 16-count with 4-4-3-2 and
+  it still bids 3NT.
+* Nothing else exists in that context, and the generic `uc_*` rungs there all
+  fit below 0.02.
+* Priced downward: there is nothing below 58 in this context, so no more
+  descriptive call is being outranked.
+
+### VERIFIED
+
+Prototyped.  BEFORE `3NT` (`stmi_2D_3NT` 1.000/58, `stmi_2D_pass` 0.800/60 — a
+one-point soft miss, so this seat was also a lottery).  AFTER **`P`**
+(`stmi_2D_pass_flat` 1.000/61).  Regression: `Q742.AK6.AQ63.J4` (16, 4-4-3-2)
+still bids 3NT at fit 1.000.
+
+### TEMPLATE
+
+Hand-replicate the identical rung into the other three invite-accept contexts,
+which have no `expand` between them:
+
+* `stayman_invite_accept_2H` — `stmi_2H_pass_flat`, gated additionally on
+  `suits: { S: [0, 3] }` so it cannot pre-empt `stmi_2H_4S`, the known 4-4 fit;
+* `stayman_invite_accept_2S` — `stmi_2S_pass_flat`;
+* `nt_2NT_opener_decides` (the direct `1NT - 2NT` invite) — same rung.
+
+Four rules, one idea.  The same "4-3-3-3 is worth a point less" adjustment also
+belongs on the *invitational* side (`nt_2NT_inv`, `rr_nt_2NT`), but those are
+gates rather than additions and want their own measurement.
+
+---
+
+## Board 899 — margin -2
+
+**Seat/call that went wrong:** S, call 3 — `1D` (`r1C_1D`, priority 74, fit
+1.000) on `A64.6.Q842.QJ983` opposite partner's 1C: **five-card club support, a
+singleton heart and nine HCP**, and we answered by inventing a four-card
+diamond suit.  Partner passed the 2H overcall out and we never found the club
+partial that makes nine tricks.
+
+Denominator: `r1C_1D` fires on **7 tables, -10 IMPs, mean -1.43**.
+`r1m_raise3`, the rule that should have taken this hand, fires on **1** table:
+it is nearly dead code because `r1C_1D` stands in front of it at 74 against 52,
+and because its gate is stated in **HCP** while every major-suit raise in the
+file is stated in `total_points`.
+
+**The missing agreement.**  With five-card support for opener's minor, a
+singleton and 10-12 support points, the limit raise outranks the Walsh
+diamond — a four-card diamond suit is not news when we have already found an
+eight-card fit.
+
+### YAML — one additive rung in `resp_1m`, immediately above `r1m_raise3`
+
+```yaml
+      - id: r1m_raise3_shapely
+        call: 3$m
+        priority: 75
+        requires:
+          hcp: [8, 11]
+          suits: { $m: [5, 13] }
+          evals: { total_points: [10, 12] }
+          features: [ "singleton_or_void(any)" ]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "shapely limit raise: five-card support, a singleton and 10-12 support points - the fit outranks a four-card diamond suit"
+        establishes: { forcing: invitational, agreed_suit: $m }
+```
+
+### THE ANSWERING SEAT — and it is empty today
+
+`forcing: invitational` — so the seat that answers it must ship, and I traced
+that `1$m - P - 3$m - P - ?` has **no context**: opener's only candidates are
+`uc_pass` (18, fit 1.000), `uc_raise_C4` (27) and `uc_new_D3` (27).  The
+invitation is answered by a fit-1.00 pass whatever opener holds.
+
+```yaml
+  - id: opener_after_minor_limit_raise
+    description: "Opener answers the invitational raise of his minor"
+    expand: { m: [C, D] }
+    pattern: "1$m - P - 3$m - P - ?"
+    rules:
+      - id: omlr_3NT_$m
+        call: 3NT
+        priority: 60
+        requires: { hcp: [15, 21], evals: { semi_balanced: [1, 1] } }
+        shows: "accepting the invitation in notrump: 15+ and no shortness"
+        establishes: { forcing: sign_off }
+      - id: omlr_game_$m
+        call: 5$m
+        priority: 58
+        requires: { hcp: [16, 21], suits: { $m: [5, 13] } }
+        shows: "accepting to game in the minor: 16+ with five-card length"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+      - id: omlr_pass_$m
+        call: P
+        priority: 50
+        requires: {}
+        shows: "minimum opening: the invitation is declined"
+        establishes: { forcing: sign_off }
+```
+
+### WHAT IT ENDANGERS
+
+Responder's rung:
+
+* `r1C_1D` (74) — outranked, for hands with five-card club support, a
+  singleton, no four-card major and 8-11 HCP.  Walsh's own logic supports it:
+  the 1D response is what you bid when you have nothing better to say, and an
+  eight-card minor fit with a ruffing value is better.
+* `r1m_2over1` (70) — below.  My `hcp: [8,11]` ceiling keeps every 12-count in
+  the game-forcing 2/1, which is where it belongs (traced: a 12-HCP version of
+  the same hand still bids 1D/2C, not 3C).
+* `r1m_1S` (77) and `r1m_1H` (76) still outrank it, and the `not:` clause makes
+  the four-card major exclusion structural as well.
+* `r1m_1NT` (45), `r1m_2NT` (54), `r1m_3NT` (55), `r1m_raise3` (52) all below
+  and all denying a four-card major already; `r1m_raise3` keeps its full band
+  as the backstop, so this can only be a superset.
+
+Opener's context covers `P`, `3NT` and `5$m` at that seat, which deletes the
+code fallback for them there.  `omlr_pass_$m` has `requires: {}` and sits at
+the bottom, so the seat cannot be starved; `3NT` and `5$m` were previously
+being produced by `uc_nt3` and `uc_minor_game_5$m`, both of which describe the
+hand worse ("13-19 balanced, their suits stopped" opposite a known eight-card
+minor fit).
+
+### VERIFIED
+
+Prototyped both halves.  BEFORE `1D` (`r1C_1D` 1.000/74).  AFTER **`3C`**
+(`r1m_raise3_shapely` 1.000/75).  Opener's ladder traced on three hands: the
+actual 12-count `KJT2.J74.AT7.K62` **passes** (`omlr_pass_C` 1.000/50) and we
+play 3C, which makes nine tricks for +110; an 18-count balanced bids 3NT; a
+17-count with six clubs and a stiff bids 5C.  Regressions: the same hand
+without the singleton bids 1NT, and with 12 HCP still bids 1D.
+
+### TEMPLATE
+
+`expand: { m: [C, D] }` on both — two rules for the responder rung, six for the
+answering context, from two ideas.  The obvious sibling: the same shapely-raise
+logic wants restating for `r1m_raise3` itself in `total_points` rather than
+HCP, which would be a *gate widening* and should be measured separately.
+
+---
+
+## Board 920 — margin -2 — SCOPE-EXCLUDED (opening style)
+
+Table A call 2: S passes in third seat with `KQ.KJ965.8.98764` — 9 HCP, 5-5
+with a stiff diamond.  `open_1H_rule20_third` fits 0.640, `open_weak_2H_nv`
+0.349, `open_1H_third_light` 0.329; pass wins at 1.000.  BEN opens 2H.
+Opening style and rule-of-20 thresholds are excluded.
+
+**Constructive-discipline observation:** the weak-two rung refuses this hand
+because `DECISIONS.md` disciplines weak twos to **exactly six** cards and no
+four-card side major — 5-5 is outside the definition by design.  That is a
+coherent decision, not a defect; a 5-5 nine-count simply has no opening call in
+this system, and giving it one is an opening-style change.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
