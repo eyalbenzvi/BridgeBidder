@@ -1273,3 +1273,191 @@ across `opener_rebid_after_2over1_minor`, `responder_21_after_2M` and
 only.
 
 ---
+
+## Board 580 — margin -12
+
+**Seat/call:** table A call 2, S doubles their 2S on `6.T986.AT85.AK43`
+(`cl_negative_X2`, fit 1.000, prio 33) with `cl_raise_H4` and `cl_raise_H3` also
+at fit 1.000 just below. **Purely competitive** — a negative double versus a
+raise, decided on three points of priority.
+
+What I checked: three rules fit 1.000 and the choice is priority alone. That is
+the "genuine priority tie" population DECISIONS round 16 sized at 34 of 92
+unclear decisions, worth -76 gap-points — small, and re-ranking it is a
+competitive judgement.
+
+**Best constructive-discipline observation.** S holds four-card support for
+partner's opened major and a singleton in their suit: the constructive
+description is a **fit-showing / mixed raise**, and the file's competitive raise
+ladder is banded only by support points, with no rung that says "four trumps and
+a singleton". That is the mini-splinter — zero rules — in its competitive form.
+
+**VERDICT: NOTHING-WRONG (competitive); the mini-splinter is what this hand
+wants.**
+
+---
+
+## Board 959 — margin -12
+
+**Seat/call:** table A call 3, S bids **1S** in the sandwich seat on
+`AKQJT854..2.J932` — an eight-card suit — via `sw_1S` (fit 1.000, prio 68);
+`sw_3S` (seven-card preemptive jump) fits 0.800 and `sw_2S_jump` 0.800. BEN bids
+4S. **Purely competitive.**
+
+What I checked: the sandwich ladder tops out at a seven-card jump to three; there
+is no eight-card rung, so an eight-bagger soft-misses every jump and the
+one-level overcall wins on fit. That is a **ceiling** in the length dimension
+rather than the strength dimension — rounds 6 and 7's species with a different
+axis. The repair is one rung (`sw_4$X`, eight cards, 3-10) and it is A's
+context.
+
+**VERDICT: NOTHING-WRONG constructively (competitive family); the finding is a
+length ceiling in `sandwich_seat`.**
+
+---
+
+## Board 967 — margin -12
+
+**Seat/call:** table A call 7, S bids **3D** on `QJ75.2.T653.AQT6` after
+`1D - 1S - 2H` (opener's **reverse**) — via the generic `uc_raise_D3`, which
+fires on **14 tables at mean -3.86**. It agreed diamonds, which unlocked
+`gst_rkc_D`, which produced 6D down one.
+
+The reason the generic rung got the seat is arithmetic: `responder_reverse_1D1S2H`
+has four rungs, and `rrevd_3NT` — the one that describes this hand — requires
+**12+ HCP** opposite a bid that promises **17+**. `rrevd_3NT` **never fires in
+1000 boards**. `rrevd_2NT` needs `semi_balanced` and S is 4-1-4-4.
+
+**The missing agreement.** Opposite a reverse, eight or nine points is already
+game values: the 3NT rung must be banded against opener's shown 17+, not against
+a generic opening.
+
+### YAML — into the existing context `responder_reverse_1D1S2H`
+
+```yaml
+      - id: rrevd_3NT_min
+        call: 3NT
+        priority: 63.5
+        requires: { hcp: [8, 11], evals: { weakest_unshown_stopper: [0.9, 9] }, suits: { H: [0, 3] } }
+        shows: "game opposite the 17+ reverse: 8-11 with the unshown suit stopped"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT.** 3NT is a sign-off, so none is owed; `opener_over_reverse_2NT`
+and the generic quiet contexts already handle opener's pass. Checked in the
+rollout — the auction ends there.
+
+**What it endangers.**
+* `rrevd_3NT` (63) — same call, disjoint band (12+). It never fires today, so
+  nothing is taken from it in practice.
+* `rrevd_2NT` (64) — 8-11 **and** `semi_balanced`; my rung is above it in
+  priority only for the shapely 8-11 hands the 2NT explicitly denies, which is
+  the whole point. A genuinely balanced 9-count still fits 2NT at 1.000 and
+  2NT's priority is higher, so it keeps them. *(This is the one place I priced
+  upward as well as downward and it matters: 64 > 63.5, so `rrevd_2NT` wins its
+  own hands.)*
+* `rrevd_2S` (66) and `rrevd_3H` (65) — both above it; a five-card spade suit or
+  four-card heart support still takes precedence, correctly.
+* `uc_raise_D3` (27) is the rung **below** that this displaces, and that is the
+  intended effect: raising opener's first suit to three after a reverse is the
+  least descriptive call available and it was setting trumps by accident.
+* 3NT is already covered here, so no fallback is deleted.
+
+**VERIFIED and the board is recovered.** S bids 3NT at fit 1.000 / prio 63.5.
+Rolled out: `1D - 1S - 2H - 3NT`, ten tricks. Table A goes from 6D-down-one
+(-100) to **+630**; the board's -12 goes to zero.
+
+**TEMPLATE.** The same wrong-band defect is in the sibling reverse contexts —
+`responder_reverse_rebid_major` (`1C - 1$M - 2D`, `expand: { M: [H, S] }`),
+`responder_reverse_1C1S2H` and `responder_after_1S_rebid`'s notrump rungs. Four
+contexts, four rules, one idea: **band responder against what opener promised,
+not against a generic opening.** I would run that as a sweep across the file —
+`rrevd_3NT` never firing is exactly the signature to grep for.
+
+---
+
+## Board 212 — margin -11
+
+**Seat/call:** table A call 4, N passes over `1D P 1H 3C` on
+`A982.AJ6.A87543.` (`ch_pass`, fit 1.000; `ch_rebid_D3` fits 0.409). **Purely
+competitive** — their preemptive jump overcall over our 1D.
+
+What I checked: every constructive-looking candidate. `ch_rebid_D3` needs six
+diamonds and "values for the level"; N has six diamonds and 13 HCP and fits
+0.409, so the band, not the shape, is what misses. `ch_new_S3` fits 0.264 (four
+spades against a 5+ gate).
+
+**Best constructive-discipline observation.** N is 4-3-6-0 with a **void** in
+their suit and four spades — the perfect hand for a **support double / three-suit
+takeout** over the preempt, and `neg_double_3level_m` has two rules. The
+constructive fact is that opener's rebid ladder disappears entirely once RHO
+jumps: the `ch_*` family is banded on points with no shape vocabulary, so a
+6-4 with a void is described by a pass.
+
+**VERDICT: NOTHING-WRONG (competitive).**
+
+---
+
+## Board 292 — margin -11
+
+**Seat/call:** table B call 7, W bids **4NT** on `763.A4.AQJT87.Q7` after
+`1H - 2D - 3H` (`rkc_4NT`, fit 1.000, prio 45); we play 6H for ten tricks.
+`rkc_4NT` fires on **10 tables at mean -0.40**, so the rule is roughly neutral
+overall and must not be swept — but this seat is exactly where the mandate says
+the information exchange fails: hearts are agreed at the *three* level, four
+different calls fit 1.000, and the highest-priority one is the ask.
+
+**The missing agreement.** With a doubleton trump and no extra controls, the
+game is the limit: bidding it directly is *fast arrival* and denies the slam try
+that a cue would show.
+
+### YAML — into the existing context `cue_bidding_H` (and its `_S` twin)
+
+```yaml
+      - id: cue_H_fast4H
+        call: 4H
+        priority: 46
+        when: { standing_bid_level: [3, 3], we_hold_contract: false }
+        requires:
+          suits: { H: [2, 2] }
+          evals: { total_points: [12, 16], controls: [0, 4] }
+        shows: "fast arrival: a doubleton trump, no extra controls - the game is the limit"
+        establishes: { forcing: sign_off, agreed_suit: H }
+```
+
+**THE ANSWERING SEAT.** 4H is a sign-off in the agreed suit, so nothing is owed
+— and that is the point of the rung: it *closes* a conversation that today opens
+one nobody can finish. Partner's seat over 4H is
+`slam_try_over_game_raise` / the quiet contexts, both already authored.
+
+**What it endangers.**
+* `rkc_4NT` (45) — the rung directly below. Priced explicitly: a hand with a
+  **doubleton** trump and at most four controls holds neither the trump length
+  nor the control count that makes a keycard answer useful, and 1430 replies
+  from a partner who cannot know which two cards you are missing are how this
+  file reaches 6H on ten tricks.
+* `cue_H_S` (44), `cue_H_C` (43.5), `cue_H_D` (43) — all require 14+ total
+  points *and* a first-round control in the cue suit; a hand that has one and
+  fits their band will usually also exceed `controls: [0, 4]` and keep cueing.
+  This rung deliberately takes only the flat minimum.
+* `cue_H_signoff` (34, `requires: {}`) — same call, and it stays as the floor,
+  so the 4H seat is never starved (it fires on 5 tables at **mean +2.20**, i.e.
+  signing off in the agreed game is one of the more profitable things this
+  engine does, which is corroborating evidence for the rung).
+* 4H is already covered here, so no fallback is deleted.
+
+**VERIFIED and the board is recovered.** W bids 4H at fit 1.000 / prio 46;
+rolled out the auction is `1H - 2D - 3H - 4H`, ten tricks. Table B goes from
+6H-down-two to **4H making**; the board's -11 goes to zero.
+
+**TEMPLATE.** Twin it into `cue_bidding_S` (`cue_S_fast4S`, identical). And the
+generalisation worth authoring properly is the other half of the same
+convention: **serious / frivolous 3NT** — currently **zero rules**. In this exact
+context 3NT is available over a three-level agreement and is the natural place
+for "game values, slam interest to be decided", with the cue rungs meaning
+"serious". That is a four-context, ~12-rule agreement (`cue_bidding_H`,
+`cue_bidding_S`, and the two minor equivalents that do not yet exist) and it is
+the single named convention in round 17's zero-list that this slice touches most
+often.
+
+---

@@ -1674,3 +1674,135 @@ left**, is not an overcall in any system).  Both seats are correctly silent.
 
 **NOTHING-WRONG** from the competitive/matchpoint discipline.
 
+## Board 212 — margin -11
+
+**Seat/call that went wrong.** Table A, call 4, **N passes** (`ch_pass`) after
+`1D(mine) - P - 1H(partner) - 3C`, holding `A982.AJ6.A87543.` — six diamonds,
+four spades, a **club void**, 13 HCP.  BEN bids 3D; the other table's N/S then
+found 3S and 4S for +680.  We defended 3C for +100.
+
+**The missing agreement (one sentence).** Opener's rebid over their pre-emptive
+jump overcall is gated on **combined values** — `ch_rebid_$X3` carries
+`rule_of_26: [22, 99]`, and a 13-count opposite a one-level response's shown
+minimum cannot reach 22 — so a six-card suit with a void has no rebid at all;
+this is exactly the argument the file itself already makes in the comment above
+`cl_raise_lott4_$M` ("the right test in a constructive auction and the wrong one
+in a contested one"), applied to the raise but never to the rebid.
+
+**EXACT YAML.**  Four rungs into `general_competitive_high`, next to
+`ch_rebid_$X3` (the D one shown in full; C, H and S are identical with the suit
+and call substituted):
+
+```yaml
+      - id: ch_rebid_shape_C3
+        call: 3C
+        priority: 29.2
+        when: { my_suit: C, cheapest_in_suit: true, i_have_acted: true }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [12, 40], singleton_or_void: [1, 1], "suit_quality(C)": [1, 9] }
+        shows: "rebidding my six-card suit over their preemptive jump: opening values and a shortage - combined values are the wrong test once they have taken my room"
+        establishes: { forcing: non_forcing }
+      - id: ch_rebid_shape_D3   # and _H3 / _S3, same body with the suit swapped
+        call: 3D
+        priority: 29.2
+        when: { my_suit: D, cheapest_in_suit: true, i_have_acted: true }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [12, 40], singleton_or_void: [1, 1], "suit_quality(D)": [1, 9] }
+        shows: "rebidding my six-card suit over their preemptive jump: opening values and a shortage - combined values are the wrong test once they have taken my room"
+        establishes: { forcing: non_forcing }
+```
+
+The `singleton_or_void: [1, 1]` clause is what replaces the combined-values test:
+shape, not points, is why the hand bids again.
+
+**THE ANSWERING SEAT.**  `non_forcing`; partner's onward seat is
+`general_competitive_high`, authored (and on this board it produces the 3S/4S
+continuation the other table found).
+
+**WHAT IT ENDANGERS** (`general_competitive_high`, at or below 29.2):
+
+* `ch_penalty_X` (38), `ch_negative_X3` (33), `ch_raise_*` (31/32) — all **above**
+  me, so a fit for partner, a takeout double or a penalty double still wins.
+* `ch_rebid_$X3` (29, **below**) — the same call; mine simply reaches the hands
+  its `rule_of_26` gate excludes.  Where both fit, the calls are identical.
+* `ch_nt3` (29, below) — a hand with six of a suit and a void is not a notrump
+  hand; and `ch_nt3` leans on `weakest_their_stopper`, which does not gate.
+* `ch_new_$X3`/`_hi` (27/27.5, below) — bidding a *new* suit at the three level
+  is a worse description than repeating a six-card suit.
+* `ch_pass` (22, below) — the target.
+* Fallback: `3C/3D/3H/3S` are all already covered here by `ch_rebid_$X3` and
+  `ch_new_$X3`.
+
+**VERIFIED.**  Before: `P` (`ch_pass`, fit 1.000 / 22).  After: `3D`
+(`ch_rebid_shape_D3`, fit 1.000 / 29.2), with `ch_rebid_D3` still at 0.409.
+Regression traced with `A98.AJ.A87543.62` (six diamonds, **no** shortage): the
+rung stands down and we pass.
+
+**TEMPLATE.**  Four suits written out (the context has no `expand`).  Expand to
+`general_competitive_low` (`cl_rebid_shape_$X2`, where the same `rule_of_26`
+gate sits on the two-level rebid) and to `general_balancing_high`.
+
+## Board 292 — margin -11
+
+**Seat/call that went wrong.** Table A, call 2, **S passes** (`oc1H_pass`) over
+E's 1H, holding `AK985.T87.3.T853` — a five-card spade suit headed by **A-K**,
+a singleton, 7 HCP.  E/W then bid uncontested to 4H for -420; N/S can take seven
+tricks in spades, so 2S doubled is -100 at worst and any competition is better
+than none.
+
+**The missing agreement (one sentence).** Every one-level overcall in the file
+has an **8-HCP floor** (`oc1$o_1$X`: `hcp: [8, 16]`), so the classic light
+overcall — a strong five-card suit and six to eight points, made for the lead and
+the partscore rather than for the count — is unbiddable, and the seat falls to
+`oc1$o_pass` at fit 1.00.
+
+**EXACT YAML.**  One rung into `overcalls_of_1H`, before `oc1H_2C` (the same rung
+belongs in each of the four overcall contexts — see TEMPLATE):
+
+```yaml
+      - id: oc1H_1S_good
+        call: 1S
+        priority: 70.5
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [6, 8]
+          evals: { "suit_quality(S)": [2, 9] }
+        shows: "one-level overcall on suit quality: two of the top three honours in a five-card spade suit with six to eight points - the suit, not the count, buys the lead and the partscore"
+        establishes: { forcing: non_forcing }
+```
+
+`suit_quality` counts A/K/Q as 1 and J/T as 0.5, so `>= 2` means **two of the top
+three honours** — I checked the evaluator's source rather than guessing the
+scale (a `>= 3` gate, which I tried first, does not fire on A-K-9-8-5).
+
+**THE ANSWERING SEAT.**  `non_forcing`; the advance is `advance_overcall` and
+`general_competitive_low`, both authored.  The rung's whole point is that
+partner's raises are already there.
+
+**WHAT IT ENDANGERS** (`overcalls_of_1H`):
+
+* `oc1H_X` (72) and `oc1H_1S` (71), **above** mine — an opening-values takeout
+  double and the standard 8-16 overcall keep precedence; on an 8-count both my
+  rung and `oc1H_1S` fit and the higher-priority standard rung wins, so the
+  8-point boundary is not disturbed.
+* `oc1H_2S_jump` (60) and `oc1H_3S_preempt` (58), **below** — six- and
+  seven-card suits; disjoint on length.
+* `oc1H_pass` (25, below) — the target, and the only rung that loses hands.
+* Fallback: `1S` is already covered here by `oc1H_1S`.
+
+**VERIFIED.**  Before: `P` (`oc1H_pass`, fit 1.000 / 25) with `oc1H_1S` at 0.800.
+After: `1S` (`oc1H_1S_good`, fit 1.000 / 70.5).  Two regressions traced: a ragged
+five-card suit (`T9852...`) still passes at fit 0.011, and a **four**-card good
+suit still passes at fit 0.349.
+
+**TEMPLATE.**  Expand across all four overcall contexts and both one-level
+overcalls available in each — `oc1C_1D_good`, `oc1C_1H_good`, `oc1C_1S_good`,
+`oc1D_1H_good`, `oc1D_1S_good`, `oc1H_1S_good` (six rules).  A vulnerability
+split is the obvious refinement (`hcp: [6, 8]` non-vulnerable, `[7, 8]`
+vulnerable) and I would author it as an `expand`-free pair rather than a `when`,
+so the consolidator can measure the two bands separately.  The same agreement
+also belongs in `sandwich_seat` and in the balancing suit contexts, where the
+floors are already lower and the quality test is what is missing.
+

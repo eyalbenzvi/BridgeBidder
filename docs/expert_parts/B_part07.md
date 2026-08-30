@@ -1143,3 +1143,167 @@ from one idea, as written.  The obvious extensions: three-level overcalls
 answering context exists.
 
 ---
+
+## Board 411 — margin -2 — NOTHING-WRONG (competitive board)
+
+Table A call 1: N overcalls `2D` over 1H with `QJ2.T84.AQT64.Q3` — 11 HCP, a
+five-card suit headed by AQT, `oc1H_2D` fit 1.000 at priority 65.  BEN passes.
+A two-level overcall on a bare 11 with 4-3-5-1... 3-3-5-2 shape and two
+queen-doubletons is a style question at the bottom of the overcall's own range,
+and the overcall's floor is the competitive reviewer's.
+
+**What I checked in my discipline.**  S's raise to 3D at call 3
+(`uc_raise_D3`) is the only constructive-flavoured call and it is right on
+`AK93.QJ53.873.95`… it is in fact a three-card raise of a two-level overcall
+made by `general_uncontested_continuation`, which is dispatch-by-RHO-passed
+again.  Routing that is on the do-not-re-propose list.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
+
+## Board 417 — margin -2 — NOTHING-WRONG (competitive board)
+
+Table A call 1: S passes E's 3H preempt with `A932.86.KQ4.KJT8` — 13 HCP,
+4-2-3-4, `v3_H_X` fit **0.800** (the takeout double of a three-level preempt
+wants more, or wants shortness).  BEN doubles.  Defence to preempts.
+
+**Constructive-discipline observation:** the losing half is actually table B
+call 2, where W passes partner's takeout double of 3H holding
+`QJ874.A72.T76.A7` and BEN bids 4H — advancing a takeout double of a preempt.
+That advance ladder (`xd_pass` at fit 0.73) is the same starved-answering-seat
+species as boards 289 and 360, in the competitive tree.  Worth the other
+reviewer's attention: **a takeout double of a three-level preempt is a force
+and the seat that answers it is thin.**
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
+
+## Board 475 — margin -2
+
+**Seat/call that went wrong:** S, call 7 — `2D` (`onx_rebid_DS`, priority 57,
+fit 1.000) on `AT.Q7.AQ942.K843` after `1D (1S) X (P)`.  Fifteen HCP with
+**five diamonds and four clubs**, and `opener_over_negative_double` has no
+second-suit rung at all: the only 2C candidate on the whole list was
+`uc_new_C2` at priority 26 fitting 0.264.  We rebid a minimum, partner passed,
+they competed to 2S, and S then blasted 3NT for -100.
+
+**The missing agreement.**  Opener answering a negative double shows his second
+suit when he has one — the ladder currently offers only *rebid my suit*,
+*notrump*, *the implied major* and *jump*, so a 5-4 minor two-suiter has no way
+to say so.
+
+`onx_rebid_$m$M`'s whole-corpus record is **5 tables, -10 IMPs, mean -2.00**;
+this is the rung whose population I am splitting.
+
+### YAML — extend the context's `expand_pairs`, and one new rung
+
+```yaml
+  - id: opener_over_negative_double
+    expand_pairs:
+      - { m: C, M: H, oM: S, nt: 1NT, s: D, sc: 2D }
+      - { m: D, M: H, oM: S, nt: 1NT, s: C, sc: 2C }
+      - { m: C, M: S, oM: H, nt: 1NT, s: D, sc: 2D }
+      - { m: D, M: S, oM: H, nt: 1NT, s: C, sc: 2C }
+    # ... pattern and existing rules unchanged ...
+      - id: onx_second_$m$M
+        call: "$sc"
+        priority: 57.5
+        requires: { suits: { $s: [4, 13], $m: [4, 13] }, hcp: [12, 17], not: { suits: { $oM: [4, 13] } } }
+        shows: "the second minor: 4+ $s alongside the opening suit, 12-17"
+        establishes: { forcing: non_forcing }
+```
+
+### THE ANSWERING SEAT
+
+`non_forcing`, but responder must be able to act over it, and the seat
+`1$m - 1$M - X - P - 2$s - P - ?` is unauthored.  **Board 928's proposal is
+that seat** — `responder_rebid_after_negative_double` — and it should be
+generalised to cover opener's second minor as well as his rebid of the opening
+suit (add the `2$s` pattern to that context's `also_patterns`).  Ship the two
+together.
+
+### WHAT IT ENDANGERS
+
+* `onx_rebid_$m$M` (57) — outranked by half a point *only* when opener holds
+  four cards in the other minor as well.  One sentence: with 5-4 you show the
+  four-card suit while it is cheap; with 5-3-3-2 you rebid, and that hand does
+  not fit my rung.
+* `onx_nt_$m$M` (58), `onx_jumpnt` (58.5), `onx_jump` (59), `onx_major` /
+  `onx_major1` (60/61) all still outrank it — so a balanced 12-14 still bids
+  1NT, a 16-19 still jumps, and the four-card major the double promised is
+  still shown first.  My rung's `not: { suits: { $oM: [4,13] } }` makes that
+  structural rather than a matter of priority.
+* `uc_new_C2` (26) is covered away in this auction.  It described the hand as
+  "5+ cards, 10+ points" and fitted 0.264; mine fits 1.000.
+* **Regression traced on board 928's hand** (`954.Q3.AKQT9.Q54`, three clubs):
+  it still bids 2D at `onx_rebid_DS` 1.000/57 — the new rung fits 0.349.  The
+  two boards live in the same context and do not collide.
+
+### VERIFIED
+
+Prototyped.  BEFORE `2D` (`onx_rebid_DS` 1.000/57).  AFTER **`2C`**
+(`onx_second_DS` 1.000/57.5), which is BEN's call.
+
+### TEMPLATE
+
+`expand_pairs` already present — four rules from one idea.  The same rung is
+owed to `opener_neg_double_over_raise` and to the support-redouble family, and
+the major-suit analogue (`1$M - 1$oM - X - P - ?`) has the same hole.
+
+---
+
+## Board 516 — margin -2 — NOTHING-WRONG (competitive board)
+
+Table A call 2: S runs to `2D` (`xd_run_D2`, priority 25, fit 1.000) on
+`5.J73.T8632.KJ96` after partner's 1S is doubled for takeout.  `rdx_pass` also
+fits 1.000 at 20, so this is a straight priority decision between running and
+passing with a five-count.
+
+**What I checked.**  Responder's structure over a takeout double
+(`rdx_*`, `jordan_*`, `rx_*`) is the competitive reviewer's context.  The
+constructive observation I can make is narrow and I am not proposing it,
+because it is a **gate**: `xd_run_D2` asks only for five cards and no strength,
+so it outranks pass on every five-card suit however bad; a run at the two level
+usually wants six, or five with no tolerance for opener's major.  That is a
+subtraction and it needs its own measurement.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
+
+## Board 625 — margin -2 — SCOPE-EXCLUDED (opening style)
+
+Table A call 1: S passes in second seat with `K97.QT643.AT6.Q9` — 11 HCP,
+5-3-3-2, rule of 20 = 11 + 5 + 3 = 19.  `open_1H` fits 0.800,
+`open_1H_rule20` 0.800, pass 1.000.  Opening-style thresholds are excluded by
+the brief.
+
+**Constructive observation:** the *later* call is mine and it is fine — S
+balances 1NT at call 5 with `bal_1NT` on a hand that has already passed, and
+BEN's 2H there is the aggressive choice.  No constructive machinery is
+implicated.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
+
+## Board 660 — margin -2 — NOTHING-WRONG (competitive board)
+
+Table A call 6: S passes out `P 1S X 2S P` holding `43.AQT6.KQ62.AT5`
+(15 HCP); BEN doubles again.  `ballow_reopen_X2` demands **19+** and fits
+0.028; `ballow_nt2_strong` (17-21) fits 0.342; everything on the list is
+sub-threshold and `ballow_pass` wins at 1.000.  A second takeout double after
+their raise is balancing/competitive.
+
+**Constructive-discipline observation:** this is a **ceiling in reverse** — the
+reopening double's floor is set at 19 while the takeout double that started the
+auction has an 11-HCP floor, so the doubler who qualified on 11 cannot double
+again on 15.  Round 7 and round 8 both found this species ("a gate given to one
+sibling and not the other").  It belongs to the competitive family, so I record
+it rather than write it.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
