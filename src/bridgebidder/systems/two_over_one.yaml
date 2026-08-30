@@ -6310,6 +6310,28 @@ contexts:
         requires: { suits: { S: [4, 13] }, evals: { total_points: [0, 11], "suit_diff(S,H)": [0, 13], "suit_diff(S,D)": [0, 13], "suit_diff(S,C)": [0, 13] } }
         shows: "pulling the double to the cheapest 4+ suit"
         establishes: { forcing: non_forcing }
+      # THE ADVANCE HAD NO JUMP.  adx_pull_$X3 caps at ELEVEN total points, so a
+      # hand over that ceiling took the three-level pull on the soft-miss
+      # lottery rather than because any rule fitted it: board 970b, six spades
+      # headed by AKQ and twelve points opposite the double of 3C, had a whole
+      # candidate set of four rules whose best fit was 0.409, and bid 3S making
+      # twelve tricks.  A range with no rule, so the repair is the missing top
+      # rung and 3S is left exactly as it was - the bands are disjoint.
+      # NOT cheapest_in_suit: over a three-level preempt this IS a jump, and
+      # cheapest_in_suit excludes jumps, which would make the rung unreachable.
+      # The suit_diff clauses are carried from the rest of the family: without
+      # them lint_system.py reports two `sibling` findings and the locked
+      # test_rule_families_are_gated_consistently fails.
+      - id: adx_pull_S4
+        call: 4S
+        priority: 58
+        when: { unbid_suit: S, their_last_bid_suit: true, i_have_acted: false }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [12, 40], "suit_quality(S)": [2, 9],
+                   "suit_diff(S,H)": [0, 13], "suit_diff(S,D)": [0, 13], "suit_diff(S,C)": [0, 13] }
+        shows: "jump to game in my own six-card suit opposite the takeout double: 12+ points and a good suit"
+        establishes: { forcing: sign_off, agreed_suit: S }
       - id: adx_pull_H2
         call: 2H
         priority: 57
@@ -6324,6 +6346,17 @@ contexts:
         requires: { suits: { H: [4, 13] }, evals: { total_points: [0, 11], "suit_diff(H,S)": [0, 13], "suit_diff(H,D)": [0, 13], "suit_diff(H,C)": [0, 13] } }
         shows: "pulling the double to the cheapest 4+ suit"
         establishes: { forcing: non_forcing }
+      # the heart twin of adx_pull_S4, above
+      - id: adx_pull_H4
+        call: 4H
+        priority: 57
+        when: { unbid_suit: H, their_last_bid_suit: true, i_have_acted: false }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [12, 40], "suit_quality(H)": [2, 9],
+                   "suit_diff(H,S)": [0, 13], "suit_diff(H,D)": [0, 13], "suit_diff(H,C)": [0, 13] }
+        shows: "jump to game in my own six-card suit opposite the takeout double: 12+ points and a good suit"
+        establishes: { forcing: sign_off, agreed_suit: H }
       - id: adx_pull_D2
         call: 2D
         priority: 56
@@ -12526,6 +12559,14 @@ contexts:
         requires:
           hcp: [15, 21]
           evals: { weakest_their_stopper: [0.9, 9], semi_balanced: [1, 1] }
+          # ballow_nt1 denies a SIX-card major at the one level; this rung
+          # denied nothing, so a bare 15 with five spades balanced 2NT instead
+          # of bidding the suit.  Stated as a RANGE, not a shape: from 17 the
+          # notrump is worth more than the suit and 2S would be a non-forcing
+          # underbid, so the strong sibling ballow_nt2_strong needs no sweep.
+          any_of:
+            - hcp: [17, 21]
+            - not: { any_of: [ { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ] }
         shows: "balancing 2NT over their two-level contract: 15-21 balanced, stopped"
         establishes: { forcing: non_forcing }
       - id: ballow_nt2_strong
@@ -13911,6 +13952,70 @@ contexts:
         # on agreed_suit + game_forced) dark - so a FIVE-card heart
         # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
         # doubled, -500, with 3NT cold at the other table.
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      # THE DOUBLER CANNOT REBID HIS OWN SUIT.  uc_new_$X stops at the THREE
+      # level and uc_rebid_$X4 is gated `my_suit: $X`, which a takeout doubler
+      # never satisfies - he has bid no suit.  So an 18-count with a six-card
+      # suit, having doubled and heard partner compete, has no call: board 485a
+      # (`9.K.AKQ532.AQ985`, 18 HCP, 6-5 in the minors, after `P P 3C X P 3S P`)
+      # has four candidates of which exactly one fits - uc_pass at 1.00 - and
+      # passes.  Round 14's reviewer named this board by number and it is still
+      # passing.  Whole corpus: 11 tables at board margin -5.45 and par gap
+      # -7.64 against a stage-matched +0.10.
+      #
+      # standing_bid_level [1,2,3] is not decoration.  Adding a rung DELETES
+      # the code fallback for its call wherever the rung's `when` holds -
+      # `covered` is built without consulting fit (inference/engine.py) - so an
+      # unrestricted version silently removed a fit-1.00 fallback 4H on board
+      # 691a and handed the seat to a fit-0.066 keycard ask.  It is also the
+      # right bridge: over partner's FOUR-level bid a new suit is a cue, not
+      # "here is my suit".
+      #
+      # Written out per suit: this context has no `expand:`, so a $X rule id
+      # does not expand and the loader rejects the call as a bad strain.
+      - id: uc_doubler_own4_C
+        call: 4C
+        priority: 28.5
+        when: { my_last_call_was_double: true, we_bid_last: true,
+                we_hold_contract: false, unbid_suit: C, cheapest_in_suit: true,
+                standing_bid_level: [1, 2, 3] }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [16, 40], "suit_quality(C)": [2, 9] }
+        shows: "my own six-card C at the four level, having doubled first: 16+ points and a good suit"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: uc_doubler_own4_D
+        call: 4D
+        priority: 28.5
+        when: { my_last_call_was_double: true, we_bid_last: true,
+                we_hold_contract: false, unbid_suit: D, cheapest_in_suit: true,
+                standing_bid_level: [1, 2, 3] }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [16, 40], "suit_quality(D)": [2, 9] }
+        shows: "my own six-card D at the four level, having doubled first: 16+ points and a good suit"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: uc_doubler_own4_H
+        call: 4H
+        priority: 28.5
+        when: { my_last_call_was_double: true, we_bid_last: true,
+                we_hold_contract: false, unbid_suit: H, cheapest_in_suit: true,
+                standing_bid_level: [1, 2, 3] }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { total_points: [16, 40], "suit_quality(H)": [2, 9] }
+        shows: "my own six-card H at the four level, having doubled first: 16+ points and a good suit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_doubler_own4_S
+        call: 4S
+        priority: 28.5
+        when: { my_last_call_was_double: true, we_bid_last: true,
+                we_hold_contract: false, unbid_suit: S, cheapest_in_suit: true,
+                standing_bid_level: [1, 2, 3] }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { total_points: [16, 40], "suit_quality(S)": [2, 9] }
+        shows: "my own six-card S at the four level, having doubled first: 16+ points and a good suit"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: uc_minor_game_5C
         call: 5C

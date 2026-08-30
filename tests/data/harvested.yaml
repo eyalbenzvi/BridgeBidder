@@ -2548,3 +2548,95 @@
   dealer: E
   calls: ["1C", "P", "1D", "P", "2NT", "P"]
   expect: { call: "3D" }
+
+# ---------------------------------------------------------------------------
+# ROUND 15 (seed 161616).  Three rungs, each filling a hole rather than gating
+# an existing rule, and their twins.
+# ---------------------------------------------------------------------------
+
+# THE ADVANCE OF A TAKEOUT DOUBLE HAD NO JUMP.  adx_pull_$X3 caps at ELEVEN
+# total points, so twelve with six spades headed by AKQ took the three-level
+# pull on a soft-miss lottery pick at fit 0.409 - the whole candidate set was
+# four rules and none of them fitted - and made twelve tricks in 3S.
+- name: e15_advance_jumps_to_game_on_a_good_six_bagger
+  hand: "AKQT92.J75.J87.9"
+  dealer: S
+  vulnerability: EW
+  calls: ["3C", "X", "P"]
+  expect: { call: "4S" }
+
+# ... and the twin that keeps 3S honest: a minimum advance still bids three.
+- name: e15_minimum_advance_still_bids_three
+  hand: "KQ8642.J75.J87.9"
+  dealer: S
+  vulnerability: EW
+  calls: ["3C", "X", "P"]
+  expect: { call: "3S" }
+
+# ... and the same six-card suit with only ten points: the bands are disjoint,
+# so the new rung must not annex the minimum.
+- name: e15_six_good_spades_but_a_minimum_still_bids_three
+  hand: "KQT942.J75.J87.9"
+  dealer: S
+  vulnerability: EW
+  calls: ["3C", "X", "P"]
+  expect: { call: "3S" }
+
+# THE BALANCING 2NT DENIED NO SHAPE.  Its one-level sibling ballow_nt1 denies a
+# SIX-card major; this rung denied nothing, so a bare fifteen with five spades
+# balanced 2NT instead of bidding the suit.  Stated as a RANGE, not a shape.
+- name: e15_bare_balancing_fifteen_bids_the_five_card_major
+  hand: "KQ732.A3.A83.Q43"
+  dealer: E
+  vulnerability: NS
+  calls: ["2D", "P", "P"]
+  expect: { call: "2S" }
+
+- name: e15_balancing_fifteen_second_instance
+  hand: "QJ963.A52.AKJ.83"
+  dealer: E
+  vulnerability: NS
+  calls: ["2D", "P", "P"]
+  expect: { call: "2S" }
+
+# ... the range half of the twin: from seventeen the notrump is worth more than
+# the suit, because 2S would be a non-forcing underbid.
+- name: e15_seventeen_with_five_spades_still_balances_notrump
+  hand: "KQ732.A3.AKJ.Q43"
+  dealer: E
+  vulnerability: NS
+  calls: ["2D", "P", "P"]
+  expect: { call: "2NT" }
+
+# ... and the shape half: fifteen balanced with no five-card major is untouched.
+- name: e15_fifteen_balanced_no_major_still_balances_notrump
+  hand: "KQ73.A32.A83.Q43"
+  dealer: E
+  vulnerability: NS
+  calls: ["2D", "P", "P"]
+  expect: { call: "2NT" }
+
+# THE DOUBLER COULD NOT REBID HIS OWN SUIT.  uc_new_$X stops at the three level
+# and uc_rebid_$X4 is gated `my_suit`, which a takeout doubler never satisfies.
+# Eighteen points and 6-5 in the minors had four candidates, one of which fitted
+# - uc_pass at 1.00 - and passed.
+- name: e15_doubler_bids_his_own_six_card_suit
+  hand: "9.K.AKQ532.AQ985"
+  dealer: E
+  vulnerability: NS
+  calls: ["P", "P", "3C", "X", "P", "3S", "P"]
+  expect: { call: "4D" }
+
+- name: e15_doubler_own_suit_second_instance
+  hand: "AQ6.KJ84.AKQT95."
+  dealer: S
+  calls: ["P", "3C", "X", "P", "3S", "P"]
+  expect: { call: "4D" }
+
+# ... and the twin: with only FIVE of the suit the doubler still has no bid.
+- name: e15_doubler_with_only_five_still_passes
+  hand: "94.K.AKQ53.AQ985"
+  dealer: E
+  vulnerability: NS
+  calls: ["P", "P", "3C", "X", "P", "3S", "P"]
+  expect: { call: "P" }
