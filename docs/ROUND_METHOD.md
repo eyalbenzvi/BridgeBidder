@@ -21,6 +21,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 11 | 242424 | -535 (two fixes reverted) |
 | 12 | 242424 (re-review) | -532 (categorization; one large fix reverted) |
 | 13 | 131313 | -525 (board-by-board critique; 11 of 20 fixes killed by review) |
+| 14 | 151515 | **-474** (8 of 20 killed by review; the biggest single gain was a broken locked test) |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -56,7 +57,7 @@ place a fix is guaranteed to look good, because it is where the fix was found.
    `python3 tools/fuzz_decisions.py --n 300 --strict`.
 7. **Measure twice**: the SAME 1000 boards paired against `<tag>_before`, and
    the held-out corpus (seed 828282) against the previous round's held-out run.
-   The current bar is **-535** (round 10).
+   The current bar is **-474** (round 14).
    Keep or revert on the held-out number.
 8. Preserve both verdicts to `docs/EXPERT_REVIEW_<seed>_{A,B}.md`, add
    regression scenarios to `tests/data/harvested.yaml`, append a `DECISIONS.md`
@@ -114,6 +115,20 @@ was authored without the seat that answers it.  So:
 - A new asking bid or ladder must ship WITH the context that answers it.
 - A gate justified on two or three boards needs the held-out corpus before it
   is kept.  Consider measuring it as its own experiment.
+- **Price a new rung against the rungs BELOW it, not only the one above.**  A
+  rung placed too high subtracts every more descriptive call it outranks, which
+  is the "adds a gate" hazard wearing a different hat.  Round 14's
+  `uc_nt_raise3` was placed at 28.5 "under `uc_nt3`, so the natural reading
+  stays primary" - by me and by the reviewer, both reasoning only upward - and
+  it thereby outranked every natural three-level suit bid (`uc_new_*3` at 27,
+  `uc_new_*3_hi` at 27.5).  A 5-5 major hand raised partner's 2NT to game
+  instead of bidding three spades.  `pytest` caught it on a locked round-9
+  scenario; re-ranking to 26.5 was worth **+26 held out on five boards, five up
+  and none down**, the round's largest single gain.  List every rule in the
+  context whose call your new rung can legally outrank, and say in one sentence
+  of bridge why yours is the better description.
+- **Run the full suite before you believe a number.**  A broken locked scenario
+  is a measurement, and in round 14 it was the most valuable one in the round.
 
 ## Two other recurring species
 
@@ -224,6 +239,46 @@ average -2.00/table, WITHOUT -2.54.
   mean -2.78, our gap -5.00: 19- and 23-counts sign off in `rmr_4$M` / `rmr_3$m`
   because `rmr_4NT` demands `semi_balanced`. Larger than anything round 13
   shipped.
+- **`nxj_X`, the negative double of a jump overcall, promises 8+ HCP and nothing
+  else** at priority 70, above everything in its context, so a 3-2-5-3 nine-count
+  doubles and partner can play a 4-3 fit.  The diagnosis is confirmed and the
+  gate does not pay: round 14 measured a longest-suit cap plus a four-card-unbid-
+  major requirement at **-5 held out** and reverted it, keeping the `shows`
+  repair.  Same shape as `weakest_their_stopper`: two of the nine replacement
+  calls score below the 0.9 fast path, so **author the landing seats first**.
+- **There is no strong balanced notrump rung after I have already acted.**
+  Round 14's reshaped FIX 18 (an 11-14 / 12-14 `i_have_acted` rung in
+  `general_uncontested_continuation` and `general_competitive_low`) measured
+  **-1 held out on ten changed boards, four up and four down** - a coin flip -
+  and was reverted.  The bridge is sound; the rung leans on `weakest_their_stopper`,
+  which does not gate, and that is the likeliest reason it does not pay.
+- **After a 2C opening, partner's shown minimum is ZERO by construction.**
+  `r2c_2D_waiting` is `requires: {}` and `gf_new_3$X` has no point floor, so every
+  `rule_of_26_sharp >= 31` gate in the file is unreachable however strong the
+  opener is.  `resp_2C` measures 15 tables, mean -0.60, our gap **-7.87**.  The
+  repair belongs inside the 2C tree, not in `general_slam_try` (round 14 killed
+  that patch: 0 of its 12 firings was a 2C auction).
+- **`resp_1m_over_1H` has no weak jump shift at all.**  `1C - (1H) - 2S` on a
+  six-card suit under a free bid has no rule; the `1S` overcall context has
+  `nx_1m1S_wj_H`.  An additive sibling gap.
+- **`nt_after_transfer` has no natural second-suit rung**, so a 5-6 hand after a
+  transfer must choose between 3NT and four of the five-card major.
+- **`opener_rebid_1H_1S` is the largest NON-SLAM negative family in the corpus**
+  (30 tables, mean -2.37, our gap -6.07) and nothing in rounds 11-14 looks at it.
+  The slam families are still the largest concentration overall: `general_slam_try`
+  -12.10, `rkc_response_agreed_H` -9.67, `opener_rebid_after_2over1_minor` -9.10.
+- **`fast_decision`, not `score_candidates`, is the engine's choice.**  Ranking by
+  blended score mislabels 25 of 10,346 decisions - every one a rule at fit
+  0.946/0.965 beating a fit-1.00 pass on priority.  `repro.rank_at()` returns
+  SCORE order; its first row is not necessarily what the engine bid.  This is the
+  primary-reading trap with a different mechanism.
+- **A slice can be above baseline on board margin and far below it on par gap,
+  and the two disagree in both directions.**  Quote both, always.  Corrected
+  baselines: review **-0.729** per board, our par gap **-0.338**.
+- **The soft-miss lottery is live at 0.946 in the notrump family.**  A measurable
+  fraction of the engine's notrump decisions turn on half a point of `rule_of_26`
+  clearing the 0.9 threshold rather than on an agreement.  Sharpening it measured
+  3 tables / -2 IMPs in round 13 and was killed.
 - The system cannot bid a grand slam.
 
 ---

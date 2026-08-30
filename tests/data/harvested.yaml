@@ -2366,3 +2366,185 @@
   seat: W
   calls: ["1S", "P", "1NT"]
   expect: { call: "P" }
+
+# ===========================================================================
+# ROUND 14 (seed 151515).  Twelve of twenty findings survived an adversarial
+# review; these lock what shipped, with the negative twin wherever one exists.
+# ===========================================================================
+
+# THE STAYMAN 2D LADDER HAD NO QUANTITATIVE INVITATION: 2NT 8-9 / 3NT 10-17 /
+# 6NT 18+, so 16-17 opposite a 15-17 notrump - 31-34 combined - had only the
+# game bid, while the FIT half of the same context has had its 15-21 slam
+# route since round 8.
+- name: e14_stayman_2D_quantitative_invite
+  hand: "AT.KQT8.AQ843.Q3"
+  dealer: N
+  calls: ["P", "1NT", "P", "2C", "P", "2D", "P"]
+  expect: { call: "4NT", forcing: invitational }
+
+- name: e14_stayman_2D_game_values_still_bid_game
+  hand: "AT.KQT8.A8432.32"
+  dealer: N
+  calls: ["P", "1NT", "P", "2C", "P", "2D", "P"]
+  expect: { call: "3NT" }
+
+# ... and the seat that answers it: a maximum accepts, anything less declines.
+- name: e14_stayman_quant_maximum_accepts
+  hand: "AQ2.Q84.KJ7.KQ42"
+  dealer: N
+  calls: ["P", "1NT", "P", "2C", "P", "2D", "P", "4NT", "P"]
+  expect: { call: "6NT" }
+
+- name: e14_stayman_quant_minimum_declines
+  hand: "AQ2.K84.KJ7.Q542"
+  dealer: N
+  calls: ["P", "1NT", "P", "2C", "P", "2D", "P", "4NT", "P"]
+  expect: { call: "P" }
+
+# SIX OF A MAJOR BEATS A FLAT 3NT.  rjrb_3NT (55) and rjrb_3M (54) both fit
+# 1.00 on a six-card major, and the LESS descriptive call won on a static
+# number - while rjrb_6NT and rjrb_4NT in the same context both deny six.
+- name: e14_six_card_major_outranks_the_notrump_game
+  hand: "KT6.KT9876.AQ.KT"
+  dealer: N
+  calls: ["P", "1D", "P", "1H", "P", "3D", "P"]
+  expect: { call: "3H", forcing: one_round }
+
+- name: e14_without_six_the_notrump_game_still_wins
+  hand: "K76.KQ98.A72.T73"
+  dealer: N
+  calls: ["P", "1D", "P", "1H", "P", "3D", "P"]
+  expect: { call: "3NT" }
+
+# LENGTH IS QUALITY: the 2C positive demanded two of the top three, which is
+# calibrated for a five-card suit, so eight points with SIX spades headed by
+# the king made a waiting 2D.
+- name: e14_2C_positive_six_headed_by_an_honour
+  hand: "KJ9763.J863.2.KT"
+  dealer: N
+  calls: ["P", "2C", "P"]
+  expect: { call: "2S", forcing: game_forcing }
+
+- name: e14_2C_five_ragged_is_still_only_a_waiting_bid
+  hand: "KJ976.J863.2.KT4"
+  dealer: N
+  calls: ["P", "2C", "P"]
+  expect: { call: "2D" }
+
+# PARTNER SIGNED OFF: 1NT - 3m is a weak bail with 0-7 and six of the minor,
+# and the seat matched no context, so opener invented a new suit at the three
+# level and played it for five tricks.
+- name: e14_opener_passes_the_weak_minor_bail
+  hand: "KQ876.A86.A43.Q8"
+  dealer: N
+  calls: ["P", "P", "P", "1NT", "P", "3C", "P"]
+  expect: { call: "P" }
+
+# THE SUPER-ACCEPT HAD NO ANSWERING SEAT.  nt_after_transfer is anchored on
+# the simple acceptance, so eight points opposite a shown maximum with four
+# trumps - a nine-card fit and 22+ combined - passed at fit 1.00.
+- name: e14_super_accept_is_accepted
+  hand: "KQ3.J9762.94.Q74"
+  dealer: N
+  calls: ["P", "P", "1NT", "P", "2D", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+- name: e14_super_accept_passed_with_a_bust
+  hand: "832.J9762.94.742"
+  dealer: N
+  calls: ["P", "P", "1NT", "P", "2D", "P", "3H", "P"]
+  expect: { call: "P" }
+
+# THE DEFENCE TO A PREEMPT STOPPED AT THE THREE LEVEL, so an EIGHT-card suit
+# made the same call as a six-card one.  open_4S's own rule is that eight of
+# them is a four-level preempt and it carries no quality gate.
+- name: e14_eight_card_suit_overcalls_the_preempt_at_the_four_level
+  hand: "AQJT98765.A.Q.85"
+  dealer: W
+  vulnerability: Both
+  calls: ["3C"]
+  expect: { call: "4S" }
+
+- name: e14_six_card_suit_still_overcalls_at_the_three_level
+  hand: "AQJT98.A4.Q73.85"
+  dealer: W
+  vulnerability: Both
+  calls: ["3C"]
+  expect: { call: "3S" }
+
+# ONE AGREEMENT, TWO FLOORS: oc1S_X doubles on eleven and adx_neg_major
+# demanded twelve to answer partner's responsive double, so the doubler who
+# qualified on eleven passed it out and 2SX made ten tricks.
+- name: e14_doubler_answers_on_the_points_he_doubled_with
+  hand: "75.AK65.KJ7.8432"
+  dealer: S
+  vulnerability: NS
+  calls: ["1S", "X", "2S", "X", "P"]
+  expect: { call: "3H" }
+
+# STAYMAN PLACEMENT MUST READ WHICH MAJOR OPENER SHOWED.  The context pattern
+# is `3(D|H|S)` - one context for all three answers - and the rule read only
+# responder's own shape, so a zero-count bid game in the major opener DENIED.
+- name: e14_no_game_in_the_major_opener_denied
+  hand: "T87.8532.5432.76"
+  dealer: S
+  calls: ["2C", "P", "2D", "P", "2NT", "P", "3C", "P", "3D", "P"]
+  expect: { call: "3NT" }
+
+- name: e14_game_in_the_major_opener_showed
+  hand: "T87.8532.5432.76"
+  dealer: S
+  calls: ["2C", "P", "2D", "P", "2NT", "P", "3C", "P", "3H", "P"]
+  expect: { call: "4H" }
+
+# NO NOTRUMP WITH A VOID.  tr_3NT_choice offered a choice of games holding a
+# spade VOID; the file has said "no notrump with a void" since the maxim
+# round.  The veto ships with the floor it needs - with a void you play the
+# major, which opposite an accepted transfer is 5-2 at worst.
+- name: e14_no_choice_of_games_with_a_void
+  hand: ".J7652.AKQT95.J4"
+  dealer: N
+  calls: ["P", "1NT", "P", "2D", "P", "2H", "P"]
+  expect: { call: "4H" }
+
+- name: e14_choice_of_games_without_one
+  hand: "43.J7652.AKQT9.J"
+  dealer: N
+  calls: ["P", "1NT", "P", "2D", "P", "2H", "P"]
+  expect: { call: "3NT" }
+
+# THE ENGINE BID THE SHORTER MAJOR.  cl_new_H1 and cl_new_S1 are both
+# priority 30, so once both fit 1.00 the tie broke on call rank and 1H won -
+# round 10 fixed this for r1m_1H / r1m_1S and never swept it here.
+- name: e14_competitive_one_level_bids_the_longer_major
+  hand: "KJ8762.A43.5.Q43"
+  dealer: N
+  calls: ["1D", "1H"]
+  expect: { call: "1S" }
+
+- name: e14_four_four_majors_still_go_up_the_line
+  hand: "KJ87.KQ32.A54.32"
+  dealer: N
+  calls: ["1C", "1D"]
+  expect: { calls: ["1H", "X"] }
+
+# NOTHING IN THE GENERIC TOOLKIT RAISED PARTNER'S NOTRUMP: every uc_/cl_/ch_
+# notrump rule is a NATURAL one about my own balanced hand, so thirteen points
+# opposite a shown 18-19 rebid passed at fit 1.00.
+- name: e14_raise_partners_notrump_to_game
+  hand: "AJ64.AJ84.6.KT93"
+  dealer: S
+  calls: ["P", "1D", "1H", "X", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+
+# ... and its negative twin, which cost the round a locked scenario: the raise
+# shipped at priority 28.5, ABOVE every natural three-level suit bid, so a hand
+# with a suit still unshown raised instead of describing it.  Re-ranked to 26.5.
+# Six diamonds and eight points opposite a shown 18-19: rebid the suit and let
+# partner choose the strain.  (The 5-5 major twin is the locked round-9
+# scenario e9_higher_of_equal_length_at_the_three_level, which this broke.)
+- name: e14_with_a_suit_still_unshown_do_not_raise_the_notrump
+  hand: "973.KQ6.QJT963.J"
+  dealer: E
+  calls: ["1C", "P", "1D", "P", "2NT", "P"]
+  expect: { call: "3D" }

@@ -2449,3 +2449,138 @@ is unsatisfiable, which is right: that is a one-suited auction.  Three tables in
    common defect species in the file, ahead of "range with no rule".
 2. **A rule whose `shows` sentence does not state the gate that decides it** —
    46 of them, and they cost this round three false findings.
+
+## Round 14 (seed 151515): the round's biggest win came from a broken test
+
+Same loop as round 13, run on 200 deals instead of 100: play BEN, sit in every
+seat on every board we lose, give each call exactly one verdict, accumulate
+twenty fixes, hand them to one adversarial expert, apply survivors in asserted
+sub-batches, keep or revert on the held-out corpus.
+
+200 deals, seed 151515: **-179 IMPs**, 71 boards lost.  Twenty findings written
+up in `reports/r14_findings.md`; three more were killed in my own draft on
+arithmetic or denominator grounds before they were written down, and the large
+majority of BEN's disagreements were again ruled **OK**.
+
+The critique (`docs/EXPERT_CRITIQUE_151515.md`) returned **7 SHIP, 5 RESHAPE,
+8 KILL**.
+
+### Measured
+
+| step | own deals (151515) | review (242424) | held out (828282) |
+|---|---|---|---|
+| baseline | -179 | -729 | -525 |
+| Bundle A — four rungs that reach nothing | 0 decisions change | 0 | 0 |
+| Bundle B — six repairs, all attributable | -125 (+54) | -699 (+30) | -502 (+23) |
+| FIX 2 alone — raising partner's notrump | | -674 (+25) | -500 (+2) |
+| FIX 2 re-ranked 28.5 -> 26.5 | | -677 (-3) | **-474 (+26)** |
+| FIX 8 — gating the negative double | | -672 (+2) | -505 (**-5**) reverted |
+| FIX 18 — the strong balanced overcall | | -672 (+2) | -501 (**-1**) reverted |
+| **round total** | **-179 -> -114 (+65)** | **-729 -> -677 (+52)** | **-525 -> -474 (+51)** |
+
+### The lesson: a locked scenario is a measurement, and it was worth +26
+
+FIX 2 added `uc_nt_raise3` — nothing in the generic toolkit *raised* partner's
+notrump, so thirteen points opposite a shown 18-19 passed at fit 1.00.  Both the
+reviewer and I put it at priority **28.5**, reasoning only about the rung
+directly above it: "under `uc_nt3`, so the natural reading stays primary."
+Neither of us looked *below*.  The natural three-level suit rungs live at 27.0
+and 27.5, so the new raise outranked every one of them and the full test suite
+broke a **round-9 locked scenario**: 5-5 in the majors opposite partner's 2NT
+raised to game instead of bidding three spades.
+
+The bridge is not subtle once stated: *a raise is what you bid when there is
+nothing left to describe.*  Re-ranked to **26.5**, directly above `uc_pass`
+among the calls that are legal over a standing 2NT.  Whole-corpus blast radius
+**2 decisions**, both plainly right — a 5-4 major hand with a stiff diamond now
+bids 3S instead of 3NT, and a six-card diamond suit rebids 3D — and the held-out
+corpus moved **+26 on five boards, five up and none down**.  That single
+re-ranking is the largest held-out gain of the round, and it exists only because
+`pytest` was run before the numbers were believed.
+
+**The rule this adds to the method: a new rung must be priced against the rungs
+BELOW it, not only the one above.**  A rung placed too high subtracts every
+more descriptive call it outranks, which is the "adds a gate" hazard wearing a
+different hat.  It is now in ROUND_METHOD's guardrails.
+
+### What shipped
+
+**Bundle A — four rungs that reach nothing (0 of 10,346 decisions).**
+Shipped on structure at zero measured cost, the round 7 / 8 / 11 / 13 precedent.
+(a) `1NT - 2C - 2D` had a ladder of 2NT/8-9, 3NT/10-17, 6NT/18+, so **16-17
+opposite a 15-17 notrump — 31-34 combined, the textbook quantitative zone — had
+only the game bid**; `stm_2D_4NT` invites and the new context
+`stayman_quant_opener_decides` is the seat that answers it (constraint 3, still
+the file's commonest defect).  (b) `rjrb_3M` re-ranked 54 -> 55.5: its two
+siblings both *deny* a six-card major in that context and `rjrb_3NT` never got
+the denial, so six of a major fitted both at 1.00 and the less descriptive call
+won on a static number.  (c) the 2C positive demanded two of the top three,
+which is five-card calibration — **six cards headed by one honour is a
+positive**.  (d) `opener_over_bail`: `1NT - P - 3$m` had no answering seat.
+
+**Bundle B — six repairs, every changed call scorable on its own board.**
+(a) `nt_after_super_accept` — the super-accept of a transfer is a force to at
+least three of the major and **the responder's seat did not exist**, so a bust
+and a game hand were both passed by the catch-all.  (b) A four-level major over
+their preempt on seven cards, or eight, or thirteen points with a quality suit:
+the ladder stopped at the three level.  (c) The negative doubler's answering
+rungs demanded **12** while the double itself promises 11 — a gate given to one
+sibling and not the other, swept across `adx_neg_major_*` and
+`ch_neg_major_*`.  (d) `r2c_place_4H` / `r2c_place_4S` placed the contract in
+the major *opener* named without checking which major that was; `standing_bid_strain`
+now says so.  (e) A **void** cannot be shown after a transfer, so 3NT won the
+choice of games holding one; `tr_3NT_choice` now evaluates `void(any)` and
+`tr_game_void_$M` is the floor rung beneath it.  (f) From the critique's own
+residue, worth more than the fix that exposed it: **`cl_new_H1` bid a four-card
+heart suit ahead of a six-card spade suit**, because both rungs sit at priority
+30 and the tie broke on call rank.  Round 10 fixed exactly this for
+`r1m_1H`/`r1m_1S` and it was never swept into `general_competitive_low`.
+`suit_diff(H,S)` closes it; 4-4 still goes up the line.
+
+**FIX 2, measured alone and then re-ranked** — above.
+
+### Reverted on the held-out number
+
+- **FIX 8** (`nxj_X`, the negative double of a jump overcall, is `hcp: [8, 40]`
+  and **nothing else** at priority 70, above everything in its context, with a
+  `shows` sentence claiming "support for unbid suits").  The diagnosis is right
+  and the gate does not pay: capping the longest suit at five and demanding a
+  four-card unbid major measured **-5 held out** on four changed boards, one up
+  and one down.  The reviewer predicted the shape — two of the nine replacement
+  calls land below the 0.9 fast path, so the seats behind the deleted double are
+  unauthored, exactly the `weakest_their_stopper` revert of round 8.  Reverted
+  to the **text-only repair**: the sentence now states the only gate that
+  decides the rule.  Author the landing seats first, then re-measure.
+- **FIX 18** (a strong balanced 11-14 / 12-14 notrump rung with `i_have_acted`)
+  measured **-1 held out** on ten changed boards, four up and four down — a
+  restored coin flip on a small population.  The reviewer called it "the weakest
+  survivor on the numbers and the strongest on the bridge" and offered no
+  fallback.  Reverted on the number; the diagnosis is now an open item.
+
+### Killed by the review, with the number that killed it
+
+| fix | the number |
+|---|---|
+| **4** takeout double of a weak two tolerates three | the branch is 3-4 tables at board mean **+0.00** against a corpus mean of -0.73, and it turns a `KQT76` five-card overcall into a takeout double |
+| **9** drop the one-level suit-quality gate | 3 tables, **our gap +1.67** against -0.34; and removing it makes the engine bid the **shorter** major — round 10's defect re-created |
+| **10** a weak two-level rebid rung in seven families | 12 call changes, **7 of them our own raises collapsing to pass**, because partner's shown minimum for a two-level own-suit rebid drops 11 -> 6 across **28 rules** |
+| **14** suit-quality floor on the weak jump shift | the rule is **1 table of 2,000, +1 IMP**; the gate reaches 0; and the named twin does not exist |
+| **16** four-level new suits in the uncontested toolkit | 15 call changes, **6 displacing `balhigh_pass`** — round 12 measured that routing at -59 paired / -106 held out |
+| **17** a solo keycard ask in a game force | **0 of its 12 firings is a 2C auction**, the position it was written for; slice mean +2.08 against -0.73 |
+| **19** preemptive overcall of their 1NT | `defense_vs_1NT` is 129 tables at mean -0.33 / gap **+2.91**, above baseline on both metrics |
+| **20** open the longer minor with 6-5 | population **1 of 2,000**, currently **+11 IMPs**, and the patch is vetoed by `open_1D`'s own `not:` clause |
+
+### Three measurement facts the critique established
+
+- **`fast_decision`, not `score_candidates`, is the engine's choice.**  Ranking
+  by blended score mislabels **25 of 10,346** decisions — every one a rule at fit
+  0.946/0.965 beating a fit-1.00 pass on priority.  `repro.rank_at()` returns
+  score order; reading its first row as "what we bid" is the primary-reading trap
+  with a different mechanism.
+- **Board margin and par gap disagree in both directions, and the par gap is the
+  attributable one.**  `nxj_X`'s doubles without a major win +3.50 a table and sit
+  at par gap -6.33; FIX 18's sandwich firings win +2.43 at par gap +2.57.  Quote
+  both, always.  Corrected baselines: review **-0.729**, our par gap **-0.338**.
+- **`weakest_their_stopper` still does not gate** and was load-bearing in two of
+  this round's proposals.  It is a reason to distrust any new rule that leans on
+  it, not merely an open item.

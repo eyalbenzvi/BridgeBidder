@@ -708,6 +708,42 @@ contexts:
         requires: { hcp: [10, 17] }
         shows: "to play, game values (had a 4-card major)"
         establishes: { forcing: sign_off }
+      # The ladder ran 2NT 8-9 / 3NT 10-17 / 6NT 18+, so 16-17 opposite a 15-17
+      # notrump - 31-34 combined, the textbook quantitative zone - had only the
+      # game bid.  The FIT half of this same context has had its 15-21 slam
+      # route (stm_rkc_4NT) since round 8; this half was never swept.  Floor 31
+      # combined matches qr3_4NT_quant's round-8 repaired floor exactly.
+      - id: stm_2D_4NT
+        call: 4NT
+        priority: 63
+        requires: { hcp: [16, 17], evals: { controls: [3, 12] } }
+        shows: "quantitative: 16-17 opposite a 15-17 notrump is 31-34, inviting slam"
+        establishes: { forcing: invitational }
+        alertable: true
+
+  # The seat that answers stm_2D_4NT.  nt_quant_opener_decides is anchored
+  # `1NT - P - 4NT - P - ?` and does not match a Stayman auction, so without
+  # this the invitation would be declined by the code fallback - constraint 3,
+  # the file's most common defect species.
+  - id: stayman_quant_opener_decides
+    description: "Opener over the quantitative 4NT after 1NT - 2C - 2D"
+    pattern: "1NT - P - 2C - P - 2D - P - 4NT - P - ?"
+    rules:
+      - id: stmq_6NT
+        call: 6NT
+        priority: 60
+        requires: { hcp: [17, 17] }
+        shows: "accepting the quantitative invite: a maximum notrump"
+        establishes: { forcing: sign_off }
+      # a COMPLETE fallback, not the mirror of the accept gate - round 6's
+      # rkc5H_signoff lesson: a sign-off gated as the exact mirror of the
+      # accept leaves the seat with no fitting candidate at all.
+      - id: stmq_pass
+        call: P
+        priority: 55
+        requires: {}
+        shows: "declining the quantitative invite: not a maximum"
+        establishes: { forcing: sign_off }
 
   - id: stayman_resp_after_2M
     description: "Responder's rebid after Stayman finds/misses a fit"
@@ -1082,6 +1118,45 @@ contexts:
         shows: "completing the transfer (forced)"
         establishes: { forcing: non_forcing }
 
+  # `1NT - P - 3$m - P - ?` matched no context, so opener's seat fell to the
+  # generic toolkit, which has no notion that partner has signed off:
+  # we_hold_contract is keyed on MY OWN last bid by design (round 2), so
+  # partner's sign-off is unprotected and opener invented a new suit.
+  - id: opener_over_bail
+    description: "Opener over responder's weak three-level bail out of 1NT"
+    expand: { m: [C, D] }
+    pattern: "1NT - P - 3$m - P - ?"
+    rules:
+      - id: ntbail_pass_$m
+        call: P
+        priority: 60
+        requires: {}
+        shows: "partner has signed off in a long minor with a bust: pass"
+        establishes: { forcing: sign_off }
+
+  # tr_super_3H / tr_super_3S promise 4-5 trumps and a MAXIMUM, and
+  # nt_after_transfer is anchored on the simple acceptance (`... - 2$M - P - ?`),
+  # so after the super-accept the seat matched no context at all and eight
+  # points opposite a shown nine-card fit passed at uc_pass fit 1.00.
+  # Constraint 3: an invitation must ship with the seat that answers it.
+  - id: nt_after_super_accept
+    description: "Responder after opener's super-accept of the transfer"
+    expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
+    pattern: "1NT - P - 2$T - P - 3$M - P - ?"
+    rules:
+      - id: trsa_game_$M
+        call: 4$M
+        priority: 60
+        requires: { hcp: [5, 40] }
+        shows: "accepting: a nine-card fit opposite a maximum is a game"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: trsa_pass_$M
+        call: P
+        priority: 55
+        requires: {}
+        shows: "a bust: even opposite the maximum there is no game"
+        establishes: { forcing: sign_off }
+
   - id: nt_after_transfer
     description: "Responder's rebid after a completed transfer"
     expand_pairs: [ { M: H, T: D }, { M: S, T: H } ]
@@ -1108,9 +1183,19 @@ contexts:
       - id: tr_3NT_choice
         call: 3NT
         priority: 58
-        requires: { hcp: [10, 15], suits: { $M: [5, 5] } }
-        shows: "game values, exactly 5 $M: choice of games (opener corrects to 4$M with 3+)"
+        requires: { hcp: [10, 15], suits: { $M: [5, 5] }, evals: { "void(any)": [0, 0] } }
+        shows: "game values, exactly 5 $M and no void: choice of games (opener corrects to 4$M with 3+)"
         establishes: { forcing: sign_off }
+      # The floor the veto needs (round 4: a fix that changes a class needs a
+      # floor for the class).  Without it the void hand fell to tr_2NT_inv at
+      # fit 0.80 and played a partscore; with a void, notrump is the worse bet
+      # and opposite an accepted transfer the major is 5-2 at worst.
+      - id: tr_game_void_$M
+        call: 4$M
+        priority: 58.5
+        requires: { hcp: [10, 15], suits: { $M: [5, 5] }, evals: { "void(any)": [1, 4] } }
+        shows: "game values, exactly 5 $M and a void: no notrump with a void, so play the major"
+        establishes: { forcing: sign_off, agreed_suit: $M }
       - id: tr_4$M
         call: 4$M
         priority: 59
@@ -1296,14 +1381,34 @@ contexts:
       - id: r2c_2H_positive
         call: 2H
         priority: 60
-        requires: { suits: { H: [5, 13] }, hcp: [8, 40], features: [ "two_of_top3(H)" ] }
-        shows: "positive: 5+ good hearts, 8+ HCP"
+        requires:
+          suits: { H: [5, 13] }
+          hcp: [8, 40]
+          any_of:
+            - features: [ "two_of_top3(H)" ]
+            # Length IS quality: the top-three test is calibrated for a
+            # five-card suit, and a sixth card is worth more than a second
+            # honour.  DECISIONS states the agreement as "2H/2S/2NT are
+            # natural positives (8+)"; the top-three extra is undocumented.
+            - suits: { H: [6, 13] }
+              features: [ "top_honour(H)" ]
+        shows: "positive: 8+ HCP with five good hearts, or six headed by an honour"
         establishes: { forcing: game_forcing }
       - id: r2c_2S_positive
         call: 2S
         priority: 60
-        requires: { suits: { S: [5, 13] }, hcp: [8, 40], features: [ "two_of_top3(S)" ] }
-        shows: "positive: 5+ good spades, 8+ HCP"
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [8, 40]
+          any_of:
+            - features: [ "two_of_top3(S)" ]
+            # Length IS quality: the top-three test is calibrated for a
+            # five-card suit, and a sixth card is worth more than a second
+            # honour.  DECISIONS states the agreement as "2H/2S/2NT are
+            # natural positives (8+)"; the top-three extra is undocumented.
+            - suits: { S: [6, 13] }
+              features: [ "top_honour(S)" ]
+        shows: "positive: 8+ HCP with five good spades, or six headed by an honour"
         establishes: { forcing: game_forcing }
       - id: r2c_2NT_positive
         call: 2NT
@@ -6092,28 +6197,40 @@ contexts:
         call: 2H
         priority: 62
         when: { unbid_suit: H, cheapest_in_suit: true, their_last_bid_suit: true, i_have_acted: true }
-        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { H: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: adx_neg_major_H3
         call: 3H
         priority: 62
         when: { unbid_suit: H, cheapest_in_suit: true, their_last_bid_suit: true, i_have_acted: true }
-        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { H: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: adx_neg_major_S2
         call: 2S
         priority: 62
         when: { unbid_suit: S, cheapest_in_suit: true, their_last_bid_suit: true, i_have_acted: true }
-        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { S: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: adx_neg_major_S3
         call: 3S
         priority: 62
         when: { unbid_suit: S, cheapest_in_suit: true, their_last_bid_suit: true, i_have_acted: true }
-        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { S: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: adx_pass_min
@@ -6982,8 +7099,19 @@ contexts:
       - id: nxj_X
         call: X
         priority: 70
+        # The sentence claimed "support for unbid suits" and the constraint is
+        # 8+ HCP and NOTHING ELSE, at priority 70 - above everything in this
+        # context - so a 3-2-5-3 nine-count doubles and partner can play a 4-3
+        # fit.  The diagnosis is right and the GATE DOES NOT PAY: capping the
+        # longest suit at five and demanding a four-card unbid major measured
+        # -5 held out (four boards changed, one up one down) in round 14 and
+        # was reverted.  The seat behind the deleted double is thinly authored
+        # - two of the nine replacement calls score below the 0.9 fast path -
+        # so this is the weakest_their_stopper shape: author the landing seats
+        # first, then re-measure.  The sentence is repaired to state the only
+        # gate that actually decides the rule.
         requires: { hcp: [8, 40] }
-        shows: "negative double of the jump overcall: support for unbid suits"
+        shows: "negative double of the jump overcall: 8+ HCP, no shape shown"
         establishes: { forcing: one_round }
         convention: negative_double
       - id: nxj_pass
@@ -7940,7 +8068,11 @@ contexts:
         alertable: true
       - id: rjrb_3M
         call: 3$M
-        priority: 54
+        # rjrb_6NT and rjrb_4NT both DENY a six-card major in this very context;
+        # rjrb_3NT never got the denial, so a hand with six of a major fitted
+        # both at 1.00 and the less descriptive call won on a static number.
+        # Re-ranked rather than gated, so 3NT keeps its full band as the backstop.
+        priority: 55.5
         requires: { hcp: [10, 16], suits: { $M: [6, 13] } }
         shows: "6+ $M, forcing"
         establishes: { forcing: one_round }
@@ -9009,12 +9141,24 @@ contexts:
       - id: r2c_place_4H
         call: 4H
         priority: 62
+        # The context pattern is `3(D|H|S)` - one context for all three of
+        # opener's answers - and the rule read only responder's own shape, so
+        # a zero-count bid game in a major opener had just DENIED.  Round 4
+        # fixed exactly this for the 1NT Stayman ladder; the 2C twin was never
+        # swept.  r2c_place_3NT is requires:{} so the seat cannot be starved.
+        when: { standing_bid_strain: [H] }
         requires: { suits: { H: [4, 13] } }
         shows: "game with the heart fit opposite 22-24"
         establishes: { forcing: sign_off, agreed_suit: H }
       - id: r2c_place_4S
         call: 4S
         priority: 61
+        # The context pattern is `3(D|H|S)` - one context for all three of
+        # opener's answers - and the rule read only responder's own shape, so
+        # a zero-count bid game in a major opener had just DENIED.  Round 4
+        # fixed exactly this for the 1NT Stayman ladder; the 2C twin was never
+        # swept.  r2c_place_3NT is requires:{} so the seat cannot be starved.
+        when: { standing_bid_strain: [S] }
         requires: { suits: { S: [4, 13] } }
         shows: "game with the spade fit opposite 22-24"
         establishes: { forcing: sign_off, agreed_suit: S }
@@ -9798,6 +9942,36 @@ contexts:
         requires: { suits: { S: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(S)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ S, 13+"
         establishes: { forcing: non_forcing }
+      # The ladder had a three-level overcall and nothing above it, so an
+      # EIGHT-card suit made the same call as a six-card one.  open_4S's own
+      # comment - "eight of them is a four-level preempt, not a three-level
+      # one" - and open_4S carries no quality gate at all, so length alone
+      # qualifies; seven cards need the values and the suit.
+      - id: v3_C_4S
+        call: 4S
+        priority: 65
+        requires:
+          suits: { S: [7, 13] }
+          any_of:
+            - suits: { S: [8, 13] }
+            - evals: { total_points: [13, 40], "suit_quality(S)": [2, 9] }
+        shows: "overcalling the preempt at the four level: eight of them, or seven with opening values and a good suit"
+        establishes: { forcing: non_forcing }
+      # The ladder had a three-level overcall and nothing above it, so an
+      # EIGHT-card suit made the same call as a six-card one.  open_4S's own
+      # comment - "eight of them is a four-level preempt, not a three-level
+      # one" - and open_4S carries no quality gate at all, so length alone
+      # qualifies; seven cards need the values and the suit.
+      - id: v3_C_4H
+        call: 4H
+        priority: 65
+        requires:
+          suits: { H: [7, 13] }
+          any_of:
+            - suits: { H: [8, 13] }
+            - evals: { total_points: [13, 40], "suit_quality(H)": [2, 9] }
+        shows: "overcalling the preempt at the four level: eight of them, or seven with opening values and a good suit"
+        establishes: { forcing: non_forcing }
       - id: v3_C_pass
         call: P
         priority: 30
@@ -9844,6 +10018,36 @@ contexts:
         requires: { suits: { S: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(S)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ S, 13+"
         establishes: { forcing: non_forcing }
+      # The ladder had a three-level overcall and nothing above it, so an
+      # EIGHT-card suit made the same call as a six-card one.  open_4S's own
+      # comment - "eight of them is a four-level preempt, not a three-level
+      # one" - and open_4S carries no quality gate at all, so length alone
+      # qualifies; seven cards need the values and the suit.
+      - id: v3_D_4S
+        call: 4S
+        priority: 65
+        requires:
+          suits: { S: [7, 13] }
+          any_of:
+            - suits: { S: [8, 13] }
+            - evals: { total_points: [13, 40], "suit_quality(S)": [2, 9] }
+        shows: "overcalling the preempt at the four level: eight of them, or seven with opening values and a good suit"
+        establishes: { forcing: non_forcing }
+      # The ladder had a three-level overcall and nothing above it, so an
+      # EIGHT-card suit made the same call as a six-card one.  open_4S's own
+      # comment - "eight of them is a four-level preempt, not a three-level
+      # one" - and open_4S carries no quality gate at all, so length alone
+      # qualifies; seven cards need the values and the suit.
+      - id: v3_D_4H
+        call: 4H
+        priority: 65
+        requires:
+          suits: { H: [7, 13] }
+          any_of:
+            - suits: { H: [8, 13] }
+            - evals: { total_points: [13, 40], "suit_quality(H)": [2, 9] }
+        shows: "overcalling the preempt at the four level: eight of them, or seven with opening values and a good suit"
+        establishes: { forcing: non_forcing }
       - id: v3_D_pass
         call: P
         priority: 30
@@ -9889,6 +10093,21 @@ contexts:
         priority: 64
         requires: { suits: { S: [6, 13] }, hcp: [11, 40], evals: { "suit_quality(S)": [1.5, 9], quick_tricks: [2, 12] } }
         shows: "overcalling the preempt: good 6+ S, 13+"
+        establishes: { forcing: non_forcing }
+      # The ladder had a three-level overcall and nothing above it, so an
+      # EIGHT-card suit made the same call as a six-card one.  open_4S's own
+      # comment - "eight of them is a four-level preempt, not a three-level
+      # one" - and open_4S carries no quality gate at all, so length alone
+      # qualifies; seven cards need the values and the suit.
+      - id: v3_H_4S
+        call: 4S
+        priority: 65
+        requires:
+          suits: { S: [7, 13] }
+          any_of:
+            - suits: { S: [8, 13] }
+            - evals: { total_points: [13, 40], "suit_quality(S)": [2, 9] }
+        shows: "overcalling the preempt at the four level: eight of them, or seven with opening values and a good suit"
         establishes: { forcing: non_forcing }
       - id: v3_H_pass
         call: P
@@ -10466,7 +10685,11 @@ contexts:
         when: { unbid_suit: H, cheapest_in_suit: true }
         requires:
           suits: { H: [4, 13] }
-          evals: { total_points: [6, 40] }
+          # cl_new_H1 and cl_new_S1 are both priority 30, so once both fit 1.00
+          # the tie broke on call rank and 1H won - the engine bid four hearts
+          # holding six spades.  Round 10 fixed this for r1m_1H / r1m_1S and it
+          # was never swept here.  4-4 still goes up the line: both fit, 1H wins.
+          evals: { total_points: [6, 40], "suit_diff(H,S)": [0, 13] }
           any_of:
             - evals: { "suit_quality(H)": [1.5, 9] }
             - suits: { H: [5, 13] }
@@ -11595,7 +11818,10 @@ contexts:
         priority: 30
         when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
                 i_have_acted: true }
-        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { H: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_neg_major_H3
@@ -11603,7 +11829,10 @@ contexts:
         priority: 30
         when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
                 i_have_acted: true }
-        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { H: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_neg_major_H4
@@ -11611,7 +11840,10 @@ contexts:
         priority: 30
         when: { unbid_suit: H, cheapest_in_suit: true, partner_last_call_was_double: true,
                 i_have_acted: true }
-        requires: { suits: { H: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { H: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: H }
       - id: ch_neg_major_S2
@@ -11619,7 +11851,10 @@ contexts:
         priority: 30
         when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
                 i_have_acted: true }
-        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { S: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_neg_major_S3
@@ -11627,7 +11862,10 @@ contexts:
         priority: 30
         when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
                 i_have_acted: true }
-        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { S: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: S }
       - id: ch_neg_major_S4
@@ -11635,7 +11873,10 @@ contexts:
         priority: 30
         when: { unbid_suit: S, cheapest_in_suit: true, partner_last_call_was_double: true,
                 i_have_acted: true }
-        requires: { suits: { S: [4, 13] }, hcp: [12, 40] }
+        # The takeout double that produced this auction has an 11-HCP floor
+        # (oc1S_X / oc1H_X weak branch): a doubler who qualified on eleven
+        # must be able to answer partner's responsive double on eleven.
+        requires: { suits: { S: [4, 13] }, hcp: [11, 40] }
         shows: "answering partner's negative double in the major it promised"
         establishes: { forcing: non_forcing, agreed_suit: S }
       # At this height the cheapest bid in a new suit is a four-level
@@ -13497,6 +13738,30 @@ contexts:
       # of this rule had to learn it the hard way - the values are counted
       # opposite what partner has actually shown, or the rule cheerfully
       # rebids to game over a preemptive raise.
+      # Nothing in the generic toolkit RAISED partner's notrump: uc_nt1/2/3,
+      # cl_nt1/2/3, ch_nt3, ballow_nt*, balhigh_nt* are every one of them a
+      # NATURAL notrump about my own balanced hand and stoppers, so thirteen
+      # points opposite a shown 18-19 passed.  we_bid_last + not
+      # we_hold_contract is "partner's bid is the standing contract"; the
+      # level is pinned to TWO, where partner's notrump is always a limited
+      # natural one - a one-level notrump from partner is a RESPONSE, not a
+      # description of a balanced hand.
+      - id: uc_nt_raise3
+        call: 3NT
+        # Under uc_nt3 (29), so the natural reading of 3NT stays primary - and
+        # under EVERY three-level natural suit bid (uc_new_*3 at 27, uc_new_*3_hi
+        # at 27.5), because a hand with a suit still unshown has something better
+        # to say than "raise".  Shipped at 28.5 and it silenced a locked round-9
+        # scenario: 5-5 in the majors opposite partner's 2NT raised to game
+        # instead of bidding three spades.  A raise is what you bid when there
+        # is nothing left to describe, so it sits directly above uc_pass's floor
+        # among the calls that are legal over a standing 2NT.
+        priority: 26.5
+        when: { we_bid_last: true, we_hold_contract: false, standing_bid_strain: [NT],
+                standing_bid_level: [2] }
+        requires: { evals: { rule_of_26: [25, 99] } }
+        shows: "raising partner's notrump to game: 25+ combined opposite the range partner has shown"
+        establishes: { forcing: sign_off }
       - id: uc_rebid_C2
         call: 2C
         priority: 29
