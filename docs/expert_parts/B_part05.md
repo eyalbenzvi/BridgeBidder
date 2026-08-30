@@ -1101,3 +1101,594 @@ exactly as `responder_rebid_after_1NT_rebid` and
 `responder_rebid_after_1H_1S_1NT` are already paired.
 
 ---
+## Board 387 — the 5-5 eighteen-count has no bid: opener's jump shift over the forcing notrump
+
+**Seat/call.** Table B call 6, seat E: `P P 1S P 1NT P`, hand
+`AKJ82.J7.KQ942.A` — five spades, five diamonds, 18 HCP.  Every second-suit
+rebid in `opener_rebid_1M_1NT` is capped at 17, so `ob_1M1NT_2D` fits **0.800**
+and wins the soft-miss lottery; the auction dies in 2S with 4S cold.
+
+**The missing agreement.**  Opener's jump shift over the (semi-)forcing 1NT
+shows 5-4 or better with 18-21 and is game forcing.  It is the standard way to
+say "too good for a simple rebid", and the ladder simply has no rung above 17
+that is not a rebid of the major.
+
+**YAML — the jump** (`opener_rebid_1M_1NT`, `expand: { M: [H, S] }`):
+
+```yaml
+      - id: ob_1M1NT_jump3C_$M
+        call: 3C
+        priority: 58
+        requires: { suits: { C: [4, 13], $M: [5, 13] }, hcp: [18, 21] }
+        shows: "jump shift: 5-4 or better in $M and clubs with 18-21, game forcing"
+        establishes: { forcing: game_forcing }
+      - id: ob_1M1NT_jump3D_$M
+        call: 3D
+        priority: 58
+        requires: { suits: { D: [4, 13], $M: [5, 13] }, hcp: [18, 21] }
+        shows: "jump shift: 5-4 or better in $M and diamonds with 18-21, game forcing"
+        establishes: { forcing: game_forcing }
+```
+
+and the other-major case, in `opener_rebid_1S_1NT_second_major` (which already
+exists for exactly this reason — 1H-1NT-2S would be a reverse):
+
+```yaml
+      - id: ob_1S1NT_jump3H_S
+        call: 3H
+        priority: 58
+        requires: { suits: { S: [5, 13], H: [4, 13] }, hcp: [18, 21] }
+        shows: "jump shift: five spades and four or more hearts with 18-21, game forcing"
+        establishes: { forcing: game_forcing }
+      # inert floor (opener_rebid_1M_1NT[S] defines P earlier), added only so
+      # this context stops tripping the [floor] lint once it has two rules
+      - id: ob_1S1NT_floor_S
+        call: P
+        priority: 1
+        requires: {}
+        shows: "no second-suit rebid applies"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT — the jump is a game force, so both halves ship:**
+
+```yaml
+  - id: responder_over_1NT_jump_shift
+    description: "Responder answers opener's 18-21 jump shift over the semi-forcing 1NT"
+    expand_pairs:
+      - { M: H, X: C }
+      - { M: H, X: D }
+      - { M: S, X: C }
+      - { M: S, X: D }
+      - { M: S, X: H }
+    pattern: "1$M - P - 1NT - P - 3$X - P - ?"
+    rules:
+      - id: rjs1n_game_$X
+        call: 4$M
+        priority: 58
+        requires: { suits: { $M: [3, 13] } }
+        shows: "three-card support opposite the 5-4 or 5-5: the major game"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: rjs1n_raise_$X
+        call: 4$X
+        priority: 57
+        requires: { suits: { $X: [4, 13], $M: [0, 2] } }
+        shows: "four-card support for opener's second suit, no fit for the major"
+        establishes: { forcing: game_forcing, agreed_suit: $X }
+      - id: rjs1n_pref_$X
+        call: 3$M
+        priority: 56
+        requires: { suits: { $M: [2, 2], $X: [0, 3] } }
+        shows: "doubleton preference to opener's major: no support for either suit, so the five-card one plays"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+      - id: rjs1n_3NT_$X
+        call: 3NT
+        priority: 54
+        requires: {}
+        shows: "placing the game opposite 18-21 when neither of opener's suits fits"
+        establishes: { forcing: sign_off }
+
+  - id: opener_over_1NT_jump_shift_preference
+    description: "Opener over responder's doubleton preference to the jump-shift auction"
+    expand_pairs:
+      - { M: H, X: C }
+      - { M: H, X: D }
+      - { M: S, X: C }
+      - { M: S, X: D }
+      - { M: S, X: H }
+    pattern: "1$M - P - 1NT - P - 3$X - P - 3$M - P - ?"
+    rules:
+      - id: ojsp_game_$X
+        call: 4$M
+        priority: 55
+        requires: {}
+        shows: "the 5-2 major game opposite the preference: 18+ opposite 6-11 is enough"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+```
+
+`rjs1n_3NT_$X` carries `requires: {}`, so the answering seat is never starved —
+round 6's `rkc5H_signoff` lesson applied.
+
+**What it endangers.**  `uc_new_C3`/`uc_new_D3` (27) are the only other rules
+offering 3C/3D in this seat, and they are already unreachable: `ob_1M1NT_2C`
+(52) and `ob_1M1NT_2D` (53) fit every hand they describe at a lower level and
+outrank them.  `ob_1M1NT_3$M` (56) and `ob_1M1NT_4$M` (57) demand six of the
+major and are untouched.  `ob_1M1NT_2NT` (51, 18-19 balanced) — my rung
+requires 5-4 shape, so a balanced 18 still bids 2NT.
+
+**VERIFIED, whole conversation.**  `P P 1S P 1NT P` → **3D**
+(`ob_1M1NT_jump3D_S`); `Q5.A82.T6.KT9542` → **3S** (`rjs1n_pref_D`);
+`AKJ82.J7.KQ942.A` → **4S** (`ojsp_game_D`).  4S by E is eleven tricks: +450
+instead of +200.
+
+**Template.** As written: two rules under the existing `expand: { M: [H, S] }`,
+one in the 1S-only context, and five-way `expand_pairs` on both answering
+contexts.
+
+---
+
+## Board 507 — NOTHING-WRONG (constructive)
+
+**Seat/call.** Table A call 7, seat S: `P P 1C P 1S P 2S`, hand
+`T.J93.QJT4.AKQ73` — we pass; BEN doubles.  Table B's first divergence is a
+fourth-seat opening decision (`open_pass` on `A654.AK2.75.T982`, rule of 15).
+
+**What I checked.**  `cl_takeout_X` scores **0.000** not because of the
+singleton spade but because the hand holds five cards in their *other* suit
+(clubs), which is correct — a takeout double with five clubs opposite an
+opening 1C bidder is not a takeout double.  `cl_new_D3` (5+ cards, 14+ points)
+fits 0.349 on a 13-count with four diamonds.  Fourth-seat rule-of-15 opening
+thresholds are scope-excluded.
+
+**Verdict.** NOTHING-WRONG in my discipline; the live question is a balancing
+double, which is the competitive reviewer's.
+
+---
+
+## Board 508 — opener's rebid after a competitive raise of his minor is unauthored
+
+**Seat/call.** Table A call 6, seat S: `P P 1C 1D 2C P`, hand
+`T764.KQJT.AQ.963` — partner's 2C is `cl_raise_C2`, a *competitive* raise
+(3+ trumps, 6-9 support points).  We bid **2NT** (`uc_nt2`, 11-12 balanced),
+down three, -300.
+
+**The missing agreement.**  A competitive raise of my minor is not an
+invitation; a minimum opening passes and lets the opponents have the next word.
+
+**YAML.**
+
+```yaml
+  - id: opener_over_competitive_minor_raise
+    description: "Opener after partner's competitive raise of my minor in a contested auction"
+    expand: { m: [C, D] }
+    pattern: "1$m - act - 2$m - P - ?"
+    rules:
+      - id: ocmr_3NT_$m
+        call: 3NT
+        priority: 54
+        requires: { hcp: [18, 21], evals: { weakest_unshown_stopper: [0.9, 9] } }
+        shows: "18-21 with the unshown suits stopped: game opposite the raise"
+        establishes: { forcing: sign_off }
+      - id: ocmr_3$m
+        call: 3$m
+        priority: 52
+        requires: { suits: { $m: [6, 13] }, evals: { total_points: [15, 40] } }
+        shows: "competing to three of my own six-card minor"
+        establishes: { forcing: non_forcing, agreed_suit: $m }
+      - id: ocmr_pass_$m
+        call: P
+        priority: 50
+        requires: {}
+        shows: "partner's raise was competitive, not constructive: a minimum opening passes"
+        establishes: { forcing: sign_off }
+```
+
+Note the deliberate omission: the context does **not** define 2NT, so `uc_nt2`
+is still offered — it simply loses to a fit-1.00 pass at priority 50 instead of
+winning by default.  That is the smallest possible subtraction.
+
+**ANSWERING SEAT.**  `ocmr_3$m` is `non_forcing`; `ocmr_3NT_$m` is a contract.
+Nothing new is asked, so no new answering seat is owed.
+
+**What it endangers.**  `uc_pass` (18) — replaced by an identical floor;
+`uc_nt2` (28) and `uc_nt3` (29) — outranked, which is the fix;
+`uc_raise_C3`/`uc_rebid_C3` (27) — the 3m rung carries the better description
+(six cards *and* extras) for the hands that should compete.
+
+**VERIFIED.**  `P P 1C 1D 2C P` → **P** (`ocmr_pass_C`), replacing 2NT.  The
+IMP gain is not guaranteed by this board's double-dummy sheet alone — 2C by S
+is also five tricks — but passing hands the auction back to E/W, who hold the
+13-count that balanced into 3D for -110 at the other table, and -110 rather
+than -300 is where the five IMPs are.
+
+**Template.** `expand: { m: [C, D] }`.  The major twin
+(`1$M - act - 2$M - P - ?`) is a *different* agreement — a major fit is worth
+competing — and should not be copied blind.
+
+---
+
+## Board 515 (and 885) — a limit raise on three ragged trumps
+
+**Seat/call.** Board 515, table B call 2, seat E: `1S P`, hand
+`743.A95.65.KQT43` — `r1S_limit_raise` (3+ spades, 10-13 support points, 8-11
+HCP) fits **1.000** and we bid 3S; opener accepts and 4S is one off.  Board 885
+is the same rung on `T987.QT.J98.AQJ7`.
+
+**The missing agreement.**  A raise to three promises **either eleven high-card
+points or an honour in the trump suit**.  Ten support points made of side-suit
+honours opposite three or four ragged trumps is a *maximum single raise*: the
+tenth point is a doubleton that will never ruff anything, and the trump suit
+contributes nothing.
+
+**YAML** (`resp_1S`; the `resp_1H` twin is identical with H for S):
+
+```yaml
+      # A raise to three promises a trump honour or eleven high-card points.
+      # Additive: the limit raise keeps its whole band except the ragged 8-10
+      # corner this rung describes better.
+      - id: r1S_raise_ragged_S
+        call: 2S
+        priority: 61
+        requires:
+          suits: { S: [3, 13] }
+          hcp: [8, 10]
+          evals: { total_points: [10, 11], "suit_quality(S)": [0, 0.5] }
+        shows: "maximum single raise: 10-11 support points but no honour in the trump suit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: r1S_limit_raise
+        call: 3S
+        priority: 62
+        requires:
+          suits: { S: [3, 13] }
+          evals: { total_points: [10, 13] }
+          hcp: [8, 11]
+          not: { hcp: [0, 10], evals: { "suit_quality(S)": [0, 0.5] } }
+        shows: "limit raise: 3+ spades, 10-13 support points, and either eleven HCP or a trump honour"
+        establishes: { forcing: invitational, agreed_suit: S }
+```
+
+**ANSWERING SEAT.**  Both calls are already answered: `opener_after_limit_raise`
+hears 3S, and `responder_rebid_after_1M_raise` (plus this file's new trial
+bids) hears 2S.  The point of the change is precisely that a hand routed to 2S
+now gets a *trial bid* rather than a blind accept — boards 515 and 938 are two
+halves of the same agreement.
+
+**What it endangers, and the two prototypes I threw away.**
+* First attempt: widen `r1S_single_raise` to `total_points: [6, 10]`.  That
+  moved a genuine limit raise (`T987.A95.A52.QT3`, 4 trumps) from 3S to 2S —
+  reverted.
+* Second attempt: an `any_of` with a `suits: { S: [3, 3] }` branch.  The
+  length gate penalised four-trump hands and made it worse — reverted.
+* Shipped version is a *new rung* plus a `not:` corner on the limit raise, so
+  `r1S_single_raise` (60) is untouched, `r1S_1NT` (40) is untouched, and
+  `r1S_jacoby_2NT` (90) / `r1S_splinter_*` (89) are far above and untouched.
+  The subtraction is exactly the ragged 8-10 corner, by construction.
+
+**VERIFIED.**  515: `1S P` → **2S** (`r1S_raise_ragged_S`).  885: `1S P` →
+**2S**.  Regressions all held: `KJ8.A95.652.QT43` (trump honour, 10) → 3S;
+`Q97.A95.652.KQT3` (11 HCP) → 3S; `T987.A95.652.QT3` (10, 4 ragged) → 2S;
+`J43.A95.652.QT43` (weak) → 2S; and the heart twin `A95.743.65.KQT43` → 2H.
+
+**Template.** One new rung and one `not:` clause in each of `resp_1S` and
+`resp_1H`.  It should also be carried to `r1S_raise_passed`/`r1H_raise_passed`
+(which are already capped at 2M) — no change needed there — and considered for
+`jordan_raise`.
+
+---
+
+## Board 520 — NOTHING-WRONG (constructive)
+
+**Seat/call.** Table B call 1, seat E: second-seat opening with
+`T7.AT972.A76.QJ7` (11 HCP, rule of 20 = 11 + 5 + 3 = 19).  We pass; BEN opens
+1H.
+
+**What I checked.**  `open_1H` misses by one HCP (0.800) and `open_1H_rule20`
+misses the rule-of-20 count (0.800); `open_pass` fits 1.00 at priority 20 and
+wins on the fast path.  This is an opening threshold, scope-excluded.  The rest
+of table B is a 1S overcall and a competitive 2NT.
+
+**Verdict.** NOTHING-WRONG in my discipline.
+
+---
+
+## Board 585 — the penalty pass of a balancing double, and a NEGATIVE RESULT
+
+**Seat/call.** Table A call 5, seat S: `1S P P X P`, hand `T982.AQ2.K84.AT8` —
+13 HCP with **four spades sitting over the opener**.  We bid 2S
+(`advbal_S_cue`, game forcing) and the pair then invented a suit a turn:
+`3C 3D 3H 4H`, -50, where 1S doubled is two off for +300.
+
+**The missing agreement.**  Four trumps behind a one-level opener, with
+defensive values, is a penalty pass of partner's balancing double —
+`advance_weak2_double_*` has one (`aw2S_pass_penalty`), the balancing family
+never got one, and `adx_sit` demands a *quality* holding.
+
+**Why the obvious version is wrong — reported as a negative result.**  My first
+prototype put the penalty pass in `advance_balancing_double_S`.  It fires, but
+that context **does not otherwise define `P`**, so defining it there shadowed
+`general_pull_or_sit` entirely: on `T982.A92.K84.T84` the engine went from a
+sound pass (`adx_pass_min`, fit 1.00) to **1NT**, because both of that
+context's authored passes were blocked.  Adding a `requires: {}` floor pass did
+not rescue it either — `score_candidates` drops a non-**discriminating** pass
+whenever pass is forbidden, so the floor was never a candidate at all.  Both
+halves reverted.
+
+**Shipped version — additive, in the context that already defines `P`:**
+
+```yaml
+      # adx_sit demands a QUALITY holding (1.5) in their suit, so four small
+      # trumps behind a one-level opener - the commonest penalty pass there
+      # is - scored 0.33 and the hand invented an advance.  At the ONE level
+      # four cards plus defensive values is the whole credential.
+      - id: adx_sit_four
+        call: P
+        priority: 61.5
+        when: { their_last_bid_suit: true, standing_bid_level: [1] }
+        requires:
+          evals: { standing_suit_length: [4, 13], total_points: [10, 40] }
+        shows: "sitting the double at the one level: four trumps behind the opener and defensive values"
+        establishes: { forcing: sign_off }
+```
+
+**ANSWERING SEAT.**  A pass ends the auction; nothing is owed.
+
+**What it endangers.**  `adx_sit` (61) — same call, and my gate is the same
+length requirement with the quality floor traded for a point floor and a level
+restriction, so on the hands both describe the outcome is identical.
+`advbal_$X_H`/`_D`/`_C` (54-57) and `advbal_$X_cue` (49) — all outranked, but
+only when I hold four of their suit at the one level with 10+ points, which is
+the one shape where advancing is wrong.  `standing_bid_level: [1]` keeps the
+rung away from every higher-level double.
+
+**VERIFIED.**  `1S P P X P` → **P** (`adx_sit_four`), replacing 2S.  1S
+doubled is six tricks for declarer: +300 (they are vulnerable) instead of -50.
+Regressions: `T982.A92.K84.T84` (8 HCP) still passes via `adx_pass_min`;
+`32.A92.K843.T843` still advances 2D.
+
+**Template.** Single rule in `general_pull_or_sit`, no expansion needed
+(`standing_suit_length` is suit-agnostic).
+
+---
+
+## Board 661 — the doubler jumps to game opposite a FORCED advance
+
+**Seat/call.** Table B call 6, seat W: `P 1D X P 1S P`, hand
+`QT98.AKQ3.8.AQJ3` — 18 HCP, singleton diamond, four spades, 21 total points.
+`uc_doubler_game_S` ("jump to game opposite the advance: **20+** with 4-card
+support") fits 1.000 and we bid 4S, one off.  BEN bids 3S.
+
+**The missing agreement.**  Advancer's cheapest suit at the one level is
+**forced** and shows 0-8; twenty opposite it is an invitation, not a contract.
+The ladder ran 2S (17-19) and then straight to game, so the jump raise — the
+rung that actually describes 20-21 — was missing.
+
+**YAML.**
+
+```yaml
+      - id: uc_doubler_game_$M          # band raised 20 -> 22
+        call: 4$M
+        priority: 35
+        when: { partner_suit: $M, my_last_call_was_double: true, we_hold_contract: false }
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [22, 40] } }
+        shows: "jump to game opposite the FORCED cheapest advance: 22+ with 4-card support"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: uc_doubler_jumpraise_$M
+        call: 3$M
+        priority: 34.5
+        when: { partner_suit: $M, my_last_call_was_double: true, we_hold_contract: false,
+                standing_bid_level: [1] }
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [20, 21] } }
+        shows: "jump raise of the forced advance: 20-21 with four-card support, invitational"
+        establishes: { forcing: invitational, agreed_suit: $M }
+```
+
+**THE ANSWERING SEAT** — the jump raise is an invitation, so it ships with one:
+
+```yaml
+  - id: advancer_over_doubler_jump
+    description: "Advancer answers the doubler's invitational jump raise of the forced advance"
+    expand: { M: [H, S] }
+    pattern: "... - X - P - 1$M - P - 3$M - P - ?"
+    rules:
+      - id: adj_accept_$M
+        call: 4$M
+        priority: 40
+        requires: { suits: { $M: [4, 13] }, evals: { total_points: [7, 40] } }
+        shows: "accepting: a maximum for the forced advance, with a fourth trump"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: adj_decline_$M
+        call: P
+        priority: 38
+        requires: {}
+        shows: "declining: the advance was forced and this is the minimum it promised"
+        establishes: { forcing: sign_off }
+```
+
+**What it endangers.**  Raising `uc_doubler_game_$M`'s floor from 20 to 22
+subtracts exactly the 20-21 class, which the new rung catches one level lower.
+`uc_doubler_raise_$M` (2$M, 34) keeps its 17-19 band underneath; the jump rung
+sits at 34.5 between them and carries `standing_bid_level: [1]` so it can never
+fire over a three-level advance (where `uc_doubler_game3_$M` already rules).
+The answering context owns 4$M and P in that one shape; both rungs together are
+total: one is `requires: {}`.
+
+**VERIFIED.**  `P 1D X P 1S P` → **3S** (`uc_doubler_jumpraise_S`), and the
+advancer's `J643.J54.9543.T4` → **P** (`adj_decline_S`).  3S by E makes nine
+tricks: +140 to us instead of 4S one off.
+
+**Template.** `expand: { M: [H, S] }` on all three pieces (the two rungs are
+already written per suit in `general_uncontested_continuation`).
+
+---
+
+## Board 705 — NOTHING-WRONG (constructive)
+
+**Seat/call.** Table A call 1, seat S: `1C`, hand `Q54.AJ63.K92.QT8` — a
+4-3-3-3 twelve-count.  We pass; BEN doubles.
+
+**What I checked.**  `oc1C_X` fits 0.349 (a takeout double wants shortness in
+their suit and this hand has three clubs), `oc1C_1H` 0.349 (four hearts, not
+five), `oc1C_1NT` 0.127 (15-18 needed).  Every rung correctly declines to
+describe a flat twelve with three of their suit; whether to double anyway is a
+style threshold, not a missing agreement, and takeout-double credentials are
+recorded in `DECISIONS.md` as a settled system choice.
+
+**Verdict.** NOTHING-WRONG in my discipline.
+
+---
+
+## Board 723 — the suit advances of a double all stop at eight points
+
+**Seat/call.** Table A call 3, seat S: `2S X P`, hand `A94.A6.QT9542.T9` — ten
+points and a **six-card** diamond suit.  Every suit advance in
+`advance_weak2_double_S` is capped at 8 total points, and the only 9-11 rungs
+are 2NT and a game jump in a major, so we bid **2NT** on a hand with two
+doubletons and six diamonds.
+
+**The missing agreement.**  A six-card suit with 9-13 opposite the double is
+bid, not converted to notrump.
+
+**YAML** (`advance_weak2_double_S`; the 2D and 2H twins are identical):
+
+```yaml
+      - id: aw2S_long3_D
+        call: 3D
+        priority: 59
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [9, 13] }
+          not: { any_of: [ { suits: { H: [4, 13] } } ] }
+        shows: "six-card diamond advance of the double, 9-13: the suit, not notrump"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: aw2S_long3_C
+        call: 3C
+        priority: 59
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [9, 13] }
+          not: { any_of: [ { suits: { H: [4, 13] } } ] }
+        shows: "six-card club advance of the double, 9-13: the suit, not notrump"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+```
+
+**ANSWERING SEAT.**  `non_forcing` with `agreed_suit` set; the doubler's
+existing raise ladder (`uc_doubler_raise_*`, and board 661's new jump raise)
+reads it.  The `not:` clause preserves the system rule that a four-card major
+is shown first, so the doubler's major-oriented rungs are not misled.
+
+**What it endangers.**  `aw2S_3D`/`aw2S_3C` (57/58) keep their whole 0-8 band
+underneath — additive.  `aw2S_2NT` (55) and `aw2S_cue` (54) are outranked only
+by a genuine six-bagger with 9-13, which is exactly the hand type they describe
+worst.  `aw2S_4H` (60) still outranks me, correctly: a four-card major and
+game values comes first.
+
+**VERIFIED.**  `2S X P` → **3D** (`aw2S_long3_D`), replacing 2NT.
+
+**Template.** Two rules in each of `advance_weak2_double_D`, `_H` and `_S`
+(six rules), with the `not:` clause naming whichever majors are still unbid.
+
+---
+
+## Board 755 — responder over opener's 1NT rebid after a negative double
+
+**Seat/call.** Table A call 7, seat S: `P 1D 1H X P 1NT P`, hand
+`QJ43.T82.KT87.87` (6 HCP) — we bid **2D** (`uc_raise_D2`, generic).  Partner's
+1NT is a *contract*; pulling it to two of his minor with a balanced six-count
+converts a plus into a minus, and the seat is unauthored.
+
+**The missing agreement.**  After opener's 1NT rebid over the negative double,
+notrump is our partscore: responder passes with a minimum, invites with 9-10
+and bids game with 11+.  Nothing is corrected to a minor.
+
+**YAML.**
+
+```yaml
+  - id: responder_over_1NT_rebid_after_negative_double
+    description: "Responder over opener's 1NT rebid after the negative double"
+    expand_pairs:
+      - { m: C, M: H }
+      - { m: D, M: H }
+      - { m: C, M: S }
+      - { m: D, M: S }
+    pattern: "1$m - 1$M - X - P - 1NT - P - ?"
+    rules:
+      - id: rnd1n_3NT_$M
+        call: 3NT
+        priority: 56
+        requires: { hcp: [11, 40] }
+        shows: "game opposite the 12-14 notrump rebid"
+        establishes: { forcing: sign_off }
+      - id: rnd1n_2NT_$M
+        call: 2NT
+        priority: 54
+        requires: { hcp: [9, 10] }
+        shows: "invitational opposite the 12-14 notrump rebid"
+        establishes: { forcing: invitational }
+      - id: rnd1n_pass_$M
+        call: P
+        priority: 50
+        requires: {}
+        shows: "notrump is our best partscore: a minimum negative double has nothing to correct to"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT** for `rnd1n_2NT_$M`: `opener_over_invite_2NT_after_2suits`
+does not match this pattern, so the invitation needs
+`"1$m - 1$M - X - P - 1NT - P - 2NT - P - ?"` with a 3NT accept (`hcp:
+[13, 14]`) and a `requires: {}` pass.  As on boards 151 and 300, the pass rung
+alone is the board's gain and is safe shipped by itself.
+
+**What it endangers.**  `uc_raise_D2` (30), `uc_nt2` (28), `uc_nt3` (29) and
+`uc_pass` (18) in this one seat.  All four are the generic ladder treating
+opener's 1NT as a suit bid.  The 2NT/3NT rungs are strictly more descriptive
+than `uc_nt2`/`uc_nt3` here because the *combined* range is known.
+
+**VERIFIED.**  `P 1D 1H X P 1NT P` → **P** (`rnd1n_pass_H`), replacing 2D.
+
+**Template.** Four-way `expand_pairs` as written.
+
+---
+
+## Board 838 — a NEGATIVE RESULT: "open the longer minor" cannot be a gate alone
+
+**Seat/call.** Table A call 0, seat S: opening with `AK953.J9.QJT964.` — five
+spades, **six** diamonds, 11 HCP.  We open 1S (`open_1S_rule20`); BEN opens 1D.
+
+**The agreement is right.**  With a five-card major and a longer minor, open
+the minor and bid the major next: it is the textbook treatment and it is what
+BEN does.  This is a *suit-selection* rule, not one of the opening-strength
+thresholds `DECISIONS.md` rules out.
+
+**What I tried and what it did.**  Adding the shape denial
+
+```yaml
+          not: { suits: { S: [5, 5] }, any_of: [ { suits: { D: [6, 13] } }, { suits: { C: [6, 13] } } ] }
+```
+
+to `open_1S`/`open_1S_rule20` makes the hand **pass**, not open 1D:
+`open_1D` requires "no 5-card major" and `open_1m_rule20` fits 0.100, so
+subtracting 1S subtracts the opening altogether.  Traced: `AK953.J9.QJT964.` →
+**P**.  Reverted.
+
+**What the shipped version would have to be** (I am not proposing it without
+measurement, because it touches the busiest context in the file): the denial
+above **plus** a matching pair of rungs in `openings` —
+
+```yaml
+      - id: open_1D_five_four_major
+        call: 1D
+        priority: 74.5
+        requires:
+          suits: { D: [6, 13], S: [5, 5] }
+          evals: { rule_of_20: [20, 33] }
+        shows: "six diamonds longer than the five-card major: open the longer suit and bid the major next"
+        establishes: { forcing: one_round }
+```
+
+and its C/H permutations.  That is four rungs plus two gates in `openings`,
+which is a subject of its own.
+
+**Verdict:** negative result reported, not shipped.  Board 838's constructive
+content is exhausted by it; the rest of both auctions is competitive.
+
+---

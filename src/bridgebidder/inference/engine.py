@@ -526,7 +526,7 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
                 break
     for fb in generate_fallbacks(
         auction, seat, partner_suits, their_suits,
-        side.agreed_suit, side.game_forced, frozenset(covered), we_have_acted,
+        side.agreed_suit, side.game_forced, frozenset(), we_have_acted,  # item 4: unconditional
         partner_signed_off, we_hold_contract(auction, seat), partner_forcing,
         pass_forbidden,
         our_artificial_doubled=our_artificial_doubled,
