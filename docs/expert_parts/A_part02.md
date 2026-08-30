@@ -1719,6 +1719,13 @@ finding as the more valuable half of this board.
 all of which describe the hand better when they fit.  No fallback hazard —
 2C/3C are already covered.
 
+**Template:** eight rungs — a simple advance and a jump advance for each of the
+four suits — hand-written in `general_competitive_low` (no `expand:` there),
+mirroring `ch_advance_x3_$X` / `ch_advance_x4_$X` in the high context, which are
+the twins this is filling in for.  Do not template it into
+`general_balancing_low`: there partner's double is a BALANCING double and the
+advance is a different agreement.
+
 **Not proposed:** South's balancing `X` on `7.AKQJ943.K.J873` (seven hearts) is
 the dossier's first divergence, and "a takeout double must not hide a six-card
 suit" is on the do-not-re-propose list — round 7's whole-corpus data has

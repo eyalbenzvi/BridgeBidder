@@ -27,7 +27,7 @@ added to existing contexts — and:
   4M, the locked six-card-major game try) produce the intended call, so there is
   no cross-interference between the twenty proposals;
 * the batch parses (`load_system` on the patched file, 0 duplicate ids);
-* **`python3 -m pytest -q` against the patched system: 768 passed, 0 failed.**
+* **`python3 -m pytest -q` against the patched system: 769 passed, 0 failed.**
   An earlier draft of the trial bid broke exactly one locked scenario
   (`rebids::opener_game_try_after_single_raise`) and that failure is reported in
   full under board 90 together with the narrowing that fixes it — round 14's
@@ -661,8 +661,8 @@ sign-off, so it is priced in full.
   `rebids::opener_game_try_after_single_raise` (`AQJ752.A64.K42.9`, expecting
   3S) and bid 3D instead.  Gating the trump suit to exactly five restores it:
   with a six-card major you hold your own source of tricks and 3M is a
-  sufficient try.  **767 passed / 1 failed before the narrowing; the narrowing
-  is in the YAML above.**
+  sufficient try.  **768 passed / 1 failed before the narrowing; 769 passed / 0 failed after.
+  The narrowing is in the YAML above.**
 
 **VERIFIED.**  N → `hst_try_HD` 3D at fit 1.000 (both the competitive seat on
 this board and the uncontested twin).  Answering seat: a singleton diamond
@@ -2112,7 +2112,7 @@ jump and 5 × 4 for the answer, **25 rules from one idea**.
 ## Appendix — checks run, and the one thing I could not price
 
 * **All twenty proposals loaded together:** `load_system` on the patched file
-  parses (593 contexts, 2567 rules against 517/2344); **`pytest -q` → 768
+  parses (593 contexts, 2568 rules against 517/2344); **`pytest -q` → 769
   passed, 0 failed**; `lint_system.py` → collide 0, gap 0, shape 0, sibling 0,
   soft 0, all identical to the baseline.  `floor` rises 223 → 234, and every one
   of the eleven new findings is a top-up context with a single rung and no pass
