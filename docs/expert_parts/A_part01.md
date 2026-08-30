@@ -1421,3 +1421,165 @@ unfavourable is exactly the discipline failure this project pays for.
 
 **NOTHING-WRONG** from the competitive/matchpoint discipline.
 
+## Board 479 — NOTHING-WRONG (competitive lens)
+
+**Verdict.** Uncontested game force.  Table A, call 7: S with `853.K32.A94.AKT9`
+bids `3C` (`uc_raise_C3`) at fit **0.082** after `1C - 2C - 2NT` — a textbook
+soft-miss lottery: the whole candidate set tops out at 0.082 and the engine
+takes the least-bad misfit, then drives to 5C for -100 where 3NT makes ten.
+That is the `gf_landing_*` family and the scoring-model question DECISIONS says
+has never been attacked directly; it is not a competitive board.
+
+**What I checked on the competitive side.**  All five of our table-B calls are
+passes BEN also makes at 1.00; E has 3 HCP and W 11 balanced **vulnerable
+against vulnerable** with no suit worth showing, and `oc1C_pass` / `cl_pass` /
+`ch_pass` / `balhigh_pass` are each right.  One structural note for the round,
+since it is in my lane: **the whole `gf_landing_*` family uses
+`pattern: "... - P - ?"`,** which means "RHO passed", so after any competitive
+call — a double included — the game-force landing ladder is unreachable and the
+seat falls to `uc_*` or the code fallback.  DECISIONS already lists this; this
+board is its uncontested twin and shows the ladder is thin even when nobody
+interferes.
+
+**NOTHING-WRONG** from the competitive/matchpoint discipline.
+
+## Board 580 — margin -12
+
+**Seat/call that went wrong.** Table A, call 2, **S doubles** (`cl_negative_X2`)
+after `1H(partner) - 2S`, holding `6.T986.AT85.AK43` — **four-card heart
+support**, a singleton spade, 11 HCP.  A negative double denies a fit for
+partner's suit; we then defended 4S doubled for +800 while the other table bid
+the cold 6H for +1460.
+
+**The missing agreement (one sentence).** `resp_1M_over_2x`'s `expand_pairs` is
+`(H,C) (H,D) (S,C) (S,D) (S,H)` — **the pair `(M: H, x: S)` is missing**, so
+`1H - 2S - ?` has no responder context at all: no cue-bid raise, no competitive
+raise, no shaped negative double, and the seat is annexed by the generic
+`cl_negative_X2` at priority 33.
+
+(The pair cannot simply be added to the existing `expand_pairs`: with `M: H` and
+`x: S`, `$oM` is spades — *their* suit — so `r1M2x_X` would demand four cards in
+the suit they just bid.  It needs its own context.)
+
+**EXACT YAML.**  A new context, placed after `resp_1M_over_2x`:
+
+```yaml
+  - id: resp_1H_over_2S
+    description: "Responder after 1H - (2S) jump overcall"
+    pattern: "1H - 2S - ?"
+    rules:
+      - id: r1H2S_cue
+        call: 3S
+        priority: 74
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [10, 40] } }
+        shows: "cue-bid raise: limit raise or better in hearts"
+        establishes: { forcing: one_round, agreed_suit: H }
+        alertable: true
+        convention: cue_raise
+      - id: r1H2S_X
+        call: X
+        priority: 72
+        requires:
+          hcp: [8, 40]
+          not: { suits: { H: [3, 13] } }
+          any_of: [ { suits: { C: [4, 13], D: [4, 13] } }, { suits: { C: [5, 13] } }, { suits: { D: [5, 13] } } ]
+        shows: "negative double: the minors, no heart fit"
+        establishes: { forcing: one_round }
+        convention: negative_double
+      - id: r1H2S_raise
+        call: 3H
+        priority: 70
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [6, 9] } }
+        shows: "competitive raise to the three level"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: r1H2S_2NT
+        call: 2NT
+        priority: 55
+        requires: { hcp: [10, 12], features: [ "stopper(S)" ], not: { suits: { H: [3, 13] } } }
+        shows: "10-12 with a spade stopper"
+        establishes: { forcing: invitational }
+      - id: r1H2S_pass
+        call: P
+        priority: 20
+        requires: { hcp: [0, 7] }
+        shows: "nothing to say"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+```
+
+**THE ANSWERING SEAT** (mandatory — `r1H2S_cue` is `forcing: one_round`, and
+`1H - 2S - 3S - P - ?` matches no context today):
+
+```yaml
+  - id: opener_over_cue_raise_H_jump
+    description: "Opener answers the cue-bid raise after (2S) over our 1H"
+    pattern: "1H - 2S - 3S - P - ?"
+    rules:
+      - id: ocj_H_rkc
+        call: 4NT
+        priority: 60
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [18, 40], "keycards(H)": [3, 5] }
+        shows: "keycard ask: partner has promised a limit raise or better and my hand plays for a slam"
+        establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: ocj_H_game
+        call: 4H
+        priority: 52
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [13, 40] }
+        shows: "accepting the cue-bid raise: game in the agreed major"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: ocj_H_min
+        call: P
+        priority: 40
+        requires:
+          evals: { total_points: [0, 12] }
+        shows: "a dead minimum: no game opposite a limit raise once they have taken the three level"
+        establishes: { forcing: sign_off, agreed_suit: H }
+```
+
+The 4NT lands in the existing `rkc_response_agreed_H` / `rkc_continue_after_5H`
+machinery, so the conversation is closed with no further authoring.
+
+**WHAT IT ENDANGERS.**  The new responder context is a superset —
+`general_competitive_low` still contributes `cl_raise_H4`, `cl_new_*`, `cl_pass`
+etc. (traced).  What my rungs outrank:
+
+* `cl_negative_X2` (33) — the target.  A negative double with four-card support
+  for partner's major is a definitional error, not a judgement call.
+* `cl_raise_H4` (32) / `cl_raise_H3` (31) / `cl_raise_lott4_H` (32) — a limit
+  raise or better should cue, not guess a level; and the weak raises stay
+  reachable below 10 total points through `r1H2S_raise` at 70 (which is above
+  them, so the *described* raise wins).
+* `cl_pass` (20) — a 0-7 hand keeps passing through `r1H2S_pass`.
+* **Fallback:** `3S`, `3H`, `2NT`, `X` and `P` in this seat were all already
+  covered by `general_competitive_low` rungs, so no code fallback is deleted.
+
+**VERIFIED — the whole conversation.**  Before: `X` (`cl_negative_X2`, fit
+1.000 / 33).  After, walked with our engine in both N/S seats:
+`1H (2S) 3S P 4NT P 5H P 6H` — `r1H2S_cue` (1.000/74), `ocj_H_rkc` (1.000/60),
+then the existing `rkc_5H_agreed` and `rkc5H_slam`.  **6H makes thirteen
+tricks**, i.e. the +1460 the other table scored.
+
+**NEGATIVE RESULT, reported rather than shipped.**  My first idea for this board
+was a rung letting N bid `5H` over their `4S` instead of `ch_penalty_X` (a
+self-sufficient seven-card suit outranking the penalty double).  It is wrong on
+the arithmetic: 4S doubled four down non-vulnerable is **+800** and 5H making
+thirteen is **+710**.  The double is the better *partscore* decision; the 12 IMPs
+are lost two calls earlier, at the negative double.  I dropped it.
+
+**SCOPE NOTE.**  Table B's `oc1H_1S` (BEN wants the weak jump 2S) is the
+excluded weak-jump-overcall ranking; not proposed.
+
+**TEMPLATE.**  `resp_1H_over_2S` covers the one one-major-over-the-other jump
+that the existing `expand_pairs` cannot express.  The same shape recurs and
+should be authored in the same batch: `1H - 3S - ?`, `1S - 3H - ?`,
+`1$m - 2$M - ?` and `1$m - 3$M - ?` all lack a cue-raise, and every one of them
+needs the matching `opener_over_cue_raise_*` answering context — the cue-bid
+raise is the single most common competitive convention in the file and only two
+of its dozen positions are authored.
+

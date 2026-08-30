@@ -578,3 +578,169 @@ spade has no call over their spade auction); South's pass of 4S holding
 trump tricks, not high cards.  Nothing to propose.
 
 ---
+
+## Board 116 — margin -6
+
+**Seat/call:** East, call 1 at table B — `(1H) ?` with `A873.T.Q32.A9643`:
+10 HCP, a **singleton** in their suit, four spades, five clubs, three
+diamonds.  We passed (`oc1H_pass`); `oc1H_X` fit 0.800 (its band is 11-16).
+The auction then needed two more rounds and a balancing double to reach 3S.
+
+**Missing agreement:** shape substitutes for the missing point — a takeout
+double with a singleton in their suit and three-plus cards in every other suit
+is a 10-count action, not an 11-count action.
+
+```yaml
+# context: overcalls_of_1H, inserted before `- id: oc1H_1S`
+      - id: oc1H_X_shape
+        call: X
+        priority: 71.5
+        requires:
+          hcp: [10, 11]
+          suits: { H: [0, 1] }
+          evals: { weakest_unbid_length: [3, 13], longest_suit_length: [0, 5] }
+        shows: "takeout double on shape: 10-11 with a singleton or void in their suit and three-plus cards in every unbid suit - the shape is worth the missing point"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT:** already authored and complete —
+`advance_takeout_double[H]` plus `advance_takeout_double_suits_H` (forced
+cheapest suit 0-8, jumps 9-11, 1NT/2NT with a stopper, cue GF, penalty pass).
+No new answering rungs needed; this is why I am willing to widen a double.
+
+**What it endangers:** `oc1H_X` (72 — deliberately left above, so the 11-16 and
+17+ doubles stay primary and mine only fires where the main rung misses);
+`oc1H_1S` (71 — with only four spades I have no overcall, and the gate
+`longest_suit_length: [0, 5]` keeps a genuine six-card suit out); `oc1H_2C`
+(65 — five clubs and 10 HCP is under that rung's floor of 11 anyway);
+`oc1H_3m_jump`/`oc1H_3C_preempt` (58/59 — I have opening shape, not a preempt);
+`oc1H_pass` (25).  X is already covered, so no fallback is deleted.
+**Risk to state plainly:** this widens the takeout double by one point over
+every 1M/1m opening once templated, which is a real blast radius; the singleton
+and the three-cards-everywhere gates are what keep it honest.
+
+**VERIFIED** for the call: base `P`; patched `X` (`oc1H_X_shape`, fit 1.000).
+Regression: the same hand with a DOUBLETON heart passes (mine fits 0.349).
+I did NOT simulate the rest of the auction (West holds 15 HCP with five hearts
+behind the opener and may convert for penalties), so the IMP effect is unproven.
+
+**Template:** the identical rung in `overcalls_of_1C`, `overcalls_of_1D`,
+`overcalls_of_1S` (`oc1C_X_shape`, `oc1D_X_shape`, `oc1S_X_shape`), with
+`suits: { C: [0,1] }` etc.
+
+---
+
+## Board 132 — margin -6 — NOTHING-WRONG (competitive)
+
+Uncontested at both tables.  The divergence is West's rebid on
+`AK62.AQT987.K62.` after `1D - 1H - 2C`: `r1d1h2c_3H` ("6+ hearts,
+invitational or better") versus BEN's 2S, i.e. the missing **reverse / fourth
+suit showing the second suit before repeating the first**.  That is
+constructive-auction machinery and belongs to the other reviewer.  Nothing our
+side could have done competitively: E/W were never opposed.
+
+---
+
+## Board 188 — margin -6
+
+**Seat/call:** North, call 4 — `1H (2D) 2H (P) ?` with `.AQ843.K92.KQJ83`.
+We bid **4H** (`uc_raise_H4`, fit 1.000) for -100; 3H makes nine.
+
+**Missing agreement:** at exactly eight or nine trumps, with no fit shown their
+way, the Law says three — the four-level raise is a total-trick bid and
+without a known fit on their side the trick count does not support it.  (And
+the five points that took this hand over `uc_raise_H4`'s bar are a VOID in a
+suit nobody has bid, opposite a partner whose values may be sitting in it.)
+
+Note also that `uc_raise_H4` is deciding a *competitive* auction from
+`general_uncontested_continuation` — the confirmed open item — and that its
+competitive twin `cl_raise_lott4_H` carries `their_fit >= 8`, the Law gate the
+file says was learned the hard way.  This rung ports that discipline.
+
+```yaml
+# context: general_uncontested_continuation, before `- id: uc_raise_H4`
+      - id: uc_raise_law3_$M
+        call: 3$M
+        priority: 33
+        when: { partner_suit: $M, is_competitive: true, cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          hcp: [12, 17]
+          suits: { $M: [3, 13] }
+          evals: { "lott_total_trumps($M)": [8, 9], their_fit: [0, 7] }
+        shows: "the Law at the three level: eight or nine trumps our way, no fit shown their way, and my values are high cards rather than a void in a suit nobody has bid - invite, do not bid the game"
+        establishes: { forcing: invitational, agreed_suit: $M }
+```
+
+**THE ANSWERING SEAT:** `invitational`, answered by rungs already present —
+`uc_raise_$M4` (32) accepts, `uc_pass` (18) declines.  Traced: South
+(`K964.J92.43.AT64`, 8 HCP) passes at `uc_pass` fit 1.000 and we play 3H making
+nine.
+
+**What it endangers:** `uc_raise_$M4` (32 — the game raise, which is the point:
+it is demoted only at 8-9 trumps with 12-17 HCP and no fit shown their way);
+`uc_raise_$M3` (31, same call, more general); `uc_rebid_$M3` (29);
+`uc_new_*3(_hi)` (27/27.5); `uc_nt2`/`uc_nt3` (28/29).  It does NOT reach
+`gst_rkc_$M` (46) or anything in `general_slam_try`.  3$M is already covered by
+`uc_raise_$M3`, so no fallback is deleted.
+
+**VERIFIED.**  Base `4H`; patched `3H` (`uc_raise_law3_H`, fit 1.000, prio 33).
+Regressions, all still `4H` or better: a 10-trump hand (`lott` 10, outside
+[8,9]); a 19-HCP hand (outside [12,17], and it finds `gst_rkc_H`).
+
+**Template:** `expand: { M: [H, S] }` — majors only, because at the minors the
+"four level" is not game and `uc_raise_$m4` already carries a ten-trump gate.
+
+---
+
+## Board 191 — margin -6
+
+**Seat/call:** South, call 3 — `1D (P) 1S ?` (sandwich seat) with
+`Q.T8432.A2.AKQT8`: **5-5 in hearts and clubs**, 15 HCP, a singleton spade.
+We doubled (`sw_X`, priority 70) and finished in a 4C/4D muddle for -150.
+
+**Missing agreement:** with 5-5 you bid your suits; the sandwich double is the
+hand with support for BOTH unbid suits, and I have length in only two of the
+three.
+
+```yaml
+# context: sandwich_seat, inserted before `- id: sw_1S`.  The context already
+# carries `expand: { o: [C, D, H, S] }`, so a second context-level expansion is
+# impossible: the six two-suit combinations are written out.  Shown for one
+# pair; the other five are identical with the suit letters swapped.
+      - id: sw_two_suiter_CH
+        call: 2C
+        priority: 71
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13], H: [5, 13] }
+          hcp: [11, 17]
+          evals: { "suit_quality(C)": [1, 9] }
+        shows: "sandwich overcall with a 5-5 two-suiter: bid the LOWER suit first and show the second next round - the double asks partner to guess among three suits and I hold only two of them"
+        establishes: { forcing: non_forcing }
+```
+
+The six ids are `sw_two_suiter_CD`, `_CH`, `_CS`, `_DH`, `_DS`, `_HS`; the call
+is always two of the LOWER suit, so the higher one is still available cheaply.
+
+**Answering seat:** none new — non-forcing, advanced by `advance_overcall` /
+the generic competitive rungs, exactly as an ordinary `sw_2C` is.
+
+**What it endangers:** `sw_X` (70 — the whole point; the double keeps every
+hand that is not 5-5); `sw_1S`/`sw_1H` (68); `sw_2*` (66, same calls, 5+ and
+11-17 — mine is the 5-5 version and strictly narrower); `sw_2*_jump` (69) and
+`sw_3*` (69.5 — those are preemptive shapes with fewer values); `sw_pass` (30).
+2$L is already covered by `sw_2$L`, so no fallback is deleted.
+
+**UNTESTED.**  I checked the candidate table in the dossier (`sw_X` 1.000/70,
+`sw_2C` 1.000/66) and the rule bodies, but did not run the patched system on
+this board.  Honest caveat: BEN's choice here is 2D, a Michaels cue, which is
+scope-excluded; my rung reaches the same hand type by a route the system
+already speaks.
+
+**Template:** six written-out rules (see above) — the context's existing
+`expand: { o: [C, D, H, S] }` blocks a second context-level expansion, and
+`unbid_suit` keeps each rule out of the auctions where its suit has been bid.
+The same six belong in `general_competitive_low` as `cl_two_suiter_*` for the
+live auctions the sandwich context does not own.
+
+---

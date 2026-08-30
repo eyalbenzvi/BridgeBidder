@@ -321,3 +321,429 @@ major answers), plus the same pair for the 2NT opening
 (`"2NT - P - 3C - P - 3$R - X - ?"`). Six contexts, ~20 rules from one idea.
 
 ---
+
+## Board 59 — margin -13
+
+**Seat/call:** table B call 6, E bids **4NT** (`gst_rkc_S`) on
+`KQ96.Q5.KJT532.A` after `1D P 1S 2C 2S 4C`; we play 6S for eleven tricks.
+The auction is competitive throughout, so it is A's board — but the losing call
+is a *slam* call and the reason it is made is constructive.
+
+What I checked (whole-corpus denominators first):
+`gst_rkc_S` fires on **4 tables, mean -3.25**; `gst_rkc_D` **4 tables, -2.75**;
+`gst_rkc_H` 1 table +11; `gst_rkc_C` 2 tables **+8.50**. The family is not
+uniformly bad — the minors are its winners — so it must not be swept.
+
+**The constructive observation, and it is a sibling defect.**
+`gst_rkc_$X` requires `controls: [4, 12]`. Its sibling `gr_rkc_$M` — the same
+1430 ask one context along — requires `controls: [5, 12]`. E holds exactly
+**four** controls (K♠, K♦, A♣), so it clears one floor and would fail the other.
+That is round 7's species: *a gate given to one sibling and not the other.*
+And underneath it there is nothing: `cue_bidding_S` / `cue_bidding_H` carry
+`when: { agreed_suit: …, game_forced: true }` at context level, so in a
+**competitive** auction where partner has merely raised, the file's only slam
+move is a blind 4NT — there is no control-showing rung below game at all.
+
+I attempted the additive repair (a `4$M` "four controls is not enough to ask"
+rung at priority 47 in `general_slam_try`) and **it is unreachable**: 4S at that
+node is owned by `general_competitive_high` (`... - bid>=3C - ?`, specificity 3)
+which outranks `general_slam_try` (`... - ?`, specificity 1), so the rung never
+becomes a candidate. Traced. Reported as a negative rather than shipped.
+
+The implementable form is therefore a **gate**, which subtracts, and I flag it
+as such rather than pretending it is additive:
+
+```yaml
+# in general_slam_try, all four gst_rkc_$X: controls [4, 12] -> [5, 12]
+```
+
+It subtracts the ask on every four-control hand in all four suits. Given the
+denominators above (`gst_rkc_C` +8.50 on two tables) it must be measured as its
+**own** experiment, and I would measure it split by suit.
+
+**VERDICT: competitive board; the constructive finding is the control-floor
+sibling mismatch. UNTESTED as shipped (the additive route was traced and is
+blocked).**
+
+---
+
+## Board 105 — margin -13
+
+**Seat/call:** table B call 6, W bids **4S** on `KQ32.K4.8.AJ8643` after
+`1NT - 2C - 2S` (`stm_raise_4S`, fit 1.000, prio 72). Singleton diamond, a
+six-card side suit, and a known 4-4 major fit — and the only rungs above the
+game raise are `stm_rkc_4NT` (15-21 HCP) and `stm_6NT_nofit`. `stm_raise_4S`
+fires on **2 tables, mean -6.50**.
+
+**The missing agreement.** After Stayman finds the 4-4 fit, a jump to four of a
+minor is a splinter: the fit, shortness there, and slam interest.
+
+### YAML — into the existing context `stayman_resp_after_2M`
+
+```yaml
+      - id: stm_splinter_4C
+        call: 4C
+        priority: 74
+        requires: { suits: { $M: [4, 4], C: [0, 1] }, hcp: [11, 17], evals: { controls: [3, 12] } }
+        shows: "splinter: the 4-4 fit, singleton or void in clubs, slam try"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+        alertable: true
+        convention: splinter
+      - id: stm_splinter_4D
+        call: 4D
+        priority: 74
+        requires: { suits: { $M: [4, 4], D: [0, 1] }, hcp: [11, 17], evals: { controls: [3, 12] } }
+        shows: "splinter: the 4-4 fit, singleton or void in diamonds, slam try"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+        alertable: true
+        convention: splinter
+```
+
+**THE ANSWERING SEAT** (new context — a splinter is a force and is worth nothing
+without it):
+
+```yaml
+  - id: opener_after_stayman_splinter
+    description: "1NT opener answers responder's splinter after Stayman"
+    expand_pairs:
+      - { M: H, X: C }
+      - { M: H, X: D }
+      - { M: S, X: C }
+      - { M: S, X: D }
+    pattern: "1NT - P - 2C - P - 2$M - P - 4$X - P - ?"
+    rules:
+      - id: sspl_wasted_4$M
+        call: 4$M
+        priority: 47
+        requires: { evals: { wasted_in_partner_shortness: [3, 40] } }
+        shows: "wasted honours opposite the splinter: the agreed game is enough"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: sspl_rkc_$M
+        call: 4NT
+        priority: 45
+        requires:
+          evals: { controls: [4, 12], wasted_in_partner_shortness: [0, 2] }
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards($M)": [3, 5] }
+        shows: "RKC 1430 for $M opposite the splinter: no duplication"
+        establishes: { forcing: one_round, agreed_suit: $M, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: sspl_signoff_4$M
+        call: 4$M
+        priority: 34
+        requires: {}
+        shows: "signing off in the agreed game over the splinter"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+        negative_inference_weight: soft
+```
+
+**What it endangers.**
+* `stm_rkc_4NT` (73) — *below* the splinter now. With a singleton, describing
+  the shortness first is strictly better than a blind ask, and the 4NT rung
+  keeps every hand without shortness.
+* `stm_raise_4$M` (72) — outranked only by a hand with a singleton/void and 11+;
+  a flat 10-15 still fits 1.000 and still bids game.
+* `stm_raise_3$M` (70, 8-9) / `stm_3NT_nofit` / `stm_2NT_nofit` / `stm_6NT_nofit`
+  — all require either a lower band or no fit; untouched.
+* 4C/4D were **not** previously covered at this node, so the new rungs delete
+  the code fallback for 4C/4D there. On a hand with no shortness they fit ~0,
+  and the fallback for those calls was never the chosen call in the corpus;
+  stated rather than assumed.
+* The answering context carries `sspl_signoff_4$M` with `requires: {}` so it can
+  only ever be a superset of the seat it shadows.
+
+**VERIFIED.** W bids 4D at fit 1.000 / prio 74. Rolled out:
+`1NT - 2C - 2S - 4D - 4NT - 5S - 6S`, twelve tricks. Table B goes from +710 to
+**+1460** and the board's -13 is **fully recovered**.
+
+**TEMPLATE.** Already `expand: { M: [H, S] }` (4 rules) plus 4 answering
+contexts × 3 rules. Same idea belongs in `nt2_stayman_placement` (2NT opening)
+and in `r2c_2NT_stayman_reply` (the 2C-2D-2NT tree), which are the same
+conversation one level up.
+
+---
+
+## Board 122 — margin -13
+
+**Seat/call:** table A call 4, S passes 4H over `P 1C 1S 4H` (`ch_pass`, fit
+1.000). **Purely competitive** — a preemptive jump to game over our overcall.
+
+What I checked: every four-spade candidate (`ch_raise_lott_S4`,
+`ch_raise_S4`, `ch_raise_lott4_S`) fits <= 0.029 on `T973.6..QT83.AT86` — S has
+four spades and nine points opposite a one-level overcall. The seat is starved
+of a *four-card-support* raise at the four level; every rung there demands five
+trumps or 11+ support points.
+
+**Best constructive-discipline observation.** The LOTT raises are all
+length-gated at five trumps. The constructive counterpart — "four trumps and a
+ruffing value opposite a shown five-card suit is nine combined and the Law says
+bid four" — has no rung anywhere in the competitive families. That is a
+`lott_total_trumps` question and it is A's to price.
+
+**VERDICT: NOTHING-WRONG (competitive).**
+
+---
+
+## Board 185 — margin -13
+
+**Seat/call:** table B call 6, W bids **4H** on `A8.AJ97.AKQ.KJ86` (22 HCP!)
+after `1H - 2NT(Jacoby) - 3D(shortness)`, via `jac_wasted_signoff` (fit 1.000,
+prio 47). The rule's escape clause is `any_of: [semi_balanced, total_points <= 18]`
+and a 2-4-3-4 twenty-two-count satisfies the **first** branch, so the ceiling is
+open at the top. `jac_wasted_signoff` fires on **3 tables, mean -4.33**.
+
+**The missing agreement.** Wasted honours opposite partner's shortness stop a
+15-19 hand; they do not stop a 22-count with seven controls, which is still
+worth a slam move.
+
+### YAML — into the existing context `responder_after_jacoby_reply`
+
+```yaml
+      - id: jac_waste_but_max
+        call: 4NT
+        priority: 48
+        requires:
+          evals: { total_points: [21, 40], controls: [7, 12], "lott_total_trumps(agreed)": [8, 26] }
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards(agreed)": [3, 5] }
+        shows: "wasted honours, but 21+ with seven controls: the hand is too big to sign off"
+        establishes: { forcing: one_round, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+```
+
+**THE ANSWERING SEAT** already exists in full — `rkc_response_agreed_H`,
+`rkc_continue_after_5C/5D/5H/5S`, `rkc_5C_answerer`. Nothing new is needed and
+that is why this rung is cheap.
+
+**What it endangers.**
+* `jac_wasted_signoff` (47) — only for 21+ with seven controls; the locked
+  scenario the signoff was written for (a flat nineteen with KQx opposite the
+  shortness) is at most six controls and is untouched. The 21/7 pair is
+  deliberately double-gated so a shapely twenty cannot slip through.
+* `jac_rkc` (45) — identical call, wider band; still fires for 17-20.
+* `jac_place_4$M` (40), `cue_H_S/C/D` (44/43.5/43) — all outranked only inside
+  the new rung's band, where a 22-count cueing at the three level then hearing a
+  sign-off is a worse outcome than asking.
+* 4NT is already covered here by `jac_rkc`, so **no fallback is deleted**.
+
+**VERIFIED.** W now bids 4NT at fit 1.000, and the rollout runs
+`1H - 2NT - 3D - 4NT - 5S - 6H` instead of `… 4H - 4NT - 5D - 6H`.
+
+**Honest negative on the IMPs.** Same contract, so the board's **-13 is not
+recovered**: BEN bid 7H and made it. Thirty-seven combined points with all four
+aces and four kings is a grand, and reaching it needs the 5NT king ask, which is
+on the do-not-re-propose list. The rung fixes the *description* (a 22-count no
+longer signs off in game at fit 1.000) and shortens the auction; it does not fix
+the board, and I am not going to claim it does.
+
+**TEMPLATE.** Already `expand: { M: [H, S] }`. The identical ceiling exists on
+`spl_wasted_4$M` in `opener_after_splinter_wasted` (there the cap is an explicit
+`total_points: [0, 18]`, so that one is *closed* and correct) — the pair should
+be made consistent by giving `opener_after_splinter_wasted` the same 21+
+override, six more rules from the same idea.
+
+---
+
+## Board 222 — margin -13
+
+**Seat/call:** table B call 7, E bids **4S** on `AKQ832.AKJT.K72.` after
+`1C - 1S - 2C` (`rmr_4S`: "6+ S, game values", `hcp: [13, 40]`). Twenty points,
+6-4 in the majors, a void — and the ladder's only rung above 3NT is an
+uncapped sign-off. `rmr_4S` fires on **2 tables, mean -7.00**.
+
+Two things are wrong at once and they are the same thing:
+`responder_after_minor_rebid` has `rmr_newsuit_D` (a forcing new suit) **only
+for diamonds** — a textbook sibling gap; and `rmr_4$M` runs to 40 while every
+other rung in the context was deliberately capped (the file's own comments say
+so). So a 6-4 twenty-count has neither a second suit to show nor a rung above
+game. This is the DECISIONS open item "`responder_after_minor_rebid` has a
+ceiling, not a shape hole … larger than anything round 13 shipped."
+
+**The missing agreement.** After opener's minimum minor rebid, responder's
+*other* major is a forcing new suit, and with 17+ and a two-suiter it is shown
+before the game is chosen.
+
+### YAML — into the existing context `responder_after_minor_rebid`
+
+```yaml
+      - id: rmr_newsuit_$oM
+        call: 2$oM
+        priority: 56
+        requires: { suits: { $oM: [4, 13] }, hcp: [9, 16] }
+        shows: "new suit over the minor rebid: 4+ $oM, forcing"
+        establishes: { forcing: one_round }
+      - id: rmr_newsuit_extras_$oM
+        call: 2$oM
+        priority: 59
+        requires: { suits: { $oM: [4, 13], $M: [5, 13] }, hcp: [17, 21] }
+        shows: "two-suited with extras: the second suit is shown before the game is chosen (forcing)"
+        establishes: { forcing: game_forcing }
+```
+
+**THE ANSWERING SEAT.** Both rungs are forcing. The seat that answers them is
+`opener_rebid_1m_1M`'s successor — and it already exists as the generic
+game-force landing family (`gf_landing_new_suit`, `gf_landing_major`,
+`gf_landing_preference_major`, `gf_landing_nt`), which is what carried the
+verified rollout below: opener raised to 3H and the auction continued
+`3S - 4D - 4S - 4NT - 5D - 6H` entirely out of existing rungs. No new answering
+context is required, and that was checked by rolling the auction out, not
+assumed.
+
+**What it endangers.**
+* `rmr_4$M` (58) — outranked only by a 17-21 hand that is *also* 5+/4+ in the
+  two majors. Verified: `AKQ832.KJ.K72.72` (a 15-count with no second suit)
+  still bids 4S at fit 1.000.
+* `rmr_3NT` (55) / `rmr_2NT` (53) / `rmr_3$M` (57) / `rmr_3$m` (54) / `rmr_pass`
+  (50) — all in lower bands.
+* `rmr_4NT` (56, 17-19 `semi_balanced`) — a 6-4 hand is not semi-balanced, so
+  the two never compete.
+* `rmr_newsuit_D` (56) is untouched for `$oM = H` and for `$oM = S` the call is
+  2S, a different call entirely; the two never collide.
+* 2H/2S at this node: for `1m - 1S - 2m` the call 2H was **not** previously
+  covered, so the code fallback for 2H there is deleted. That fallback was a
+  natural-suit generation; the rung fits every hand it caught that has four
+  hearts, and misses (correctly) the hands with three.
+
+**VERIFIED and the board is recovered.** E bids 2H at fit 1.000 / prio 59.
+Rolled out: `1C - 1S - 2C - 2H - 3H - 3S - 4D - 4S - 4NT - 5D - 6H`, and 6H by E
+makes exactly twelve. Table B goes from +650 to **+1430**; the board's -13 goes
+to roughly zero.
+
+### NEGATIVE RESULT, reported rather than shipped
+
+My first proposal for this board was a **responder's strong jump shift**
+(`1C - 2S` = a good five-plus major and 17+), which is a real hole — `resp_1m`
+has no jump shift at all. I built it with its answering context
+(`opener_after_jump_shift_1m`, four rungs). It fired correctly at fit 1.000 /
+prio 79 and every regression passed. But with `establishes: { agreed_suit: $M }`
+the rollout reached **6S on a 6-0 fit** (-100 where we had been +650, i.e.
+**-17 instead of -13**); with the agreement removed it reached 4H — a 4-3 fit
+that happened to make twelve. A jump shift must not agree its own suit, and even
+correctly written it is a call whose partner cannot yet know the fit. I am
+recording it as a negative rather than shipping it, and the `rmr` sibling repair
+above is strictly better: it recovers the board and touches four rules.
+
+**TEMPLATE.** Already `expand: { m: [C, D], M: [H, S] }` → 8 new rules. The same
+"the other major is a forcing new suit" gap should be checked in
+`responder_rebid_1D_1H_2C`, `responder_after_1D1S_2C` and
+`responder_rebid_1H_1S_2C/2D`, which are the same conversation with the suits
+permuted.
+
+---
+
+## Board 301 — margin -13
+
+**Seat/call:** table B call 4, E bids 3NT over `1S P 1NT 3C` (`ch_nt3`, fit
+1.000, 13-19 balanced with a stopper). E is `AK732.A542.K5.K4` — 5-4 in the
+majors, not balanced. **Competitive** (their jump overcall).
+
+What I checked: `ch_new_H3` fits 0.264 and `ch_new_H3_hi` 0.108 because both
+demand 14+ points *and* the "my longest suit" variant demands length E does not
+have; `ch_rebid_S3` fits 0.349. So the 3NT wins a soft-miss lottery among
+natural calls, exactly the `uc_nt3`/`ch_nt3` species DECISIONS records.
+
+**Best constructive-discipline observation.** `ch_nt3` requires
+`balanced`-ish shape only through its `shows`, not through its `requires` —
+the family's notrump rungs deny no shape (DECISIONS says this of `uc_nt2`
+explicitly, "unlike `ballow_nt1` and `cl_nt1` it denies no shape"). The
+constructive counterpart that would beat it here is a **second-suit rung with no
+point floor once partner has responded**, the competitive twin of
+`gf_new_3$X`. Not authored: it is a competitive context and the `uc_nt3`
+strength gate is on the do-not-re-propose list.
+
+**VERDICT: NOTHING-WRONG (competitive); the notrump-versus-second-suit
+lottery is a known open item, not a new finding.**
+
+---
+
+## Board 443 — margin -13
+
+**Seat/call:** table B call 4, W raises to **4H** on `AK64.QJT8.AQ52.A` after
+`1D - 1H` (`ob_raise_4H`, fit 1.000, "19+ support points"). Four-card support,
+twenty HCP, a **singleton ace of clubs** — and opener has no shortness-showing
+raise anywhere in the file. BEN bids 4C.
+
+**The missing agreement.** Opener's double jump in a new suit after a one-level
+major response is a splinter: four-card support, shortness there, 19+.
+
+### YAML — into the existing context `opener_rebid_1m_1M`
+
+```yaml
+      - id: ob_splinter_4$om
+        call: 4$om
+        priority: 77
+        requires:
+          suits: { $M: [4, 13], $om: [0, 1] }
+          evals: { total_points: [19, 40] }
+        shows: "splinter raise: 4+ $M support, singleton or void in $om, 19+ support points"
+        establishes: { forcing: game_forcing, agreed_suit: $M }
+        alertable: true
+        convention: splinter
+```
+
+**THE ANSWERING SEAT** (new context; a splinter is a force):
+
+```yaml
+  - id: responder_after_opener_splinter
+    description: "Responder answers opener's splinter raise 1m - 1M - 4om"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 4$om - P - ?"
+    rules:
+      - id: rsp_wasted_4$M
+        call: 4$M
+        priority: 47
+        requires: { evals: { wasted_in_partner_shortness: [3, 40] } }
+        shows: "wasted honours opposite the shown shortness: the agreed game is enough"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: rsp_rkc_$M
+        call: 4NT
+        priority: 45
+        requires:
+          evals: { total_points: [10, 40], controls: [3, 12], wasted_in_partner_shortness: [0, 2] }
+          any_of:
+            - evals: { "void(any)": [0, 0], worthless_doubleton: [0, 0] }
+            - evals: { "keycards($M)": [3, 5] }
+        shows: "RKC 1430 for $M opposite the splinter: no duplication"
+        establishes: { forcing: one_round, agreed_suit: $M, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: rsp_signoff_4$M
+        call: 4$M
+        priority: 34
+        requires: {}
+        shows: "signing off in the agreed game over the splinter"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+        negative_inference_weight: soft
+```
+
+**What it endangers.** This is the one place in my slice where the rung being
+outranked is a **profitable** rule, and it has to be said plainly:
+`ob_raise_4H` fires on **10 tables at mean +2.10**. The splinter is therefore
+gated at 19+ *and* a singleton/void, so it takes only the shapely top of that
+population; `ob_raise_3$M` (78, 16-18) is above it in priority and untouched;
+`ob_raise_2$M` (80, 12-15) likewise. 4C/4D at this node were not covered, so the
+code fallback for those calls is deleted in every `1m - 1M` seat — a
+19-plus-with-shortness gate is the whole of what replaces it, and every other
+hand there fits ~0.00, which is the failure mode round 15 traced on board 691a.
+Verified that a 16-18 hand with the same shortness still bids 3H, and a 20-count
+with no shortness still bids 4H.
+
+**VERIFIED (the machinery); NEGATIVE on the board's IMPs.** W bids 4C at fit
+1.000; responder E (`J5.A7632.76.KJ98`) answers **4H** — `rsp_wasted_4$M` at fit
+1.000, because KJ98 opposite a singleton is four points of dead paper — and the
+auction stops in game exactly as it does today. BEN's E cued 4D holding **no
+diamond control at all** and got to a 6H that needed a favourable lie. So the
+splinter is right bridge, is on round 17's zero-list, describes the hand
+correctly, and **does not recover this board**. Reported, not dressed up.
+
+**TEMPLATE.** `expand: { m: [C, D], M: [H, S] }` gives 4 rules + a 4-context ×
+3-rule answering family. The other-major splinter (`1D - 1H - 3S`,
+`1C - 1S - 4H`, …) needs a second small context because its level varies with
+the pair; write it as `expand_pairs` over (m, M, short-suit) with the level
+spelled out, since `call: $L$X` does not expand.
+
+---

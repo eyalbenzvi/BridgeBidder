@@ -11,9 +11,11 @@ shape- and support-showing that has to happen **below game**.
 | | count |
 |---|---|
 | boards reviewed | 36 |
-| YAML proposals (new rungs / new contexts / one re-rank) | **15** |
-| NOTHING-WRONG (constructive call was right, or the board is purely competitive) | 21 |
-| new contexts proposed (all of them answering seats) | 6 |
+| boards carrying a proposal | **13** (936, 993, 995, 279, 285, 295, 361, 401, 730, 748, 754, 857, 966) |
+| boards NOTHING-WRONG / purely competitive | 23 |
+| distinct agreements proposed | 13 |
+| of which: new contexts | **10** (6 of them answering seats) |
+| of which: rungs into an existing context | 7, plus **1 re-rank** |
 | starved constructive seats found and traced with `repro.rank()` | **7** |
 
 **Everything below is UNTESTED as a rung** — the repo is read-only for me, so I
@@ -73,6 +75,34 @@ traces (starvation, fit values, evaluator numbers), never to the new rule.
   `cl_raise_lott3_$M`'s `cheapest_in_suit` block is explicitly excluded, so my
   rung is a *different* rule in a different context (`general_balancing_high`),
   where the raise is not a jump and the gate therefore does not sterilise it.
+
+### Whole-corpus denominators, run BEFORE accusing anything
+
+`repro.fires_summary('reports/r18_before.jsonl', ...)` on every existing rule
+this review touches — winners included.  Corpus board margin averages about
+-0.73 per table, so read these against that.
+
+| rule | tables | total | mean | what it does to my proposal |
+|---|---|---|---|---|
+| `uc_nt3` | 46 | +22 | **+0.48** | **ABOVE baseline — not indictable.**  Board 995 is about the missing SEAT, not about this rule; I rewrote that finding accordingly. |
+| `tr_accept_2S` | 16 | +9 | **+0.56** | the transfer completion is a *profitable* family; board 748's super-accept takes seats from it, which makes 748 the weakest proposal in this part |
+| `tr_accept_2H` | 12 | +11 | **+0.92** | same, more so |
+| `tr_super_3S` | 1 | 0 | 0.00 | the rung I am widening essentially never fires — consistent with a one-point-wide gate |
+| `rr_nt_gf3_H` / `_S` | 2 / 5 | +10 / -2 | **+1.14 combined** | also profitable; `rr_nt_shape4_$M` takes only its singleton-and-13+-total-points subset, and that limit is deliberate |
+| `ob_1S1NT_2H` | 4 | +9 | **+2.25** | the rule I am extending to 6-4 is one of the best small families in the file — good evidence for the extension |
+| `rr_nt_second_H` / `_S` | 1 / 2 | -6 / -1 | **-2.33** | the call with no answering seat; board 401's contexts aim here |
+| `adx_pull_my_*` (6 rules) | 15 | -45 | **-3.00** | this is what currently answers a support double.  Far below baseline, and it is answering a call it misreads — the strongest number in this review |
+| `oim2n_pass_S2C` / `_S2D` | 1 / 1 | -7 / -1 | **-4.00** | board 295's decline-by-passing |
+| `rmr_4S` | 2 | -14 | **-7.00** | board 285's re-rank (small n — treat as a lead) |
+| `balhigh_raise_H3` | 3 | -25 | **-8.33** | the points-currency three-level raise; board 936's Law rung is aimed at exactly this |
+| `balhigh_raise_lott4_S` | 1 | +12 | +12.00 | the Law rung one level higher, which is the model for mine |
+| `gf_3NT` | 22 | -21 | -0.95 | slightly below baseline; board 857 adds a band above it and does not touch it |
+| `sd_double` | 5 | +1 | +0.20 | the support double itself is fine; the problem is downstream |
+| `srd_redouble` | 3 | -10 | **-3.33** | **a caution for board 754**: the support redouble as currently played runs badly, and the likeliest reason is the same missing answering seat.  Ship 754 only WITH the answering context, never alone. |
+
+Two of these changed what I wrote: `uc_nt3` is above baseline so board 995 is a
+seat finding rather than a rule finding, and `srd_redouble`'s -3.33 turned board
+754 from "obvious sibling gap, ship it" into "ship it only with the answer".
 
 ---
 
@@ -219,6 +249,12 @@ present, so this templates into 4 rules for free):
 `singleton_or_void` carries sharp tolerance (0.05 in `_EVAL_S2`), so the shape
 clause really gates; `ltc` carries 1.4, so a six-loser hand misses cleanly.
 
+**DENOMINATOR, checked first.**  `rr_nt_gf3_H` + `rr_nt_gf3_S`: **7 tables,
++8, mean +1.14** — the rung I am outranking is a *profitable* family.  That is
+why `rr_nt_shape4_$M` takes only its singleton-plus-13-total-points subset and
+why the `ltc <= 6` clause is there: the ask is right on the balanced hands and
+wrong only on the shapely ones.
+
 **THE ANSWERING SEAT.** None required — `forcing: sign_off, agreed_suit: $M` is
 a contract.  Partner's pass is the authored catch-all at fit 1.000.  (Contrast
 the rung it replaces, `rr_nt_gf3_$M`, which IS an ask and whose answering
@@ -271,6 +307,12 @@ exists.
 in an uncontested auction, so a 14-count with `K8` in the only unbid suit jumps
 to game with no stopper test whatsoever.  Note `weakest_unshown_stopper` on this
 hand is **0.0** — the honest test exists and no rule at this node consults it.
+
+**DENOMINATOR, checked first.**  `fires_summary` on `uc_nt3`: **46 tables,
++22 board margin, mean +0.48** — above the corpus baseline of about -0.73.  So
+`uc_nt3` is NOT the defect and I am not accusing it; the defect is that a live
+constructive seat has no context of its own and therefore reaches a generic rule
+that is doing well at the job it was written for.
 
 **EXACT YAML** — a NEW context.  It is more specific than
 `general_uncontested_continuation`, so it takes over every call it defines;
@@ -1226,6 +1268,12 @@ that interaction rather than assuming it.
 exactly this reason, so the conversation closes.  On this board responder holds
 `QJ9653.4.QJT6.J8` (7 HCP, six spades) and would bid 4S.
 
+**DENOMINATOR, checked first, and it is the reason I rank this proposal last.**
+`tr_accept_2S`: **16 tables, +9, mean +0.56**; `tr_accept_2H`: **12 tables, +11,
+mean +0.92**; `tr_super_3S`: 1 table, 0.00.  The rung I am taking seats from is
+one of the better small families in the corpus, and the rung I am widening
+barely fires.  That is an argument for the conservative 16-only version below.
+
 **WHAT IT ENDANGERS.**
 * `tr_accept_2$M` (55, `requires: {}`) loses the seat for 15-16 with four
   trumps and a doubleton — the whole point, and the mainstream agreement.
@@ -1284,6 +1332,13 @@ nothing else (`general_after_their_double` keeps every other call at this node):
 
 `1H - P - 1S` is the only major-opening auction in which responder bids a new
 major at the one level, so this is the complete twin — one rule, not four.
+
+**DENOMINATOR, checked first, and it changed the recommendation.**
+`srd_redouble` (the four minor versions we already play): **3 tables, -10,
+mean -3.33**, well below the -0.73 baseline.  The support redouble as currently
+shipped is losing, and the likeliest reason is the very thing board 966 traced:
+nothing answers it.  **Ship this only together with the answering context; do
+not ship the major twin alone.**
 
 **THE ANSWERING SEAT.**  Ships with board 966's `support_double_answer` context,
 whose `expand_pairs` includes the `1H / 1S` row; add a matching row for the
@@ -1549,6 +1604,11 @@ ctx: ['general_pull_or_sit', 'general_uncontested_continuation', 'general_slam_t
 That is the round-17 empty-seat shape on a call the file has been making for
 several rounds: `sd_double` is `establishes: { forcing: one_round }`, alertable,
 `convention: support_double`, and the seat that answers it does not exist.
+
+**DENOMINATOR, checked first.**  `sd_double` (the four minor versions):
+**5 tables, +1, mean +0.20** — the ask itself is sound.  The six `adx_pull_my_*`
+rules that currently answer it: **15 tables, -45, mean -3.00**.  That gap is the
+whole finding, and it is the largest single number in this review.
 
 **EXACT YAML — the ask.**  A new one-rung context, deliberately one rung so it
 shadows nothing else at that node:

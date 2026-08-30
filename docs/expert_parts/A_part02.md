@@ -1366,3 +1366,170 @@ chooser here is below the 0.9 fast path, so this is one of the soft-miss-lottery
 decisions `DECISIONS.md` says run seven points of par gap worse than clean ones.
 
 ---
+
+## Board 606 — margin -10 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Both auctions are uncontested; our E/W hands are
+`A987.JT2.43.AT76` and `5432.764.A6.KQ52`, nine points each, and every one of
+our calls is a pass at fit 1.000 that BEN also makes at 1.00 — the direct seat
+over 1D (`oc1D_pass`), the sandwich seat over 1S (`sw_pass`), and `cl_pass` /
+`ch_pass` afterwards.  Neither hand has a five-card suit or a takeout shape.
+
+The loss is North's `2D` preference on `KQJT6.A9853.J7.9` — 5-5 in the majors
+with a singleton and 11 HCP, where 4H is cold — and `r1d2c_2D` wins it at fit
+**0.800**, another sub-fast-path chooser.  Responder's second bid with 5-5 in
+the majors is constructive.
+
+---
+
+## Board 622 — margin -10
+
+**Seat/call that went wrong:** table A, call 6, **North passes 2S** holding
+`KQJT6..T83.J9742` (7 HCP, five spades, **a heart void**, a second five-card
+suit) after `1NT – P – 2H – P – 2S – P`.  3NT makes ten; 2S made ten for +170.
+
+**Missing agreement:** opposite a strong notrump, a completed transfer with
+exactly five of the major and a VOID is worth an invitation on seven points —
+the void is two tricks of playing strength that the HCP floor cannot see.
+
+`nt_after_transfer` already knows voids matter: `tr_3NT_choice` excludes them
+(`"void(any)": [0, 0]`) and `tr_game_void_$M` was written specifically to give
+the void hand a floor at game values.  The rung was never given its
+*invitational* twin, so a 7-count with a void falls to `tr_pass_weak`
+(0-7 HCP) at fit 1.000 while `tr_2NT_inv` (8-9) misses by one at 0.800.
+That is the ceiling/floor species with the void clause attached.
+
+### YAML — into the EXISTING context `nt_after_transfer`
+
+```yaml
+      - id: tr_2NT_inv_void
+        call: 2NT
+        priority: 56.5
+        requires:
+          suits: { $M: [5, 5] }
+          hcp: [5, 9]
+          evals: { "void(any)": [1, 1] }
+        shows: "invitational on shape: exactly five $M and a void opposite 15-17"
+        establishes: { forcing: invitational }
+```
+
+**THE ANSWERING SEAT — checked, and it already exists and answers correctly.**
+`establishes: { forcing: invitational }` is the same establishment
+`tr_2NT_inv` already makes, so opener's seat after `1NT – P – 2H – P – 2S – P –
+2NT – P` is unchanged: I traced South's actual hand `T8.AQJT.AJ94.KQT` through
+it and it bids **3NT** by `uc_nt3` at fit 1.000, `clear=True`.  That is the
++630 contract.  No new seat is owed.
+
+**What it endangers, in `nt_after_transfer`:**
+* `tr_pass_weak` (P, 55) — the target.  A five-card major with a void opposite
+  15-17 is not a sign-off hand; the void is worth the two points the HCP count
+  is missing.
+* `tr_2NT_inv` (2NT, 56) — same call, so no behaviour changes; on 8-9 with a
+  void both fit and mine reports the better `shows`.
+* `tr_3M_inv` (3M, 57), `tr_3NT_choice` (58), `tr_game_void_$M` (58.5),
+  `tr_4$M` (59) all stay ABOVE it — a six-card suit, or 10-15 HCP, still
+  outranks the shape invitation, which is right.
+* The `[5, 5]` length band (sharp `_S2_SUIT`) keeps six-card hands on
+  `tr_3M_inv`, and `"void(any)": [1, 1]` is sharp (0.05), so a singleton hand
+  scores ~0.0 and is untouched.
+* **No fallback hazard:** 2NT is already covered by `tr_2NT_inv`.
+
+**VERIFIED.**  North bids `2NT` at fit 1.000 / prio 56.5, `clear=True`, and
+South then bids 3NT.
+
+**Template:** written once inside the existing
+`expand_pairs: [ {M: H, T: D}, {M: S, T: H} ]`, so it becomes two rungs.
+The honest caveat: this is a shape-revaluation agreement rather than a
+competitive one, so it straddles my brief and the other reviewer's.
+
+---
+
+## Board 636 — margin -10
+
+**Seat/call that went wrong:** table B, call 7, **West passes 3H** holding
+`AJ84..AK65.AQT85` (18 HCP, 4.5 quick tricks, a heart VOID) after
+`P – 2H – P – 3C – P – 3H – P`.  3NT by West makes nine (+600); we took +170.
+
+**Missing agreement:** after my forcing new suit opposite partner's weak two,
+his simple rebid of his own suit is a MINIMUM answer, not a pass-out — with 16+,
+three quick tricks and every side suit held, I place the contract in 3NT.
+
+`DECISIONS.md` names this exact species: "the forcing new suit opposite a weak
+two is passed out — `rw2_new_*` is `forcing: one_round` and
+`2$W - P - <new suit> - P - ?` has no context".  This board is the next station
+down the same line: the file HAS an answer to the new suit (opener rebids his
+suit through `uc_rebid_H3`), and the ASKER's placement seat is the one that is
+empty.  West's whole candidate set is `uc_pass` 1.000, `uc_rebid_C4` 0.349,
+`uc_new_S3` 0.349 — a starved seat at the end of a conversation the file itself
+opened.
+
+Note the file was right about the entry: `rw2_2NT_ask` deliberately excludes a
+void in partner's suit ("you cannot ask about a suit you will never play"), so
+3C is the intended call.  It is the third question, not the first, that has no
+answer.
+
+### YAML — a NEW context, immediately BEFORE `resp_weak2`
+
+```yaml
+  - id: resp_weak2_new_suit_rebid
+    description: "Opener rebid his weak two after my forcing new suit: place the contract"
+    expand: { W: [D, H, S] }
+    pattern: "2$W - P - bid - P - 3$W - P - ?"
+    rules:
+      - id: rw2c_3NT_$W
+        call: 3NT
+        priority: 62
+        requires:
+          hcp: [16, 40]
+          evals: { weakest_unshown_stopper: [0.9, 9], quick_tricks: [3, 12] }
+        shows: "the rebid was a minimum: nine tricks in notrump with every side suit held"
+        establishes: { forcing: sign_off }
+      - id: rw2c_game_$W
+        call: 4$W
+        priority: 61
+        when: { standing_bid_strain: [H, S] }
+        requires:
+          suits: { $W: [2, 13] }
+          evals: { total_points: [17, 40], "lott_total_trumps($W)": [8, 26] }
+        shows: "the rebid was a minimum but the fit is there: bid the major game"
+        establishes: { forcing: sign_off, agreed_suit: $W }
+      - id: rw2c_pass_$W
+        call: P
+        priority: 55
+        requires: {}
+        shows: "nothing more opposite the minimum rebid of the weak two"
+        establishes: { forcing: sign_off, agreed_suit: $W }
+```
+
+`when: { standing_bid_strain: [H, S] }` on the raise makes it self-selecting:
+in the `[D]` expansion the standing bid is 3D and the rung is inert, so the
+file never bids "4D for game" (board 175's defect).
+
+**Answering seat:** this IS the answering seat, and every rung is `sign_off`,
+so the conversation closes.  `rw2c_pass_$W` is `requires: {}` and fits 1.00 on
+every hand, so the seat can never be starved by the new context.
+
+**What it endangers.**  Specificity 1007 against
+`general_uncontested_continuation`'s 2, so this context takes `P`, `3NT` and
+`4$W` on exactly these auctions:
+* `uc_pass` (18) — replaced by `rw2c_pass_$W`, same call, same universal fit.
+* `uc_nt3` (29) — replaced for 3NT; it fits 0.000 here anyway, because it
+  demands `balanced` and the asker with a void never is.  That is the whole
+  reason the seat was starved.
+* `uc_raise_$W4` (32) / `uc_raise_lott4_$W` (32) — replaced for 4$W in the
+  major case; both are dead for the same LOTT-counts-partner's-minimum reason.
+* `uc_rebid_C4` (29) and `uc_new_S3` (27) keep their calls — my context defines
+  neither, so the generic rungs still supply them.
+* **Fallback: 3NT and 4$W were already covered** in this seat by `uc_nt3` and
+  `uc_raise_$W4`, and P by `uc_pass`, so no code fallback is deleted.
+
+**VERIFIED,** with a control: West bids `3NT` at fit 1.000 / prio 62,
+`clear=True`; a 12-count `AJ84.2.K652.QT85` passes at `rw2c_pass_H` 1.000 with
+`rw2c_3NT_H` out of the running.
+
+**Template:** the existing `expand: { W: [D, H, S] }`, three contexts from one.
+The sibling shape — opener rebids at the FOUR level, or answers the new suit
+with a new suit of his own — is equally empty and wants the same treatment in
+a later round.
+
+---

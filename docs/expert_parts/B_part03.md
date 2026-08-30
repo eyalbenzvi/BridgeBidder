@@ -1099,3 +1099,608 @@ double after our own redouble is a penalty statement, not a balance.
 (sixteen).
 
 ---
+
+## Board 376 — margin -8
+
+**Seat/call that went wrong:** table A, call 8, **North bids 3C** on
+`AJT82.9.2.KQJ832` after `1S P 1NT P 2C P 2NT P`.  The deciding rule is
+`uc_rebid_C3` out of the generic toolkit: `opener_over_pref_2NT` — the
+context written specifically to answer that invitational 2NT — has **no rung
+this hand can fit**, because `opn_pass` needs 12-13 HCP (North has 11, the
+system's own light opening), `opn_3$M` needs six spades and North has five.
+
+**The missing agreement:** opener's answer to the invitational 2NT has no
+shape rung: a 6-5 minimum can neither pass nor accept, only correct to its
+long suit, and that correction does not exist.
+
+**Context:** `opener_over_pref_2NT` (existing).
+
+```yaml
+      # THE SHAPE ANSWER.  opn_pass / opn_3NT / opn_3$M / opn_4$M are all
+      # point-count answers with a six-card-major escape; the 6-5 and 5-6
+      # minimums that the light-opening rules create have no rule at all and
+      # fall through to the generic toolkit.
+      - id: opn_3$x
+        call: 3$x
+        priority: 57.5
+        requires:
+          suits: { $x: [6, 13] }
+          hcp: [11, 14]
+          not: { suits: { $M: [6, 13] } }
+        shows: "6+ $x with a minimum: correcting the invitational notrump to the long minor"
+        establishes: { forcing: sign_off }
+      # and the floor the ceiling created: the light opener's decline
+      - id: opn_pass_light
+        call: P
+        priority: 59.5
+        requires: { hcp: [10, 11], not: { suits: { $M: [6, 13] } }, not: { suits: { $x: [6, 13] } } }
+        shows: "declining the invite with a light opening"
+        establishes: { forcing: sign_off }
+```
+(the double `not:` is not legal in one block — write the second as
+`all_of: [ { not: { suits: { $M: [6, 13] } } }, { not: { suits: { $x: [6, 13] } } } ]`.)
+
+**Answering seat:** `opn_3$x` is a sign-off; responder's seat over it is
+`general_uncontested_continuation` with `we_hold_contract` false, and the
+correct action (pass) is `uc_pass` at fit 1.00.  If the round wants it
+authored, a `1$M - P - 1NT - P - 2$x - P - 2NT - P - 3$x - P - ?` context with
+a pass floor, a 3NT and a 5$x is four more rules.
+
+**What it endangers:** `opn_pass` (60) and `opn_3NT` (58) both deny a
+six-card major only, so a 6-5 hand could previously fit `opn_3NT` on 14 HCP;
+at 57.5 my rung sits **below** 3NT and only takes hands 3NT does not fit.
+Below it, the generic `uc_rebid_$x3` (27) loses the call — which is the
+point, it was making an authored decision by accident.
+
+**NEGATIVE RESULT, reported rather than hidden.**  I first tried the rung the
+board seems to ask for — responder's invitational jump in his own six-card
+major after the forcing 1NT (`pref_3$oM` on `76.AQ7432.A973.T`).  It fires
+cleanly (fit 1.000) but the double-dummy table says hearts take **six**
+tricks from either side while 3C takes nine: the rung would turn +110 into
+-100 on this board.  The agreement is standard and probably right in general,
+but this board is evidence against it and I am not shipping it on this
+board's authority.
+
+**VERIFIED.**  `{suits: {C: [6,13]}, hcp: [11,14], not: {suits: {S: [6,13]}}}`
+scores **fit 1.000** on `AJT82.9.2.KQJ832` at the real seat.  Note that the
+proposal is **board-neutral here** (3C is what we already bid); it converts a
+generic-toolkit accident into an authored call, which is the density point,
+not an IMP claim.  The board's actual loss is table B's balancing double —
+the competitive reviewer's lane.
+
+**Template:** the four `expand_pairs` already on the context — eight rules.
+
+---
+
+## Board 488 — margin -8
+
+**Seat/call that went wrong:** table B, call 7, **West bids 5C** on
+`862.AK752..KQJ98` after `P P 1S 2C P 3C P`.  `uc_minor_game_5C`
+(fit **0.946**, priority 28) beats `uc_new_H3` (fit **1.000**, priority 27.5)
+on the fast path: the hand's own five-card heart suit — a perfect long-suit
+game try — is already in the candidate set and loses to blasting eleven
+tricks.
+
+**The missing agreement:** **trial bids are at zero rules in this file.**  A
+new suit after partner has raised our minor is a long-suit game try, not a
+natural bid, and it must outrank five of the minor.
+
+**Context:** new, `minor_game_try`.  Written `"... - P - ?"` — the same
+device the cue contexts use — so it ties with the generic toolkit on
+specificity and wins on file order, without shadowing anything anchored.
+
+```yaml
+  - id: minor_game_try
+    description: "A new suit after partner raises our minor is a long-suit game try"
+    expand_pairs:
+      - { m: C, X: D, TAG: CD }
+      - { m: C, X: H, TAG: CH }
+      - { m: C, X: S, TAG: CS }
+      - { m: D, X: H, TAG: DH }
+      - { m: D, X: S, TAG: DS }
+    pattern: "... - P - ?"
+    when: { agreed_suit: $m }
+    rules:
+      # ELEVEN TRICKS ARE EXPENSIVE.  uc_minor_game_5$m is the only positive
+      # move over partner's three-level raise, so every hand with the values
+      # blasts.  A real second suit asks the two questions that decide the
+      # hand: have you a stopper (bid 3NT) or a fit (raise)?
+      - id: mgt_try_$TAG
+        call: 3$X
+        priority: 28.5
+        when: { standing_bid_level: [3], standing_bid_strain: [$m],
+                cheapest_in_suit: true, we_hold_contract: false, unbid_suit: $X }
+        requires:
+          suits: { $X: [4, 13] }
+          evals: { total_points: [14, 40], "lott_total_trumps($m)": [8, 26] }
+        shows: "long-suit game try: a real $X suit opposite the $m raise - 3NT with a stopper, five with a fit"
+        establishes: { forcing: one_round, agreed_suit: $m }
+        alertable: true
+        convention: long_suit_game_try
+```
+
+**THE ANSWERING SEAT — shipped with it, and this is the whole reason the
+proposal exists:**
+
+```yaml
+  - id: minor_game_try_answer
+    description: "Answering the long-suit game try in our agreed minor"
+    expand_pairs:
+      - { m: C, X: D, TAG: CD }
+      - { m: C, X: H, TAG: CH }
+      - { m: C, X: S, TAG: CS }
+      - { m: D, X: H, TAG: DH }
+      - { m: D, X: S, TAG: DS }
+    pattern: "... - P - ?"
+    when: { agreed_suit: $m }
+    rules:
+      - id: mgta_3NT_$TAG
+        call: 3NT
+        priority: 44
+        when: { partner_last_suit: $X, standing_bid_level: [3], we_hold_contract: false }
+        requires:
+          features: [ "stopper($X)" ]
+          evals: { weakest_unshown_stopper: [0.9, 9] }
+        shows: "a $X stopper opposite the game try: nine tricks, not eleven"
+        establishes: { forcing: sign_off }
+      - id: mgta_5$TAG
+        call: 5$m
+        priority: 43
+        when: { partner_last_suit: $X, standing_bid_level: [3], we_hold_contract: false }
+        requires:
+          suits: { $X: [3, 13] }
+          evals: { total_points: [11, 40], "lott_total_trumps($m)": [9, 26] }
+        shows: "no stopper but real help in $X and a maximum raise: five of the minor"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+      # the floor: an invitation must never starve its answerer
+      - id: mgta_decline_$TAG
+        call: 4$m
+        priority: 34
+        when: { partner_last_suit: $X, standing_bid_level: [3], we_hold_contract: false }
+        requires: {}
+        shows: "declining the game try: one more in the agreed minor"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+        negative_inference_weight: soft
+```
+
+**What it endangers:**
+* `uc_minor_game_5$m` (28) — exactly the intended demotion; it keeps every
+  hand without a four-card side suit.
+* `uc_new_$X3` / `uc_new_$X3_hi` (27 / 27.5) — the same call, now read as a
+  try rather than as a natural suit; that reading is only imposed where our
+  minor is *agreed*, so no natural three-level bid is lost elsewhere.
+* `uc_rebid_$m4` (29) — a fourth-level rebid of the agreed suit is a weaker
+  description than naming the second suit.
+* `uc_pass` (18) and `uc_nt3` (29): 3NT stays available to the *answerer*,
+  where it belongs.
+* In the answering context, `mgta_decline` at 34 outranks `uc_pass` (18) but
+  is a **bid**, so it can never end the auction below the level partner asked
+  about — that is the round-6 `rkc5H_signoff` lesson applied.
+
+**VERIFIED.**  `mgt_try_$TAG`'s `requires` scores **fit 1.000** on
+`862.AK752..KQJ98` at the real seat (five hearts, total_points ≥ 14,
+`lott_total_trumps(C)` 8), against `uc_minor_game_5C` at 0.946.
+
+**Template:** the five `expand_pairs` — five try rules and fifteen answering
+rules from one agreement.  The **major-suit twin is the bigger prize** and is
+not in this slice's boards: the same three rungs after `1$M - P - 2$M - P - ?`
+(help-suit game try) and the answering seat inside
+`responder_over_game_try`, which today has exactly two rules.
+
+---
+
+## Board 503 — margin -7
+
+**Seat/call that went wrong:** table A, call 7, **South bids 3D** on
+`KQT873..JT6.T852` after `1C 1H P 1S P 2D P`.  `uc_raise_D3` (fit 1.000,
+priority 27) raises partner's second suit with three small; South's own
+**six-card spade suit** has no rule — `uc_rebid_S2` fits **0.134** because it
+demands 11+ total points and South has seven.
+
+**The missing agreement:** the generic rebid ladder has an 11-point floor, so
+a weak hand with a six-card suit cannot repeat it and instead raises
+something.  A six-card suit is a description; three small in partner's second
+suit is not.
+
+**Context:** `general_uncontested_continuation` (and its `cl_`, `ch_`,
+`ballow_`, `balhigh_` twins).
+
+```yaml
+      # THE FLOOR OF THE REBID LADDER.  uc_rebid_$X2 starts at 11 total
+      # points, so a six-card suit with a weak hand had nothing and raised
+      # partner's second suit on three small.  Repeating a six-card suit at
+      # the TWO level costs nothing and names the trump suit.
+      - id: uc_rebid_weak_$X2
+        call: 2$X
+        priority: 30.5
+        when: { my_suit: $X, cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          suits: { $X: [6, 13] }
+          evals: { total_points: [6, 10], "suit_quality($X)": [1, 9] }
+        shows: "six-card $X repeated at the two level: weak, but this is where we play"
+        establishes: { forcing: non_forcing }
+```
+with `expand: { X: [C, D, H, S] }` on the enclosing family (write the four
+ids out if the context is not templated).
+
+**Answering seat:** `non_forcing` and limited (6-10), so no ask is created;
+partner's raise and pass ladders already own the seat.
+
+**What it endangers, in `general_uncontested_continuation`:**
+* `uc_raise_$m3` (27) and `uc_raise_$m2` (30) — raising partner's second suit
+  with three small when you hold six of your own is the losing description.
+* `uc_new_$X2` / `_hi` (26 / 26.5) — a *new* suit; this is my own, already
+  bid.
+* `uc_pass` (18) — a six-card suit is not "nothing further to show".
+* It sits **below** `uc_raise_$M4` (32), `uc_raise_lott4_$M` (32) and
+  `uc_raise_$M3` (31): a genuine major-suit fit still outranks repeating a
+  minor, which is right.
+* It does **not** reach `uc_rebid_$X2` (29) on that rule's own band (11+),
+  because the two bands are disjoint.
+
+**VERIFIED.**  `{suits: {S: [6,13]}, evals: {total_points: [6,10],
+"suit_quality(S)": [1,9]}}` scores **fit 1.000** at the real seat, against
+`uc_rebid_S2` 0.134 and `uc_raise_D3` 1.000/27.
+
+**Template:** `expand: { X: [C, D, H, S] }` across the five generic families
+= 20 rules from one idea.
+
+---
+
+## Board 544 — margin -8
+
+**NOTHING-WRONG (constructive).**  The first divergence is West passing out
+`2H P P` on `A.AQ96.KJ43.AJ84`; BEN doubles.
+
+What I checked: the balancing seat over a weak two falls to
+`general_balancing_low`, where `ballow_X` scores **0.015** and
+`ballow_nt2_balance` **0.000** — but both misses are correct, not defects.
+West is **1-4-4-4 with four cards in their own suit**; a takeout double
+holding four hearts is the call the file's `max_their_suit_length` gate
+exists to forbid, and 2NT needs a balanced hand this is not.  `ballow_pass`
+at 1.00 is a defensible expert action; BEN's double is the aggressive one and
+the double-dummy record does not settle it (E/W's best spot is 3NT or 4S,
+neither of which a takeout double reliably finds opposite a passed partner).
+
+Table A is a weak-two opening that got doubled — the competitive reviewer's
+lane.  I have no constructive agreement to add here that I would defend.
+
+---
+
+## Board 797 — margin -8
+
+**Seat/call that went wrong:** table B, call 8, **East bids 3NT** on
+`A864.A85.K53.A72` after `1NT P 2C P 2S P 3S P`.  `uc_nt3` at fit 0.946 out
+of the *generic* toolkit — because
+**`1NT - 2C - 2M - 3M` has no context at all.**  Stayman found a guaranteed
+4-4 spade fit, responder invited in it, and opener answered in notrump.  4S
+takes ten tricks; 3NT takes six.
+
+**The missing agreement:** the file has `stayman_invite_accept_2D/2H/2S` for
+responder's **2NT** invitation and nothing for responder's **raise of the
+major** — the commoner and more informative invitation of the two.
+
+**Context:** new, `stayman_raise_accept_$M`.
+
+```yaml
+  - id: stayman_raise_accept
+    description: "1NT opener over responder's invitational raise of the Stayman major"
+    expand: { M: [H, S] }
+    pattern: "1NT - P - 2C - P - 2$M - P - 3$M - P - ?"
+    rules:
+      # 2$M promised four and the raise promised four: the fit is CERTAIN, so
+      # the only question is strength - and notrump is not one of the answers.
+      - id: stra_accept_max_$M
+        call: 4$M
+        priority: 55
+        requires: { hcp: [16, 17] }
+        shows: "accepting the raise: maximum 1NT with a known 4-4 fit"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: stra_accept_shape_$M
+        call: 4$M
+        priority: 54
+        requires:
+          hcp: [15, 15]
+          any_of:
+            - evals: { singleton_or_void: [1, 1] }
+            - evals: { controls: [6, 12] }
+            - suits: { $M: [5, 13] }
+        shows: "accepting on shape: a good 15 - a ruffing value, six controls, or a fifth trump"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      # SUPERSET RUNG: this context defines 4$M, so it must keep the generic
+      # raise it shadows.
+      - id: stra_general_4$M
+        call: 4$M
+        priority: 32
+        requires:
+          suits: { $M: [2, 13] }
+          evals: { total_points: [11, 40], rule_of_26: [25, 99], "lott_total_trumps($M)": [8, 26] }
+        shows: "raise of partner's $M: the values for the level opposite the shown range"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: stra_decline_$M
+        call: P
+        priority: 50
+        requires: {}
+        shows: "declining the raise: a flat minimum 1NT"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+**Answering seat:** none — both branches are sign-offs, and partner's seat
+over our four-level major is `slam_try_over_game_raise`, already authored.
+
+**What it endangers:** at this exact nine-call position the context takes 4$M
+and P from `general_uncontested_continuation` (`uc_raise_$M4` 32, `uc_pass`
+18).  `stra_general_4$M` carries `uc_raise_$M4`'s gate verbatim and
+`stra_decline_$M` is `requires: {}`, so the context is a strict superset.
+`uc_nt3` (29) keeps 3NT and can still win when nothing here fits ≥ 0.9 — but
+`stra_decline_$M` at priority 50 with fit 1.00 always outranks it, which is
+the fix: **opposite a known 4-4 major fit, notrump is never the answer.**
+
+**VERIFIED.**  `stra_accept_shape_$M`'s `requires` scores **fit 1.000** on
+`A864.A85.K53.A72` (15 HCP, 7 controls) at the real seat; today `uc_nt3` wins
+at 0.946/29 over `uc_raise_S4` at 0.605.
+
+**Template:** `expand: { M: [H, S] }` — eight rules; the identical context is
+owed after `2NT - 3C - 3$M - 4$M` (the 2NT Stayman twin) and after
+`1NT - 2$T - 2$M - 3$M` (raise of a completed transfer), which takes it to
+about 24 rules from one agreement.
+
+---
+
+## Board 897 — margin -8
+
+**NOTHING-WRONG (constructive), with a negative prototype reported.**
+
+The first divergence is North raising to 3H on `QJT.KJ94.865.T83`
+(four trumps opposite a weak two, ten combined) over their strong 2NT.
+`cl_raise_lott3_H` fits 1.000 and that is the file's own stated agreement —
+raise to the level of the fit — applied correctly.  BEN's pass is a
+judgement call about their strong enquiry, not a systemic disagreement.
+
+**Prototype I tried and am not shipping.**  The obvious "improvement" is the
+four-level barrage: with ten combined trumps the Law says 4H, and
+`cl_raise_lott4_H` fits **0.000** here only because its `their_fit: [8, 26]`
+gate demands a fit the opponents have not yet shown.  I priced a sibling
+without that gate.  Double-dummy: North/South take **seven** hearts, so 4H is
+three off — against 4S making ten at the other table, the barrage turns
+-420 into roughly -500.  **Negative; do not ship.**  The Law raise over a
+*strong* enquiry needs the opponents' values in the gate, and
+`their_shown_hcp` is the evaluator for it if anyone returns to this.
+
+What else I checked: `cl_raise_H3`'s 10-point gate (correctly missed),
+`cl_new_long3_*` (all 0.000 — North has no suit).  No constructive rung is
+missing in this seat.
+
+---
+
+## Board 15 — margin -7
+
+**Seat/call that went wrong:** table B, call 2, **East bids 1H** on
+`KQT52.KQT75.Q42.` over 1C.  `oc1C_1H` and `oc1C_1S` **both fit 1.000 at
+priority 71**; the tie is broken by call order, so the engine overcalls the
+*lower* of two five-card suits.  East later had to bid 2S in the balancing
+seat to find the fit at all.
+
+**The missing agreement:** the opening rules encode "5-5 opens the higher"
+(`suit_diff`); the overcall rules never got the twin, so with two five-card
+suits the overcall is chosen by the bidding ladder rather than by agreement.
+
+**Context:** `overcalls_of_1C` and `overcalls_of_1D` (the only two where a
+1H/1S tie is possible at the same level).
+
+```yaml
+      # SIBLING GAP: open_1S already encodes "higher of equal length" through
+      # suit_diff, and the overcall family never got it - so oc1$o_1H and
+      # oc1$o_1S tied at 1.00/71 and the cheaper call won by accident.  A
+      # duplicate rung with the shape clause, half a point above.
+      - id: oc1C_1S_hi
+        call: 1S
+        priority: 71.5
+        requires:
+          suits: { S: [5, 13] }
+          hcp: [8, 16]
+          evals: { "suit_diff(S,H)": [0, 13], "suit_quality(S)": [1, 9] }
+        shows: "overcall: 5+ spades, 8-16, spades at least as long as hearts (higher of equal length)"
+        establishes: { forcing: non_forcing }
+```
+(copy the exact `requires` of the context's own `oc1$o_1S` and add only the
+`suit_diff` clause, so the rung is that rule plus one shape statement.)
+
+**Answering seat:** none created — a simple overcall, answered by
+`advance_overcall` and the advance families, all authored.
+
+**What it endangers:** `oc1C_1H` (71) on 5-5 and 5-4 hands only, which is the
+whole content of the agreement; `oc1C_1S` (71) is its own superset and keeps
+every hand.  Nothing below it is reachable (`oc1C_pass` 25, the jumps at 60,
+the preempts at 58) because they all require shape or strength this rule
+denies.
+
+**VERIFIED.**  The proposed `requires` scores **fit 1.000** on
+`KQT52.KQT75.Q42.` at the real seat, and the tie it breaks is confirmed:
+`oc1C_1H` 1.000/71 and `oc1C_1S` 1.000/71 today.
+
+**Template:** two contexts x one rung = two rules.  The same idea for the
+2-level overcalls (`oc1$o_2$X` pairs) adds four more.
+
+---
+
+## Board 20 — margin -7
+
+**NOTHING-WRONG (constructive).**  The divergence is South's 2H over their
+1NT on `K85.QJT842.KQT.2` where BEN bids 2C.  That is the defence-to-1NT
+family, which `DECISIONS.md` fixes as **natural** by an explicit design
+choice ("chosen over DONT/Cappelletti for explainability; it is one YAML
+block to swap"), and BEN's 2C is a conventional two-suited call our system
+does not play.
+
+What I checked: `v1NT_2H` fits 1.000 on its own terms (six hearts, 8-15);
+`v1NT_pass` 1.000; `v1NT_X` 0.028.  There is no constructive rung missing —
+the two systems simply differ, and the fix would be a convention swap, not an
+agreement.
+
+---
+
+## Board 60 — margin -7
+
+**Seat/call that went wrong:** table A, call 8, **North bids 4C** on
+`Q.K7.AK5.AKQT543` after `2C P 2D P 3C P 3S P`.  `uc_rebid_C4` (fit 1.000,
+priority 29) out of the generic toolkit; South then had to bid 5C and we went
+two down while 3NT was ten tricks.
+
+**The missing agreement:** the game-force landing family's 3NT rung
+(`gf_3NT`) is written for a *weak* game-force hand — `hcp: [0, 17]` and
+`not: { longest_suit_length: [6, 13] }` — so the one hand that most obviously
+belongs in 3NT, a 21-count with a running seven-card minor and every side
+suit stopped, is **explicitly excluded** (it scores 0.003).  The 2C tree has
+no landing ladder, and this is the missing rung.
+
+**Context:** `gf_landing_nt` (existing; `pattern: "... - P - ?"`, so it
+shadows nothing anchored).
+
+```yaml
+      # gf_3NT is the WEAK game-force hand's 3NT: capped at 17 and forbidden a
+      # six-card suit, because at priority 34 it was beating fit-1.0 natural
+      # rebids.  The strong hand's 3NT was never written, so a 21-count with a
+      # running seven-card minor rebid it at the four level and we played 5C.
+      # A source of tricks plus stoppers IS nine tricks; that is the gate.
+      - id: gf_3NT_source
+        call: 3NT
+        priority: 36
+        requires:
+          hcp: [16, 40]
+          evals: { longest_suit_length: [6, 13], quick_tricks: [4, 13],
+                   weakest_unshown_stopper: [0.9, 9] }
+        shows: "a long running suit, four-plus quick tricks and every unshown suit stopped: nine tricks"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat:** `quant_raise_of_3NT` (`... - 3NT - P - ?`) is authored and
+owns partner's seat over a natural 3NT, including the quantitative raise; so
+does `quant_3NT_accept`.  The conversation closes.
+
+**What it endangers:**
+* `gf_3NT` (34) — same call, and the two bands barely meet: `gf_3NT` denies a
+  six-card suit outright, so the overlap is empty for every hand this rule
+  describes.
+* `uc_rebid_$X4` (29) and `uc_new_$X3/_hi` (27 / 27.5) — nine tricks beat
+  eleven, and the file already states that maxim in `gf_minor_3NT`; this
+  extends it to the no-agreed-suit case.
+* `gf_maj4$M` (38) and `gf_pref_3$M` (37) sit **above** it, so a known
+  eight-card major fit still beats notrump — the exact correction
+  `gf_landing_minor`'s comment records having to make once already.
+* `gf_new_3$X` (36) ties; give the new rung 36.5 if the implementer wants the
+  natural five-card suit to stay primary on hands that fit both.
+
+**VERIFIED.**  `{hcp: [16,40], evals: {longest_suit_length: [6,13],
+quick_tricks: [4,13], weakest_unshown_stopper: [0.9,9]}}` scores **fit 1.000**
+on `Q.K7.AK5.AKQT543` at the real seat (21 HCP, 7-card suit, 4.5 quick
+tricks, every unshown suit stopped); today the whole seat is `uc_rebid_C4`
+1.000/29 with `gf_3NT` at 0.003.
+
+**Template:** one rule, no expansion — `gf_landing_nt` is not templated.  The
+matching rung for the *agreed-minor* case already exists (`gf_minor_3NT`);
+what is still owed is the same idea inside `r2c_opener_rebid`'s
+continuations, which is the 2C tree's documented open item.
+
+---
+
+## Board 85 — margin -7
+
+**NOTHING-WRONG (constructive).**  The divergence is East passing in first
+seat on `A7542.K.73.KT972` (10 HCP, 5-5 blacks) where BEN opens 1S.
+`open_1S_rule20` scores **0.757** — a soft-miss just under the 0.9 fast path,
+so `open_pass` at 1.00 takes it.
+
+This is an opening-style threshold and the brief's do-not-re-propose list
+names "opening-style / rule-of-20 thresholds" explicitly.  What I checked
+beyond that: the rest of table B is BEN's auction entirely (we pass
+throughout), and table A is a 1NT overcall and a competitive raise, neither
+of which is a constructive-machinery question.
+
+The one thing worth recording for whoever owns the scoring model: this is a
+textbook instance of **the soft-miss lottery deciding an opening bid** —
+0.757 is not a near-miss on a judgement, it is the difference between opening
+and passing a 5-5 ten-count, and it is settled by a Gaussian rather than by an
+agreement.  That is a scoring-model finding, not a rule finding.
+
+---
+
+## Board 100 — margin -7
+
+**Seat/call that went wrong:** table A, call 6, **South bids 4H** on
+`K862.K9752.954.K` after `1D 1S X P 2H P`.  `uc_raise_H4` (fit 1.000,
+priority 32) and `uc_raise_H3` (fit 1.000, priority 31) both fit; **priority
+alone decides between an invitation and a game bid** on a nine-count opposite
+a partner who has just made the cheapest possible reply to a negative double.
+
+**The missing agreement:** after my own negative double, opener's cheapest bid
+of the major I promised is a **minimum** — and there is no rule anywhere that
+says so, so the raise ladder treats it like a free bid.
+
+**Context:** `general_uncontested_continuation` (existing).
+
+```yaml
+      # I DOUBLED; PARTNER WAS FORCED.  Opener's cheapest bid of the major my
+      # negative double promised is a MINIMUM, and the generic raise ladder
+      # reads it as a free bid: uc_raise_$M4 and uc_raise_$M3 both fit 1.00 on
+      # a nine-count and priority alone chose game.  This is the invitation
+      # that separates them, and it is more specific than either.
+      - id: uc_advance_invite3_$M
+        call: 3$M
+        priority: 33.5
+        when: { partner_suit: $M, partner_last_suit: $M, my_last_call_was_double: true,
+                cheapest_in_suit: true, we_hold_contract: false, standing_bid_level: [2] }
+        requires:
+          suits: { $M: [4, 13] }
+          evals: { total_points: [8, 12], "lott_total_trumps($M)": [8, 26] }
+        shows: "invitational raise of the major my negative double promised: 8-12 opposite opener's minimum reply"
+        establishes: { forcing: invitational, agreed_suit: $M }
+```
+
+**THE ANSWERING SEAT — shipped with it:**
+
+```yaml
+  - id: opener_over_negative_double_invite
+    description: "Opener answers the invitational raise of the major his minimum reply named"
+    expand_pairs:
+      - { m: C, y: H, oM: S }
+      - { m: D, y: H, oM: S }
+      - { m: C, y: S, oM: H }
+      - { m: D, y: S, oM: H }
+    pattern: "1$m - 1$y - X - P - 2$oM - P - 3$oM - P - ?"
+    rules:
+      - id: ondi_accept_$m$y
+        call: 4$oM
+        priority: 55
+        requires: { evals: { total_points: [15, 40] } }
+        shows: "accepting: more than the minimum my cheapest reply promised"
+        establishes: { forcing: sign_off, agreed_suit: $oM }
+      - id: ondi_decline_$m$y
+        call: P
+        priority: 50
+        requires: {}
+        shows: "declining: the minimum I already showed"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+**What it endangers, in `general_uncontested_continuation`:**
+* `uc_raise_$M4` (32) — only inside 8-12 support points, in this one auction,
+  where the game bid is the over-bid the board punished.
+* `uc_raise_$M3` (31) — same call, wider gate; mine is the more specific
+  reading of the same hand and its `when` restricts it to the sequence.
+* `uc_doubler_raise3_$M` (33) and `uc_doubler_game3_$M` (35) — both need
+  17-19 or 17+ and four-card support **as the doubler raising an advance**;
+  33.5 sits between them, so a 17-count still reaches its own rungs.
+* `uc_pass` (18) — a nine-count with four-card support opposite a forced bid
+  is not "nothing further to show".
+
+**VERIFIED.**  `{suits: {H: [4,13]}, evals: {total_points: [8,12],
+"lott_total_trumps(H)": [8,26]}}` scores **fit 1.000** on `K862.K9752.954.K`
+at the real seat (total_points 11, nine combined trumps).
+
+**Template:** `expand: { M: [H, S] }` on the generic family (two rules) and
+the four `expand_pairs` on the answering context (eight rules).
+
+---
