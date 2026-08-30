@@ -182,14 +182,18 @@
           not: { suits: { $M: [3, 13] } }
         shows: "four+ spades at the one level: their bid does not stop opener showing his own major"
         establishes: { forcing: one_round }
+      # Banded 12-21, not 12-15 like `sd_rebid_2$m`: in the four clean minor
+      # auctions the existing rung keeps this call anyway, and everywhere else
+      # this context is the only interpreter - a six-card suit with 18 and a
+      # singleton in partner's major must not fall through to the floor.
       - id: sdw_rebid_$O$M
         call: 2$s
         priority: 55
         requires:
           suits: { $s: [6, 13] }
-          hcp: [12, 15]
+          hcp: [12, 21]
           not: { suits: { $M: [3, 13] } }
-        shows: "6+ $s, minimum, fewer than 3 $M"
+        shows: "6+ $s and fewer than 3 $M: the natural rebid"
         establishes: { forcing: non_forcing }
       - id: sdw_1NT_$O$M
         call: 1NT
@@ -283,14 +287,18 @@
           not: { suits: { $M: [3, 13] } }
         shows: "four+ spades at the one level: the double does not stop opener showing his own major"
         establishes: { forcing: one_round }
+      # Banded 12-21, not 12-15 like `sd_rebid_2$m`: in the four clean minor
+      # auctions the existing rung keeps this call anyway, and everywhere else
+      # this context is the only interpreter - a six-card suit with 18 and a
+      # singleton in partner's major must not fall through to the floor.
       - id: srw_rebid_$O$M
         call: 2$s
         priority: 55
         requires:
           suits: { $s: [6, 13] }
-          hcp: [12, 15]
+          hcp: [12, 21]
           not: { suits: { $M: [3, 13] } }
-        shows: "6+ $s, minimum, fewer than 3 $M"
+        shows: "6+ $s and fewer than 3 $M: the natural rebid"
         establishes: { forcing: non_forcing }
       # No stopper clause: they have doubled, not bid, so there is no suit to
       # stop.  This is the notrump rung the whole support-redouble family was
