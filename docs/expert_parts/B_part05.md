@@ -5,10 +5,16 @@ constructive lens: the uncontested 2/1 machinery, opener's and responder's
 rebid structures, the forcing notrump, the invitational/game boundary, and the
 shape-showing that separates a minimum from a slam-going hand *before* game.
 
-**Counts.** 38 boards → **30 proposals**, **8 NOTHING-WRONG**, **2 negative
-results from my own prototypes reported rather than shipped** (boards 838 and
-209).  25 of the 30 proposals are traced through `fast_decision` on the actual
-board and are marked **VERIFIED**.
+**Counts.** 38 boards → **27 proposals** (plus board 885, which is board 515's
+agreement on a second hand), **8 NOTHING-WRONG**, and **2 negative results from
+my own prototypes, reported rather than shipped** (mini-splinters, board 209;
+"open the longer minor", board 838).
+
+**Every one of the 27 proposals was traced through `fast_decision`** on the
+actual hand and is marked **VERIFIED**; on **25** of them the board's own call
+changes, and on the other two (19 and 172) the new rung fires on a hand of the
+right type but the dossier board is not recovered — which is said so in the
+entry rather than glossed.
 
 **Everything in this file was prototyped together** in one scratch copy of the
 system, so the aggregate is measured rather than asserted:
@@ -18,12 +24,22 @@ system, so the aggregate is measured rather than asserted:
 | contexts | 517 | **564** |
 | rules | 2,344 | **2,523** |
 | `lint_system.py` findings | 223 | **222** |
-| our decisions changed on `reports/r18_before.jsonl` | — | see "Blast radius" below |
+| our decisions changed on `reports/r18_before.jsonl` (10,335 replayed) | — | **87 (0.84 %)** |
 
 `decide_fast` was replayed over all 10,335 of our decisions in the review
-corpus under both systems; the changed-decision count is reported at the foot
-of this file with the auctions listed, so nothing here rests on the boards it
-was found on.
+corpus under both systems, so the aggregate blast radius is measured and not
+guessed; the per-batch breakdown and a sample of the changed auctions are at
+the foot of this file.
+
+**The 25 board-changing traces were re-run with every proposal applied at
+once**, not one at a time: all 25 still produce the call the entry claims, so
+the proposals do not cancel or shadow one another as a batch.
+
+**The one thing in this file that is UNTESTED** is the companion
+`opener_rebid_1D_2C_gf` ladder under board 942 — it loads and its ids and
+template vars are legal, but the board is already recovered by the gate above
+it and I did not trace a hand through the ladder itself.  It is labelled
+UNTESTED in place.
 
 ---
 
@@ -1692,3 +1708,487 @@ which is a subject of its own.
 content is exhausted by it; the rest of both auctions is competitive.
 
 ---
+## Board 871 — a negative double on a six-card suit
+
+**Seat/call.** Table A call 3, seat S: `P 1D 1S`, hand `95.AJ6542.K7.J87` —
+**six** hearts, 9 HCP.  `nx_1m1S_X` ("negative double: 4+ hearts, 6+ HCP")
+fits 1.000 at priority **80**; the free bid `nx_1m1S_2H` needs 10 (fit 0.800)
+and the weak jump `nx_1m1S_wj_H` sits at 56.  The double is a lie about the
+hand and the auction wandered `2D 2H 3D 3H 4D`, -100.
+
+**The missing agreement.**  A negative double promises *four* hearts and asks
+partner to choose; with six it is the wrong bid at any strength.  The free bid
+at the two level needs only eight points when the suit is six long.
+
+**YAML** (`resp_1m_over_1S`, above the double):
+
+```yaml
+      - id: nx_1m1S_long2_H
+        call: 2H
+        priority: 81
+        requires: { suits: { H: [6, 13] }, hcp: [8, 15] }
+        shows: "six-card heart suit, 8-15: the suit, not the negative double"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.**  `forcing: one_round`, matching `nx_1m1S_2H`
+immediately below it, so opener's existing answering ladder
+(`opener_over_negative_double` is not reached; the free-bid answer is the
+generic continuation) reads it exactly as it reads the 10+ version.  I am
+deliberately keeping the two rungs' `establishes` identical so no new seat is
+created.
+
+**Why this is not the excluded "a double must not hide a six-card suit".**
+That entry in `DECISIONS.md` is about **takeout** doubles and was killed with
+whole-corpus data; and round 14 killed a **cap** on `nxj_X`.  This is the
+additive half: it adds a rung that describes the hand, rather than gating the
+double.  On every hand *without* six hearts `nx_1m1S_X` keeps its whole band.
+
+**What it endangers.**  `nx_1m1S_X` (80) on six-card-heart hands with 8-15 —
+intended.  `nx_1m1S_2H` (78) becomes redundant on the 10-15 six-card overlap;
+identical call, identical forcing, so nothing changes there.
+`nx_1m1S_wj_H` (56, weak jump, "less than a free bid") keeps every hand below
+eight points.
+
+**VERIFIED.**  `P 1D 1S` → **2H** (`nx_1m1S_long2_H`), which is BEN's call.
+
+**Template.** The twin `nx_1m1H_long2_S` in `resp_1m_over_1H` — but note that
+over 1H the spade bid is at the **one** level, so the rung is
+`call: 1S, priority: 79` above `nx_1m1H_X` at 80... which means the twin needs
+its priority set to 81 as well.  Both contexts, two rules.
+
+---
+
+## Board 885 — see board 515
+
+The first divergence is table B call 2, seat W: `1S P` with
+`T987.QT.J98.AQJ7`, and it is the *same* rung and the *same* agreement as board
+515 — a limit raise on four ragged trumps and ten flat points.  With
+`r1S_raise_ragged_S` in place the hand bids **2S** instead of 3S
+(**VERIFIED**), which is where the opponents' 4H then wins the auction cheaply
+instead of pushing us to 4S down one.
+
+No separate proposal.
+
+---
+
+## Board 926 — the sandwich double outranks a good five-card major
+
+**Seat/call.** Table B call 3, seat E: `1C P 1S`, hand `K92.AQT84.K985.K` —
+15 HCP with **AQT84** of hearts.  `sw_X` (prio 70) beats `sw_2H` (66) and we
+double; partner bids the wrong thing and the auction runs to 3H, +100 to them.
+
+**The missing agreement.**  In the sandwich seat a good five-card major with
+opening values is *bid*.  A double there says "both unbid suits" and puts
+partner in charge of a hand that already knows its own trump suit.
+
+**YAML** (`sandwich_seat`):
+
+```yaml
+      - id: sw_2H_strong
+        call: 2H
+        when: { unbid_suit: H }
+        priority: 71
+        requires: { suits: { H: [5, 13] }, hcp: [13, 17], evals: { "suit_quality(H)": [2.5, 9] } }
+        shows: "sandwich overcall: a good five-card heart suit with 13-17 - bid it, do not double"
+        establishes: { forcing: non_forcing }
+      - id: sw_2S_strong
+        call: 2S
+        when: { unbid_suit: S }
+        priority: 71
+        requires: { suits: { S: [5, 13] }, hcp: [13, 17], evals: { "suit_quality(S)": [2.5, 9] } }
+        shows: "sandwich overcall: a good five-card spade suit with 13-17 - bid it, do not double"
+        establishes: { forcing: non_forcing }
+```
+
+**ANSWERING SEAT.**  `non_forcing` natural overcall; `advance_overcall` and the
+`advsw_*` family already answer a sandwich two-level bid.  Nothing new is
+asked.
+
+**What it endangers.**  `sw_X` (70) only on hands holding a *good* five-card
+unbid major with 13-17 — the quality floor of 2.5 means two of the top three
+honours or better, so a ragged five-bagger still doubles.  `sw_2H` (66) keeps
+its whole 11-17 band underneath: additive.  `sw_2H_jump` (69) requires six
+cards and 5-10 and is untouched.
+
+**VERIFIED.**  `1C P 1S` → **2H** (`sw_2H_strong`), which is BEN's call
+(0.97).
+
+**Template.** Two rules as written; the minors deliberately excluded — a
+five-card minor in the sandwich seat is not worth pre-empting the double.
+
+---
+
+## Board 64 — NOTHING-WRONG (constructive)
+
+**Seat/call.** Table A call 2, seat S: `P 1D`, hand `AK9865.T97.J.Q43` — we
+overcall 1S (`oc1D_1S`, fit 1.000, prio 71); BEN jumps to 2S (`oc1D_2S_jump`
+also fits 1.000, prio 60).
+
+**What I checked.**  Both calls fit perfectly and the choice is settled by
+priority.  **Re-ranking the weak jump overcall is on the do-not-re-propose
+list**, with the number that killed it: round 11 measured -24 held out, and the
+recorded reason is that on the 8-10 overlap the one-level call is better.  This
+hand is a 10-count.  Nothing in the constructive machinery is consulted; table
+B is a negative double of a jump overcall.
+
+**Verdict.** NOTHING-WRONG.
+
+---
+
+## Board 119 — a "natural" notrump over their natural notrump
+
+**Seat/call.** Table B call 4, seat W: `P P 1C 1NT`, hand `J82.AK5.QJ642.84`
+— we bid **2NT** (`cl_nt2`, "natural 2NT: 11-12 balanced with a stopper in
+their suit").  Over a *natural 15-18 notrump overcall* there is no such bid:
+partner opened, they showed 15-18, and 11-12 balanced opposite that is a
+partscore hand with nowhere to go.
+
+**The missing agreement.**  The natural notrump rungs describe a notrump
+*contract* opposite a suit contract; they are meaningless when the standing bid
+is already notrump.
+
+**YAML** (`general_competitive_low`):
+
+```yaml
+      - id: cl_nt2
+        call: 2NT
+        priority: 28
+        when: { side_has_acted: true, standing_bid_strain: [C, D, H, S] }
+        requires:
+          hcp: [11, 12]
+          evals: { weakest_their_stopper: [0.9, 9], rule_of_26: [22, 99], semi_balanced: [1, 1] }
+        shows: "natural 2NT: 11-12 balanced with a stopper in their suit"
+        establishes: { forcing: non_forcing }
+```
+
+**ANSWERING SEAT.**  None — this removes a call rather than adding one.
+
+**What it endangers, stated plainly.**  This is a **gate** and it subtracts
+`cl_nt2` in every seat where the standing bid is notrump.  That is exactly the
+population it should not be describing, and the hands land on the natural suit
+rungs (`cl_new_D2` and friends) or on `cl_pass`, all of which are still
+offered.  I would *not* extend it to `cl_nt3` without measurement: 3NT over
+their notrump overcall can be a genuine contract when partner has opened and I
+hold a source of tricks.  `cl_nt2_direct` (37) already carries
+`their_last_bid_suit: true` and is untouched.
+
+**VERIFIED.**  `P P 1C 1NT` → **2D** (`cl_new_D2_hi`), replacing 2NT.  BEN
+doubles; 2D is at worst a partscore and 2NT was the losing call.  The corpus
+replay shows this gate is one of the wider-reaching items in the batch (it also
+moves boards 216 and 94), so it is the one I would screen **on its own** rather
+than inside a batch.
+
+**Template.** One rule.  `cl_nt1` deserves the same treatment and `uc_nt2`
+probably does too, but `uc_nt2` is an open item with its own history and I am
+not touching it here.
+
+---
+
+## Board 182 — NOTHING-WRONG (constructive)
+
+**Seat/call.** Table A call 8, seat S: `P P P 1D P 1H P 1NT`, hand
+`AT9.J62.JT.KT983` — we bid 2C in the pass-out seat over their constructive
+1NT rebid, -100.
+
+**What I checked.**  `cl_new_C2_hi` and `cl_new_C2` both fit **1.000**: five
+clubs and ten points is exactly what they describe.  The bid is wrong for a
+reason the rule cannot see — my partner has passed three times, so ten points
+opposite a passed hand facing a 12-14 opener is a defence, not a competition.
+The condition "partner has passed throughout" is expressible
+(`when: { partner_has_acted: false }`), but the only additive rung it supports
+is a **pass at priority 27**, which would outrank every `cl_new_*2` rung in the
+very large population of seats where our side has acted and partner has not —
+including every legitimate second-round overcall.  I am not proposing a rung
+whose blast radius I cannot bound, and the constructive rungs themselves are
+correctly written.
+
+**Verdict.** NOTHING-WRONG; the live question is a balancing/competitive
+threshold.
+
+---
+
+## Board 235 — a 1NT response holding six of their suit
+
+**Seat/call.** Table B call 2, seat E: `1D 1H`, hand `KT2.Q98543.84.J6` —
+**six hearts**, 6 HCP.  `nx_1m1H_1NT` ("6-10 with a heart stopper") fits
+1.000, because `stopper(H)` scores Q98543 as a full stopper.  We bid 1NT with
+six of their suit and no other feature.
+
+**The missing agreement.**  A natural 1NT over their overcall shows a
+*balanced-ish* hand with a guard; six cards in their suit is a trump stack, not
+a stopper, and with six points there is nothing to say.
+
+**YAML** (`resp_1m_over_1H`; the 1S twin is identical):
+
+```yaml
+      - id: nx_1m1H_1NT
+        call: 1NT
+        priority: 50
+        requires: { hcp: [6, 10], features: [ "stopper(H)" ], suits: { H: [0, 3] }, not: { suits: { S: [4, 13] } } }
+        shows: "6-10 with a heart stopper and at most three of their suit"
+        establishes: { forcing: non_forcing }
+```
+
+**ANSWERING SEAT.**  Unchanged — the hand lands on `nx_1m1H_pass`, which is
+already authored.
+
+**What it endangers.**  A length cap is a **gate** and it subtracts exactly one
+class: 6-10 hands with four or more of their suit that used to bid 1NT.  Those
+hands pass (`nx_1m1H_pass`, fit 1.000), which is right — and the length gate is
+*sharp* (`_S2_SUIT = 0.95`), which matters because
+`weakest_their_stopper`/`stopper` famously are not.  This is the honest way to
+get a stopper gate to bite without touching the evaluator, which round 8
+measured at -9 held out.
+
+**VERIFIED.**  `1D 1H` → **P** (`nx_1m1H_pass`), which is BEN's call (0.99).
+
+**Template.** Two rules (`nx_1m1H_1NT`, `nx_1m1S_1NT`); `nx_1m1H_2NT` and
+`nx_1m1H_3NT` deserve the same cap and would be part of the same agreement.
+
+---
+
+## Board 243 — six cards is its own credential over their 1NT
+
+**Seat/call.** Table A call 1, seat N: `1NT`, hand `Q32.AT8763.K86.7` — six
+hearts, 9 HCP, a singleton club.  `v1NT_2H` requires
+`features: [ "good_suit(H)" ]`, AT8763 is neither two of the top three nor
+three of the top five, and a feature miss is a flat **0.2 multiplier** — so the
+rule scores 0.200 and we pass out their 1NT.
+
+**The missing agreement.**  Over their 1NT a six-card suit with a singleton is
+worth a two-level bid on its length; the quality floor belongs on the *five*-
+card version, which is the one that needs it.
+
+**YAML** (`defense_vs_1NT`):
+
+```yaml
+      - id: v1NT_long2_H
+        call: 2H
+        priority: 60.5
+        requires: { suits: { H: [6, 13] }, hcp: [7, 15] }
+        shows: "natural: a six-card heart suit, 7-15"
+        establishes: { forcing: non_forcing }
+      - id: v1NT_long2_S
+        call: 2S
+        priority: 60.5
+        requires: { suits: { S: [6, 13] }, hcp: [7, 15] }
+        shows: "natural: a six-card spade suit, 7-15"
+        establishes: { forcing: non_forcing }
+```
+
+**ANSWERING SEAT.**  `advance_1NT_overcall` is the wrong context (that answers
+*our* 1NT overcall); a natural two-level bid over their 1NT is answered by the
+generic competitive ladder, which already reads a `non_forcing` suit bid.
+Nothing new is asked, so nothing new is owed.
+
+**What it endangers.**  `v1NT_2H` (61) keeps its whole band and stays above the
+new rung, so a good five-or-six-card suit is unaffected; the new rung only
+catches the hands the feature multiplier was silencing.  `v1NT_pass` (30) is
+outranked on six-card hands — intended.  `v1NT_X` (70, penalty, 15+) is far
+above and untouched.
+
+**VERIFIED.**  `1NT` → **2H** (`v1NT_long2_H`), replacing pass.
+
+**Template.** Two rules as written; the minor twins (`v1NT_2C`/`2D`, both
+`6+` already) should get the same 7-point floor rather than 8.
+
+---
+
+## Board 419 — NOTHING-WRONG (constructive)
+
+**Seat/call.** Table A call 3, seat S: `1D P P`, hand `6532.K52.KJT8.A4` — we
+bid the balancing 1NT (`bal_1NT`, 11-14 with a stopper, fit 1.000); BEN
+doubles.
+
+**What I checked.**  `bal_X` scores 0.028 because a balancing takeout double
+wants shortness in their suit and this hand holds **four** diamonds — the gate
+is doing exactly the right thing.  `bal_D_1S` fits 0.349 (four spades, not
+five).  With four of their suit and a flat 11-count, 1NT is the system's
+answer and it is a defensible one.  Table B's divergence is `uc_raise_H2` in a
+competitive auction.
+
+**Verdict.** NOTHING-WRONG in my discipline.
+
+---
+
+## Board 458 — a good five-card suit outranked by a bid that describes nothing
+
+**Seat/call.** Table A call 4, seat S: `P P 1C 2H`, hand `KJ6.A9.QJT83.853` —
+**`nxj_X`**, "negative double of the jump overcall: 8+ HCP, no shape shown",
+priority **70**, fit 1.000.  BEN bids 3D.  Partner then bid the spades the
+double implied and we ended in 2NT, -100.
+
+**The missing agreement.**  A good five-card suit at the three level is a
+description; a double that promises eight points and nothing else is not.  With
+a real suit and no four-card unbid major, bid the suit.
+
+**YAML** (`neg_double_3level_M`'s two-level sibling context, above `nxj_X`):
+
+```yaml
+      - id: nxj_new_D3
+        call: 3D
+        priority: 71
+        when: { unbid_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [5, 13] }
+          hcp: [10, 15]
+          evals: { "suit_quality(D)": [2, 9] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "natural: a good five-card diamond suit with 10-15 - the suit, not a shapeless double"
+        establishes: { forcing: one_round }
+      - id: nxj_new_C3
+        call: 3C
+        priority: 71
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires:
+          suits: { C: [5, 13] }
+          hcp: [10, 15]
+          evals: { "suit_quality(C)": [2, 9] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "natural: a good five-card club suit with 10-15 - the suit, not a shapeless double"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.**  `forcing: one_round`, which is what `nxj_X` and
+`cl_new_D3` already establish, so opener's existing continuation reads it.  I
+deliberately did not make it game-forcing precisely so that no new seat is
+created — round 13's "the forcing new suit opposite a weak two is passed out"
+is the failure mode I am avoiding.
+
+**Why this is not the reverted round-14 fix.**  Round 14 measured a **cap** on
+`nxj_X` (a longest-suit ceiling plus a four-card-unbid-major requirement) at
+-5 held out, and the recorded reason is that *two of the nine replacement calls
+score below the 0.9 fast path*, i.e. the landing seats were unauthored.  This
+proposal is the opposite move: it authors one of those landing calls, at a
+priority that only takes the hands it actually describes, and leaves `nxj_X`'s
+band completely intact.
+
+**What it endangers.**  `nxj_X` (70) on 10-15 hands with a good five-card
+minor and no four-card unbid major — the `not:` clause is what preserves the
+double's real job.  `cl_new_D3`/`cl_new_D3_hi` (27/27.5) and
+`cl_new_long3_D` (27) are all below and are describing the same hand less well;
+`cl_raise_C3` (31) requires club support and is untouched.
+
+**VERIFIED.**  `P P 1C 2H` → **3D** (`nxj_new_D3`), which is BEN's call.
+
+**Template.** Two rules per level; the same pair belongs in
+`neg_double_3level_m` for a jump to the three level.
+
+---
+
+## Board 549 — a three-card raise of the overcall with 4-3-3-3 shape
+
+**Seat/call.** Table A call 5, seat S: `P P 1C 1D X`, hand `KT7.K932.987.K72`
+— `xd_raise_D2` ("raise of partner's doubled D: 3+ trumps, 6-9 support
+points") fits 1.000 and we raise; BEN passes.  2D is one off where passing is
++100 or better.
+
+**The missing agreement.**  A raise of partner's one-level overcall through
+their negative double is a Law bid: it needs a ruffing value.  With three
+trumps and 4-3-3-3 shape there is no ruff to take and no extra trick to win —
+the raise buys nothing and hands them a target.
+
+**YAML** (`general_their_double`; the same clause on all four suits):
+
+```yaml
+      - id: xd_raise_D2
+        call: 2D
+        priority: 30
+        when: { we_bid_last: true, we_hold_contract: false, partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [6, 9], "lott_total_trumps(D)": [7, 26] }
+          not: { suits: { D: [3, 3] }, evals: { balanced: [1, 1] } }
+        shows: "raise of partner's doubled D: 3+ trumps with a ruffing value, or four trumps, 6-9 support points"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+```
+
+**ANSWERING SEAT.**  None owed — the change removes a call.  The hand lands on
+`xd_pass`, which is authored and fits 1.000.
+
+**What it endangers.**  A **gate**: exactly-three-card raises from 4-3-3-3 and
+5-3-3-2-with-three-trumps hands (the `balanced` evaluator has sharp tolerance,
+`_EVAL_S2["balanced"] = 0.08`, so the `not:` really bites and does not leak).
+Those hands pass instead.  Four-card raises, three-card raises with a doubleton
+or a singleton, and `xd_jumpraise_$X3` are all untouched.
+
+**VERIFIED.**  `P P 1C 1D X` → **P** (`xd_pass`), which is BEN's call (0.90).
+
+**Template.** Four rules (`xd_raise_C2`/`D2`/`H2`/`S2`), which is where I
+applied it; the three-level twins `xd_raise_*3` should get it too.
+
+---
+
+# Blast radius, measured
+
+`decide_fast` was replayed over **all 10,335 of our decisions** in
+`reports/r18_before.jsonl` under the stock system and under a scratch copy
+carrying **every** proposal in this file:
+
+| | value |
+|---|---|
+| decisions replayed | 10,335 |
+| decisions changed | **87 (0.84 %)** |
+| contexts | 517 → 564 |
+| rules | 2,344 → 2,523 |
+| `lint_system.py` findings | 223 → **222** |
+
+The intermediate measurements are worth recording because they show where the
+mass is:
+
+| batch | changed decisions |
+|---|---|
+| trial bids + 1M-1NT-2M + 1M-1NT-2S + jump shift + ragged raise + 2/1 gate | 27 (0.26 %) |
+| \+ six-five, solo four-level rebid, `omrp_pass`, `onx_jumpmajor` | 39 (0.38 %) |
+| \+ `answer_raise_invitation`, `our_agreed_partscore_doubled` | 45 (0.44 %) |
+| \+ everything else in this file | **87 (0.84 %)** |
+
+Two contexts in the batch account for a disproportionate share of the tail and
+should be **screened on their own** rather than inside a subject batch:
+`cl_nt2`'s `standing_bid_strain` gate (board 119) and
+`our_agreed_partscore_doubled` (board 84), both of which reach auctions well
+outside the boards that motivated them.
+
+A sample of the changed decisions, as `(board, table, call index, seat, base
+call, new call, auction)` — the first thirty of 87:
+
+```
+(  4,b, 9,E,'4H','P'  ,'P 1C 1D 1H P 2H P 3H P')      (261,a, 5,S,'4H','P'  ,'2D X P 3H P')
+( 30,b, 3,E,'3S','2S' ,'P 1S P')                       (269,b,10,W,'P' ,'4C' ,'P 1D 2C 2S P 2NT 3C 3NT P P')
+( 40,a, 4,N,'4H','3C' ,'1H P 1NT P')                   (271,b, 6,E,'2C','3C' ,'P P 1S P 1NT P')
+( 49,a, 5,S,'P' ,'4H' ,'P 1H 3S P P')                  (290,a, 2,N,'P' ,'2S' ,'P 1NT')
+( 54,b, 9,W,'P' ,'4S' ,'P 1S 2H P 2NT 3S 4H P P')      (291,b, 6,E,'2NT','P' ,'1D P 1S P 2D P')
+( 62,a,10,N,'3S','P'  ,'P P 1D P 1S P 2D P 2S P')      (293,a, 9,S,'4H','P'  ,'P P 2D X 3D X P 3H P')
+( 84,a, 8,N,'2S','P'  ,'1D P 1H P 2H P P X')           (300,a, 8,N,'2NT','P' ,'1H P 1S P 1NT P 2S P')
+( 93,b, 2,W,'P' ,'2S' ,'P 1NT')                        (348,a, 2,S,'2C','2NT','1D P')
+( 94,b, 5,W,'1NT','P' ,'P 1C 1S X P')                  (350,a,10,N,'P' ,'3H' ,'P 1D 1H P 1NT X 2H P P X')
+( 97,b, 4,E,'2H','P'  ,'P 1C 1H X')                    (357,b,14,W,'P' ,'4H' ,'P 1C 1H X P 2C 2H 3C P P 3H 4C P P')
+(119,b, 4,W,'2NT','2D','P P 1C 1NT')                   (216,a, 2,S,'1NT','2D','1C 1S')
+(123,a, 1,N,'P' ,'2H' ,'1NT')                          (228,b,11,W,'P' ,'4D' ,'1C P 1NT 2D 3C P P 3D 4C P P')
+(151,a, 9,N,'3S','P'  ,'P 1C P 1S P 2C P 2S P')        (235,b, 2,E,'1NT','P' ,'1D 1H')
+(203,b, 6,E,'3S','3C' ,'P P 1S P 2S P')                (243,a, 1,N,'P' ,'2H' ,'1NT')
+(258,b, 5,W,'P' ,'4S' ,'2D 2S 4D P P')
+```
+
+Two of these deserve a second look from whoever consolidates: **board 54**
+(`P 1S 2H P 2NT 3S 4H P P` → 4S) and **board 258** (`2D 2S 4D P P` → 4S) are
+both the six-five rung (board 870) firing at the four level in a competitive
+auction, which is where its `total_points: [13, 40]` floor is doing all the
+work.  If any single rung in this file wants its own screen, it is that one.
+
+## Recommended shipping order, by confidence
+
+1. **The four empty answering seats** — boards 300, 151, 508, 4.  Each is a
+   two-rule context with a `requires: {}` floor, each replaces a generic rung
+   bidding over a sign-off, and together they are 4 of the 27 decisions in the
+   first batch.  Lowest risk in the file.
+2. **The trial-bid conversation** (938) with `responder_over_trial`, and the
+   `1M - 1NT - 2M` conversation (809) with its answering seat.  These are the
+   two closed conversations and the two largest additions.
+3. **The ceilings**: 387 (jump shift), 49 (solo four-level rebid), 723, 243,
+   871, 19.  All additive, all one rung.
+4. **The gates**, each on its own: 515/885 (ragged raise), 942 (flat twelve),
+   235 (length cap), 549 (ruffing value), 119 (`cl_nt2` strain).
+5. **Not shipped, reported as negatives**: mini-splinters (209) and
+   "open the longer minor" (838).
