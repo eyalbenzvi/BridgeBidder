@@ -22,6 +22,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 12 | 242424 (re-review) | -532 (categorization; one large fix reverted) |
 | 13 | 131313 | -525 (board-by-board critique; 11 of 20 fixes killed by review) |
 | 14 | 151515 | **-474** (8 of 20 killed by review; the biggest single gain was a broken locked test) |
+| 15 | 161616 (1000 deals) | **-474** (no movement: 4 of 6 killed, 1 reverted; the rule-level defect supply is exhausted) |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -99,6 +100,20 @@ Fixes that ADD a rung can only fill a hole.  Fixes that **add a gate** to an
 existing rule, or **add a more specific context**, SUBTRACT behaviour everywhere
 they reach - and the corpus that motivated them is the one place they are
 guaranteed to look good.
+
+**AMENDED IN ROUND 15, and the amendment matters more than the rule.**  "Adding
+a rung is safe" is FALSE as stated.  `prepare_decision` builds `covered` from
+every rule whose `when` holds and whose call is legal - **fit is never
+consulted** - and `generate_fallbacks` only generates candidates for calls NOT
+covered.  So a new rung **deletes the code fallback for its call** in every seat
+its `when` reaches, whether or not the hand fits it.  Traced on board 691a: a
+fit-**1.00** fallback replaced by a rung fitting **0.00**, the seat taken by a
+fit-**0.066** keycard ask.  A new rung is safe only where no fallback covered its
+call, or where the rung fits every hand the fallback caught - and that must be
+MEASURED, because `when` is auction-only and fit is hand-dependent, so no `when`
+can restrict the suppression to the hands the rung wants.  The code fallback
+decides **4.4% of all our calls**; every "additive" fix has been quietly editing
+the largest population in the engine.
 
 In round 6 three such fixes gained 223 IMPs on the review corpus and lost 66 on
 the held-out corpus: a `semi_balanced` gate killed five cold 6NTs, a narrower
@@ -279,6 +294,47 @@ average -2.00/table, WITHOUT -2.54.
   fraction of the engine's notrump decisions turn on half a point of `rule_of_26`
   clearing the 0.9 threshold rather than on an agreement.  Sharpening it measured
   3 tables / -2 IMPs in round 13 and was killed.
+- **THE CODE FALLBACK IS THE LARGEST POPULATION IN THE ENGINE AND NOTHING HAS
+  EVER RULED ON IT.**  456 of 10,358 decisions (4.4%) are made with no rule at
+  all, at par gap **-3.89** against a stage-matched **+0.46** - about **-2,000
+  attributable gap-points**, larger than every named family combined, replicating
+  to within 0.3 across corpora.  Dump it grouped by `(context, call)`: that is a
+  map of every hole in the file, produced by the engine itself, ranked by cost.
+  Start a round there rather than with the per-decision audit.
+- **The five responding contexts are a uniform hole the rule-level yardstick
+  cannot see.**  `resp_1m[C]`, `resp_1m[D]`, `resp_1H`, `resp_1S`, `resp_1NT`:
+  475 decisions at **-3.0 to -4.6** on both corpora, about -1,700 gap-points, and
+  **not one rule inside them is indictable**, because every rung in a uniformly
+  bad context sits at its own baseline.  The intervention has to be at context
+  granularity - author the whole ladder - not at rung granularity.
+- **`uc_nt2` was ruled OK on the wrong number in round 15 and is still open.**
+  18 e10 / 27 r15 decisions, board margin -3.11/-2.48, gap -4.56/-3.93 against a
+  stage baseline of -0.20; a third of its firings are soft-miss picks below the
+  0.9 fast path and those run at **-9.17**.  Unlike `ballow_nt1` and `cl_nt1` it
+  denies no shape.  Larger than any population round 15 proposed to change.
+- **The soft-miss lottery is where "no agreement" becomes a bid.**  When pass is
+  forbidden and nothing fits >= 0.9, the engine takes the least-bad misfit: board
+  970b's whole candidate set was four rules with a best fit of 0.409.  Within one
+  rule the split is large - `uc_nt2`'s sub-threshold firings are 7 points of par
+  gap worse than its clean ones.  This is a scoring-model question, not a rule
+  question, and it has never been attacked directly.
+- **`open_2C` replicates at -7.44 / -6.58 and has been deferred four rounds.**
+  Its bad half is shapely 18-21 two-suiters, but balanced 22+ counts are equally
+  bad, so the opening condition is not what separates them - it is that the 2C
+  auction has no landing ladder.
+- **There is no context for opener's rebid after a 2/1 in a MINOR.**
+  `opener_rebid_after_2over1_minor` is `1M - 2m` only, so `1D - P - 2C - P - ?`
+  is unauthored and the generic 11-12 `uc_nt2` annexes a game-forcing seat.
+- **Load the file and count the hand before writing the number down.**  Round 15
+  lost three of five kills to its own errors: two miscounted hands (both 15, not
+  14 and 13, i.e. inside the rule's own band), a `when` that could never fire
+  (`we_bid_last: false` where the standing bid is ours in 20/20 tables), and YAML
+  that does not parse (`$M` in a context with no `expand:`).  Round 13 made
+  re-ranking a step; this is the companion step.
+- **A wait-loop must not match its own command line.**  `while ps aux | grep -q
+  "[s]weep.py"` and `until ! pgrep -f "match_ben.py run"` both match the shell
+  running them and spin forever.  This cost an hour of a round waiting on matches
+  that had already finished.  Poll the output file, not the process table.
 - The system cannot bid a grand slam.
 
 ---

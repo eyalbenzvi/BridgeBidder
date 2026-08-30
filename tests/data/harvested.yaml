@@ -2616,27 +2616,3 @@
   calls: ["2D", "P", "P"]
   expect: { call: "2NT" }
 
-# THE DOUBLER COULD NOT REBID HIS OWN SUIT.  uc_new_$X stops at the three level
-# and uc_rebid_$X4 is gated `my_suit`, which a takeout doubler never satisfies.
-# Eighteen points and 6-5 in the minors had four candidates, one of which fitted
-# - uc_pass at 1.00 - and passed.
-- name: e15_doubler_bids_his_own_six_card_suit
-  hand: "9.K.AKQ532.AQ985"
-  dealer: E
-  vulnerability: NS
-  calls: ["P", "P", "3C", "X", "P", "3S", "P"]
-  expect: { call: "4D" }
-
-- name: e15_doubler_own_suit_second_instance
-  hand: "AQ6.KJ84.AKQT95."
-  dealer: S
-  calls: ["P", "3C", "X", "P", "3S", "P"]
-  expect: { call: "4D" }
-
-# ... and the twin: with only FIVE of the suit the doubler still has no bid.
-- name: e15_doubler_with_only_five_still_passes
-  hand: "94.K.AKQ53.AQ985"
-  dealer: E
-  vulnerability: NS
-  calls: ["P", "P", "3C", "X", "P", "3S", "P"]
-  expect: { call: "P" }

@@ -13953,70 +13953,24 @@ contexts:
         # rebid won a soft-miss lottery at fit 0.28 into a 5-0 fit,
         # doubled, -500, with 3NT cold at the other table.
         establishes: { forcing: non_forcing, agreed_suit: S }
-      # THE DOUBLER CANNOT REBID HIS OWN SUIT.  uc_new_$X stops at the THREE
-      # level and uc_rebid_$X4 is gated `my_suit: $X`, which a takeout doubler
-      # never satisfies - he has bid no suit.  So an 18-count with a six-card
-      # suit, having doubled and heard partner compete, has no call: board 485a
-      # (`9.K.AKQ532.AQ985`, 18 HCP, 6-5 in the minors, after `P P 3C X P 3S P`)
-      # has four candidates of which exactly one fits - uc_pass at 1.00 - and
-      # passes.  Round 14's reviewer named this board by number and it is still
-      # passing.  Whole corpus: 11 tables at board margin -5.45 and par gap
-      # -7.64 against a stage-matched +0.10.
+      # THE DOUBLER CANNOT REBID HIS OWN SUIT, and the repair does not pay.
+      # uc_new_$X stops at the THREE level and uc_rebid_$X4 is gated
+      # `my_suit: $X`, which a takeout doubler never satisfies - he has bid no
+      # suit - so an eighteen-count with a six-card suit has four candidates of
+      # which exactly one fits, uc_pass at 1.00, and passes.  Board 485a
+      # (`9.K.AKQ532.AQ985` after `P P 3C X P 3S P`) and board 2a; round 14's
+      # reviewer named both by number and round 15's named them again.  The
+      # population is 11 tables at board margin -5.45 and par gap -7.64 against
+      # a stage-matched +0.10, replicating on both corpora.
       #
-      # standing_bid_level [1,2,3] is not decoration.  Adding a rung DELETES
-      # the code fallback for its call wherever the rung's `when` holds -
-      # `covered` is built without consulting fit (inference/engine.py) - so an
-      # unrestricted version silently removed a fit-1.00 fallback 4H on board
-      # 691a and handed the seat to a fit-0.066 keycard ask.  It is also the
-      # right bridge: over partner's FOUR-level bid a new suit is a cue, not
-      # "here is my suit".
-      #
-      # Written out per suit: this context has no `expand:`, so a $X rule id
-      # does not expand and the loader rejects the call as a bad strain.
-      - id: uc_doubler_own4_C
-        call: 4C
-        priority: 28.5
-        when: { my_last_call_was_double: true, we_bid_last: true,
-                we_hold_contract: false, unbid_suit: C, cheapest_in_suit: true,
-                standing_bid_level: [1, 2, 3] }
-        requires:
-          suits: { C: [6, 13] }
-          evals: { total_points: [16, 40], "suit_quality(C)": [2, 9] }
-        shows: "my own six-card C at the four level, having doubled first: 16+ points and a good suit"
-        establishes: { forcing: non_forcing, agreed_suit: C }
-      - id: uc_doubler_own4_D
-        call: 4D
-        priority: 28.5
-        when: { my_last_call_was_double: true, we_bid_last: true,
-                we_hold_contract: false, unbid_suit: D, cheapest_in_suit: true,
-                standing_bid_level: [1, 2, 3] }
-        requires:
-          suits: { D: [6, 13] }
-          evals: { total_points: [16, 40], "suit_quality(D)": [2, 9] }
-        shows: "my own six-card D at the four level, having doubled first: 16+ points and a good suit"
-        establishes: { forcing: non_forcing, agreed_suit: D }
-      - id: uc_doubler_own4_H
-        call: 4H
-        priority: 28.5
-        when: { my_last_call_was_double: true, we_bid_last: true,
-                we_hold_contract: false, unbid_suit: H, cheapest_in_suit: true,
-                standing_bid_level: [1, 2, 3] }
-        requires:
-          suits: { H: [6, 13] }
-          evals: { total_points: [16, 40], "suit_quality(H)": [2, 9] }
-        shows: "my own six-card H at the four level, having doubled first: 16+ points and a good suit"
-        establishes: { forcing: non_forcing, agreed_suit: H }
-      - id: uc_doubler_own4_S
-        call: 4S
-        priority: 28.5
-        when: { my_last_call_was_double: true, we_bid_last: true,
-                we_hold_contract: false, unbid_suit: S, cheapest_in_suit: true,
-                standing_bid_level: [1, 2, 3] }
-        requires:
-          suits: { S: [6, 13] }
-          evals: { total_points: [16, 40], "suit_quality(S)": [2, 9] }
-        shows: "my own six-card S at the four level, having doubled first: 16+ points and a good suit"
-        establishes: { forcing: non_forcing, agreed_suit: S }
+      # Round 15 built the rung (uc_doubler_own4_C/D/H/S, priority 28.5, six
+      # cards, 16+ total points, suit_quality 2+, standing_bid_level [1,2,3] so
+      # that it does not delete the code fallback for its call) and measured it:
+      # review corpus +0 on 2 changed boards, HELD OUT **-2 on the one board it
+      # reached**.  Reverted on the held-out number.  The diagnosis is right and
+      # the rung as drawn does not pay; what it still lacks is a reason to
+      # prefer four of a six-card suit to defending, which is a judgment the
+      # engine cannot express opposite an unlimited partner.
       - id: uc_minor_game_5C
         call: 5C
         priority: 28

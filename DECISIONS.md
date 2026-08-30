@@ -2584,3 +2584,138 @@ heart suit ahead of a six-card spade suit**, because both rungs sit at priority
 - **`weakest_their_stopper` still does not gate** and was load-bearing in two of
   this round's proposals.  It is a reason to distrust any new rule that leans on
   it, not merely an open item.
+
+## Round 15 (seed 161616, 1000 deals): the rule-level defect supply is exhausted
+
+1000 deals, seed 161616: **-667 IMPs (-0.667/board)**, 206 won / 322 lost / 472
+flat.  Every one of the 322 lost boards was read.  827 BEN disagreements,
+grouped by the rule that actually decided the call.  Six fixes to one
+adversarial reviewer: **1 SHIP, 1 RESHAPE-as-structure, 4 KILL.**
+
+**Held out: -474 -> -474.  The round moved nothing, and that is the finding.**
+
+| | own deals (161616) | review (242424) | held out (828282) |
+|---|---|---|---|
+| baseline | -667 | -677 | -474 |
+| Bundle A — two rungs, 0 reach on both corpora | 3 boards change | **-677 (0)** | **-474 (0)** |
+| the doubler's own suit, measured alone | | -677 (+0) | **-476 (-2)** reverted |
+| **round total** | | **-677** | **-474** |
+
+### Two measurement corrections, and both changed verdicts before any fix was written
+
+**(a) `explanation.source_rule_id` is the PRIMARY READING, not the deciding
+rule.**  `replay.py`, `repro.fires()` and the match rows' `rule` field all key on
+it.  It is the highest-priority rule producing the same call - what the call
+*means* - and on board 67a it names `rr_nt_slam3_S` (floor **19 HCP**) for a
+**15-count**, because `rr_nt_gf3_S` (12-18) matched at 1.00 and bid the same 3S.
+`rr_nt_slam3_S` has never fired in 10,385 decisions.  Three findings were written
+against it before the check.  `sweep.deciding_rule()` reconstructs
+`fast_decision` and the reviewer verified it independently: **20,731 decisions,
+0 call and 0 rule mismatches.**
+
+**(b) A rule must be judged against ITS OWN CONTEXT.**  Par gap is jointly owned
+by the whole auction, so a context landing on big-swing boards shows a bad gap
+whatever its rules do.  `opener_rebid_1m_1M` runs at -4.04 against a corpus
+-0.02, so `ob_rebid_2C` (-4.18) and `ob_1NT` (-4.16) are **at** their own
+baseline - a within-context shuffle worth nothing, despite BEN naming 1NT at
+confidence **1.00** on five separate boards.  That killed five of my own
+candidates, including `gr_rkc_general_S` at delta -0.36, which **revises a
+standing open item**: round 8 blamed the keycard ask over a game raise, and
+against its own context the ask is not the outlier - the context is.
+
+The reviewer then corrected (b) twice: `rule_context_map()` pools `$`-expansions
+under one label, and the rule is inside its own baseline, so the arithmetic is
+wrong even where the conclusions survive.  **And used alone the yardstick is
+blind to a uniformly bad context, which is where the IMPs are.**  See below.
+
+### The mechanism worth more than the round: an added rung deletes the code fallback
+
+`prepare_decision` builds `covered` from every rule whose `when` holds and whose
+call is legal - **fit is never consulted** - and `generate_fallbacks` then only
+generates candidates for calls NOT covered.  So **adding a rung removes the code
+fallback for that call in every seat its `when` reaches, whether or not the hand
+fits the rung.**  Traced on board 691a: a fit-**1.00** fallback 4H replaced by a
+rung fitting **0.00**, and the seat handed to a fit-**0.066** keycard ask.
+
+The guardrail "a fix that ADDS a rung fills a hole and is safe" is therefore
+false as stated.  It becomes: **a new rung is safe only where no fallback covered
+its call, or where the rung fits every hand the fallback caught** - and that has
+to be measured, because `when` is auction-only and fit is hand-dependent, so no
+`when` can restrict the suppression to the hands the rung wants.
+
+This also explains part of why additive fixes have under-delivered held out
+relative to their in-sample blast radius: the radius counts the seats the rung
+*wins*, not the seats where it silently removed the fallback.
+
+### What shipped
+
+**Bundle A - two rungs, 0 decisions changed on BOTH measurement corpora.**  Kept
+on structure at provably zero cost (the round 7/8/11/13/14 precedent).
+
+- **The advance of a takeout double had no jump.**  `adx_pull_$X3` caps at
+  **eleven** total points, so twelve with six spades headed by AKQ took the
+  three-level pull as a soft-miss lottery pick at fit **0.409** - the whole
+  candidate set was four rules and not one of them fitted - and made twelve
+  tricks in 3S.  `adx_pull_S4`/`H4`, deliberately **not** `cheapest_in_suit`
+  (over a preempt this IS a jump and the gate excludes jumps), with the family's
+  `suit_diff` clauses carried verbatim - without them a locked lint test fails,
+  which the lint knew before the corpus did.
+- **The balancing 2NT denied no shape** where its one-level sibling `ballow_nt1`
+  denies a six-card major, so a bare fifteen with five spades balanced 2NT
+  instead of bidding the suit.  Stated as a **range**, not a shape: from
+  seventeen the notrump is worth more than the suit because 2S would be a
+  non-forcing underbid, so the strong sibling `ballow_nt2_strong` needs no sweep
+  and the species is not re-created one rule along.
+
+### Reverted on the held-out number
+
+**The takeout doubler cannot rebid his own suit.**  `uc_new_$X` stops at the
+three level and `uc_rebid_$X4` is gated `my_suit: $X`, which a doubler never
+satisfies - he has bid no suit - so an eighteen-count with a six-card suit has
+four candidates of which exactly one fits, `uc_pass` at 1.00, and passes.  Boards
+2a and 485a; **round 14's reviewer named both by number and round 15's named them
+again.**  Population 11 tables at board margin -5.45 and par gap -7.64 against a
+stage-matched +0.10, replicating on both corpora.
+
+Built with `standing_bid_level: [1, 2, 3]` so that it does not delete the code
+fallback for its call (above) - which is also the right bridge, since over
+partner's four-level bid a new suit is a cue, not "here is my suit".  Measured
+alone: review +0 on two changed boards, **held out -2 on the one board it
+reached.**  Reverted.  The diagnosis is right; what the rung lacks is a reason to
+prefer four of a six-card suit to defending, opposite an unlimited partner.
+
+### Killed by the review, with the number
+
+| fix | the number that killed it |
+|---|---|
+| the doubler's notrump rebid | its `when` is `we_bid_last: false` and the standing bid is **ours in 20/20 e10 and 23/23 r15** of the positions it targets: **0 call changes on 2,000 tables**.  Repaired, it still reaches 1 of its own 4 boards - and one of those hands is **22 HCP, not the 20 I printed** |
+| cap the reopening double's shape | **0 of the 4 independent firings is 5-5**; the alternative `longest_suit_length: [0,4]` makes 3 changes, all to `balhigh_pass` at fit 1.00, including a table we win +3 |
+| the 16+ takeout double | proposes no repair, and its stated partner changes 0 calls; the par-gap split replicates but the **board-margin split inverts** on the independent corpus |
+| a strong natural overcall of their 1NT | **the YAML does not load** (`defense_vs_1NT` has no `expand:`); the natural rungs need **five** cards not six, so widening the band **changes 0 calls** - it was a re-rank, not an additive rung |
+| deny a five-card major on the balancing 2NT (as written) | the rule **decides nothing in 2,000 independent tables**, and **both HCP counts in my evidence table were wrong** (15 and 15, not 14 and 13 - both hands inside the rule's own band) |
+
+Three of the five kills rest on errors of mine: two miscounted hands, a `when`
+that cannot fire, and YAML that does not parse.  Round 13 lost six findings to
+misquoted rules and made re-ranking a step; this round the missing step is
+**load the file and count the hand before writing the number down.**
+
+### The wall, stated as a number
+
+The six fixes, all shipped in their best form, would change **one call on 2,000
+independent tables**.  Rounds 13, 14 and 15 measured -525, -474, -474.  The
+per-decision audit finds rule-level defects and the rule-level defects are gone.
+Where -667 actually lives, computed on both corpora:
+
+| population | n (of ~10,350) | our par gap | stage baseline |
+|---|---|---|---|
+| **decided by a code fallback - no rule at all** | **456 (4.4%)** | **-3.89** | +0.46 |
+| `general_uncontested_continuation` | 736 | -2.12 | |
+| the five responding contexts together | 475 | **-3.0 to -4.6** | |
+| `open_2C` | 16 | **-7.44** | deferred four rounds |
+
+The fallback population alone is ≈ **-2,000 attributable gap-points**, larger
+than every named family combined, replicating to within 0.3 across corpora, and
+nothing has ever ruled on it.  The responding contexts are ≈ -1,700 more, and
+**no rule inside them is indictable** because every rung in a uniformly bad
+context sits at its own baseline - the blind spot of correction (b), stated as a
+number.  The next round should not look for another rule.
