@@ -246,6 +246,44 @@ hands from is `adx_pull_my_$M` (-2.20 over 5 tables, -3.00 over the family).
 | `sra_nt2_$O$M` (invitational) | `general_uncontested_continuation` / `general_competitive_low` raise ladders, unchanged |
 | every `sign_off` here | nothing owed; `partner_signed_off` silences opener in `prepare_decision` |
 
+## Measured blast radius
+
+Every decision our side makes in `reports/r18_before.jsonl` was replayed through
+the base system and through the patched one — **10,335 decisions, 21 of them
+change (0.20%)**, and every one is in the intended family:
+
+```
+  2  P(cl_pass)      ->   X(sdw_double_1CS)    the ask, in a competed auction
+  1  P(cl_pass)      ->   X(sdw_double_1CH)
+  1  P(cl_pass)      ->   X(sdw_double_1HS)    board 966
+  1  P(xd_pass)      ->  XX(srw_redouble_1HS)  board 754
+  1  P(cl_pass)      ->  2S(sdw_raise_1CS)     the four-card raise the ladder lacked
+  1  P(xd_pass)      ->  2S(srw_raise_1DS)
+  1  2H(sd_raise)    ->  3H(sdw_jump_1DH)      the 16-18 band `sd_raise` never had
+  1  2D(xd_rebid_D2) ->  1S(srw_1S_1DH)        board 730
+  1  2H(adx_pull_my_H) -> 4H(sda_game6_1CH)    board 266
+  1  2S(cl_raise_S2) ->  3S(sda_law3_1DS)      nine trumps, the Law rung
+  1  P(rdc_pass_D)   -> 1NT(rdc_1NT_D)         board 23
+  1  P(rdc_pass_D)   ->  2S(rdc_2S_D)          board 13
+  1  P(cl_pass)      ->  2S(rdcm_second_H)     board 991
+  1  2NT(cl_nt2)     ->   X(rdcm_X_H)
+  2  P(ballow_pass)  ->   X(rdro_X_1D/1H)      the forcing pass, answered
+  1  2NT(ballow_nt2) ->   X(rdro_X_1D)
+  3  later seats on boards 260 and 266 (uc_raise_S3, balhigh_raise_S3,
+     ch_raise_H3) — the auction prefix is unchanged; what changed is the
+     INTERPRETATION of partner's earlier call, which is the negative
+     inference the convention exists to create.
+```
+
+One regression was found this way and repaired before shipping: on board 27
+(`1C - (1D) - 1H - (X)`) an 18-count with six clubs and a singleton heart fell
+through `srw_rebid_$O$M`'s original 12-15 band onto the floor pass and stopped
+rebidding 2C.  The rebid rungs are therefore banded **12-21**, not 12-15 like
+`sd_rebid_2$m`: in the four clean minor auctions the existing rung keeps the
+call anyway, and everywhere else this context is the only interpreter, so it
+must cover opener's whole range.  With that band the board is back to 2C, now
+described rather than run to.
+
 ## What I cut, and why
 
 * **A `requires: {}` floor pass inside `support_double` and `support_redouble`
