@@ -153,12 +153,23 @@ def summarise(recs: list[dict], label: str = "", boot: int = 20000) -> dict:
         blo = bhi = 0.0
 
     cd = [r["delta"] for r in changed]
+    # Power, stated every time rather than assumed.  Under the paired test the
+    # SE of the total is sd_changed*sqrt(k), so an effect of e IMPs a changed
+    # board is detectable at 5% two-sided with 90% power when
+    #     e*k / (sd*sqrt(k)) >= 2.9   <=>   k >= (2.9*sd/e)^2
+    # The project's working figure is sd = 5.5; the round-14 change measured
+    # 7.04.  Both are reported because the difference moves the requirement by
+    # 60%, and quoting only the friendlier one is how a test comes to be
+    # believed beyond its resolution.
+    sdc = statistics.stdev(cd) if k > 1 else 0.0
     res = {
         "label": label, "boards": n, "changed": k, "total": total,
         "per_1000": 1000.0 * total / n if n else 0.0,
         "sd_board": sd, "se_total": se, "t": t,
         "ci95": (lo, hi), "boot95": (blo, bhi),
-        "sd_changed": statistics.stdev(cd) if k > 1 else 0.0,
+        "sd_changed": sdc,
+        "mde90": (2.9 * sdc / math.sqrt(k)) if k else float("inf"),
+        "k_for_90_at_1imp": [round((2.9 * sd_) ** 2) for sd_ in (5.5, 7.04)],
         "up": sum(1 for d in cd if d > 0), "down": sum(1 for d in cd if d < 0),
         "flat": sum(1 for d in cd if d == 0),
     }
@@ -193,6 +204,9 @@ def render(s: dict) -> str:
         f"  95% CI         [{lo:+.0f}, {hi:+.0f}]  normal theory",
         f"  95% CI         [{blo:+.0f}, {bhi:+.0f}]  percentile bootstrap",
         f"  sd per changed board {s['sd_changed']:.2f} IMPs",
+        f"  resolution     this pool resolves {s['mde90']:.2f} IMPs/changed board "
+        f"at 90% power; 1 IMP/board needs "
+        f"{s['k_for_90_at_1imp'][0]}-{s['k_for_90_at_1imp'][1]} changed boards",
         f"  --> {s['verdict']}",
     ]
     return "\n".join(L)
