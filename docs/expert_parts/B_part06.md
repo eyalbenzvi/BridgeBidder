@@ -1109,3 +1109,314 @@ shows a maximum of ten, so A cannot reach the preempt-advance seats where
 the two bands.
 
 ---
+
+## Board 474 — margin -3
+
+**Seat/call:** table B, call 7, E bids **3C** on `Q97.Q.76.AJT8753` after
+`P - 1H - X - 2C - P - 2H - P`.  `uc_rebid_C3` at fit 1.000.  The auction went
+wrong one call earlier, at call 3: `xd_run_C2` shows **"running to my own C: 5+
+cards"** and carries **no point band whatsoever**, so opener cannot tell three
+points from ten and rebids his own suit; E then bids clubs again.
+
+**Missing agreement:** the runout from their takeout double is a two-tier
+structure — the cheap suit bid is 0-7, and a **jump** in the suit shows a
+six-card suit and 8-10, a one-bid hand that partner must pass.  This is an
+invitational structure the file simply does not have; today the whole 0-10 range
+makes the same call, and the existing `xd_run_$X3` is unreachable because it
+carries `cheapest_in_suit: true` and a jump is by definition not the cheapest
+bid (the same broken gate `DECISIONS` records on `cl_raise_lott3_$M`).
+
+**YAML** — context `general_after_their_double` (the `xd_*` context):
+
+```yaml
+      - id: xd_run_jump_C
+        call: 3C
+        priority: 27
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: C }
+        requires:
+          suits: { C: [6, 13] }
+          evals: { total_points: [10, 14] }
+        shows: "jump runout: a six-card club suit and 8-10 points, a one-bid hand - partner must pass"
+        establishes: { forcing: sign_off }
+      - id: xd_run_jump_D
+        call: 3D
+        priority: 27
+        when: { we_bid_last: true, we_hold_contract: false, unbid_suit: D }
+        requires:
+          suits: { D: [6, 13] }
+          evals: { total_points: [10, 14] }
+        shows: "jump runout: a six-card diamond suit and 8-10 points, a one-bid hand - partner must pass"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT — and it is what makes the difference.**  Prototyped
+without it, the jump changed nothing: E jumped to 3C and opener bid 3H anyway
+(`uc_rebid_H3`, fit 1.000), because no seat reads a jump runout.  That is the
+round-17 lesson reproduced exactly, so the answering context ships with it:
+
+```yaml
+  - id: opener_over_jump_runout
+    description: "Opener after responder's jump runout from their takeout double"
+    expand_pairs:
+      - { M: H, m: C }
+      - { M: H, m: D }
+      - { M: S, m: C }
+      - { M: S, m: D }
+    pattern: "1$M - X - 3$m - P - ?"
+    rules:
+      - id: oojr_3$M
+        call: 3$M
+        priority: 62
+        requires: { suits: { $M: [6, 13] }, evals: { total_points: [17, 40] } }
+        shows: "17+ with a genuine six-card major: correcting above the jump"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: oojr_3NT_$m
+        call: 3NT
+        priority: 61
+        requires: { hcp: [16, 21], evals: { semi_balanced: [1, 1], "suit_length($m)": [2, 13] } }
+        shows: "16+ balanced with a fit for the jump suit: nine tricks"
+        establishes: { forcing: sign_off }
+      - id: oojr_pass_$m
+        call: P
+        priority: 60
+        requires: {}
+        shows: "the jump runout showed 8-10 and one suit: pass"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+```
+
+**What it endangers:**
+* The jump rung deletes the code fallback for 3C/3D in the seats its `when`
+  reaches, because `xd_run_$X3`'s own `cheapest_in_suit` gate means 3C is
+  **not** currently covered when 2C is legal.  That is the one genuine
+  subtraction; it replaces an undiscussed fallback with a described call.
+* `xd_run_$X2` (25) and `xd_run_$X1` (24) keep every hand below ten total
+  points — the bands are disjoint by construction, so the cheap runout is
+  untouched for the hands it was written for.
+* `rdx_XX` (75) and `rx_$M_1$N` (62) are far above and unaffected; the jump only
+  ever wins where nothing above it fits.
+* The answering context is 1000+4 specific in a seat previously owned by
+  `general_uncontested_continuation` (`... - P - ?`), whose `uc_rebid_H3` bid
+  the losing 3H.  It carries a `requires: {}` pass, so no hand is starved.
+
+**VERIFIED end to end.**  `P - 1H - X - 3C - P - P`: E jumps, W passes, we play
+3C, which makes nine tricks double-dummy against the 3H that went two down.
+
+**Honest denominators:** `xd_run_C2` **-3.00 over 9 tables**, `uc_rebid_C3`
+**-2.10 over 10** — both halves of this auction lose money at present.
+
+**Template:** two rungs above become eight with the majors
+(`xd_run_jump_H` / `_S` at the two and three level as the level allows); the
+answering context as written is `expand_pairs` over four combinations, and the
+minor-opening twin (`1$m - X - 2$M - P - ?`) is the obvious next four.
+
+---
+
+## Board 506 — margin -3 — **the most important agreement in this slice**
+
+**Seat/call:** table B, call 7, E **passes** on `QJ9753.73.J973.9` after
+`P - 1C - P - 1S - P - 2H - P`.  **Partner reversed.  A reverse is
+`forcing: one_round`.  We passed it.**
+
+`responder_reverse_1C1S2H` has four rungs — `rrevh_2S` (5+ spades, **8+**),
+`rrevh_3H` (4+ hearts, **8+**), `rrevh_2NT` (**8-11** balanced), `rrevh_3NT`
+(**12+**).  Every one floors at eight points.  A four-count with six spades
+fits nothing above 0.028 and `uc_pass` takes the force at fit 1.00.  This is
+the fourth instance of the starved-forcing-seat species the method file records,
+and `rrevh_2S` **never fires** in the whole corpus.
+
+**Missing agreement:** a reverse is forcing, so responder always bids: with a
+five-card suit he rebids it at the cheapest level to show 0-7, and with no
+five-card suit he takes a preference to opener's first suit at the three level.
+
+**YAML** — context `responder_reverse_1C1S2H` (and its two siblings, see
+Template):
+
+```yaml
+      - id: rrevh_2S_min
+        call: 2S
+        priority: 67
+        requires: { suits: { S: [5, 13] }, hcp: [0, 7] }
+        shows: "5+ spades, under 8 points: the cheap rebid a forcing reverse must not be passed with"
+        establishes: { forcing: non_forcing }
+      - id: rrevh_3C_min
+        call: 3C
+        priority: 58
+        requires: { hcp: [0, 7] }
+        shows: "under 8 points and no five-card suit: preference to opener's first suit"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+```
+
+**THE ANSWERING SEAT** — opener has 17-21 and has just been told 0-7, and
+nothing in the file reads that:
+
+```yaml
+  - id: opener_after_reverse_signoff
+    description: "Opener after responder's minimum rebid over the reverse"
+    expand_pairs:
+      - { O: 1C, R: 2H, M: S }
+      - { O: 1D, R: 2H, M: S }
+      - { O: 1C, R: 2D, M: H }
+      - { O: 1C, R: 2D, M: S }
+    pattern: "$O - P - 1$M - P - $R - P - 2$M - P - ?"
+    rules:
+      - id: oars_4$M
+        call: 4$M
+        priority: 63
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [20, 40] } }
+        shows: "a big reverse with a fit: game in partner's suit even opposite a bust"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: oars_3$M
+        call: 3$M
+        priority: 62
+        requires: { suits: { $M: [3, 13] }, evals: { total_points: [18, 19] } }
+        shows: "three-card support and a maximum reverse: inviting the 0-7 rebid to game"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: oars_pass_$M
+        call: P
+        priority: 60
+        requires: {}
+        shows: "the reverse has been answered with 0-7: this is the partscore"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+```
+
+(`oars_3$M` is itself an invitation; the seat that answers **it** is the same
+`responder_reverse_*` family one call later and wants a two-rung
+`1$O - P - 1$M - P - $R - P - 2$M - P - 3$M - P - ?` context — pass with 0-4,
+4$M with 5-7.  I have not written it out because the 18-19 branch is rare
+enough that shipping the pass and the game first is the safer order; flag it as
+the one loose end in this proposal.)
+
+**What it endangers:**
+* `rrevh_2S` (66) — disjoint band (8+ against 0-7), so nothing moves; the two
+  rungs together turn one call into a two-way reading, which is a *gain* in
+  negative inference, not a loss.
+* `rrevh_2NT` (64) and `rrevh_3NT` (63) — both want 8+, so the new rungs cannot
+  outrank them on a hand they fit.
+* `rrevh_3H` (65) — a weak hand with four hearts now has a choice between 3H
+  (game-forcing raise, 8+) and 3C; the bands separate them.
+* The generic `uc_*` toolkit loses the seat, which is the entire point: it was
+  answering a one-round force with a catch-all pass.
+* The answering context is 1000+9 specific over a seat previously owned by
+  `general_uncontested_continuation`; it carries a `requires: {}` pass so no
+  hand is starved.
+
+**VERIFIED end to end.**  `1C - P - 1S - P - 2H - P - 2S - P - P`: responder
+bids 2S at fit 1.000, opener passes, we play 2S making nine double-dummy where
+we previously passed 2H out.
+
+**Template:** `rrevh_2S_min` / `rrevh_3C_min` are one authored idea that must be
+cloned into all three reverse contexts —
+`responder_reverse_1C1S2H` (2S / 3C), `responder_reverse_1D1S2H`
+(`rrevd_2S_min` / `rrevd_3D_min`) and `responder_reverse_rebid_major`
+(`rrev_2$M_min` / `rrev_3C_min`, which is already `expand: { M: [H, S] }` and
+therefore two rules from one).  Six rules from one agreement, plus the four
+answering contexts above.
+
+---
+
+## Board 512 — margin -3
+
+**Seat/call:** table A, call 2, S **passes** on `8632.AQJ.KJ4.K85` over
+`P - 1C`.  `oc1C_1NT` fits 0.800 (14 against a 15-18 band) and `oc1C_X` 0.349
+(K85 is three clubs, not the "short clubs" the double wants), so `oc1C_pass`
+at 1.000 wins the seat with a 14-count and a four-card major.
+
+**Missing agreement:** a takeout double of a **minor** does not need shortness
+when the hand is balanced with a four-card major — 13-16 flat with at most three
+of their minor is a double, not a pass.
+
+**YAML** — context `overcall_1C` (and its `1D` sibling):
+
+```yaml
+      - id: oc1C_X_bal
+        call: X
+        priority: 72.5
+        requires:
+          hcp: [13, 16]
+          suits: { C: [0, 3] }
+          evals: { balanced: [1, 1] }
+          any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ]
+        shows: "balanced 13-16 with a four-card major and no club length: the double, not a pass"
+        establishes: { forcing: one_round }
+```
+
+**Answering seat:** already authored — `advance_takeout_double_C` / the `adx_*`
+family, and the double is `forcing: one_round` exactly as `oc1C_X` already is.
+No new seat.
+
+**What it endangers:** `oc1C_X` (72) — same call, and the new rung's band is
+inside the old rung's, so it changes the *reading* (balanced with a major)
+rather than the call.  `oc1C_1S` (71) — with only four spades a one-level
+overcall is a lie in this system (`5+ spades`).  `oc1C_1NT` (82) is above it and
+untouched, so 15-18 balanced still bids notrump.  `oc1C_pass` (25) — the rung
+that lost the board.  Fallback: X is covered by `oc1C_X`, so nothing is deleted.
+It must be ranked **72.5**, not 72.4, to sit clear of board 803's
+`oc1C_X_4441` and avoid an `is_clear=False` priority tie — the two `requires`
+are disjoint (4-4-4-1 is not `balanced`) so the tie is unreachable, but the
+separation costs nothing.
+
+**VERIFIED.**  S now doubles (BEN: X 0.97).
+
+**Honest denominator:** `oc1C_pass` runs **-0.32 over 125 tables** and
+`oc1D_pass` **-0.74 over 137** — the passing seats over a minor opening are the
+two largest populations I touched and they sit at or near the corpus baseline.
+Boards 512 and 803 together take a handful of hands out of them.  Small, sound,
+low-variance.
+
+**Template:** two rules (`oc1C_X_bal`, `oc1D_X_bal`); `expand: { o: [C, D] }`
+if the two contexts are merged.  Do **not** extend it to the majors — over
+1H/1S the shortness requirement is what makes the double safe.
+
+---
+
+## Board 548 — margin -3
+
+**Seat/call:** table A, call 8, N bids **3H** on `K82.AT974.Q5.AQ5` after
+`1NT - P - 2H - P - 2S - P - P - 3D`.  `ch_new_H3_hi` at fit 1.000.  Partner
+transferred to spades and then **passed** — `partner_shown_max` = 7 — and I have
+`total_points` = 16.  Twenty-three is not a game and 3H is not a partscore we
+own; it is a third bid on a hand that has already been fully described by the
+1NT opening.
+
+**Missing agreement:** partner is limited to eight and I hold at most seventeen:
+twenty-five is not there, so stop bidding.
+
+**YAML** — context `general_competitive_high`:
+
+```yaml
+      - id: ch_pass_limited_A
+        call: P
+        priority: 27.6
+        when: { partner_has_acted: true, their_last_bid_suit: true }
+        requires: { evals: { partner_shown_max: [0, 8], total_points: [0, 17] } }
+        shows: "partner is limited to eight and I hold at most seventeen: twenty-five is not there, so stop bidding"
+        establishes: { forcing: sign_off }
+```
+
+**Answering seat:** none — a sign-off pass.
+
+**What it endangers:**
+* `ch_new_$X3` / `ch_new_long3_$X` / `_hi` (27.0 / 27.5) — introducing a new suit
+  at the three level opposite a partner limited to eight.  **Note the
+  denominator carefully:** `ch_new_long3_D` runs **+4.33 over 3 tables** and is
+  the most profitable rung in this slice — but its winners are preempt
+  advances, where `partner_shown_max` is **10**, so the `[0, 8]` band cannot
+  reach them.  That separation is the reason this rung is banded at 8 and its
+  looser twin (board 433) is withdrawn.
+* `ch_advance_x3/x4_$X` (28.5) and `ch_new_$X4` (28) sit **above** 27.6 and are
+  untouched.
+* `ch_nt3` (29), `ch_rebid_*` (29), `ch_raise_*` (30-32), `ch_negative_X3` (33),
+  `ch_penalty_X` (38) all keep priority.
+* Fallback: `P` is covered by `ch_pass`, so nothing is deleted.
+
+**VERIFIED.**  N now passes (BEN: P 0.99).
+
+**Caveat stated:** `ch_new_H3_hi` and `ch_new_H3` both report **"never fires"**
+in the corpus primary reading, so this rung's own family is invisible to
+`fires_summary` and I cannot give it a denominator.  Judge it on the bridge.
+
+**Template:** none on suit.  The `general_competitive_low` twin
+(`cl_pass_limited_A`, priority 27.8 — above `cl_new_$X3_hi`'s 27.5 and below
+`cl_nt2`'s 28) is the companion.
+
+---

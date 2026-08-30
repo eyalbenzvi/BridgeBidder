@@ -763,3 +763,340 @@ on a 5-5 red two-suiter with 15 is orthodox, and the loss came later when
 constructive sequence on this board.
 
 ---
+
+## Board 174 — PROPOSAL — opener's game try after responder's simple preference
+
+**Seat/call that went wrong.** Table B, call 9, **W** after `P - 1D - P - 1H -
+P - 2C - P - 2D - P`, holding `AQ8.Q.QJ632.AQ93` (17 HCP, 3-1-5-4).  The engine
+**passed** at `uc_pass` fit 1.000; the next best candidate in the whole seat is
+`uc_rebid_D3` at **0.349**.  `1$m - P - 1$M - P - 2$n - P - 2$m - P - ?` — opener's
+third call after the preference — has no context, so a seventeen-count with a
+two-suiter dies in 2D with 3NT cold.
+
+**The missing agreement.** After responder's simple preference back to the first
+suit (6-10), opener with 16-19 invites: 3m with a fifth card in the first suit,
+2NT with the unshown suits held.
+
+```yaml
+  - id: opener_over_simple_preference
+    description: "Opener's game try after responder's simple preference to the first suit"
+    expand_pairs:
+      - { m: C, n: D, M: H }
+      - { m: C, n: D, M: S }
+      - { m: C, n: H, M: S }
+      - { m: D, n: C, M: H }
+      - { m: D, n: C, M: S }
+      - { m: D, n: H, M: S }
+    pattern: "1$m - P - 1$M - P - 2$n - P - 2$m - P - ?"
+    rules:
+      - id: oosp_pass_$m$n
+        call: P
+        priority: 50
+        requires: {}
+        shows: "minimum two-suiter: the preference is the final contract"
+        establishes: { forcing: sign_off }
+      - id: oosp_3$m$n
+        call: 3$m
+        priority: 54
+        requires:
+          hcp: [16, 19]
+          suits: { $m: [5, 13] }
+        shows: "extras opposite the 6-10 preference: inviting game with the first suit"
+        establishes: { forcing: invitational, agreed_suit: $m }
+      - id: oosp_2NT_$m$n
+        call: 2NT
+        priority: 55
+        requires:
+          hcp: [16, 18]
+          evals: { weakest_unshown_stopper: [0.9, 1], semi_balanced: [1, 1] }
+        shows: "16-18 with the unshown suits held: inviting 3NT"
+        establishes: { forcing: invitational }
+```
+
+**THE ANSWERING SEAT** (the 3m try is an invitation; it ships with its reply):
+
+```yaml
+  - id: responder_over_preference_game_try
+    description: "Responder answers opener's 3m game try after the preference"
+    expand_pairs:
+      - { m: C, n: D, M: H }
+      - { m: C, n: D, M: S }
+      - { m: C, n: H, M: S }
+      - { m: D, n: C, M: H }
+      - { m: D, n: C, M: S }
+      - { m: D, n: H, M: S }
+    pattern: "1$m - P - 1$M - P - 2$n - P - 2$m - P - 3$m - P - ?"
+    rules:
+      - id: ropg_pass_$m$n
+        call: P
+        priority: 50
+        requires: {}
+        shows: "declining: a minimum preference"
+        establishes: { forcing: sign_off }
+      - id: ropg_3NT_$m$n
+        call: 3NT
+        priority: 56
+        requires:
+          hcp: [9, 12]
+          evals: { weakest_unshown_stopper: [0.9, 1] }
+        shows: "accepting with the unshown suits held: 3NT"
+        establishes: { forcing: sign_off }
+      - id: ropg_5$m$n
+        call: 5$m
+        priority: 54
+        requires:
+          hcp: [9, 12]
+          suits: { $m: [4, 13] }
+          evals: { weakest_unshown_stopper: [0, 0.6] }
+        shows: "accepting in the minor: values but a suit wide open"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+```
+
+**What it endangers.**  Both contexts are new; the seats held no rule at all.
+* `uc_pass` (P, prio 18) — replaced by a `requires: {}` pass at 50; exact
+  superset, so nothing is starved.
+* `uc_rebid_D3` / `uc_raise_D3` (3D, prio 27, best fit 0.349) — my rung is a
+  named invitation instead of a soft-miss guess.
+* `uc_nt2` / `uc_nt3` — outranked by `oosp_2NT`, which knows partner's range
+  (6-10) rather than guessing at the total.
+* The `2$n` slot in `expand_pairs` deliberately excludes the case where the
+  preference suit ranks above the second suit, so 3m is always a live call.
+
+**VERIFIED.**  W → `oosp_3DC` 3D at fit 1.000; E (`K72.KT62.KT7.JT4`, 10 HCP,
+both unshown suits stopped) → `ropg_3NT_DC` 3NT at fit 1.000.  A 13-count in the
+same seat still passes (3D at fit 0.134).  3NT makes nine (+600) instead of 2D
+making ten (+130).
+
+**TEMPLATE.**  `expand_pairs` over the six (first suit, second suit, response)
+combinations that can produce a preference — 6 contexts × 3 rules for the try
+and 6 × 3 for the answer, 36 rules from one idea.
+
+---
+
+## Board 175 — PROPOSAL — over a weak two in a MINOR, 3NT must outrank the suit game
+
+**Seat/call that went wrong.** Table B, call 4 is the feature reply; the real
+error is call **6, E**, after `2D - P - 2NT - P - 3S - P`, holding
+`KJT9.KJ3.KQ5.A84` (17 HCP, both unshown suits stopped).  The engine bid **4D**
+via `w2ac_game_D` (prio 56) while `w2ac_3NT_D` sat right underneath at prio 55 —
+**both at fit 1.000**.  This is a pure priority defect and it only exists in the
+minor: the file's own comment on `w2ac_game8_$W` already says "loosening
+`w2ac_game_$W` in place also loosens the MINOR, where nine tricks beat eleven
+and 3NT is right", and then the ladder was left with 4D on top anyway.
+
+**The missing agreement.** Opposite a weak two in a minor, with 14+ and every
+unshown suit stopped, nine tricks in notrump beat eleven in the suit.
+
+```yaml
+# NEW CONTEXT, and it MUST be filed IMMEDIATELY BEFORE weak2_ask_continuation.
+# Same specificity (1000 + 7 tokens), so file order decides which context owns
+# 3NT; placed first it owns 3NT for the DIAMOND branch only, and every other
+# call in the seat still comes from weak2_ask_continuation.
+  - id: weak2_ask_continuation_diamond
+    description: "The 2NT asker places the contract opposite a weak two in DIAMONDS"
+    pattern: "2D - P - 2NT - P - bid - P - ?"
+    rules:
+      - id: w2acd_3NT
+        call: 3NT
+        priority: 57
+        requires: { hcp: [14, 40], evals: { weakest_unshown_stopper: [0.9, 9] } }
+        shows: "nine tricks: opposite a weak two in a MINOR the unshown suits are stopped, so 3NT beats five diamonds"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT.** 3NT is a sign-off; nothing is owed.  Everything else in
+the seat — `w2ac_game_D` (4D), `w2ac_game8_D` (4D) and `w2ac_sign_D` (3D, which
+carries `requires: {}`) — stays in `weak2_ask_continuation` and still fires.
+
+**What it endangers.**  Exactly one rule, and it is replaced by a superset:
+* `w2ac_3NT_D` is shadowed out entirely (verified — it disappears from the
+  candidate list).  My rung carries its `requires` **verbatim**
+  (`hcp: [14, 40]`, `weakest_unshown_stopper: [0.9, 9]`) and only raises the
+  priority, so the shadowing is a strict superset, which is the structural
+  discipline `ROUND_METHOD.md` asks for.
+* `w2ac_game_D` (4D, prio 56) is outranked at fit 1.000.  **The bridge:** five
+  of a minor needs eleven tricks for the same game bonus that nine tricks buy in
+  notrump; with the outside suits held there is no reason to take the risk.
+* The MAJOR branches are untouched — `w2ac_game_S` still bids 4S at prio 56 over
+  `w2ac_3NT_S` at 55.  Verified on a matching spade hand.
+* Nothing without a stopper is affected: verified, a hand with `9832` in an
+  unshown suit still bids 4D (3NT drops to fit 0.054).
+
+**VERIFIED.**  E → `w2acd_3NT` 3NT at fit 1.000, prio 57.  3NT makes eleven
+(+660) instead of 4D making twelve (+170); the board goes from -10 to a push.
+
+**TEMPLATE.**  Deliberately NOT templated over `W`: the whole content of the
+agreement is that the minor is different from the majors.  If the file ever
+opens a weak 2C, add a second literal context `2C - P - 2NT - P - bid - P - ?`
+with the same single rung.
+
+---
+
+## Board 253 — NOTHING-WRONG (competitive)
+
+The seat is N advancing a takeout double of a weak 2H on `T8.83.K62.A76542`.
+Every candidate in `advance_weak2_double_H` is a competitive advance; `aw2H_3C`
+won at fit 0.800 with `aw2H_2NT` at 0.054, and BEN's 2NT would be a 7-count
+lying about a stopper.  The other reviewer's board.
+
+**Constructive observation.** None: partner's double is the first call and the
+auction never leaves competition.
+
+---
+
+## Board 255 — NOTHING-WRONG (competitive)
+
+Table A's divergence is S's 3D over `2H - P - 2NT` — a balancing-ish free bid
+over their ask.  `cl_new_long3_D_hi` and `cl_pass` both fit 1.000 and the
+priority ladder picks the suit; that is a competitive judgment.
+
+**Constructive observation.** The FALLBACK double appears in this candidate list
+at fit 0.409 ("takeout-flavoured cooperative double (undiscussed)") — a reminder
+that the code fallback is still competing with authored rungs at three-level
+decisions.  Not a constructive-discipline finding.
+
+---
+
+## Board 269 — NOTHING-WRONG (competitive)
+
+Table A: N over `P - 1D - 2C` on `A9743.AQ6.AT74.5`.  A free bid of 2S over
+their two-level overcall (`cl_new_S2_hi`, fit 0.757) against `cl_pass` at 1.000
+is the competitive reviewer's call.  Table B is a competitive rebid.
+
+**Constructive observation.** None available: our side's second call comes under
+an overcall at both tables.
+
+---
+
+## Board 396 — NOTHING-WRONG (competitive)
+
+`nx3_raise` (3S, "competitive raise", fit 1.000) over their preemptive 3H jump
+overcall, then a passed-out 3S.  Wholly competitive.
+
+**Constructive observation.** The `neg_double_3level_M` family it lives in has a
+`nx3_cue` slam-try rung at priority 71 that no hand on this board can reach; the
+contested three-level ladder is thin in the same way the constructive ones are,
+but there is no uncontested seat here for me to fix.
+
+---
+
+## Board 400 — PROPOSAL — the quantitative rung above `oc2nresp_3NT`
+
+**Seat/call that went wrong.** Table A, call 4, **N** after `1C - 2D - 2NT - P`,
+holding `K973.AK98.K.AKJ5` — **21 HCP** opposite a natural, invitational 2NT
+showing 11-12 with the diamonds stopped.  That is 32-33 combined.  The engine
+bid **3NT** via `oc2nresp_3NT_$m`, whose band is `hcp: [13, 21]` — a textbook
+CEILING, the species rounds 6 and 7 kept finding: the top rung of the ladder is
+also the sign-off, so a 21-count and a 13-count make the same call.  6NT is cold
+for thirteen tricks.
+
+**The missing agreement.** Opposite the 11-12 competitive 2NT, nineteen to
+twenty-one is 30-33 combined and 4NT is quantitative, not a sign-off.
+
+```yaml
+# ADDED to the existing context opener_over_competitive_2NT
+# (expand: { m: [C, D] }, pattern "1$m - bid - 2NT - P - ?"),
+# inserted between oc2nresp_3NT_$m (56) and oc2nresp_pass_$m (55)
+      - id: oc2nresp_4NT_$m
+        call: 4NT
+        priority: 57
+        requires: { hcp: [19, 21], evals: { controls: [6, 12] }, not: { evals: { void: [1, 4] } } }
+        shows: "quantitative: 19-21 opposite the 11-12 invite is 30-33 combined, so slam is live"
+        establishes: { forcing: non_forcing }
+        alertable: true
+```
+
+**THE ANSWERING SEAT** (a quantitative 4NT with no answering seat is the exact
+failure round 17 priced at -9.8 IMPs):
+
+```yaml
+  - id: responder_over_competitive_quant
+    description: "Responder answers opener's quantitative 4NT over the competitive 2NT"
+    expand: { m: [C, D] }
+    pattern: "1$m - bid - 2NT - P - 4NT - P - ?"
+    rules:
+      - id: oc2nq_decline_$m
+        call: P
+        priority: 50
+        requires: {}
+        shows: "a minimum 11: declining the slam invitation"
+        establishes: { forcing: sign_off }
+      - id: oc2nq_accept_$m
+        call: 6NT
+        priority: 55
+        requires:
+          any_of:
+            - hcp: [12, 12]
+            - all_of:
+                - hcp: [11, 12]
+                - any_of:
+                    - suits: { H: [5, 13] }
+                    - suits: { S: [5, 13] }
+                    - suits: { C: [5, 13] }
+                    - suits: { D: [5, 13] }
+        shows: "a maximum, or eleven with a five-card suit: accepting"
+        establishes: { forcing: sign_off }
+```
+
+**What it endangers.**
+* `oc2nresp_3NT_$m` (3NT, prio 56, 13-21) keeps its **full band** underneath, so
+  a hand that misses my gates still bids game — verified on a 15-count and on a
+  19-count with only four controls, both of which still bid 3NT.  This is the
+  "add above the ceiling, never narrow the ceiling" pattern that `onx_jump_$m$M`
+  already uses in this file.
+* `oc2nresp_pass_$m` (P, 0-12) is untouched.
+* **A note on the gate I removed during verification, because it is a live trap:**
+  the first draft used `evals: { semi_balanced: [1, 1] }` and the rung scored
+  **fit 0.000** on a 4-4-1-4 hand — `semi_balanced` has sharp tolerance
+  (σ² = 0.08 in `_EVAL_S2`), so it is a veto, not a preference.  `controls` plus
+  a void veto does the job without killing the shape.
+
+**VERIFIED.**  N → `oc2nresp_4NT_C` 4NT at fit 1.000, prio 57; S
+(`AT5.QJT32.AT2.84`, 11 HCP with a five-card suit) → `oc2nq_accept_C` 6NT at fit
+1.000.  6NT makes thirteen (+990) instead of 3NT+4 (+520).
+
+**TEMPLATE.**  Rides the context's `expand: { m: [C, D] }`; the answering
+context uses the same.  The same ceiling exists on `dma_3NT_$m$y` (12-21) in
+`doubler_over_minor_advance` four contexts below — the identical rung should be
+templated there in the same edit.
+
+---
+
+## Board 408 — NOTHING-WRONG (competitive)
+
+Table A's divergence is N's pass over their takeout double of our 1D
+(`rdx_pass` fit 1.000 vs `rx_D_1S` 0.800 on a 5-HCP five-card spade suit) — a
+competitive-structure question inside `resp_1x_over_X`.
+
+**Constructive observation.** None: the double lands on call 3 at table A and on
+call 3 at table B.
+
+---
+
+## Board 482 — NEGATIVE PROTOTYPE, reported rather than shipped
+
+**Seat.** Table A, call 2, **N** after `1NT - P`, holding `K7.J72.AQ82.KQ94`
+(15 HCP, 2-3-4-4).  `nt_3NT` fits 1.000 and the engine bid 3NT for +460; 6C is
+cold for twelve tricks.
+
+**What I checked, and why I am NOT proposing the obvious rung.** The natural
+constructive agreement is a lower quantitative floor — `nt_4NT_quant` is
+`hcp: [16, 17]`, so 15 misses it by one — and I prototyped
+`nt_4NT_quant_shape` (15 HCP, both minors four-plus, four controls, answering
+seat `nt_quant_opener_decides` already present).  **It does not fix the board
+and would not have.**  Opener holds `AJ5.KT9.K65.A653` — fifteen, a minimum for
+15-17 — so he declines, and 4NT making eleven scores **+460, exactly what 3NT
+scored.**  The only route to 6C is a minor-suit slam ask over 1NT, and
+`DECISIONS.md` scopes out minor-suit Stayman explicitly.
+
+**Verdict: NOTHING-WRONG at this seat.**  3NT on a flat 15 with one ace opposite
+15-17 is normal team bidding; 6C is a double-dummy artefact of a friendly club
+break.  Recorded here as the negative result the brief asks for rather than as a
+proposal.
+
+**If the scope-out is ever revisited**, the in-scope half of the idea is worth
+authoring on its own: `nt_quant_opener_decides` currently answers 4NT only in
+notrump, so a 4-4 minor fit found at the 32-count level can never be played in
+the minor.  That is a subject, not a rung, and it should be measured as one.
+
+---
