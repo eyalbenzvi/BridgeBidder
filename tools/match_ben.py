@@ -40,6 +40,15 @@ from bridgebidder.domain.cards import FULL_DECK, Hand  # noqa: E402
 from bridgebidder.domain.types import Seat, Vulnerability  # noqa: E402
 from bridgebidder.engine.dd import EndplayDD  # noqa: E402
 from bridgebidder.engine.decision import decide_fast  # noqa: E402
+from bridgebidder.engine.decision import choose as _choose  # noqa: E402
+
+# Round 16: the match has ALWAYS run the deterministic fast path, which
+# discards fast_decision's is_clear flag, so the simulation arbitration built
+# into choose() has never been measured against BEN.  --arbitrate turns it on
+# for exactly the decisions the engine itself reports as unclear (0.9% of calls
+# on the review corpus, at a par gap of -4.73 against a stage-matched -0.19).
+ARBITRATE = False
+ARB_BUDGET = 8.0
 from bridgebidder.engine.scoring import imps, signed_score  # noqa: E402
 from bridgebidder.inference.engine import prepare_decision  # noqa: E402
 from bridgebidder.system.dsl import load_system  # noqa: E402
@@ -72,8 +81,13 @@ def play_table(system, ben: Ben, deal, dealer, vul, our_side: str) -> tuple[Auct
         seat = auction.next_seat
         if seat.side == our_side:
             setup = prepare_decision(system, auction, perspective=seat)
-            choice = decide_fast(setup, deal[seat])
-            call = choice if isinstance(choice, Call) else choice.call
+            if ARBITRATE:
+                d = _choose(system, auction, seat, deal[seat],
+                            use_arbitration=True, arbitration_budget=ARB_BUDGET)
+                call = d.chosen.call
+            else:
+                choice = decide_fast(setup, deal[seat])
+                call = choice if isinstance(choice, Call) else choice.call
             rule = None
             for c in setup.candidates:
                 if c.call == call:
@@ -190,11 +204,19 @@ if __name__ == "__main__":
     r.add_argument("--n", type=int, default=100)
     r.add_argument("--seed", type=int, default=7)
     r.add_argument("--out", type=Path, required=True)
+    r.add_argument("--arbitrate", action="store_true",
+                   help="run simulation arbitration on decisions the engine "
+                        "reports as unclear (never measured before round 16)")
+    r.add_argument("--arb-budget", type=float, default=8.0)
     p = sub.add_parser("report")
     p.add_argument("--rows", type=Path, required=True)
     p.add_argument("--top", type=int, default=0)
     a = ap.parse_args()
     if a.cmd == "run":
+        if getattr(a, "arbitrate", False):
+            globals()["ARBITRATE"] = True
+            globals()["ARB_BUDGET"] = a.arb_budget
+            print(f"  arbitration ON (budget {a.arb_budget}s per unclear decision)")
         run(a.n, a.seed, a.out)
     else:
         report(a.rows, a.top)
