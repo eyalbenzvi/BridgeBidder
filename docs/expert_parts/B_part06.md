@@ -1,9 +1,12 @@
 # Expert B — constructive / team-IMP review of `docs/dossier_575757/part06.md`
 
-38 boards, -122 IMPs.  **27 proposals, 9 NOTHING-WRONGs, 1 proposal withdrawn on
-whole-corpus evidence, 1 honest negative** (the agreement is right, the board
-does not move).  22 of the 27 were traced through a modified copy of the system
-YAML and are labelled **VERIFIED**; the harness is
+38 boards, -122 IMPs.  **27 proposals, 10 NOTHING-WRONGs, 1 proposal withdrawn
+on whole-corpus evidence** (board 433, which counts as the eleventh
+NOTHING-WRONG), **and 1 honest negative** (board 767: the agreement is right,
+the board does not move).  **26 of the 27 proposals were traced** through a
+modified copy of the system YAML and are labelled **VERIFIED**; the one
+exception is board 774, whose seat does not occur on the board and which is
+therefore labelled UNTESTED.  The harness is
 `scratchpad/B_eyal_p06/proto.py` (`build(edits, out)` writes a patched YAML to a
 scratch path, `show()` ranks against it; the repo YAML was never touched).
 
@@ -1709,3 +1712,500 @@ negative double is the only call that survives — that is the next twenty rules
 of this subject.
 
 ---
+
+## Board 764 — margin -3
+
+**Seat/call:** table A, call 8, N bids **3NT** on `KJ83.964.QJ3.AKQ` after
+`1NT - P - 2C - P - 2S - P - 2NT - P`.  `stmi_2S_3NT` ("accepting the invite:
+16-17") at fit 1.000, and the whole `stayman_invite_accept_*` family is a
+two-rung binary on raw HCP: **15 declines, 16-17 accepts**, with no shape term
+anywhere.
+
+**Missing agreement:** the invitational/game boundary is not a point count.  A
+flat 4-3-3-3 sixteen with no fifth card and no ruffing value is a fifteen, and
+it declines.
+
+**YAML** — three sibling contexts, one rung each:
+
+```yaml
+      # in stayman_invite_accept_2S
+      - id: stmi_2S_pass_flat
+        call: P
+        priority: 61
+        requires: { hcp: [16, 16], shapes: [ "4333" ] }
+        shows: "declining the invite: a flat sixteen with no fifth card and no ruffing value is a fifteen"
+        establishes: { forcing: sign_off }
+      # in stayman_invite_accept_2D
+      - id: stmi_2D_pass_flat
+        call: P
+        priority: 61
+        requires: { hcp: [16, 16], shapes: [ "4333" ] }
+        shows: "declining the invite: a flat sixteen with no fifth card and no ruffing value is a fifteen"
+        establishes: { forcing: sign_off }
+      # in stayman_invite_accept_2H (responder is marked with four spades)
+      - id: stmi_2H_pass_flat
+        call: P
+        priority: 61
+        requires: { hcp: [16, 16], shapes: [ "4333" ], suits: { S: [0, 3] } }
+        shows: "declining the invite: a flat sixteen with no fifth card and no ruffing value is a fifteen"
+        establishes: { forcing: sign_off }
+```
+
+**Answering seat:** none — the pass ends the auction.  (`stmi_2H_pass_flat`
+carries the `suits: { S: [0, 3] }` clause verbatim from `stmi_2H_pass` so that
+a known 4-4 spade fit still goes to 3S/4S; that is the "carry the shadowed
+rule's gates" discipline applied inside a context.)
+
+**What it endangers:**
+* `stmi_$R_3NT` (58) — only on exactly 16 HCP with 4-3-3-3 shape.  A 16-count
+  with any five-card suit, any doubleton, or 17 HCP is untouched.
+* `stmi_$R_pass` (60) — same call; the new rung fits 1.000 where the old one
+  fits 0.800 (its band is `hcp: [15, 15]`), so it is a strictly better
+  description of the same decision.
+* `stmi_2H_3S` (62) and `stmi_2H_4S` (61) sit at or above 61 in the 2H context —
+  `stmi_2H_pass_flat` ties `stmi_2H_4S` at 61, so **rank it 60.5 there** to keep
+  the known 4-4 fit ahead of the flat decline.  (Corrected here rather than
+  silently: the 2D and 2S contexts have nothing at 61.)
+* Fallback: `P` is covered by `stmi_$R_pass`, so nothing is deleted.
+
+**VERIFIED, with a negative control.**  N now passes (BEN: P 0.83).  **Board 861
+is the control**: `763.AK.AK974.Q32` is 3=2=5=3, not 4-3-3-3, so the rung fits
+0.0 and `stmi_2D_3NT` still bids game — traced, unchanged.
+
+**Honest denominator:** `stmi_2S_3NT` runs **-1.50 over 2 tables** and
+`stmi_2D_3NT` **-1.00 over 5** — small; but `stayman_2S`, the call one round
+earlier that produces these seats, runs **-3.43 over 7 tables**, so the whole
+Stayman-then-invite branch is where the money is going.
+
+**Template:** three rules as written.  The same shape term belongs on every
+notrump invitation-accept in the file — `stm_2NT_nofit`'s answer,
+`oim2n_3NT_$M$R`, and `rmr_4NT`'s continuation — which is the general form:
+**"a 4-3-3-3 sixteen accepts nothing."**  That is one authored idea and perhaps
+a dozen rules.
+
+---
+
+## Board 767 — margin -3 — **agreement shipped, board does not move: an honest negative**
+
+**Seat/call:** table B, call 6, E bids **3NT** on `AK3.AQ764.84.J32` after
+`1C - P - 1H - P - 2C - P`.  `rmr_3NT` ("to play", `hcp: [13, 18]`) at fit
+1.000, with **no stopper requirement of any kind** and diamonds wide open (84).
+
+**Missing agreement:** 3NT opposite a minimum minor rebid needs the unbid suits
+stopped; with a five-card major, game values and a suit wide open, raise the
+minor as a game force and let opener bid the notrump if he can stop it.  There
+is also a plain **ceiling** underneath: `rmr_3$m` is the invitational raise at
+10-12 and `rmr_gf3_$m` wants 19+, so **13-18 with minor support has no raise at
+all.**
+
+**YAML** — context `responder_after_minor_rebid`
+(`expand: { m: [C, D], M: [H, S] }`, already templated):
+
+```yaml
+      - id: rmr_stopask_$m
+        call: 3$m
+        priority: 55.5
+        requires:
+          hcp: [13, 18]
+          suits: { $m: [3, 13], $M: [5, 13] }
+          evals: { weakest_unshown_stopper: [0, 0.5] }
+        shows: "game force with a fit for the rebid minor and an unbid suit wide open: 3NT only if partner can stop it"
+        establishes: { forcing: game_forcing, agreed_suit: $m }
+```
+
+**THE ANSWERING SEAT** — it is a game force and an ask, so it ships with one:
+
+```yaml
+  - id: opener_after_minor_gf_raise
+    description: "Opener answers responder's game-forcing raise of the rebid minor"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - P - 1$M - P - 2$m - P - 3$m - P - ?"
+    rules:
+      - id: oamg_3$M
+        call: 3$M
+        priority: 62
+        requires: { suits: { $M: [3, 13] } }
+        shows: "three-card support: the 5-3 major fit is the game"
+        establishes: { forcing: one_round, agreed_suit: $M }
+      - id: oamg_3NT_stop_$M
+        call: 3NT
+        priority: 60
+        requires: { evals: { weakest_unshown_stopper: [0.9, 9] } }
+        shows: "the open suit is stopped: nine tricks"
+        establishes: { forcing: sign_off }
+      - id: oamg_5$m
+        call: 5$m
+        priority: 58
+        requires: { suits: { $m: [6, 13] }, evals: { weakest_unshown_stopper: [0, 0.5] } }
+        shows: "no stopper either: the minor game"
+        establishes: { forcing: sign_off, agreed_suit: $m }
+      - id: oamg_3NT_$M
+        call: 3NT
+        priority: 55
+        requires: {}
+        shows: "no better description: taking the notrump game"
+        establishes: { forcing: sign_off }
+```
+
+**What it endangers:**
+* `rmr_3NT` (55) — **only** when an unshown suit scores 0.5 or worse on
+  `weakest_unshown_stopper`.  Every hand with both unbid suits guarded keeps
+  3NT, which is the whole design.
+* `rmr_3$m` (54, the 10-12 invitational raise) — disjoint band.
+* `rmr_gf3_$m` (57) and `rmr_3$M`/`rmr_4$M` (57/58) sit **above** 55.5, so a
+  19-count with a fit and a six-card major rebid are both untouched.
+* `rmr_4NT` (56) is above it: a 17-19 semi-balanced quantitative still wins.
+* Fallback: 3$m is covered by `rmr_3$m`, so nothing is deleted.
+* The answering context is 1000+8 specific over a seat previously owned by
+  `general_uncontested_continuation`; it ends in a `requires: {}` 3NT so no hand
+  is starved.
+
+**VERIFIED that it fires — and the board does not move.**  Traced:
+E bids 3C (fit 1.000, 0.866 against `rmr_3NT`'s 0.865), W answers **3NT**
+(`oamg_3NT_stop_H`, because KQ76 of diamonds *is* a stopper), and we play the
+same 3NT that went down.  **The contract is unchanged.**  I am reporting this as
+a negative rather than dressing it up: the agreement is right, the ceiling under
+it is real, and this particular board was simply a 26-count 3NT that failed.
+Where it pays is the hand where opener has no stopper either — today that hand
+also bids 3NT, and after this it bids five of the minor.
+
+**Honest denominator:** `rmr_3NT` runs **-2.83 over 6 tables** and
+`responder_after_minor_rebid` is a standing open item ("has a ceiling, not a
+shape hole… larger than anything round 13 shipped").  The ceiling at 13-18 for
+the minor raise is a second, independent instance of that finding.
+
+**Template:** `expand: { m: [C, D], M: [H, S] }` — one rung becomes four, the
+answering context four more.  Note the file's own precedent: `rmr_2M`,
+`rmr_pass` and `rmr_2NT` carry no template var at all inside a two-variable
+`expand`, so duplicate rule ids across expansions are tolerated; `rmr_stopask_$m`
+follows that precedent and ends in a var as the id rule requires.
+
+---
+
+## Board 772 — margin -3
+
+**NOTHING-WRONG on the call, with a prototype negative reported.**
+
+Table A, call 2: S overcalls **1NT** on `A3.QJ852.KQT.KJT` (16 HCP,
+`suit_quality(H)` = **1.5**) over `P - 1D`.  `oc1D_1NT` fits 1.000 and is
+consistent with the system's own documented choice that a 15-17 notrump *may*
+contain a five-card major.  BEN prefers 1H (0.99), and partner held five
+hearts, so the board turned on that — but QJ852 is not a suit worth preferring
+to a described 16-count balanced hand, and I will not propose a change that
+rests on one lucky layout.
+
+**The prototype I ran and am not shipping.**  `oc1D_1H_major_first`
+(priority 83, `suits: { H: [5, 13] }`, `hcp: [15, 18]`, `semi_balanced`,
+`"suit_quality(H)": [2, 9]`) **does not fire on this hand** — the suit scores
+1.5.  Loosening the quality gate to 1.5 makes it fire, but it then diverts
+*every* 15-18 balanced hand holding any five-card major out of the 1NT overcall,
+which is a large behaviour change with no evidence behind it.  Reported as a
+negative result rather than shipped.
+
+**Recorded for whoever owns the overcall family:** `oc1D_1NT` runs
+**-4.57 IMPs a table over 7 tables** — one of the worst rates in the corpus.
+That is a *family* verdict and it deserves its own experiment (a `suit_quality`
+term, or a `three_of_top5` requirement on the major, measured on the pool), not
+a rung derived from one board.
+
+---
+
+## Board 820 — margin -3
+
+**NOTHING-WRONG.**  First-seat opening judgement on `KJ62.K5.KJ874.74`
+(11 HCP, 4=2=5=2): `open_1D` fits 0.800 against its 12-point floor and
+`open_1m_rule20` 0.757, so `open_pass` at 1.000 takes it.  Opening-style and
+rule-of-20 thresholds are on the do-not-re-propose list.  The rest of table A
+(`oc1H_2D`, then `uc_raise_D3`) is a competitive sequence.
+
+---
+
+## Board 850 — margin -3
+
+**Seat/call:** table A, call 4, S bids **3H** on `82.KJT9542.KJ.AK` after
+`1H - 1S - X - 2S`.  Partner made a negative double (four spades and values);
+S holds **seven hearts and 15 HCP** and the engine offers him an *invitation*.
+`cl_rebid_jump_H` ("invitational jump rebid in competition: 6+ good H, 16-19")
+at fit 1.000, priority 31.
+
+**Missing agreement:** there is **no game-level rebid of one's own suit in
+competition**.  The ladder is `cl_rebid_$X2` / `_$X3` / `_$X4` at priority 29,
+all three carrying `when: { cheapest_in_suit: true }` — so `cl_rebid_H4` is
+structurally unreachable whenever 3H is legal (the same broken gate
+`DECISIONS.md` records on `cl_raise_lott3_$M`), and the only jump above the
+cheap rebid stops at "invitational".  A self-sufficient seventh trump opposite
+a partner who has promised values is a game bid, not a try.
+
+**YAML** — context `general_competitive_low`, two rules (no `expand:`):
+
+```yaml
+      - id: cl_rebid_game_H
+        call: 4H
+        priority: 32
+        when: { my_suit: H, partner_has_acted: true }
+        requires:
+          suits: { H: [7, 13] }
+          evals: { total_points: [14, 40], ltc: [0, 6], "suit_quality(H)": [1.5, 9] }
+        shows: "to play: a self-sufficient seventh heart and game values opposite the values partner has shown"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: cl_rebid_game_S
+        call: 4S
+        priority: 32
+        when: { my_suit: S, partner_has_acted: true }
+        requires:
+          suits: { S: [7, 13] }
+          evals: { total_points: [14, 40], ltc: [0, 6], "suit_quality(S)": [1.5, 9] }
+        shows: "to play: a self-sufficient seventh spade and game values opposite the values partner has shown"
+        establishes: { forcing: sign_off, agreed_suit: S }
+```
+
+**Answering seat:** it is a sign-off that sets `agreed_suit`, so the seat that
+answers it is partner's pass — `cl_pass` / `ch_pass` both fit 1.00.  Setting
+`agreed_suit` matters and is copied deliberately from `cl_rebid_H4`'s own
+comment: *"a suit named AGAIN at the four level or above is a trump proposal"*,
+without which the `gf_landing` family goes dark.
+
+**What it endangers:**
+* `cl_rebid_jump_$M` (31) — the rung that lost the board; with seven trumps,
+  six or fewer losers and fourteen total points opposite promised values, game
+  is a bid and not an invitation.  It runs **-4.80 over 5 tables**, the worst
+  rate of any rung I am directly outranking.
+* `cl_rebid_$M3` (29) and `cl_rebid_$M2` (29) — same argument, lower.
+* It **ties** `cl_raise_$M4` and `cl_raise_lott4_$M` at 32, but those carry
+  `when: { partner_suit: … }` and this carries `when: { my_suit: … }`, which
+  cannot both hold for the same suit — so the tie is unreachable.  It does not
+  reach `cl_doubler_game_$M` (35) or `cl_takeout_X` (36).
+* **Fallback:** 4H/4S are covered in this context by `cl_rebid_$M4` /
+  `cl_raise_$M4` only where *their* `when` holds; where it does not, this rung
+  deletes the generic four-level fallback in every seat with `my_suit: $M` and
+  partner having acted.  That is the one real subtraction and it should be
+  spot-checked in the pool.
+
+**VERIFIED.**  S now bids 4H (BEN: 4H 0.81).
+
+**Template:** two rules as written; one rule under `expand: { M: [H, S] }` if
+the context is ever templated.  The `general_competitive_high` twin
+(`ch_rebid_game_$M`, priority 32, same gates) is the companion and matters more,
+since a seven-card suit usually meets competition above 3C.  A minor version
+(5$m) wants its own evidence.
+
+---
+
+## Board 852 — margin -3
+
+**Seat/call:** table A, call 4, N **passes** on `T2.K964.JT74.QJ9` after
+`P - P - 1NT - 2S`.  `cl_negative_X2` ("8+ HCP with a major they have not bid")
+fits **0.800** — N has exactly **seven** HCP and four hearts — so nothing fits
+and `cl_pass` takes it at 1.000.
+
+**Missing agreement:** the same absent subject as board 674 — responder's
+structure over an overcall of our 1NT opening.  Opposite 15-17 the negative
+double starts at **seven**, not eight, because seven opposite fifteen is enough
+to compete for a partscore in the unbid major.
+
+**YAML:** the `responder_over_1NT_overcall` context from board 674, whose
+`r1nti_X_H` / `r1nti_X_S` carry `hcp: [7, 40]`.  One context, two boards.
+
+**Answering seat:** `opener_over_1NT_negative_double`, shipped with it on board
+674 and **traced on this board specifically**.
+
+**What it endangers:** as listed on board 674.  Here specifically it outranks
+`cl_negative_X2` (33, **-2.07 over 15 tables**) — the eight-point floor is
+calibrated for auctions where partner opened a one-bid, not a 15-17 notrump —
+and `cl_pass` (20).
+
+**VERIFIED end to end.**  `1NT - 2S - X - P - 3H`: N doubles (BEN: X 0.98),
+opener bids 3H with `J8.AQJ75.A62.A52`, and 3H makes **nine** tricks
+double-dummy — the exact contract BEN's side reached at the other table for
++140, where we passed 2S out and defended 3S for +50.
+
+**Template:** as board 674.
+
+---
+
+## Board 861 — margin -3
+
+**NOTHING-WRONG — and it is the negative control for board 764.**
+
+Table B, call 10: W bids **3NT** on `763.AK.AK974.Q32` after
+`1NT - P - 2C - P - 2D - P - 2NT - P`.  Sixteen HCP with a **five-card diamond
+suit** and four controls opposite an 8-9 invitation is an accept in anybody's
+system; `stmi_2D_3NT` fits 1.000 and is right.  The board was lost because
+3NT made seven tricks, not because the auction misdescribed anything.
+
+Its value to this review is as a control: board 764's proposed
+`stmi_$R_pass_flat` requires `shapes: [ "4333" ]`, and this hand is 3=2=5=3.
+**Traced against the patched system: the rung fits 0.0 here and W still bids
+3NT.**  That is the check that keeps board 764's rung from being a disguised
+"decline with sixteen".
+
+Recorded: `stmi_2D_3NT` runs **-1.00 over 5 tables**.
+
+---
+
+## Board 863 — margin -3
+
+**Seat/call:** table B, call 8, W bids **4H** on `Q9.AQJT9.K832.K7` (15 HCP,
+2=5=4=2) after `1H - P - 1S - P - 2D - P - 2H - P`.  Responder's 2H is
+`rr1H1SD_2H`, "preference back to opener's hearts: 3+ hearts, **minimum**",
+explicitly 6-10 total points.  Opener then bid game on 15.
+
+**Why:** there is **no context at all** for opener's third call after the
+preference.  The seat falls to `general_uncontested_continuation`, where
+`uc_raise_H4` — a rung written to raise *partner's* suit — reads the preference
+as partner bidding hearts and fires at fit 1.000, priority 32.
+
+**Missing agreement:** opposite a preference that showed 6-10, opener passes
+with a minimum, tries with 18-19 and bids game with 20+.  Fifteen plus ten is
+twenty-five only in the best case and the preference denies the best case.
+
+**YAML** — two new contexts:
+
+```yaml
+  - id: opener_after_major_preference
+    description: "Opener's third call after responder's simple preference back to the major"
+    expand: { m: [C, D] }
+    pattern: "1H - P - 1S - P - 2$m - P - 2H - P - ?"
+    rules:
+      - id: oamp_4H_$m
+        call: 4H
+        priority: 63
+        requires: { evals: { total_points: [20, 40] } }
+        shows: "game: twenty-plus opposite a preference that showed 6-10"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: oamp_3H_$m
+        call: 3H
+        priority: 62
+        requires: { suits: { H: [5, 13] }, evals: { total_points: [18, 19] } }
+        shows: "game try: 18-19 and a real heart suit, inviting the 6-10 preference"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: oamp_pass_$m
+        call: P
+        priority: 60
+        requires: {}
+        shows: "minimum: partner's preference showed 6-10 and there is no game"
+        establishes: { forcing: sign_off, agreed_suit: H }
+```
+
+**THE ANSWERING SEAT** — `oamp_3H_$m` is an invitation and ships with its
+answer:
+
+```yaml
+  - id: responder_over_preference_game_try
+    description: "Responder answers opener's 3H game try after the preference"
+    expand: { m: [C, D] }
+    pattern: "1H - P - 1S - P - 2$m - P - 2H - P - 3H - P - ?"
+    rules:
+      - id: ropg_4H_$m
+        call: 4H
+        priority: 61
+        requires: { evals: { total_points: [9, 40] } }
+        shows: "accepting the game try: the top of the 6-10 preference"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: ropg_pass_$m
+        call: P
+        priority: 59
+        requires: {}
+        shows: "declining the game try: a minimum preference"
+        establishes: { forcing: sign_off, agreed_suit: H }
+```
+
+**What it endangers:** the seat is currently owned by
+`general_uncontested_continuation` (specificity 3) and the new context is
+1000+9, so it takes the interpretation.  Rungs it can outrank there:
+`uc_raise_H4` (32, **-0.70 over 30 tables**) — a raise rung applied to opener's
+own suit; `uc_raise_H3` (31); `uc_nt3` (29, **+0.48 over 46 tables**, which is
+profitable and is the one I most want to protect — it is outranked only inside
+this nine-token pattern, where opener has already shown a two-suiter and 3NT is
+not the contract); `uc_pass` (18).  Every rung carries a `requires: {}` pass so
+no hand is starved.
+
+**VERIFIED end to end, and the band was chosen by tracing rather than by
+prescription.**  My first draft used `total_points: [17, 18]` for the try and
+the 15-count *invited* (its total points are 17 with two doubletons), reaching
+3H down one.  Re-banded to 18-19 / 20+, opener **passes** and we play 2H making
+eight — the best available result.  Controls: a 20-count bids 4H
+(`oamp_4H_D`, fit 1.000); responder with `K7.QJT75.732.742` declines the try
+(`ropg_pass_D`, fit 1.000).
+
+**Template:** `expand: { m: [C, D] }` as written — two contexts each.  The
+mirror family (`1S - P - 2H?` cannot arise; the real mirrors are
+`1H - P - 1S - P - 2$m - P - 2S - P - ?` where responder rebids his own suit,
+and the `1$m` opening equivalents) is the obvious next set.  **The preference
+auction is one of the commonest constructive sequences in the game and it has
+zero contexts today** — this is the single largest authoring gap I found in the
+slice after the reverse.
+
+---
+
+## Appendix — whole-corpus denominators used above
+
+From `repro.fires_summary('reports/r18_before.jsonl', …)`.  Corpus baseline is
+**-0.729** IMPs per board.  Positive rates are rungs I deliberately did **not**
+outrank.
+
+| rule | tables | total | mean |
+|---|---|---|---|
+| `ch_new_long3_D` | 3 | +13 | **+4.33** |
+| `ch_raise_lott4_S` | 7 | +25 | **+3.57** |
+| `ch_raise_S3` | 6 | +11 | **+1.83** |
+| `v3_D_X` | 5 | +8 | **+1.60** |
+| `cl_new_H3` | 5 | +3 | +0.60 |
+| `uc_nt3` | 46 | +22 | +0.48 |
+| `xd_run_S2` | 3 | +2 | +0.67 |
+| `oc1C_X` | 11 | 0 | 0.00 |
+| `ob_1NT` | 30 | -3 | -0.10 |
+| `bal_X` | 14 | -3 | -0.21 |
+| `ballow_new_C3` | 4 | -1 | -0.25 |
+| `oc1C_pass` | 125 | -40 | -0.32 |
+| `sw_pass` | 247 | -121 | -0.49 |
+| `uc_raise_H4` | 30 | -21 | -0.70 |
+| `oc1D_pass` | 137 | -102 | -0.74 |
+| `r1S_1NT` | 39 | -36 | -0.92 |
+| `r2c_nt_3NT` | 3 | -3 | -1.00 |
+| `stmi_2D_3NT` | 5 | -5 | -1.00 |
+| `stmi_2S_3NT` | 2 | -3 | -1.50 |
+| `ballow_rebid_D3` | 2 | -3 | -1.50 |
+| `uc_nt2` | 21 | -33 | -1.57 |
+| `cl_negative_X2` | 15 | -31 | -2.07 |
+| `uc_rebid_C3` | 10 | -21 | -2.10 |
+| `ch_raise_H3` | 3 | -7 | -2.33 |
+| `sw_2H` | 6 | -16 | -2.67 |
+| `sw_2C` | 8 | -22 | -2.75 |
+| `rmr_3NT` | 6 | -17 | -2.83 |
+| `xd_run_C2` | 9 | -27 | -3.00 |
+| `stayman_2S` | 7 | -24 | -3.43 |
+| `ob_1D1H_2C` | 7 | -25 | **-3.57** |
+| `sw_2S` | 2 | -9 | -4.50 |
+| `oc1D_1NT` | 7 | -32 | **-4.57** |
+| `cl_rebid_jump_H` | 5 | -24 | **-4.80** |
+| `ob_1D1S_2C` | 5 | -26 | **-5.20** |
+| `rdc_pass_D` | 4 | -27 | **-6.75** |
+| `cl_takeout_X` | 1 | -10 | -10.00 |
+| `rrevh_2S`, `ch_new_H3`, `ch_new_long3_H`(2, -3), `cl_new_long2_H_hi`, `ch_new_D3` | — | — | never fires / invisible in the primary reading |
+
+## Appendix — DSL traps found while prototyping, worth adding to `DSL_FOR_EXPERTS.md`
+
+1. **`expand:` over a variable that does not appear in the `pattern` is a
+   silent bug.**  It emits N contexts with identical patterns; specificity ties
+   are broken by file order, so only the first is ever consulted and the other
+   N-1 sets of rules are dead.  Write the suit rungs out instead.
+2. **`we_hold_contract` is not "our side owns the standing bid".**  On
+   `P P 1D 1S P 1NT P` (partner's 1NT standing) it is `False`.  Use
+   `we_bid_last: true`.
+3. **`unbid_suit` interacts with the inference engine's partner model**, so a
+   suit that a *conventional* call promised may or may not count as unbid
+   depending on the auction; `is_their_suit(X): [0, 0]` in `requires` is more
+   stable — but it has no entry in `_EVAL_S2`, so like `is_unbid_suit` it
+   discourages rather than forbids.  Adding it at 0.05 is a one-line source
+   change worth doing before anyone leans on it.
+4. **`partner_shown_max` works and is the usable substitute for the broken
+   `partner_limited`.**  Observed values in this slice: 7 (transfer then pass),
+   8 (a passed partner), 10 (weak two), 11 (simple raise), **40 (responder who
+   passed over an overcall of our 1NT — the partner model does not limit him at
+   all, which is a genuine inference defect, board 230)**.
+5. **`shapes: [ "4333" ]` is a usable near-sharp gate** — a shape miss multiplies
+   fit by 0.15, which is enough to keep a rung off the wrong hands.
+6. **Duplicate rule ids across expansions of a two-variable `expand:` are
+   tolerated** (`rmr_2M`, `rmr_pass` and `rmr_2NT` all do it today), so an id
+   need only end in *one* of the variables.

@@ -2218,3 +2218,166 @@ the four level (`adx_pull_dead_$m4`), and the identical `unbid_suit`-only
 restriction exists in `advance_weak2_double_*` and `advance_reopening_double`,
 where it is worth the same rungs.
 
+## Board 436 — margin -11
+
+**Seat/call that went wrong.** Table A, call 4, **N passes** (`r1H_pass`,
+"0-5 HCP: too weak to respond") over partner's third-seat 1H, holding
+`KJ9863.J8.T.8654` — a **six-card spade suit** and 5 HCP.  We played 1H for +140
+where the other table's N/S bid 1S-3D-3S-4S and made eleven for +650.
+
+**The missing agreement (one sentence).** The response floor is measured in
+**points only** — `r1H_1S` needs 6+ HCP and there is no length branch — so a
+six-card major with five points has no call, and passing partner's one-level
+opening out is the single most reliable way to hand the opponents a free
+balancing seat.
+
+**EXACT YAML.**  One rung into `resp_1H`, after `r1H_1S`:
+
+```yaml
+      - id: r1H_1S_long
+        call: 1S
+        priority: 71
+        requires:
+          suits: { S: [6, 13] }
+          hcp: [4, 5]
+        shows: "a six-card spade suit is worth a response on four or five points: passing partner's major open at the one level hands the opponents a free balancing seat"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.**  `forcing: one_round`, and it is answered by the existing
+`opener_rebid_1H_1S` context — no new context is owed.  Note that
+`opener_rebid_1H_1S` is the file's largest non-slam negative family (DECISIONS:
+30 tables, gap -6.07), so this rung sends more traffic into a context that needs
+work; that is an argument for shipping the two together, not for withholding the
+response.
+
+**WHAT IT ENDANGERS** (`resp_1H`):
+
+* `r1H_1S` (72, **above** mine) — the 6+ HCP version keeps precedence, so nothing
+  in the normal range moves.
+* `r1H_raise_passed` (63), `r1H_limit_raise` (62), `r1H_game_raise_preempt` (63),
+  `r1H_single_raise` (60) — all **below** 71 but all require heart support; my
+  rung requires six spades, and a 6-1 or 6-2 hand is not a raise.  Verified: a
+  5-count with **five** spades and three hearts still raises to 2H (my rung falls
+  to fit 0.349).
+* `r1H_1NT` (40) — a 6-11 balanced response; a six-card major is not balanced.
+* `r1H_pass` (15, below) — the target, and it loses only 4-5 counts with a
+  six-card spade suit.  Verified that a **3**-count with six spades still passes
+  (fit 0.409) — the floor moves by two points, not to zero.
+* Fallback: `1S` is already covered here by `r1H_1S`.
+
+**VERIFIED.**  Before: `P` (`r1H_pass`, fit 1.000 / 15).  After: `1S`
+(`r1H_1S_long`, fit 1.000 / 71).  Both regressions traced.
+
+**TEMPLATE.**  Write the twin in `resp_1S` (`r1S_2H_long` — a six-card heart suit
+on 5 points is a two-level response and needs a 5-point floor with the length
+gate) and in `resp_1m` for the majors (`r1m_1$M_long`).  A **vulnerability /
+seat** split is worth measuring separately: the argument is strongest in third
+and fourth seat and at favourable vulnerability, and `when: { passed_hand: true }`
+is the cheap first version if the consolidator wants to limit the blast radius.
+
+## Board 437 — NOTHING-WRONG (competitive lens)
+
+**Verdict.** The 2C tree, which DECISIONS lists as a standing open item
+("`2C - 2NT` positive-response continuations have no landing ladder", and
+"`open_2C` replicates at -7.44 / -6.58 and has been deferred four rounds").
+Table B, call 4: E answers 2C with `2NT` (`r2c_2NT_positive`, 55) on
+`A952.QT54.K4.Q87` where BEN waits with 2D, and the pair then walks
+3D-3NT-4NT-pass into 4NT making twelve, missing the cold 6NT the other table
+reached.  Every subsequent divergence is inside that tree.  Constructive.
+
+**What I checked on the competitive side.**  Table A is eight of our passes,
+every one of which BEN also makes at 1.00, against an uncontested
+2C-2D-2NT-3C-3D-6NT auction.  N has 4 HCP and S has 3; there is no suit, no
+vulnerability argument and no lead-directing double available (their 3C and 3D
+are both artificial continuations we have no agreement to double, which is itself
+a gap — a lead-directing double of an artificial bid in their strong auction
+does not exist anywhere in the file — but with `T542` and `J96` it would be a
+losing action here).
+
+**NOTHING-WRONG** from the competitive/matchpoint discipline.
+
+## Board 449 — NOTHING-WRONG (competitive lens)
+
+**Verdict.** Table B, call 12: E asks keycards (`gr_rkc_S`, fit 1.000 / 46) over
+partner's raise to 4S on `AQ9532.A72.3.A74` and the pair plays 6S one down for
++50 to N/S, where 4S makes eleven.  That is the documented open item "the keycard
+ask over a game raise is a measured loss (16 asks, -35 IMPs) but no gate on it
+survives" — DECISIONS records `keycards >= 3` at **-17 held out**.  Not mine, and
+explicitly not to be re-proposed.
+
+**What I checked on the competitive side.**  Table A is seven of our passes, all
+of which BEN also makes at 1.00, against an uncontested 1S-2D-2S-3D-3S-4S.  We
+scored -450 at table A against a par of **-460**, i.e. the defending side did
+better than par: there is nothing to find.  S's `oc1S_pass` on
+`J84.Q8.AQ8.T6532` is correct (five ragged clubs at the two level), and N's
+`T7.K9543.954.J98` has 4 HCP.  Even the light-overcall agreement I propose on
+board 292 does not reach these hands, and I checked that it does not.
+
+**NOTHING-WRONG** from the competitive/matchpoint discipline.
+
+## Board 485 — margin -11
+
+**Seat/call that went wrong.** Table A, call 3, **N passes** (`ch_pass`) after
+`P - 4S(partner's preempt) - 5H`, holding `5.A754.KJ8652.K9` — 2.5 quick tricks
+and **four cards in their trump suit**.  5H went three down undoubled for +150;
+doubled it is +500, and our own 4S makes eleven.  BEN doubles.
+
+**The missing agreement (one sentence).** The one rule in the file for doubling
+their save — `ch_sac_X` — is gated `max_their_suit_length: [0, 2]` and its own
+`shows` says "quick tricks, **no trump length**", which is the takeout-double
+test applied to a penalty situation: length in their trump suit is the best
+reason there is to double a sacrifice, not a reason against it.
+
+**EXACT YAML.**  One rung into `sacrifice_double_over_our_game`, after
+`ch_sac_X`, carrying that rule's `when` verbatim:
+
+```yaml
+      - id: ch_sac_X_trumps
+        call: X
+        priority: 44.5
+        when: { their_last_bid_suit: true, we_bid_last: false, side_has_acted: true,
+                standing_bid_level: [5, 6] }
+        requires:
+          evals: { quick_tricks: [2, 12], standing_suit_length: [3, 13] }
+        shows: "doubling their sacrifice over our game: two quick tricks and three or more of their trumps sitting over the bidder"
+        establishes: { forcing: non_forcing }
+```
+
+`standing_suit_length`, not `suit_length(their)` — the documented trap is that
+the latter resolves to LHO's suit, and here the suit that matters is the one they
+have just bid.
+
+**THE ANSWERING SEAT.**  `non_forcing` and it is a penalty double that ends the
+auction; partner's pull-or-sit seat is `general_pull_or_sit`, authored (and
+`adx_sit` is the rung that will correctly leave it in).
+
+**WHAT IT ENDANGERS** — this context has exactly **two** rules, so the list is
+short:
+
+* `ch_sac_X` (44, below) — the same call.  The two are disjoint by construction:
+  the old rung needs **0-2** of their trumps and 2.5 quick tricks, mine needs
+  **3+** and 2.0.  Verified both ways: `542.A.KJ8652.KQ9` (a singleton heart,
+  2.5 QT) still fires `ch_sac_X` at fit 1.000 and mine drops to 0.015.
+* `ch_pass` (22, from `general_competitive_high`) — the target.  A hand with two
+  quick tricks and four trumps over the bidder, opposite a partner who has
+  pre-empted to game, defends doubled or not at all.
+* Nothing else is offered in this seat at all — the whole candidate list before
+  the patch was `ch_pass` at 1.000 and `ch_sac_X` at 0.011.
+* Fallback: `X` is already covered by `ch_sac_X`.
+
+**VERIFIED.**  Before: `P` (`ch_pass`, fit 1.000 / 22) = +150.  After: `X`
+(`ch_sac_X_trumps`, fit 1.000 / 44.5) = +500.  Two regressions traced (a
+one-quick-trick hand with four trumps still passes at fit 0.012; the short-trump
+2.5-QT hand keeps the original rung).
+
+**TEMPLATE.**  No suit templating needed — the rule reads the standing bid.
+Expand the **level**: the same context is gated `standing_bid_level: [5, 6]`, so
+a sacrifice at the **four** level over our three-level game (4C over 3NT, 4H over
+4S is already covered) has no rung; add a `standing_bid_level: [4]` twin with a
+3-quick-trick floor.  This board is also the clearest single example in my slice
+of a `shows` sentence and a `requires` block that agree with each other and are
+both wrong about the bridge — worth a lint pass over every `max_their_suit_length`
+gate in the file, since the same evaluator is used for takeout and penalty
+doubles alike.
+
