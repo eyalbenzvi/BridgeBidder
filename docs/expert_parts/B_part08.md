@@ -686,7 +686,7 @@ by passing, and the one rung that consults the stopper needs 14+.
 `expand_pairs` already covers the five (m, M, R) combinations):
 
 ```yaml
-      - id: oim2n_3$m_$M$R
+      - id: oim2n_3m_$M$R
         call: 3$m
         priority: 51
         requires:
@@ -1583,19 +1583,19 @@ as the new major one:
       - { o: 1H, M: S }
     pattern: "$o - P - 1$M - bid<2$M - X - * - ?"
     rules:
-      - id: sda_2$o$M
+      - id: sda_two_$o$M
         call: 2$M
         priority: 60
         requires: { suits: { $M: [5, 13] }, evals: { total_points: [6, 9] } }
         shows: "an eight-card fit is now known: competing to the two level"
         establishes: { forcing: non_forcing, agreed_suit: $M }
-      - id: sda_3$o$M
+      - id: sda_three_$o$M
         call: 3$M
         priority: 61
         requires: { suits: { $M: [5, 13] }, evals: { total_points: [10, 12] } }
         shows: "an eight-card fit and invitational values"
         establishes: { forcing: invitational, agreed_suit: $M }
-      - id: sda_4$o$M
+      - id: sda_four_$o$M
         call: 4$M
         priority: 62
         requires: { suits: { $M: [5, 13] }, evals: { total_points: [13, 40] } }
@@ -1606,7 +1606,7 @@ as the new major one:
 Deliberately no `pass` and no four-card-support rungs: with only four cards in
 the major the fit is 4-3 and the generic ladder should keep the seat, so this
 context subtracts as little as possible.  On the board, responder holds five
-spades and `total_points = 12` (traced), so `sda_3[1H,S]` fires and we reach 3S
+spades and `total_points = 12` (traced), so `sda_three[1H,S]` fires and we reach 3S
 for ten tricks — BEN's +170.
 
 **Note on the evaluator, checked.**  I did NOT gate the answering rungs on

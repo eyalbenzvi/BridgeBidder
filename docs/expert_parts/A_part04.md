@@ -440,3 +440,141 @@ reach board 713: there partner never acted, so `partner_has_acted: true` fails �
 713 gets its own finding.)
 
 ---
+
+## Board 0 — margin -6
+
+**Seat/call:** West, call 3 — `2D (P) (P) ?` with `K83.KJ98742.6.KT`,
+**seven hearts**, 10 HCP.  We doubled (`ballow_X`, priority 40, which outranks
+every natural bid in the context at 25-33).
+
+**Missing agreement:** in the balancing seat a SEVEN-card suit names its own
+trumps; the takeout double asks partner to choose among three suits I do not
+hold.
+
+(This is deliberately not the idea round 7 killed with whole-corpus data — that
+was "a takeout double must not hide a SIX-card suit", and doubles with 6+ suits
+measured *better* than those without.  Seven is a different animal and the rung
+is additive, not a gate: `ballow_X` keeps every hand it has now except the
+seven-card one-suiters.)
+
+```yaml
+# context: general_balancing_low, inserted before `- id: ballow_raise_C2`
+      - id: ballow_new_long7_$M
+        call: 2$M
+        priority: 42
+        when: { unbid_suit: $M, cheapest_in_suit: true }
+        requires: { suits: { $M: [7, 13] }, evals: { total_points: [8, 40], "suit_quality($M)": [1, 9] } }
+        shows: "natural $M in the balancing seat with a SEVEN-card suit: a one-suiter names its own trumps - the double would ask partner to pick a suit I do not hold"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat:** none required (non-forcing).  **But see the negative result
+below** — the follow-up is where this board is actually lost.
+
+**What it endangers:** `ballow_X` (40) and `ballow_reopen_X`/`X2` (41) — on a
+seven-card suit, naming trumps beats asking; `ballow_nt2_balance` (33),
+`ballow_nt2_strong` (30), `ballow_raise_*` (30-32 — mine requires the suit to be
+UNBID, so it cannot be partner's), `ballow_rebid_*` (29 — `unbid_suit` also
+excludes a suit I have bid myself), `ballow_new_$M2`/`long2_$M` (26, same call,
+5+/6+ — mine is the seven-card version and strictly narrower).  2$M is already
+covered, so no fallback is deleted.
+
+**VERIFIED** for the call: base `X`; patched `2H` (`ballow_new_long7_H`,
+fit 1.000).  Regression: the same hand with only six hearts still bids 2H via
+the ordinary `ballow_new_H2` at priority 26 (i.e. the double no longer wins, but
+that was already true — `ballow_X` fits and outranks it; my rung leaves the
+six-card case exactly as it was).
+
+### NEGATIVE RESULT on the same board — the `shows`-union ceiling
+
+I then tried to close the conversation with an answering rung
+(`uc_raise_long3_$M`: raise partner's KNOWN 6+ suit on a doubleton to the level
+of the fit, priority 31.5, `partner_shown_length($M) >= 6`,
+`lott_total_trumps($M) >= 9`).  It scored **fit 0.000**, because
+`partner_shown_length(H)` comes back **5**: the interpretation of `2H` is an
+`any_of` over `ballow_new_H2` (5+), `ballow_new_long2_H` (6+) and my new rung
+(7+), and partner's shown minimum is the weakest of them.  East therefore bids
+2NT and we play 2NT instead of 4H making eleven.  **A high-priority "long suit"
+rung changes what we bid and tells partner nothing**; to make the seven-card
+balancing overcall pay, it has to be its own call in its own context (a jump, or
+a separate balancing-2NT-style scheme), not a rung sharing 2$M with two weaker
+siblings.  Reported, not shipped as a closed conversation.
+
+**Template:** `expand: { M: [H, S] }` here; the minor twin needs the three-level
+call and is not worth it in the balancing seat.  Same rung in
+`general_balancing_high` as `balhigh_new_long7_$M` at `call: 3$M`.
+
+---
+
+## Board 55 — margin -6
+
+**Seat/call:** South, call 7 — `P P 1S P 1NT P (2C) ?` with
+`Q86.K4.A87652.98`, 9 HCP, `A87652`, **vulnerable**, both opponents bidding and
+partner silent.  We bid **2D** (`cl_new_long2_D_hi`, "a SIX-card suit, 8+
+points" — no suit-quality gate, no vulnerability gate) and ended in 3D for -200.
+
+**Missing agreement:** this is the sandwich position one round later — both
+opponents have bid and partner has passed — and `sandwich_seat` has exactly the
+discipline that is missing here (`sw_2C`: "good 5+ clubs, **11-17**"), but the
+auction has fallen through to `general_competitive_low`, which has none.
+
+```yaml
+# context: general_competitive_low, inserted before `- id: cl_pass`
+      - id: cl_pass_live_auction
+        call: P
+        priority: 26.75
+        when: { side_has_acted: false, i_have_acted: false, we_vulnerable: true,
+                standing_bid_level: [2], we_hold_contract: false }
+        requires:
+          hcp: [0, 10]
+          evals: { quick_tricks: [0, 1.5], longest_suit_length: [0, 6] }
+        shows: "both opponents have bid and my partner has passed: vulnerable, a ten-count with fewer than two quick tricks defends rather than entering at the two level"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat:** none — it is a pass, and `side_has_acted: false` means no
+force of ours is outstanding.
+
+**What it endangers:** `cl_new_$X2`/`_hi` and `cl_new_long2_$X`/`_hi`
+(26/26.5 — the two-level entry into a live auction, which is exactly what it is
+meant to demote, and only when vulnerable with fewer than two quick tricks);
+`cl_new_$X1` (25); `cl_pass` (20, same call, strictly more general).  It sits
+BELOW `cl_new_*3` (27), `cl_nt1` (27), `cl_nt2` (28), every raise (30+) and every
+double (33+), so a fit, a stopper or real values still act.
+
+**VERIFIED.**  Base `2D`; patched `P` (`cl_pass_live_auction`, fit 1.000).
+Regression: `Q86.KQ.AK7652.98` (2.5 quick tricks) still bids 2D.
+
+**Template:** none over suits (the rule names no suit).  The honest expansion is
+over the vulnerability/level pair: a `we_vulnerable: false` twin with a lower
+HCP ceiling is *not* recommended — non-vulnerable, entering is right.  A
+`standing_bid_level: [1]` twin is also not recommended: the one-level overcall
+is cheap.  **Do not template this one; it is the vulnerable two-level case only.**
+
+---
+
+## Board 83 — margin -6 — NOTHING-WRONG (competitive)
+
+Par is **-800**: East/West were always making game and N/S have no save.  Our
+side (N/S at table A) passed throughout on 19 combined HCP; I checked every one
+of those passes.  `oc1S_pass` (North, 8 HCP, no five-card suit, `98` in their
+suit) is right; `sw_pass` for South after `1S P 1NT` on `K74.AQT8.Q7652.3`
+matches BEN; `cl_pass`, `ch_pass` and `balhigh_pass` over 2C/3C/3S/4S are all
+right at these colours.  The first divergence is West's constructive rebid over
+a semi-forcing 1NT (`ob_1M1NT_2S` versus BEN's 2C) — opener's rebid ladder, not
+my discipline.
+
+---
+
+## Board 93 — margin -6 — NOTHING-WRONG (competitive)
+
+The first divergence is East's opening decision on `KT98.T543.A.A765`
+(11 HCP, rule of 20 = 19) — **opening-style / rule-of-20 thresholds are
+scope-excluded**.  Competitively: at table A South's 1NT overcall on a
+15-count over 1C is right; North's three passes over 2S/3S/4S on
+`3.62.97642.KJ984` are right (par -650, and a 4-HCP hand with a singleton
+spade has no call over their spade auction); South's pass of 4S holding
+`QJ.AQJ8.KT53.QT2` behind the 1C opener is right — a penalty double needs
+trump tricks, not high cards.  Nothing to propose.
+
+---
