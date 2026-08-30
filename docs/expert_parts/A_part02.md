@@ -281,3 +281,252 @@ file's own idiom in this context (`ch_free_3H` / `ch_free_3S`,
 same problem.
 
 ---
+
+## Board 856 — margin -11
+
+**Seat/call that went wrong:** table A, call 4, **North passes 3H** holding
+`AKQ9.QT.T6.A9832` (15 HCP, 3 quick tricks, doubleton heart) after
+`1C – P – 1D – 3H`.  (The dossier's first divergence is the OPENING call,
+1C vs 1NT — opening style is scope-excluded.)
+
+**Missing agreement:** the opener's SECOND double — after I have opened and
+they jump-overcall, a double with opening values, shortness in their suit and a
+four-card major is takeout, and the file has no such rule anywhere.
+
+`ch_negative_X3` carries `i_have_acted: false`, so it is switched off for the
+opener by construction; `ch_penalty_X` demands `standing_suit_length >= 3` and
+North has two.  North's whole candidate set is `ch_pass` 1.000, `ch_nt3` 0.772,
+`ch_penalty_X` 0.349 — a starved seat.  This is the "no opener's reopening /
+second double" open item in `DECISIONS.md`, which that entry says "wants its
+own round"; it is not on the do-not-re-propose list.
+
+### YAML — into the EXISTING context `general_competitive_high`
+
+```yaml
+      - id: ch_takeout_X_acted
+        call: X
+        priority: 34
+        when: { their_last_bid_suit: true, i_have_acted: true, side_has_acted: true }
+        requires:
+          hcp: [13, 40]
+          evals: { "standing_suit_length": [0, 2], quick_tricks: [2, 12],
+                   longest_suit_length: [0, 6] }
+          any_of:
+            - suits: { S: [4, 13] }
+            - suits: { H: [4, 13] }
+        shows: "opener's second double: extra values, short in their suit, a four-card major to offer"
+        establishes: { forcing: one_round }
+```
+
+The same rung belongs in `general_competitive_low` (`cl_takeout_X_acted`, at
+34, above `cl_negative_X2`'s 33) for the two-level case.
+
+**Answering seat: it already exists and is fully populated.**
+`general_pull_or_sit` (`... - X - P - ?`) answers any double of theirs that
+stands: `adx_sit` (trump stack, 61), `adx_neg_major_H2/H3/S2/S3` (62),
+`adx_pull_my_*` (58.5-60), `adx_nt` (56), `adx_pass_min` (52).  Nothing new is
+needed, which is exactly the round-17 test this proposal has to pass.
+
+**What it endangers, in `general_competitive_high`:**
+* `ch_penalty_X` (X, 38) — stays above, and the two are disjoint on shape:
+  mine needs 0-2 in their suit, the penalty double 3+, and
+  `standing_suit_length` carries sharp `_S2_SUIT` tolerance, so the split is
+  real rather than soft.
+* `ch_negative_X3` (X, 33) — disjoint by `i_have_acted`.
+* `ch_nt3` (3NT, 29) — with a doubleton in their suit and no stopper, three
+  notrump on a guess is the worse description; the double lets partner choose.
+* `ch_new_S3` / `_hi` (27 / 27.5) and `ch_rebid_C4` (29) — bidding my
+  four-card spade suit at the three level unilaterally commits to a 4-3 fit
+  when partner has bid neither major; the double offers both.
+* `ch_pass` (22).
+* **No fallback hazard:** X is already covered here by `ch_penalty_X`.
+
+**VERIFIED.**  North doubles at fit 1.000, prio 34, `clear=True`
+(`ch_pass` 1.000/22, `ch_penalty_X` 0.349/38).
+
+**Template:** no `expand` in this context; write the rung once here and once in
+`general_competitive_low`.  The `any_of` covers both majors, so no per-suit
+expansion is needed.  Do NOT template it into `general_balancing_*`: there the
+double already has a balancing reading and a third meaning really would collide.
+
+---
+
+## Board 866 — margin -11 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Both auctions are wholly uncontested: E/W hold 6 and 2 HCP
+and never have a call, and every one of our E/W calls at table B is a pass at
+fit 1.000 over a BEN N/S slam auction.  There is no overcall, no balancing seat
+and no competitive decision on the board.
+
+The loss is constructive: South opens `1D` on `AT.AK.AKQ97.T763` (20 HCP,
+`open_2C` fits 0.836, `open_2NT` 0.000 because the hand is 2=2=5=4), and the
+2NT/2C opening question plus `ob_1D1H_3C_jump` are the other reviewer's.
+
+---
+
+## Board 909 — margin -11 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Table A: we are N/S with 5 and 6 HCP and pass at fit 1.000
+in the direct seat over 1D (`oc1D_pass`), in the sandwich seat over 1NT
+(`sw_pass`) and twice over their 3D/3NT (`ch_pass`); BEN passes every one of
+them at 1.00 confidence.  Table B the auction is our own and uncontested.
+
+The divergence is East's pass of partner's `3D` jump rebid on
+`A96.K32.Q98.JT95` where 3NT is right — the responder-after-a-jump-rebid
+ladder in `general_uncontested_continuation` (`uc_nt3` demands 13-19 and East
+has 10, fit 0.134).  Constructive, and `uc_nt3`'s strength gate is explicitly
+scope-excluded, so I propose nothing here.
+
+---
+
+## Board 953 — margin -11
+
+**Seat/call that went wrong:** table B, call 2, **West passes 1C** holding
+`AT8543.3.QJ953.5` (6=1=5=1, 7 HCP, 10 total points, LTC 6) after `P – 1C`.
+
+**Missing agreement:** a one-level overcall is a matter of shape and losers,
+not of high cards — a 6-5 two-suiter with six losers is an overcall on seven
+points, and the file's minimum-HCP floor leaves it with no call at all.
+
+`oc1C_1S` demands 8 HCP (fit 0.800 on seven); `oc1C_2S_jump` demands the
+`good_suit(S)` feature, which `AT8543` fails, and a feature miss scores a flat
+0.200.  So `oc1C_pass` at 1.000 wins and N/S bid an uncontested 4H for +450.
+
+### YAML — into the EXISTING context `overcalls_of_1C`
+
+```yaml
+      - id: oc1C_1S_shape
+        call: 1S
+        priority: 69
+        requires:
+          suits: { S: [6, 13] }
+          hcp: [6, 10]
+          evals: { ltc: [0, 6], total_points: [9, 40], "suit_quality(S)": [1, 9] }
+        shows: "shapely one-level overcall: six spades in a two-suiter, six losers or fewer"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat:** none — `non_forcing`, and the advance of a simple overcall
+(`advance_overcall*`, `cl_raise_*`) already exists.  The 6-10 HCP floor keeps
+partner's shown minimum for 1S honest, because same-call rules merge into a
+disjunction in the partner model.
+
+**What it endangers, in `overcalls_of_1C`:**
+* `oc1C_1S` (1S, 71) — same call, higher priority, so an 8-16 hand keeps the
+  primary reading; mine only picks up 6-7 counts.
+* `oc1C_1D` (1D, 70) — with 6-5 the six-card major is the overcall, not the
+  five-card minor; and at 7 HCP `oc1C_1D` does not fit either.
+* `oc1C_2S_jump` (60) — **checked explicitly.**  DECISIONS records that
+  re-ranking the weak jump overcall measured -24 held out because "the jump was
+  already reachable below 8 HCP … and on the 8-10 overlap the one-level call is
+  better".  The `ltc <= 6` gate is what keeps me out of its population: a
+  one-suited `KQJ983.542.72.94` has LTC 8, scores my rung 0.046, and still bids
+  2S by `oc1C_2S_jump` at fit 1.000 (**verified**).
+* `oc1C_3S_preempt` (58), `oc1C_pass` (25).
+* **No fallback hazard:** 1S is already covered by `oc1C_1S`.
+
+**VERIFIED.**  West bids `1S` at fit 1.000 / prio 69, `clear=True`; the
+one-suited control still bids 2S.
+
+**Template:** as on board 532 the four overcall contexts are longhand, so this
+is one rung per (opened suit, six-card overcall suit) pair — 12 in total —
+unless the four contexts are refactored onto `expand_pairs`.  A NEW context
+cannot carry it: 1S is already `covered` by the earlier context and a later
+context's rule for a covered call is silently dropped.
+
+**Also worth recording, and it is a guardrail hit.**  The dossier names
+`cl_raise_lott4_H` as the decider of North's 4H at table A.  It is not:
+`cl_raise_lott4_H` fits **0.034**, and the actual chooser is **`cl_raise_H4`**
+at fit 1.000 (13 support points with the club singleton counted opposite the
+agreed heart suit, `rule_of_26` exactly 25).  4H is also the right contract —
+4H by South makes eleven — so there is nothing wrong with that call at all.
+The board was lost to `gr_rkc_H` (4NT), which `fires_summary` puts at
+**7 tables, -20 IMPs, mean -2.86** across the whole corpus; that is the
+keycard-ask-over-a-game-raise population, and a gate on it is on the
+do-not-re-propose list.
+
+---
+
+## Board 957 — margin -11
+
+**Seat/call that went wrong:** table A, call 9, **South bids 3S** holding
+`KT8.432.Q9.KQJ72` after `P – P – 1H – 1S – P – 2H – X – 2S – P`.  3S went
+three down doubled-value (-300); BEN passes.
+
+**Missing agreement:** when they double our cue-bid raise and partner makes the
+FORCED retreat to his overcalled suit, the cue-bidder passes — the retreat
+shows nothing (`advcueX_retreat` is literally `requires: {}`), so the values
+the cue bid already promised must not be shown a second time.
+
+The seat has no context of its own, so it falls to
+`general_uncontested_continuation` (the "`... - P - ?` means RHO passed"
+dispatch bug) and `uc_raise_S3` raises again on 12 support points and three
+trumps as though nothing had happened.  This is a two-step conversation the
+file opens (`advo_cue`) and never closes.
+
+### YAML — a NEW context, immediately BEFORE `advance_cue_doubled_pull`
+
+```yaml
+  - id: advance_cue_doubled_retreat
+    description: "Partner made the forced retreat from our doubled cue-raise"
+    expand_pairs:
+      - { o: C, v: H }
+      - { o: C, v: S }
+      - { o: D, v: H }
+      - { o: D, v: S }
+      - { o: H, v: S }
+    pattern: "1$o - 1$v - P - 2$o - X - 2$v - P - ?"
+    rules:
+      - id: advcueXr_pass_$v
+        call: P
+        priority: 62
+        requires: {}
+        shows: "the cue bid already showed the raise and the retreat showed nothing: pass"
+        establishes: { forcing: sign_off, agreed_suit: $v }
+      - id: advcueXr_raise_$v
+        call: 3$v
+        priority: 63
+        requires:
+          suits: { $v: [4, 13] }
+          evals: { total_points: [14, 40], "lott_total_trumps($v)": [9, 26] }
+        shows: "extras beyond the cue-bid raise and a fourth trump: one more try"
+        establishes: { forcing: non_forcing, agreed_suit: $v }
+      - id: advcueXr_game_$v
+        call: 4$v
+        priority: 64
+        requires:
+          suits: { $v: [4, 13] }
+          evals: { total_points: [17, 40], "lott_total_trumps($v)": [9, 26] }
+        shows: "the cue-bid raise was an underbid: bid the game"
+        establishes: { forcing: non_forcing, agreed_suit: $v }
+```
+
+**Answering seat:** this IS the answering seat — it closes the conversation
+`advo_cue` → `advcueX_retreat` → *(nothing)*.  Every rung is `non_forcing` or
+`sign_off`, so no new question is opened.
+
+**What it endangers.**  The pattern has eight tokens, so specificity 1008
+against `general_uncontested_continuation`'s 2: this context now OWNS `P`, `3v`
+and `4v` on exactly these five auctions and the following rules lose them there:
+* `uc_raise_S3` / `uc_raise_H3` (31) — the cue bid already showed 10+ support
+  points; repeating them opposite a retreat that showed nothing is bidding the
+  same values twice.
+* `uc_raise_S4` / `uc_raise_H4` (32) — same sentence one level higher; my
+  `advcueXr_game_$v` reaches game only on 17+ support points, which is a hand
+  that genuinely underbid with the cue.
+* `uc_pass` (18) — replaced by `advcueXr_pass_$v`, which fits 1.00 on every
+  hand exactly as `uc_pass` did, so the seat cannot be starved.
+* `uc_nt2`/`uc_nt3`/`uc_new_*` are untouched (different calls, still supplied by
+  the generic context).
+* **Fallback:** the new context covers P / 3v / 4v; 3v and 4v were already
+  covered by `uc_raise_*` in the same seat, and P by `uc_pass`, so no code
+  fallback is deleted.
+
+**VERIFIED.**  South passes at fit 1.000, prio 62, `clear=True`;
+`advcueXr_raise_S` fits 0.012 on this hand and `advcueXr_game_S` 0.000.
+
+**Template:** `expand_pairs` over the five (opened minor-or-heart, overcalled
+suit) combinations, copied verbatim from `advance_cue_doubled` /
+`advance_cue_doubled_pull` so the three contexts stay in step.
+
+---
