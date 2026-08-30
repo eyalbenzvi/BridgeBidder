@@ -530,3 +530,205 @@ suit) combinations, copied verbatim from `advance_cue_doubled` /
 `advance_cue_doubled_pull` so the three contexts stay in step.
 
 ---
+
+## Board 12 — margin -10
+
+**Seat/call that went wrong:** table A, call 8, **North bids 3D**, VULNERABLE,
+holding `QJ7.7.A97543.Q83` (9 HCP, one quick trick) after
+`P – P – P – 1NT – P – 2H – P – 2S`.  3S then made ten tricks (-170) where
+BEN's pass left them in 3NT three down (+300).
+
+**Missing agreement:** vulnerable, with the opponents having found a fit and
+nobody on our side having bid, a bare six-card suit with no honour strength is
+not an entry into the auction — the vulnerable three-level phantom is a
+matchpoint discipline the file has nowhere.
+
+**Guardrail hit:** the dossier names `cl_new_D3`.  It is not the decider —
+`cl_new_D3` fits **0.102**.  The actual chooser is **`cl_new_long3_D_hi`**
+(prio 27.5, fit 1.000): a SIX-card suit, 11+ total points, `suit_quality >= 1.0`,
+and `A97543` scores exactly 1.0.  Its own file comment records the threshold was
+tuned on a 400-board A/B and that at 11/1.0 "it bid 3S on JT8754 and got
+doubled" — the calibration has no vulnerability term at all.
+
+### YAML — into the EXISTING context `general_competitive_low`
+
+```yaml
+      - id: cl_vul_discipline_pass
+        call: P
+        priority: 27.6
+        when: { we_vulnerable: true, side_has_acted: false, standing_bid_level: [2, 3] }
+        requires:
+          hcp: [0, 10]
+          evals: { quick_tricks: [0, 1.5], their_fit: [7, 26] }
+        shows: "vulnerable, they have a fit, nobody on our side has bid and I have neither values nor defence: pass"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+```
+
+`negative_inference_weight: soft` matters: this pass must not teach the partner
+model that a passing hand denies a six-card suit.
+
+**Answering seat:** none — it is a pass.
+
+**What it endangers, in `general_competitive_low`:**
+* `cl_new_long3_$X` / `_hi` (27 / 27.5) and `cl_new_$X2` / `$X3` (26-27.5) —
+  every natural entry at the two and three level, but ONLY when vulnerable,
+  with under 11 HCP, under two quick tricks, and after they have shown a fit.
+  That is precisely the population the -170 came from: partner is not marked
+  with values, we have no defence, and the level is theirs.
+* `cl_nt2` / `cl_nt3` (28 / 29), `cl_raise_*` (30-32), `cl_negative_X2` (33),
+  `cl_takeout_X` (36) all sit ABOVE it and are untouched — a raise of partner's
+  suit needs `partner_suit`, which cannot hold when `side_has_acted: false`.
+* `cl_pass` (20) — same call, so no fallback consequence at all.
+* **Non-vulnerable behaviour is unchanged** — verified: the identical hand at
+  EW vulnerability still bids 3D by `cl_new_long3_D_hi` at fit 1.000.
+
+**VERIFIED.**  North passes at fit 1.000 / prio 27.6, `clear=True`, vulnerable;
+bids 3D unchanged non-vulnerable.
+
+**Template:** one rung, no expansion (the gates are suit-free).  Its twin
+belongs in `general_competitive_high` (`ch_vul_discipline_pass`, priority 27.6,
+`standing_bid_level: [3, 4]`) where the same phantom is one level dearer.  I
+would NOT put it in the balancing contexts: in the passout seat the whole point
+is to reopen, and the hand types differ.
+
+**Note on the dossier's first divergence:** North's opening pass on the same
+hand (`open_weak_2D_vul` fits 0.757 on 9 HCP with `A97543`) is an
+opening-style threshold and is scope-excluded.
+
+---
+
+## Board 90 — margin -10
+
+**Seat/call that went wrong:** table A, call 6, **North raises to 4H** holding
+`KT53.AQJT9.AQ2.6` after `P – P – 1H – 1NT – 2H – P`.  4H made nine (-50);
+3H makes nine (+140), and BEN passes 2H.
+
+**Missing agreement:** when RHO's overcall has ANNOUNCED 15-18, partner's raise
+is obstruction and the combined-points test is a fiction — three of the major
+is the limit unless my own hand is worth game opposite a bust.
+
+`uc_raise_H4` fits 1.000 because with hearts agreed North counts 19 total points
+and `rule_of_26` reaches 25.5 against a partner whose shown minimum is 5.  But
+East has announced 15, North holds 16, so partner and West share nine: the
+arithmetic that licenses game has already been contradicted by the auction.
+`their_shown_hcp` is in the evaluator registry and **no rule in the file uses
+it for this**.
+
+### YAML — into the EXISTING context `general_uncontested_continuation`
+
+```yaml
+      - id: uc_raise_capped_H3
+        call: 3H
+        priority: 32.5
+        when: { partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { their_shown_hcp: [15, 40], total_points: [11, 20],
+                   "lott_total_trumps(H)": [8, 9] }
+        shows: "they have announced 15+, so partner's raise is obstruction and three of the major is the limit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: uc_raise_capped_S3
+        call: 3S
+        priority: 32.5
+        when: { partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { their_shown_hcp: [15, 40], total_points: [11, 20],
+                   "lott_total_trumps(S)": [8, 9] }
+        shows: "they have announced 15+, so partner's raise is obstruction and three of the major is the limit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+```
+
+**Answering seat:** none — `non_forcing`, and 3H is already a rung partner's
+model reads (`uc_raise_H3`), so nothing new is being asked.
+
+**What it endangers, in `general_uncontested_continuation`:**
+* `uc_raise_H4` / `uc_raise_S4` (32) — the target.  One sentence: partner's
+  raise over a strong-notrump overcall promised nothing, and their announced
+  15-18 has already spent the points my raise to game would need.
+* `uc_raise_lott4_H` / `_S` (32) — **explicitly protected.**  The Law raise to
+  four is right when they have a fit and we hold ten trumps; my
+  `lott_total_trumps: [8, 9]` band excludes exactly that, and
+  `lott_total_trumps` carries sharp tolerance 0.4, so a ten-trump hand scores
+  my rung 0.082 and the Law raise keeps it.
+* `uc_raise_H3` / `uc_raise_S3` (31) — same call, so no behaviour changes.
+* `gst_rkc_H` (46) is above and untouched — but note it fits 0.000 here anyway.
+* **No fallback hazard:** 3H/3S are already covered by `uc_raise_H3`/`_S3`.
+* The `total_points: [11, 20]` ceiling is the escape hatch: a 21+ hand still
+  bids game through `uc_raise_$M4`, because 21 misses my band and scores 0.8,
+  below the fast path.
+
+**VERIFIED.**  North bids `3H` at fit 1.000 / prio 32.5, `clear=True`
+(`uc_raise_H4` 1.000/32 immediately behind).
+
+**Template:** the explicit `_H` / `_S` pair above.  The same pair belongs in
+`general_competitive_low` (`cl_raise_capped_$M3`) and
+`general_competitive_high`, where the identical arithmetic runs.
+
+---
+
+## Board 94 — margin -10
+
+**Seat/call that went wrong:** table B, call 7, **East bids 2C** holding
+`9.AKT6.6432.AK75` (14 HCP, 4 quick tricks) after `P – 1C – 1S – X – P – 1NT – P`.
+BEN bids 3NT at 0.84; 3NT by West makes nine.
+
+**Missing agreement:** after my negative double and partner's notrump REBID —
+which is a limited natural description with their suit stopped, not a response —
+I raise to game on values alone; I do not need a stopper of my own.
+
+`uc_nt3` is unreachable (East is 1=4=4=4 with a stiff spade: `balanced` 0,
+`stopper(S)` 0, fit 0.000).  `uc_nt_raise3` exists but its `when` pins
+`standing_bid_level: [2]`, with a file comment saying a ONE-level notrump from
+partner is a response rather than a description — true of a 1NT *response*,
+false of the 1NT *rebid over a negative double*, which is the classic 12-14
+balanced with a stopper.  That is a sibling gap, not a judgment call.
+
+What actually chose 2C is worth recording on its own: `uc_doubler_raise_C`
+("raise of the advance: 17-19 with 4-card support") fits **1.000** because with
+clubs agreed East's singleton spade lifts 14 HCP to 17 total points — and its
+`when` never checks that partner's SUIT is the standing bid, so it retreats
+below partner's own notrump.
+
+### YAML — into the EXISTING context `general_uncontested_continuation`
+
+```yaml
+      - id: uc_nt_raise3_after_X
+        call: 3NT
+        priority: 34.5
+        when: { we_bid_last: true, standing_bid_strain: [NT], standing_bid_level: [1],
+                my_last_call_was_double: true }
+        requires: { evals: { rule_of_26: [25, 99] } }
+        shows: "raising partner's notrump rebid to game: my double showed the values and partner has shown their suit stopped"
+        establishes: { forcing: sign_off }
+```
+
+The twin belongs in `general_competitive_low` (`cl_nt_raise3_after_X`) for the
+case where they bid again over partner's 1NT.
+
+**Answering seat:** none — `forcing: sign_off` names the final contract.
+
+**What it endangers.**  The `when` is very narrow: partner's ONE-level notrump
+is the standing bid and my last call was a double.  Inside that window it
+outranks —
+* `uc_doubler_raise_$X` (2C/2D/2H/2S, 34) — a retreat to partner's minor below
+  his own notrump, on a hand that has 25+ combined and a stopper shown.
+* `uc_doubler_raise3_$X` (33), `uc_raise_$X2/3` (30/31), `uc_nt3` (29),
+  `uc_nt2` (28), `uc_minor_game_5$m` (28), `uc_new_*` (26-27.5), `uc_pass` (18)
+  — all of which describe less than "we have the values for the only game
+  available, and partner has said the suit they bid is stopped".
+* Below 25 combined the rung does not fit, so the minimum negative doubler is
+  untouched — **verified**: an 8-HCP `9.AK76.6432.7532` still bids 2C by
+  `uc_raise_C2`, my rung at fit 0.004.
+* **No fallback hazard:** 3NT is already covered here by `uc_nt3`.
+
+**VERIFIED.**  East bids `3NT` at fit 1.000 / prio 34.5, `clear=True`.
+
+**Template:** one rung here and one in `general_competitive_low`; the `when`
+carries no suit, so no expansion.  If a consolidator prefers, the cleaner form
+is to relax `uc_nt_raise3`'s `standing_bid_level` to `[1, 2]` **only** under an
+added `my_last_call_was_double: true` sibling — but that is the same rule
+written twice, and the sibling lint prefers two explicit rungs.
+
+---

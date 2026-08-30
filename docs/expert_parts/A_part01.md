@@ -608,3 +608,92 @@ project keeps paying for.
 
 **NOTHING-WRONG** from the competitive/matchpoint discipline.
 
+## Board 222 — NOTHING-WRONG (competitive lens)
+
+**Verdict.** Constructive board.  Table B, call 3: E responds `1S` (`r1m_1S`,
+fit 1.000 / 77) to partner's 1C on `AKQ832.AKJT.K72.` — 20 HCP, 6-4 in the
+majors, a void.  A one-level response caps the hand and the auction died in 4S
+missing a cold 6NT/6C.  The strong jump shift / reverse machinery is the
+constructive reviewer's ground.
+
+**What I checked on the competitive side.**  Every table-A call of ours is a
+pass BEN also makes at 1.00, against an uncontested 1C-2S-3C-3S-3NT-6NT auction.
+N holds `J9754.8732.T65.A` (5 HCP, 5-4 in the majors) **vulnerable against
+vulnerable** and the only competitive idea on the board is a direct 1S overcall
+over W's 1C.  I checked `overcalls_of_1C`: `oc1C_1S` is correctly not fitted
+(five ragged spades and 5 HCP at unfavourable is a pass in any system), and BEN
+passes at 1.00 too.  Nothing in `sandwich_seat`, `balancing_seat` or
+`general_competitive_low` should have fired.
+
+**NOTHING-WRONG** from the competitive/matchpoint discipline.
+
+## Board 301 — margin -13
+
+**Seat/call that went wrong.** Table B, call 4, **E bids 3NT** (`ch_nt3`) after
+`1S - P - 1NT - 3C`, holding `AK732.A542.K5.K4` (17 HCP, 5-4 in the majors, K-x
+in their suit).  3NT took seven tricks, **+200 to N/S**, where 4H (W has
+`J9763` — a nine-card heart fit) makes eleven.
+
+**The missing agreement (one sentence).** Over their pre-empt, opener's **second
+suit** has no rung: `ch_new_H3` demands a FIVE-card suit, so a 5-4 hand can only
+choose between rebidding its own suit and 3NT, and `ch_nt3` at priority 29 —
+whose "stopper in their suit" gate is `weakest_their_stopper`, the evaluator
+that does not gate — takes every one of them.
+
+**EXACT YAML.**  Two rungs into `general_competitive_high`, immediately before
+`ch_nt3`:
+
+```yaml
+      - id: ch_second_major_H3
+        call: 3H
+        priority: 29.5
+        when: { unbid_suit: H, cheapest_in_suit: true, i_have_acted: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { longest_suit_length: [5, 5], total_points: [16, 40] }
+        shows: "my second suit over their preempt: five of my own and four hearts with extras - a 4-4 major fit beats notrump on a doubleton stopper"
+        establishes: { forcing: non_forcing }
+      - id: ch_second_major_S3
+        call: 3S
+        priority: 29.5
+        when: { unbid_suit: S, cheapest_in_suit: true, i_have_acted: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { longest_suit_length: [5, 5], total_points: [16, 40] }
+        shows: "my second suit over their preempt: five of my own and four spades with extras - a 4-4 major fit beats notrump on a doubleton stopper"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing`, so none is strictly owed — and I traced
+it anyway: W with `.J9763.AJT8642.J` answers **4H** through `uc_raise_H4` (fit
+1.000 / 32).  The conversation closes without any new context.
+
+**WHAT IT ENDANGERS** (everything in `general_competitive_high` at 29-29.5):
+
+* `ch_penalty_X` (38, above) — untouched, and correctly so: verified that a flat
+  15-count with a real club stopper still doubles 3C.
+* `ch_nt3` (29, **below** mine) — the target.  It loses only hands with **exactly
+  a five-card suit plus a four-card unbid major and 16+ total points**; on those,
+  partner's 1NT response can hide four of my second suit and 3NT off a doubleton
+  king in their suit is the losing matchpoint contract.
+* `ch_rebid_$M3` (29, below) — a 6-4 hand keeps it, because my `longest_suit_length: [5, 5]`
+  gate is exact.  Verified with a 6-4 hand: `ch_rebid_S3` still wins.
+* `ch_new_H3`/`_hi` (27/27.5, below) — the five-card version; mine is a superset
+  description with an extra-values floor, and where both fit (5-5) bidding the
+  second suit is the same call.
+* `ch_pass` (22, below).
+* Fallback: `3H`/`3S` in this context are already covered by `ch_new_*3`, so no
+  code fallback is deleted; `i_have_acted: true` further confines the `when` to
+  the seat that has already bid a suit.
+
+**VERIFIED.**  Before: `3NT` (`ch_nt3`, fit 1.000 / 29).  After: `3H`
+(`ch_second_major_H3`, fit 1.000 / 29.5), and W raises to `4H`.  Both regressions
+traced (6-4 keeps `ch_rebid_S3`; the flat stopper hand is unaffected).
+
+**TEMPLATE.**  Written out for both majors.  Expand the same agreement (i) to
+`general_competitive_low` as `cl_second_major_$M2` at the two level with a
+14-point floor, (ii) to the **minors** at the three level with a 17-point floor,
+and (iii) to `general_balancing_high`.  It is the "bid your shape, not your
+stopper, when their preempt has taken your room" agreement and it is missing in
+all four generic competitive contexts.
+

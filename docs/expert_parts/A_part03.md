@@ -335,3 +335,478 @@ one rule.  The natural extension — the same rung after their **overcall**
 (`resp_1M_over_2x`) — should be a separate proposal and measured separately.
 
 ---
+## Board 216 — S, call 2 (table A): `1NT` should be `2D`
+
+**Seat/call that went wrong.**  Table A, S, `1C 1S — ?` with `JT54.Q72.KQT853.`
+(8 HCP, **six diamonds K-Q-T-8-5-3 and a void in partner's clubs**).
+`nx_1m1S_1NT` bid "6-10 with a spade stopper"; we then bid diamonds anyway two
+rounds later and played 3C in a 4-1 fit for -100.
+
+**The missing agreement.** Over their overcall a six-card suit of my own is a free
+bid at the two level on 8+ points — the notrump response is for hands whose
+longest suit is nothing to talk about.
+
+**Why the rung does not exist.**  `resp_1m_over_1S` has a natural rung for the
+unbid MAJOR (`nx_1m1S_2H`, 10+ forcing) and none at all for the other minor, so
+2D has to fall back to the generic `cl_new_D2*` at priority 26–26.5 — sixteen
+points of priority below a 1NT that lies about the shape.  This is the same
+sibling gap `DECISIONS.md` already records for `resp_1m_over_1H` ("no weak jump
+shift at all").
+
+```yaml
+  # context: resp_1m_over_1S   (expand: { m: [C, D] }); insert before `- id: nx_1m1S_pass`
+      - id: nx_1m1S_long_$om
+        call: 2$om
+        priority: 50.5
+        requires:
+          suits: { $om: [6, 13] }
+          evals: { total_points: [8, 40], "suit_quality($om)": [1.5, 9] }
+        shows: "free bid of my own six-card $om over their overcall: a real suit, 8+ points"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing`, so none is owed — opener's next seat is
+`general_competitive_low` / `general_uncontested_continuation`, both authored,
+and `agreed_suit` is deliberately NOT established (a six-card minor opposite an
+unknown hand is not yet trumps).
+
+**WHAT IT ENDANGERS:**
+
+* `nx_1m1S_1NT` @50 — 1NT with a void in partner's suit and six of my own tells
+  partner a story about the wrong hand; my suit is the more useful fact.
+* `nx_1m1S_pass` @20 — an eight-count with a six-card suit is not "nothing to say".
+* `cl_new_D2`, `cl_new_D2_hi`, `cl_new_long2_D`, `cl_new_long2_D_hi` @26–26.5 —
+  same call, same suit, better gate; and because they are in the LESS specific
+  `general_competitive_low` they drop out of the candidate list once this rung
+  covers 2$om in this context.  **That is the subtraction to watch**: the generic
+  rungs describe a 5-card / 10+ hand and my rung a 6-card / 8+ hand, so the
+  five-card 10-count that used to reach 2D via `cl_new_D2` now bids 1NT instead.
+  Bridge verdict: with five and a stopper 1NT is the standard answer, so the
+  subtraction is in the right direction — but it IS a subtraction and should be
+  measured, not assumed.
+* Rungs it does NOT outrank, correctly: `nx_1m1S_2NT` @51, `nx_1m1S_3NT` @52,
+  `nx_1m1S_raise` @55, `nx_1m1S_cue` @70, `nx_1m1S_X` @80.
+
+**VERIFIED.**  Base: `1NT nx_1m1S_1NT fit=1.000`.  Patched: `2D nx_1m1S_long_D
+fit=1.000 prio=50.5` chosen.  Regressions: with only five diamonds
+(`JT54.Q72.KQ853.7`) the engine still bids 1NT (2D drops to fit 0.349 on the
+sharp suit-length gate); with a ragged five-card suit and no stopper it still
+passes.
+
+**TEMPLATE.**  `$om` (the other minor) inside the already-templated context, so
+one rule becomes two (`nx_1m1S_long_D` over 1C, `nx_1m1S_long_C` over 1D).  The
+same rung belongs in `resp_1m_over_1H` (`nx_1m1H_long_$om`, call `2$om`) — that
+context has the identical hole.
+
+---
+
+## Board 312 — W, call 3 (table B): `X` should be `P` (the trap pass)
+
+**Seat/call that went wrong.**  Table B, W, `P 1H 1S — ?` with `KJ532..QJ75.A743`
+(11 HCP, **five spades sitting over the overcaller, a VOID in partner's hearts**).
+`r1H1S_X` made a negative double showing "both minors or a long minor, no heart
+fit"; partner pulled to 2H and we played a 5-0 fit for -300, vulnerable.
+
+**The missing agreement.** With four or more good cards in their overcalled suit,
+sitting over the overcaller, and no fit for partner, I pass and let partner
+reopen — the negative double is for hands that want partner to CHOOSE, and I do
+not want him to choose hearts.
+
+```yaml
+  # context: resp_1H_over_1S   (insert before `- id: r1H1S_pass`)
+      - id: r1H1S_trap_pass
+        call: P
+        priority: 79
+        requires:
+          suits: { S: [4, 13], H: [0, 1] }
+          hcp: [9, 14]
+          evals: { "suit_quality(S)": [1.5, 9] }
+        shows: "trap pass: four or more good spades over the overcaller and no heart fit - partner reopens"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+```
+
+**THE ANSWERING SEAT — checked, and it exists.**  After `1H - 1S - P - P` opener
+is in `general_balancing_low`.  Traced with E's actual hand `A87.AK862.T84.JT`:
+the engine bids **1NT (`ballow_nt1`, 10-14 balanced with a spade stopper)**,
+which double-dummy takes eight tricks for +120 — against the -300 we actually
+scored.  `ballow_reopen_X` @41 is there for the 16+ hands and `ballow_rebid_H2`
+@29 for the six-card ones, so the seat is authored in all three shapes.  No new
+context is owed.
+
+**WHAT IT ENDANGERS:**
+
+* `r1H1S_X` @78 — the negative double invites partner to bid hearts, and I hold
+  none; this is the one hand type the double must not be made on.
+* `r1H1S_cue` @75 / `r1H1S_raise` @70 / `r1H1S_preempt` @62 — all require heart
+  support (`suits: { H: [3, 13] }` / `[4, 13]`), so they can never co-fit with the
+  `H: [0, 1]` gate.
+* `r1H1S_2m_C` @60 / `r1H1S_2m_D` @59 — a forcing 10+ new suit at the two level
+  commits us to the three level in a misfit; defending 1S is worth more.
+* `r1H1S_2NT` @51 / `r1H1S_1NT` @50 — a spade "stopper" of KJ532 is a trump
+  stack, not a notrump asset.
+* `r1H1S_pass` @20 — same call, weak branch; both stay.
+* Fallback: PASS is already covered by `r1H1S_pass`, so nothing is deleted.
+
+**VERIFIED.**  Base: `X r1H1S_X fit=1.000 prio=78`.  Patched: `P r1H1S_trap_pass
+fit=1.000 prio=79` chosen.  Regressions: `K532.4.QJ75.A743` (four RAGGED spades,
+a singleton heart) still doubles — the trap pass falls to fit 0.757 on
+`suit_quality`; `862.K5.QJ75.A743` (no spade holding) still doubles.
+
+**TEMPLATE.**  Ship the mirror in `resp_1m_over_1H` and `resp_1m_over_1S`
+(`nx_1m1H_trap_pass`, `nx_1m1S_trap_pass`, with the void/singleton gate on the
+opened MINOR relaxed to `[0, 2]` because a minor fit matters less), and in
+`resp_1M_over_2x`.  Keep the `hcp: [9, 14]` ceiling everywhere — a 15+ hand
+should act, not trap.
+
+---
+
+## Board 562 — NOTHING-WRONG (competitive); the board is lost in the 2C tree
+
+**What I checked.**  Both tables are uncontested.  Table A is twenty-one calls of
+which eleven are ours and every one is a pass; N holds `JT85.75.542.AJ62` (6 HCP,
+4-2-3-4) opposite `Q62.JT9.97.T9743` (3 HCP) against a 23-count — there is no
+overcall, no sacrifice (par is -1510) and `cl_pass` / `ch_pass` are right at every
+turn.  The loss is at table B, where `2C - 2D - 2NT - 3C - 3H - 4H` stops in game
+with thirteen tricks cold: the documented "the 2C auction has no landing ladder"
+open item, and the constructive reviewer's board.
+
+**Secondary observation, offered but NOT proposed as this board's fix.**  There is
+**no defence-to-a-strong-2C context anywhere in the file**.  `defense_vs_1NT`
+(`1NT - ?`), `defense_vs_weak2D/H/S_overcalls` and `defense_vs_preempt_C/D/H/S`
+all exist; their 2C opening falls through to `general_competitive_low`
+(`... - bid<3C - ?`), whose ladder is written for competing after a partner has
+acted.  For a preempt/defence specialist that is a structural blank, but it costs
+nothing here (N is balanced with 6 HCP and pass is the call) and it is a whole
+context to author, not a rung, so it does not belong on this board's ticket.
+
+**VERIFIED** only in the negative sense: I traced N's seat and `cl_pass`/`ch_pass`
+are the correct calls; I did not prototype a defence-to-2C ladder.
+
+**TEMPLATE.**  If taken up: a new `defense_vs_strong_2C` context,
+`pattern: "2C - ?"`, mirroring `defense_vs_preempt_$X`'s rungs with the
+lead-directing floor lowered, and — critically — the advance
+(`2C - <our overcall> - P - ?`) authored in the same batch.
+
+---
+
+## Board 867 — E, call 2 (table B): `1S` should be `4S`
+
+**Seat/call that went wrong.**  Table B, E, `1C 1H — ?` with `AQJT872.6.9542.5`
+(7 HCP, **seven spades A-Q-J-T-8-7-2, six losers, a stiff in each black-suit
+partner-and-enemy suit**).  `nx_1m1H_1S` bid a quiet forcing 1S; the auction
+drifted and N/S bought it in 4H.  BEN bids 4S at both tables and 4S makes eleven
+tricks.
+
+**The missing agreement.** Over their overcall, a seven-card major with six
+losers and no slam interest is bid to game at once — the preemptive value of the
+jump is worth more than the extra round of description a forcing 1S buys.
+
+```yaml
+  # context: resp_1m_over_1H   (expand: { m: [C, D] }); insert before `- id: nx_1m1H_pass`
+      - id: nx_1m1H_game_S
+        call: 4S
+        priority: 79
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [5, 10]
+          evals: { ltc: [0, 6], "suit_quality(S)": [2, 9] }
+        shows: "seven-card spade suit, six losers, not enough for slam: take the game myself over their overcall"
+        establishes: { forcing: sign_off, agreed_suit: S }
+```
+
+**THE ANSWERING SEAT.**  `forcing: sign_off` + `agreed_suit: S`: opener's seat is
+`general_competitive_high` (`... - bid>=3C - ?`) if they compete and
+`general_uncontested_continuation` if they do not, and `partner_signed_off`
+correctly suppresses invention.  A game bid is a contract, not a question — no
+new context.
+
+**WHAT IT ENDANGERS:**
+
+* `nx_1m1H_1S` @78 — the forcing 1S is the right call with five or six; with
+  seven and six losers it gives them two free rounds at the one and two level.
+* `nx_1m1H_1NT` @50 / `nx_1m1H_2NT` @51 / `nx_1m1H_3NT` @52 — all carry
+  `not: { suits: { S: [4, 13] } }`, so they cannot co-fit.
+* `nx_1m1H_raise` @55 / `nx_1m1H_cue` @70 — support for partner's minor; a
+  seven-card major outranks a minor fit.
+* `nx_1m1H_pass` @20 — passing a seven-card major over a one-level overcall is
+  never right.
+* Rungs it does NOT outrank, correctly: `nx_1m1H_X` @80 (which demands **exactly
+  four** spades and therefore never co-fits).
+* Fallback: 4S was **not** a covered call in this context, so this rung deletes
+  the code fallback for 4S after `1$m - 1H`.  The sharp `suits: { S: [7, 13] }`
+  gate means the suppression only reaches hands with six spades or fewer, whose
+  own rungs (`nx_1m1H_1S` at fit 1.00) already outrank any fallback.
+
+**VERIFIED.**  Base: `1S nx_1m1H_1S fit=1.000`.  Patched: `4S nx_1m1H_game_S
+fit=1.000 prio=79` chosen.  Regressions: `AQJ872.6.9542.53` (six spades) still
+bids 1S — 4S falls to fit 0.171; `AQJT872.6.A542.A` (seven spades but 13 HCP and
+slam interest) still bids 1S, because the `hcp: [5, 10]` ceiling is what keeps the
+strong hands in the forcing channel.
+
+**TEMPLATE.**  Ship the mirror `nx_1m1S_game_H` (call 4H) in `resp_1m_over_1S`,
+and `r1H1S_game_S` / `r1S1H_game_H`-style twins in the major-opening contexts.
+Do **not** template it down to the minors (5C/5D on a seven-card suit is a
+different and much worse bet).
+
+---
+
+## Board 898 — W, call 1 (table B): `2S` should be `3S`
+
+**Seat/call that went wrong.**  Table B, W, `1D — ?` with `AK97652.2.763.T3`
+(7 HCP, **seven spades A-K-9-7-6-5-2**).  `oc1D_2S_jump` (priority 60, "weak jump
+overcall: 6 spades, 5-10") outranked `oc1D_3S_preempt` (priority 58,
+"preemptive overcall: seven-card s suit, 3-10") — **both fitting 1.000**.  We
+preempted one level too low and sold out to 3C; BEN bid 3S at both tables and E/W
+make ten tricks in spades.
+
+**The missing agreement.** Preempt to the level of your length: six cards is the
+two-level jump, seven the three level, eight the four level — the ladder must be
+monotone in suit length, and today it is not.
+
+**Why.**  The file's own comment above `oc1D_3C_preempt` states the design —
+"7+ to the three level, 8+ to four" — but `oc1D_2S_jump` carries
+`suits: { S: [6, 7] }` **and** the higher priority, so a seven-card suit fits both
+rungs and the lower one wins.  The four-level rung is likewise below the
+three-level rung (59 vs 58 is right, but both are below 60).
+
+```yaml
+  # in each of overcalls_of_1C / overcalls_of_1D / overcalls_of_1H / overcalls_of_1S:
+  #   oc1x_3<suit>_preempt :  priority: 58  ->  priority: 60.5
+  #   oc1x_4<suit>_preempt :  priority: 59  ->  priority: 61.5
+  # (12 three-level rungs and 6 four-level rungs; no other field changes)
+      - id: oc1D_3S_preempt
+        call: 3S
+        priority: 60.5          # was 58
+        when: { unbid_suit: S }
+        requires:
+          suits: { S: [7, 13] }
+          hcp: [3, 10]
+          evals: { "suit_quality(S)": [1.5, 9], "quick_tricks_outside(S)": [0, 2] }
+        shows: "preemptive overcall: seven-card s suit, 3-10"
+        establishes: { forcing: non_forcing }
+```
+
+**NOT the excluded item.**  `DECISIONS.md` rules out re-ranking **the weak jump
+overcall against the SIMPLE overcall** (`oc1x_1S` @71; round 11 measured -24 held
+out).  `oc1x_1S` is untouched here and stays at 71 — verified: an eight-card suit
+with 11 HCP still chooses 1S.  What moves is the seven-card preempt against the
+six-card jump, a different pair of rungs and a different hand type.
+
+**THE ANSWERING SEAT.**  Already authored: `advance_weak_jump_overcall`
+(`1$o - 3$j - P - ?`) covers the advance of a three-level preemptive overcall.
+This is one reason to prefer the priority lift to a length gate — the seat behind
+3S exists and the seat behind a starved hole would not.
+
+**WHAT IT ENDANGERS** (the full list of rungs 60.5 can now outrank):
+
+* `oc1x_2$M_jump` @60 — the six-card weak jump; with seven cards the three level
+  is the Law level and the two level under-competes.  It keeps every hand the
+  preempt rung rejects (verified: a six-card suit still bids 2S, fit 0.349 for 3S).
+* `oc1x_3$m_jump` @59 (six-card minor weak jump at the three level) — same call
+  level, longer suit wins.
+* `oc1x_4$M_preempt` @59 — lifted **together** to 61.5 so the eight-card rung
+  stays above the seven-card one; without that half the change the lift would
+  push eight-card hands down to 3S, which is the mistake this fix is about.
+* `oc1x_pass` @25 — unaffected.
+* Rungs it must NOT outrank, and does not: `oc1x_1$M` @71, `oc1x_X` @72,
+  `oc1x_1NT` @82 — a strong hand still overcalls or doubles.  Verified with
+  `AKQ9765.A2.A63.3` (15 HCP, seven spades): still 1S.
+* No rung is added and no `when` changes, so **no code fallback is deleted**.
+  That is the second reason to prefer this shape of fix.
+
+**VERIFIED.**  Base chooses `2S oc1D_2S_jump`; patched chooses
+`3S oc1D_3S_preempt fit=1.000 prio=60.5`.  Three regressions run (six-card,
+eight-card, strong seven-card) and all behave as described.
+
+**TEMPLATE.**  Not a template — a two-number edit repeated across the four
+`overcalls_of_1x` contexts (18 rungs).  The same monotonicity should be checked
+in `sandwich_seat` (`sw_*_jump` @69 vs `sw_3*` @68) and in
+`defense_vs_weak2*`, which I have not traced.
+
+---
+
+## Board 997 — NOTHING-WRONG (competitive); a constructive opener's-rebid board
+
+**What I checked.**  Table A is uncontested throughout (`P 1H P 1S P 2C P 2S P P`)
+and the divergence is opener's rebid with `K4.QJ654.A.AK875` (17 HCP): `2C`
+(`ob_1H1S_2m`, "second suit: 4+ clubs") where BEN jumps to 3C, after which we
+stop in 2S making eleven with 4S cold.  That is the opener's-rebid ceiling
+(`ob_1H1S_3C_jump` demands 18-21 and fits only 0.800 on a 17-count with a
+five-card suit and a stiff), and it belongs to the constructive reviewer.
+
+Table B contains three of our competitive decisions and all three are right:
+W passes over 1H with `862.A32.J865.Q93` (7 HCP, no suit); E passes in the
+**sandwich seat** over `1H - P - 1S` with `J5.K97.KT74.T642` (7 HCP, no
+four-card suit worth naming and no shape); and E passes again over 3C.  N/S hold
+a 26-count with an eleven-trick spade fit — there is nothing for E/W to compete
+with and no sacrifice (they are the vulnerable side).
+
+**Observation.**  The only competitive-discipline note worth recording is the
+same sandwich-seat ceiling flagged on board 945: `sw_2H`/`sw_2D` demand 11-17 and
+the jump rungs demand `cheapest_in_suit: false`, so the sandwich seat has no
+action at all on 5-10 with a six-card suit at the two level.  E does not have
+such a hand here, so this board does not motivate it.
+
+**VERIFIED** in the negative sense (I traced E's sandwich seat and W's two
+passes; each is the highest-fitting authored call).
+
+---
+
+## Board 7 — S, call 3 (table A): `X` should be `3C`
+
+**Seat/call that went wrong.**  Table A, S, `P 1D 2H — ?` with `J97.A54.J.QT8653`
+(8 HCP, **six clubs, a stiff diamond, three ragged spades**).  `nxj_X`, the
+negative double of a weak jump overcall, is `requires: { hcp: [8, 40] }` and
+**nothing else** at priority 70; partner took it as spades and we played 4S in a
+4-3 fit for -200, while the other table made ten tricks in clubs.
+
+**The missing agreement.** A six-card suit of my own is bid, not doubled: over
+their weak jump overcall a free three-level bid of my long minor shows the suit
+and 9+ points, and the double is reserved for the hands that genuinely want
+partner to choose.
+
+**This is the file's own prescription, not a new idea.**  The comment on `nxj_X`
+records that round 14's GATE (longest-suit cap + four-card-unbid-major) measured
+-5 held out and was reverted **because the landing seats are unauthored — "two of
+the nine replacement calls score below the 0.9 fast path"**.  On this exact board
+the replacement, `cl_new_long3_C_hi`, scores **0.800**.  So: author the landing
+rung to fit 1.00 first.  `neg_double_3level_m` has exactly **two rules** (X and
+pass) and is the thinnest competitive context in the file.
+
+```yaml
+  # context: neg_double_3level_m   (expand_pairs over m and j); insert before `- id: nxj_pass`
+      - id: nxj_new_$om
+        call: 3$om
+        priority: 71
+        when: { unbid_suit: $om, cheapest_in_suit: true }
+        requires:
+          suits: { $om: [6, 13] }
+          evals: { total_points: [9, 40], "suit_quality($om)": [1, 9] }
+        shows: "a real six-card $om of my own: over their jump I bid my suit rather than double"
+        establishes: { forcing: non_forcing }
+      - id: nxj_new_wide_$om
+        call: 3$om
+        priority: 26.9
+        when: { unbid_suit: $om, cheapest_in_suit: true }
+        requires:
+          suits: { $om: [5, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "natural $om at the cheapest level: 5+ cards, 14+ points"
+        establishes: { forcing: non_forcing }
+```
+
+**The second rung is not decoration — it is the superset guarantee.**  Defining
+`3$om` in this (more specific) context makes `general_competitive_low`'s
+`cl_new_C3` / `cl_new_C3_hi` / `cl_new_long3_C(_hi)` **covered**, so they vanish
+from the candidate list.  `nxj_new_wide_$om` carries their band verbatim at
+26.9 (they sat at 27–27.5) so the ladder can only be a superset.  Verified: a
+5-card / 14-point hand behaves identically before and after.
+
+**THE ANSWERING SEAT.**  `non_forcing`; opener's seat over `1$m - $j - 3$om - act`
+is `general_competitive_high`, authored, with `ch_raise_C3/C4`, `ch_new_*`,
+`ch_nt3` and `ch_pass`.  No `agreed_suit` is established (a six-card minor
+opposite an unlimited opener is not yet trumps).
+
+**WHAT IT ENDANGERS:**
+
+* `nxj_X` @70 — the double promises 8+ HCP and no shape at all; a hand with a
+  six-card suit has shape, and the double is precisely the call that mis-describes
+  it.  Everything with fewer than six of the other minor still doubles.
+* `nxj_pass` @20 — unaffected (its 0-7 band is disjoint).
+* `cl_new_C3(_hi)`, `cl_new_long3_C(_hi)` @27–27.5 — replaced by
+  `nxj_new_wide_$om` @26.9 with the same gates; that is the whole point.
+* `cl_raise_D3` @31 / `cl_raise_D4` @27 (raising partner's opened minor) — these
+  are in the generic context and are NOT covered by my rung (different call), so
+  a hand with real support still raises.
+* No call becomes uncovered, so no fallback is deleted.
+
+**VERIFIED.**  Base: `X nxj_X fit=1.000 prio=70`.  Patched: `3C nxj_new_C
+fit=1.000 prio=71` chosen.  Regressions: `KJ97.A54.J.KQ865` (five clubs, 14
+points) doubles before and after, with 3C still reachable at the old effective
+priority; `KJ97.A542.J4.Q86` (flat nine-count) still doubles.
+
+**TEMPLATE.**  `$om` inside the already-`expand_pairs`ed context gives all seven
+`(m, j)` combinations from one pair of rules.  The obvious companions — a natural
+unbid-major rung and a raise of partner's minor — belong in the same batch,
+because the ledger's whole point is that this context must be filled in, not
+poked.  Only after that should the round-14 gate on `nxj_X` be re-measured.
+
+---
+
+## Board 13 — S, call 5 (table A): `P` should be `2S`
+
+**Seat/call that went wrong.**  Table A, S, `P 1D X XX 2C — ?` with
+`AKQ2.987.QJT83.Q` (14 HCP, **A-K-Q-2 of spades and five diamonds**).
+`rdc_pass_D` — "forcing pass: partner's redouble owns the auction",
+`requires: {}`, priority 50 — passed, partner passed it out, and 2C undoubled was
+three off for +300 where 4S is cold for +650.
+
+**The missing agreement.** After our redouble and their run-out, opener bids a
+real four-card major at the two level; the forcing pass is for hands with nothing
+to add, and a suit that plays for four tricks opposite a 10+ redouble is
+something to add.
+
+**Why the rung does not exist.**  `redouble_continuations` has natural suit rungs
+only at the ONE level (`rdc_suit_H_$m` 1H @56, `rdc_suit_S_$m` 1S @55, both
+`cheapest_in_suit: true`).  Once they run to 2C those calls are illegal and the
+context's only remaining non-double action is the `requires: {}` forcing pass at
+fit 1.00 — a floor, so nothing below it can ever be reached.
+
+```yaml
+  # context: redouble_continuations   (expand: { m: [C, D] }); insert before `- id: rdc_pass_$m`
+      - id: rdc_2H_$m
+        call: 2H
+        priority: 51
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires: { suits: { H: [4, 13] }, hcp: [12, 40], evals: { "suit_quality(H)": [2, 9] } }
+        shows: "natural at the two level over their run-out: a real four-card major and opening values"
+        establishes: { forcing: non_forcing }
+      - id: rdc_2S_$m
+        call: 2S
+        priority: 51
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires: { suits: { S: [4, 13] }, hcp: [12, 40], evals: { "suit_quality(S)": [2, 9] } }
+        shows: "natural at the two level over their run-out: a real four-card major and opening values"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing` and it names a suit, so the redoubler
+answers in `general_competitive_low` — `cl_raise_S2/S3/S4` and `cl_raise_lott4_S`
+are all live and the actual N hand (`9765.AKJ4.2.K643`, four spades, 11 HCP) has
+a raise available.  Contrast the call it replaces: the forcing pass
+(`establishes: { forcing: one_round }`) is answered by **nobody** — after
+`1D X XX 2C P P` the redoubler is in `general_balancing_low`, where `ballow_pass`
+fits 1.00 and passed the "forcing" pass out at the table.  That starved seat is
+the real disease; this rung routes around it, and the standalone repair —
+a "partner's pass was FORCING, so double or bid" rung in `general_balancing_low` —
+cannot be written today because the `when:` vocabulary has
+`partner_last_call_was_double` but **no `partner_last_call_was_redouble` and no
+"partner's pass was forcing"**.  That missing condition is worth a separate
+ticket.
+
+**WHAT IT ENDANGERS:**
+
+* `rdc_pass_$m` @50 — a `requires: {}` floor; every hand with a real four-card
+  major and opening values is better described by naming the suit than by a
+  forcing pass nobody answers.  Everything else still passes (verified twice).
+* `cl_new_S2` @26 / `cl_new_S2_hi` @26.5 / `cl_new_H2*` — same call, generic
+  context, and they become covered; their band (5+ cards, 10+ points) is a subset
+  of mine except in HCP, so a 10-11 point five-card major over the run-out now
+  passes instead of bidding.  With partner having redoubled that is defensible,
+  but it is the subtraction to name.
+* Rungs it does NOT outrank, correctly: `rdc_X_$m` @57 (the penalty double with
+  three of their suit stays primary — on this hand it fits only 0.015 because S
+  holds a singleton club), `rdc_suit_H_$m` @56 / `rdc_suit_S_$m` @55 (one-level,
+  can never be legal at the same time).
+
+**VERIFIED.**  Base: `P rdc_pass_D fit=1.000 prio=50`.  Patched: `2S rdc_2S_D
+fit=1.000 prio=51` chosen.  Regressions: `A652.987.QJT83.Q` (four RAGGED spades)
+still passes — 2S falls to fit 0.044 on `suit_quality`; `A65.9872.KJT83.Q` (four
+ragged hearts) still passes.
+
+**TEMPLATE.**  `expand: { m: [C, D] }` is already on the context, so two rules
+become four.  The same pair belongs in `general_after_redouble` for the
+non-minor-opening cases.
+
+---
