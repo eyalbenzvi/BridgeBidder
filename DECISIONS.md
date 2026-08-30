@@ -2719,3 +2719,110 @@ nothing has ever ruled on it.  The responding contexts are ≈ -1,700 more, and
 **no rule inside them is indictable** because every rung in a uniformly bad
 context sits at its own baseline - the blind spot of correction (b), stated as a
 number.  The next round should not look for another rule.
+
+## Round 16: the two populations where the engine has no agreement
+
+Round 15 ended at the number it started at, so round 16 stopped looking for
+another rule and measured the two places the engine itself reports as having no
+agreement.  **Both experiments produced negative results, and both negatives
+correct a standing belief** - one of them a recommendation from round 15's own
+review that would have cost the next round.
+
+Nothing shipped.  Held out stays **-474**; the engine's default behaviour is
+byte-for-byte unchanged (whole-corpus replay: 0 of 10,358 decisions).
+
+### Experiment 1: the code fallback is NOT the largest attributable population
+
+`tools/roundkit/holes.py` scans a corpus and reports both populations against a
+**stage-matched** baseline - the corpus mean par gap is a mixture running from
+-0.34 on the opening call to over +1 by the sixth, so comparing a late-auction
+slice to the corpus mean flatters the slice.
+
+Round 15's review reported the code fallback as **456 decisions at par gap -3.89
+against a stage-matched +0.46, about -2,000 attributable gap-points, larger than
+every named family combined**, and recommended starting round 16 there.  The
+scan reproduces the number exactly: **470 of 10,358 (4.5%), gap -3.90 against
++0.43, total -2,035.**
+
+**It is not attributable.  461 of the 470 are CLOSING passes** - the last calls
+of an auction that is already over - and the hands are ordinary: `A82.K93.KQ97.J54`
+passing partner's 3NT, `AK.642.KQJ52.K43` passing partner's 6S.  The comparison
+that looks damning survives the stage control and still means nothing:
+
+| closing calls in the corpus | n | par gap | stage | delta |
+|---|---|---|---|---|
+| made by an **authored rule** | 2605 | +1.28 | +0.37 | **+0.91** |
+| made by the **fallback** | 461 | -3.83 | +0.43 | **-4.26** |
+
+That five-point difference is **selection, not causation**: a fallback pass
+*marks* an auction that has left the authored system, and those are the auctions
+we bid badly long before the final pass.  Authoring pass rungs for these contexts
+would have produced the identical calls at fit 1.00 and changed nothing.
+
+**Nine** of the 470 are live seats where the auction continues.  That is the real
+size of the hole, and it is not worth a round.
+
+The instrument stays, because the *method* is right even though this answer was
+no: `--fallbacks` grouped by `(context, call)` is a map of where the system runs
+out, and `holes.py` now applies the closing-call test automatically.
+
+### Experiment 2: simulation arbitration, measured for the first time
+
+`match_ben.py` has always called `decide_fast`, which **discards
+`fast_decision`'s `is_clear` flag**, so every match number in this file - every
+round, every held-out verdict since head-to-head play began - is fast-path only,
+and the simulation arbitration inside `choose()` had never been run against BEN.
+It is the double-dummy rollout this project has repeatedly wished for and already
+had: sample deals consistent with the auction, roll each candidate out, score the
+final contracts double-dummy, compare in IMPs, and overturn the fast pick only on
+a t-test at 1.5 stderr and at least 0.4 IMPs.
+
+**How often it would even be consulted: 92 of 10,358 decisions (0.9%)** - not the
+"about half" that round 12's finding (half of confident disagreements settled by
+priority) had left everyone assuming.  And it splits into two different things:
+
+| | n | par gap | stage | delta | total |
+|---|---|---|---|---|---|
+| genuine **priority tie** (two candidates fit >= 0.9 at equal priority) | 34 | -2.47 | -0.25 | -2.22 | -76 |
+| **soft-miss lottery** (nothing fits at all; blended score decides) | 58 | -6.05 | -0.16 | -5.90 | **-342** |
+
+So the "a static number that sees neither hand nor auction breaks the tie" story
+is the *small* half.  The expensive half is the seat where no rule fits.
+
+Measured with `--arbitrate` on both corpora:
+
+| | before | after | delta | boards changed |
+|---|---|---|---|---|
+| review (242424) | -677 | **-651** | **+26** | 18 (7 up, 3 down) |
+| **held out (828282)** | -474 | **-487** | **-13** | 18 (5 up, **9 down**) |
+
+**Reverted on the held-out number.**  `--arbitrate` stays as an opt-in flag with
+the numbers recorded, so nobody runs this experiment blind again.
+
+The held-out losses have a clean-looking signature - arbitration talked us out of
+four making games into partscores taking the same tricks (919: 4H making 11 ->
+2H making 11, -10; 298: 3NT making 10 -> 3D making 10, -7) - and the obvious
+refinement is to let it choose the strain but not the level.  **That hypothesis
+is killed by the independent corpus:**
+
+| | level changed | strain only |
+|---|---|---|
+| held out | 10 boards, **-28** | 8 boards, **+15** |
+| review | 9 boards, **+28** | 9 boards, **-2** |
+
+Both halves invert in sign between corpora.  This is round 15's FIX 4 kill
+verbatim - a split that replicates on one metric and inverts on the other - and
+the honest reading is that arbitration on a 0.9% population is **noise**, not a
+lever with a fixable flaw.  A likely contributing cause, worth recording for
+anyone who returns to it: `rollout` finishes the auction with `decide_fast` for
+**all four seats**, so the simulation models the opponents with our own engine
+while the match is played against BEN.
+
+### What the round establishes
+
+The two largest "the engine has no agreement" populations are now measured, and
+neither is where the losses are.  Combined with round 15, three of the four
+places the last two rounds nominated as the biggest remaining holes - the code
+fallback, the keycard ask over a game raise, and the priority tie - have each
+dissolved on a denominator.  The soft-miss lottery (58 decisions at -5.90) is the
+one that survived both rounds and it has never been attacked directly.

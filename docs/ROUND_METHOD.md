@@ -23,6 +23,7 @@ Rounds so far, measured on a fixed held-out corpus (seed 828282, 1000 boards):
 | 13 | 131313 | -525 (board-by-board critique; 11 of 20 fixes killed by review) |
 | 14 | 151515 | **-474** (8 of 20 killed by review; the biggest single gain was a broken locked test) |
 | 15 | 161616 (1000 deals) | **-474** (no movement: 4 of 6 killed, 1 reverted; the rule-level defect supply is exhausted) |
+| 16 | - (no new deals) | **-474** (two experiments, two informative negatives: the code fallback is not attributable; arbitration measured for the first time and reverted) |
 
 **The number that matters is the HELD-OUT one.**  The review corpus is the one
 place a fix is guaranteed to look good, because it is where the fix was found.
@@ -335,6 +336,34 @@ average -2.00/table, WITHOUT -2.54.
   "[s]weep.py"` and `until ! pgrep -f "match_ben.py run"` both match the shell
   running them and spin forever.  This cost an hour of a round waiting on matches
   that had already finished.  Poll the output file, not the process table.
+- **A CLOSING CALL INHERITS THE AUCTION'S PAR GAP AND EXPLAINS NOTHING.**  Round
+  16's first experiment: the code fallback looked like the largest attributable
+  population in the engine (470 decisions, gap -3.90 against a stage-matched
+  +0.43, about -2,000 gap-points) and round 15's review recommended starting a
+  round there.  **461 of the 470 are the last passes of an auction that is
+  already over.**  Authored closing passes run +1.28 and fallback closing passes
+  -3.83, and that difference is SELECTION - a fallback pass marks an auction that
+  left the authored system - not causation.  Nine were live seats.  Before
+  indicting any population, split it on whether the call ENDS the auction;
+  `holes.py` does this automatically.
+- **Simulation arbitration has been measured and does not pay.**  `match_ben.py`
+  had always used `decide_fast`, which discards `is_clear`, so every match number
+  in this project is fast-path-only and `choose(use_arbitration=True)` had never
+  run against BEN.  It is consulted on **0.9%** of decisions, and measured
+  **+26 on the review corpus and -13 held out**.  Every sub-split inverts between
+  corpora (level changes: -28 held out, +28 review), so it is noise on a small
+  population rather than a lever with a fixable flaw.  `--arbitrate` remains as
+  an opt-in flag.  If anyone returns to it: `rollout` finishes the auction with
+  `decide_fast` for ALL FOUR seats, so it models the opponents with our own
+  engine while the match is played against BEN.
+- **`is_clear=False` is two different things and only one is a tie.**  34 of the
+  92 unclear decisions are genuine priority ties (two candidates fitting >= 0.9
+  at equal priority) worth -76 gap-points; **58 are soft-miss lotteries where
+  nothing fits at all** and the blended score decides, worth **-342**.  Round 12's
+  "half of confident disagreements are settled by priority" left the impression
+  the tie was the big population; it is the small one.  **The soft-miss lottery
+  is the one hypothesis that has survived rounds 15 and 16 and it has never been
+  attacked directly.**
 - The system cannot bid a grand slam.
 
 ---
