@@ -6614,6 +6614,66 @@ contexts:
   # partner who could not have asked directly - the machinery composes.
   # ===========================================================================
 
+      # ROUND 17: THE SEAT ABOVE OUR OWN GAME, PRICED BEFORE IT WAS AUTHORED.
+      # Both expert reviews name this position as the largest hole in the file:
+      # once our side holds game, `we_hold_contract` is true, every general
+      # context is gated `we_hold_contract: false` and the fallback layer goes
+      # quiet, so reaching game is the terminal state of the whole system.  On
+      # 60 sampled seats NO call fits 0.90 and the mean number of non-pass
+      # candidates offered is 1.47.
+      #
+      # `roundkit/slamprobe.py` then measured what is actually there, by
+      # substituting each move and finishing the auction with BEN in the
+      # opponents' seats.  Over all 475 such seats in the two corpora EVERY
+      # move loses: 5C -9.8, 5D -10.0, 5H -7.2, six of the major -6.8 and
+      # 4NT -4.4 IMPs a seat.  The review's prescription - a five-level cue
+      # ladder - is the worst of them, because no context answers a cue above
+      # game and partner simply PASSES it: we play 5C.  Passing is right here
+      # almost everywhere, and this rung is deliberately the only thing round
+      # 17 added to the slam machinery.
+      #
+      # The one hand type where passing is wrong is this one, and it is the
+      # only slice whose sign survives both corpora: six controls and at most
+      # five losers opposite partner's game bid measures +3.33 (e10) and
+      # +2.44 (held), pooled +2.89 +/- 1.91 over 18 seats - seven gains of
+      # +11 to +13 reaching a cold slam, two losses of the same size, and
+      # nine sign-offs at five of the major costing 0 to -2, because the
+      # answering ladder declines correctly.  That asymmetry, not the mean,
+      # is the case for it.
+      #
+      # It is the safest shape of edit available in this file: 4NT is ALREADY
+      # covered in this context, so this rung adds nothing to `covered` and
+      # deletes no code fallback anywhere - it can only add hands.  And the
+      # ask ships with the seat that answers it for free: rkc_response*,
+      # rkc_continue_after_5* and rkc_5C_answerer are all authored already,
+      # which is precisely why 4NT measures four to six IMPs better than a cue.
+      #
+      # Unlike its two siblings it does NOT deny a void.  Their clause is right
+      # in general - a void makes the keycard replies ambiguous - but the two
+      # largest gains in the measured population are void hands and the
+      # sign-off ladder handles the ambiguity for one or two IMPs.  That trade
+      # is priced above, not assumed.
+      #
+      # THE KNOWN-FIT CLAUSE IS THERE BECAUSE A LOCKED SCENARIO SAID SO.  The
+      # first draft carried only controls and losers, and it broke round 3's
+      # `r3_no_rkc_without_partnership_values`: `2C - 2D - 2NT - 3C - 3S - 4H`,
+      # a 23-count with NINE controls and five losers bidding Blackwood
+      # opposite a waiting 2D.  `lott_total_trumps(H)` there is THREE - my own
+      # three hearts and partner's shown minimum of zero, because after 2C
+      # partner's floor is zero by construction (DECISIONS records this as the
+      # reason `open_2C`/`resp_2C` have resisted four rounds).  The lock is
+      # right: there is no fit to ask about, only a big hand.  With the clause
+      # the measured population falls 18 seats -> 12 and the mean RISES,
+      # +2.89 -> +3.58 a seat, so it costs nothing to obey it.
+      - id: gr_rkc_tricks_$M
+        call: 4NT
+        priority: 44
+        requires:
+          evals: { controls: [6, 12], ltc: [0, 5], "lott_total_trumps($M)": [8, 26] }
+        shows: "RKC 1430: six controls, five losers and a known fit opposite partner's raise to game"
+        establishes: { forcing: one_round, agreed_suit: $M, asking: keycards }
+        alertable: true
+        convention: rkc_1430
   - id: cue_bidding_S
     description: "Control-showing cue bids with spades agreed in a game force"
     # "... - P - ?" rather than "... - ?": one token of specificity, so these
