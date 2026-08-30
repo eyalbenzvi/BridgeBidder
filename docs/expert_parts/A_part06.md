@@ -1056,3 +1056,193 @@ partner's long suit — `uc_raise_C3`/`C4` (27) need three-card support,
 **Template.** `expand: { X: [C, D, H, S] }` → `uc_pass_misfit_$X` (no `my_suit`
 in the gate, so four rungs cover all twelve suit pairs), and the same four into
 `general_competitive_low` and `general_competitive_high`.
+
+---
+
+## Board 506 — table B, call 7, seat E: `P` (`uc_pass`)
+
+`P 1C P 1S P 2H P` — partner **reversed**, which is forcing, and I passed it out
+with `QJ9753.73.J973.9`, four HCP and six spades.  This is the
+starved-forcing-seat species for the fifth time in the ledger: `rrevh_2S` wants
+8+ and **never fires in the whole corpus**, and the catch-all pass takes a force
+at fit 1.000.
+
+**Missing agreement.** The reverse is forcing: with 0-7 and five spades I rebid
+my suit rather than pass a force.
+
+```yaml
+# context: responder_reverse_1C1S2H   (insert before rrevh_2S)
+      - id: rrevh_2S_min
+        call: 2S
+        priority: 65.8
+        requires: { suits: { S: [5, 13] }, hcp: [0, 7] }
+        shows: "the reverse is forcing: with 0-7 and five spades I rebid my suit rather than pass a force"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat — and this is the part that must ship with it.**  `establishes:
+forcing: non_forcing` is deliberate: it lets opener PASS 2S, which is the whole
+safety of the rung.  The seat `1C - P - 1S - P - 2H - P - 2S - P - ?` has **no
+context** — it falls to `general_uncontested_continuation`, where `uc_raise_S3`
+/ `uc_raise_S4` / `uc_pass` are authored and adequate for a non-forcing 2S.  If
+this rung is ever made `one_round` forcing instead, a
+`opener_over_reverse_2S` context must ship with it; as written, it must not be.
+
+**Endangers.** Above: `rrevh_2S` (66, the 8+ version, same call — ordering is
+cosmetic), `rrevh_3H` (65 is BELOW, see next).  Below: `rrevh_3H` (65, raising
+the reverse suit — with two hearts it cannot fit), `rrevh_2NT` (64),
+`rrevh_3NT` (63), and the whole `uc_*` toolkit at ≤32 including `uc_pass` (18),
+which is the rung it takes over.
+
+**VERIFIED.** `2S rrevh_2S_min fit=1.000 prio=65.8` chosen over
+`P uc_pass fit=1.000`.
+
+**Template.** Two hand-written copies: `responder_reverse_1C1S2H` and its clone
+`responder_reverse_1D1S2H` (which the file already carries verbatim), plus
+`responder_reverse_rebid_major` (`1C - P - 1$M - P - 2D - P - ?`) and
+`responder_reverse_1C1S2H`'s heart analogues — every reverse-answering context
+has the same 8-point floor and the same starved seat below it.
+
+---
+
+## Board 512 — table A, call 2, seat S: `P` (`oc1C_pass`)
+
+Over 1C, S holds `8632.AQJ.KJ4.K85` — 14 HCP, 4-3-3-3 with the four-card major
+and three clubs.  BEN doubles at **0.97**.  Same defect as board 23, other minor.
+
+**Missing agreement.** As board 23: the takeout double of 1C may hold three
+clubs.
+
+```yaml
+# context: overcalls_of_1C   (insert before oc1C_1NT)
+      - id: oc1C_X_flat
+        call: X
+        priority: 69
+        requires:
+          hcp: [12, 16]
+          suits: { C: [3, 3], S: [3, 4], H: [3, 4], D: [3, 4] }
+        shows: "takeout double of their prepared minor: 12-16, three cards in their suit and at least three in every other"
+        establishes: { forcing: one_round }
+```
+
+**Answering seat.** `advance_takeout_double` + `advance_takeout_double_suits_C`,
+both already authored.
+
+**Endangers.** Identical analysis to board 23.  Note in particular that
+`oc1C_1NT` (82) still wins on 15-18 balanced with a club stopper: this hand has
+14 and misses it (fit 0.800), which is exactly the band the double should own.
+It takes over `oc1C_pass` (25, -0.32 over 125 tables).
+
+**VERIFIED.** `X oc1C_X_flat fit=1.000 prio=69` chosen; control with five
+spades still gives `1S oc1C_1S` at 71.
+
+**Template.** Ships as one family with board 23: `oc1C_X_flat` and
+`oc1D_X_flat` only.  Do **not** write the major-suit versions — over 1H or 1S
+the shortness requirement is real bridge.
+
+---
+
+## Board 548 — table A, call 8, seat N: `3H` (`ch_new_H3_hi`)
+
+`1NT P 2H P 2S P P 3D`.  I opened 1NT, partner transferred to spades and PASSED
+2S — a sign-off — and when they balanced with 3D I introduced my five-card heart
+suit at the three level on `K82.AT974.Q5.AQ5`.  Down two, -200.
+`ch_new_H3_hi` **never fires anywhere else in the corpus**.
+
+**Missing agreement.** With a balanced 14-17 already shown and no six-card suit,
+their three-level balance gets no second bid from me.
+
+```yaml
+# context: general_competitive_high   (insert before ch_penalty_X)
+      - id: ch_pass_described
+        call: P
+        priority: 30
+        when: { i_have_acted: true, side_has_acted: true, standing_bid_level: [3],
+                we_bid_last: false }
+        requires:
+          hcp: [14, 17]
+          evals: { balanced: [1, 1], longest_suit_length: [0, 5] }
+        shows: "I have already shown a balanced 14-17 and hold no six-card suit: their three-level balance gets no second bid from me"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat:** none.
+
+**Endangers.** Above: `ch_penalty_X` (38) and `ch_negative_X3` (33) survive —
+a hand with defence still doubles; `ch_raise_$M3` (31) and the LOTT raises (32)
+survive, so a genuine fit still competes.  Below: `ch_rebid_*` (29), `ch_nt3`
+(29), `ch_new_*3`/`_hi` (27/27.5, the target), `ch_pass` (22).  The
+`longest_suit_length: [0,5]` gate is what leaves a six-card suit free to be
+rebid; `balanced` is what leaves a shapely 15 free.
+
+**VERIFIED.** `P ch_pass_described fit=1.000 prio=30` chosen over
+`3H ch_new_H3_hi fit=1.000 prio=27.5`.  Cross-checked against board 198
+(12 HCP, outside the band — unaffected) and board 597 (12 HCP — unaffected).
+
+**Template.** No suit expansion.  This and board 230's `ballow_pass_described`
+are the same agreement in two contexts and should ship together, with the
+`general_competitive_low` twin `cl_pass_described` (`standing_bid_level: [2]`,
+same requires) and `balhigh_pass_described` — four rungs, one idea.
+
+---
+
+## Board 582 — NOTHING-WRONG
+
+**What I checked.** The first divergence is table A call 4, seat S: `1H P 1NT P`
+with `732.AQJT8.KQT.54`, passing the semi-forcing 1NT on a 5-3-3-2 twelve-count.
+That is the textbook action for `forcing_nt: semi` and I will not propose
+changing it; the 1NT went down three on a bad layout.
+
+The competitive half of this board is where the profit was and it must not be
+disturbed: at table B our E, `AKQ95.K96.T8.K96`, overcalled 2S in the sandwich
+seat over the semi-forcing 1NT and made eight tricks for +110.  I ran that hand
+as an explicit control against board 103's `sw_pass_vul` — 15 HCP is outside the
+rung's `hcp: [10,14]` band, so `2S sw_2S` still wins at fit 1.000.  Board 582 is
+the constraint that set that ceiling.
+
+---
+
+## Board 597 — table A, call 3, seat N: `P` (`ch_pass`)
+
+`P 2S 3D`.  Partner opened a weak two, they overcalled three of a minor, and I
+hold `J97.Q72.AJ9.A986` — **three-card support, nine trumps between us**, 12 HCP.
+`ch_raise_S3` reaches fit 0.605 and loses to the catch-all, because its gate is
+`rule_of_26: [22,99]` and opposite a 5-10 weak two that arithmetic can never get
+there.
+
+**Missing agreement.** The three-level competitive raise is a LAW bid — nine
+trumps — not a combined-values bid; `rule_of_26` is the wrong test opposite a
+preempt.
+
+```yaml
+# context: general_competitive_high   (insert before ch_penalty_X)
+      - id: ch_raise_lott3_S
+        call: 3S
+        priority: 32
+        when: { partner_suit: S, cheapest_in_suit: true, is_competitive: true }
+        requires:
+          suits: { S: [3, 13] }
+          evals: { "lott_total_trumps(S)": [9, 26], total_points: [6, 40] }
+        shows: "the Law at the three level: nine trumps our way, so three of the major is right on shape"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+```
+
+This is the missing rung of a family the file already believes in: the comment
+above `cl_raise_lott4_$M` says in as many words that `rule_of_26` is "the right
+test in a constructive auction and the wrong one in a contested one", and the
+three-level version was never written.
+
+**Answering seat:** none — non-forcing, `agreed_suit` set.
+
+**Endangers.** Above: `ch_penalty_X` (38) and `ch_negative_X3` (33) survive;
+board 198's `ch_pass_lott_$X` (31.5) is **mutually exclusive** with it by
+construction (`lott_total_trumps <= 8` versus `>= 9`), which is the whole design
+of the pair.  Below: `ch_raise_$M3` (31, the values version, same call),
+`ch_new_*` (27-28.5), `ch_pass` (22).
+
+**VERIFIED.** `3S ch_raise_lott3_S fit=1.000 prio=32` chosen over `P ch_pass
+fit=1.000`, with `ch_raise_S3` still at 0.605.
+
+**Template.** `expand: { M: [H, S] }` → `ch_raise_lott3_$M`; the minors want the
+four-level version instead (board 258).  Also the `general_competitive_low`
+twin at the two level with `lott_total_trumps >= 8`.

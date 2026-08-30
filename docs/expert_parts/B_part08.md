@@ -1513,3 +1513,165 @@ seat (`1S - 2C - 2H - 3D - P - ?` is unauthored), and (2) on this hand it turns
 a made 3NT into a guess, so the board is evidence against it, not for it.  It
 belongs in a subject-sized batch with the 2/1 continuation ladder, screened
 together.
+
+---
+
+## Board 966 — margin -1
+
+**Seat/call that went wrong.** South, call 4: `1H P 1S 2D` → `cl_pass` passes on
+`JT9.AK987.T75.A4` (12 HCP, five hearts, **exactly three spades**).  BEN doubles
+(1.00) — the support double.  We defend 2D for five tricks (+150); the support-
+double route reaches 3S for ten (+170).
+
+**The missing agreement.** The support double is minor-only in this file.  After
+`1H - P - 1S - (2D)`, opener with exactly three spades has no way to say so, and
+responder can never distinguish a 4-3 fit from a 5-3 one.
+
+**Traced (VERIFIED).**  `support_double`'s pattern is
+`1$m - P - 1$M - bid<2$M - ?` with `expand_pairs` over `{C,D} x {H,S}` — four
+combinations, none of them a major opening.  So `1H - P - 1S - 2D - ?` matches
+no support context and falls to `general_competitive_low`: `cl_pass` 1.000/20
+wins, `cl_raise_S2` 0.800, `cl_nt2` 0.668, and the only X candidate is the code
+FALLBACK ("takeout-flavored cooperative double, undiscussed") at prio 9.
+Evaluators: `hcp = 12`, `total_points = 13`, spades exactly 3.
+
+**AND THE BIGGER FINDING: no seat in the file answers a support double, in any
+of the five auctions.**  I traced responder's seat at
+`1H P 1S 2D X P ?` with the board's own hand (`AK632.T5.963.KJT`):
+
+```
+ctx: ['general_pull_or_sit', 'general_uncontested_continuation', 'general_slam_try']
+  2S adx_pull_my_S      fit=1.000 prio=60.0   <-- reads OUR support double as a
+ 2NT adx_nt             fit=0.835 prio=56.0       takeout double to be PULLED
+   P adx_pass_min       fit=0.800 prio=52.0
+```
+
+That is the round-17 empty-seat shape on a call the file has been making for
+several rounds: `sd_double` is `establishes: { forcing: one_round }`, alertable,
+`convention: support_double`, and the seat that answers it does not exist.
+
+**EXACT YAML — the ask.**  A new one-rung context, deliberately one rung so it
+shadows nothing else at that node:
+
+```yaml
+  - id: support_double_major
+    description: "Support double after 1H - 1S - (their bid below 2S)"
+    pattern: "1H - P - 1S - bid<2S - ?"
+    rules:
+      - id: sdM_double
+        call: X
+        priority: 85
+        requires: { suits: { S: [3, 3] }, hcp: [12, 21] }
+        shows: "support double: exactly 3-card spade support, any strength"
+        establishes: { forcing: one_round }
+        alertable: true
+        convention: support_double
+```
+
+**EXACT YAML — THE ANSWERING SEAT, for all five auctions at once.**  This is the
+part that is not optional, and it fixes the four existing minor versions as well
+as the new major one:
+
+```yaml
+  - id: support_double_answer
+    description: "Responder after opener's support double (exactly 3-card support known)"
+    expand_pairs:
+      - { o: 1C, M: H }
+      - { o: 1C, M: S }
+      - { o: 1D, M: H }
+      - { o: 1D, M: S }
+      - { o: 1H, M: S }
+    pattern: "$o - P - 1$M - bid<2$M - X - * - ?"
+    rules:
+      - id: sda_2$o$M
+        call: 2$M
+        priority: 60
+        requires: { suits: { $M: [5, 13] }, evals: { total_points: [6, 9] } }
+        shows: "an eight-card fit is now known: competing to the two level"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+      - id: sda_3$o$M
+        call: 3$M
+        priority: 61
+        requires: { suits: { $M: [5, 13] }, evals: { total_points: [10, 12] } }
+        shows: "an eight-card fit and invitational values"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: sda_4$o$M
+        call: 4$M
+        priority: 62
+        requires: { suits: { $M: [5, 13] }, evals: { total_points: [13, 40] } }
+        shows: "an eight-card fit and the values for game"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+```
+
+Deliberately no `pass` and no four-card-support rungs: with only four cards in
+the major the fit is 4-3 and the generic ladder should keep the seat, so this
+context subtracts as little as possible.  On the board, responder holds five
+spades and `total_points = 12` (traced), so `sda_3[1H,S]` fires and we reach 3S
+for ten tricks — BEN's +170.
+
+**Note on the evaluator, checked.**  I did NOT gate the answering rungs on
+`lott_total_trumps`: at that node today it reads **5** for responder, because
+partner's shown minimum for spades is zero until the support double exists as a
+rule.  Once `sdM_double` / `sd_double` are in the tree the inference engine sets
+partner's minimum spade length to 3 and the number becomes 8 — but a gate that
+depends on the rule being installed to be satisfiable is the trap round 8
+recorded, so the rungs count MY OWN length instead.
+
+**WHAT IT ENDANGERS.**
+* `cl_pass` (20) at `1H - 1S - (bid<2S)` loses the seat whenever opener holds
+  exactly three spades and opening values — which is the entire agreement.
+* The code fallback for `X` at that node is deleted (round 15's mechanism).  It
+  was `prio 9 / "undiscussed"`, so what replaces it is strictly better defined,
+  and the pattern is five tokens so the blast radius is one auction shape.
+* In `support_double_answer`: `cl_raise_$M2` (30), `cl_raise_$M3` (31),
+  `cl_raise_$M4` (32) and `cl_raise_lott*` lose 2$M/3$M/4$M **only in auctions
+  where partner has just made a support double**, i.e. only where the trump
+  count is exactly known — one sentence: a raise ladder that estimates the fit
+  is strictly worse than one that has been told it.
+* `adx_pull_my_$M` (60) loses those same three calls at those nodes, and that is
+  the defect: it is pulling a double that was never takeout.
+* `adx_pass_min` (52) and `adx_sit` (61) keep the pass, so a hand that wants to
+  defend still can.
+* Nothing in the new context outranks a slam-try or keycard rung (all >= 46 live
+  in different contexts and are unaffected at the two and three level).
+
+**TEMPLATE.**  The ask: none needed (`1H - 1S` is the only major-opening auction
+where responder bids a new major at the one level), so one rule.  The answer:
+`expand_pairs` over the five (opening, major) rows as written — 15 rules from
+one idea, and it closes a conversation that has been half-authored for several
+rounds.  The support REDOUBLE twin (board 754) adds a sixth row with `X - XX`
+in the pattern.
+
+**VERIFIED / UNTESTED.**  The minor-only pattern, the absent X rung, the
+starved answering seat (`adx_pull_my_S` at fit 1.000), and both hands'
+evaluator values are all VERIFIED by trace.  Both new pieces UNTESTED.
+
+---
+
+## Closing notes for whoever consolidates
+
+* **Ship boards 966 + 754 as one subject.**  The ask, the twin and the shared
+  answering context are one conversation; shipping the doubles without the
+  `sda_*` context reproduces round 17's -9.8-IMPs-a-seat mechanism exactly, on a
+  call the file already makes four ways.
+* **Ship boards 993 + 401 as one subject.**  `rr_nt_shape4_$M` is one rule that
+  gains on both; the two `opener_over_second_suit_*` contexts are the answering
+  seat that `rr_nt_second_$oM` has never had.  Screen them together — 401 says
+  the seat alone loses.
+* **Ship boards 361 + 995 as one subject.**  Both are the 1NT-rebid family:
+  opener's 6-4 second suit with the seat that answers it, and opener's third
+  call after the preference with the seat that answers *that*.  Together they
+  remove four `uc_*` decisions from live constructive nodes.
+* **Board 285's re-rank is the cheapest change in this part** (one number) and
+  the only one whose answering context already exists and was verified.  It is a
+  good candidate for a standalone screen.
+* **Two things I checked and refused to propose**, both because they are
+  excluded or previously measured: freeing `cl_raise_lott3_$M` (board 936 — I
+  built a different rule in a different context instead), and gating
+  `cl_negative_X2` / `nxj_X` on shape (board 932, measured -5 held out in
+  round 14).
+* **The biggest unauthored constructive subject in part 8 is not in any of my
+  proposals**: there is no context anywhere for the **overcaller's rebid after
+  advancer bids a new suit** (board 555), against eleven `advance_*` contexts
+  for advancing a takeout double.  That is a subject, and it should be scoped as
+  one.

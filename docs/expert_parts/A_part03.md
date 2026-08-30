@@ -1110,3 +1110,336 @@ not obviously right either, and `cl_raise_lott3_$M` is on the do-not-re-propose
 list, so I leave it.  The real hole on this board is the advancer's, above.
 
 ---
+## Board 15 — E, call 2 (table B): `1H` should be `1S`
+
+**Seat/call that went wrong.**  Table B, E, `P 1C — ?` with `KQT52.KQT75.Q42.`
+(12 HCP, **5-5 in the majors, void in their club suit**).  `oc1C_1H` and
+`oc1C_1S` both fit **1.000 at priority 71** — an exact tie, broken by file order
+in favour of hearts.  E/W belong in spades (nine tricks; at the other table
+they played 3S) and after 1H the spade fit was never found.
+
+**The missing agreement.** With two five-card suits, overcall the HIGHER one:
+1S first leaves 2H available at the same level, while 1H first makes the spade
+suit cost a level to show.  This is the same "higher of equal length" rule the
+file already applies to openings ("5-5 in the majors opens 1S").
+
+```yaml
+  # context: overcalls_of_1C   (insert before `- id: oc1C_2D_jump`)
+      - id: oc1C_1S_two_suited
+        call: 1S
+        priority: 71.5
+        requires:
+          suits: { S: [5, 13], H: [5, 13] }
+          hcp: [8, 16]
+          evals: { "suit_quality(S)": [1, 9] }
+        shows: "5-5 in the majors: overcall the higher suit first so both can be shown cheaply"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing`; the advance is `advance_overcall`
+(`1$o - 1$v - P - ?`) and the competitive contexts, all authored.  Nothing new is
+owed — and note this rung REMOVES an `is_clear=False` priority tie, which the
+ledger measures at -76 gap points across the corpus.
+
+**WHAT IT ENDANGERS:**
+
+* `oc1C_1H` @71 — the tie it breaks.  Both calls describe the hand; only one
+  leaves room to describe it twice.
+* `oc1C_1S` @71 — same call, wider gate; kept, this is the 5-5 branch on top.
+* `oc1C_1D` @70, `oc1C_2H_jump`/`oc1C_2S_jump` @60 (which need six),
+  `oc1C_pass` @25 — all strictly worse descriptions of a 5-5 twelve-count.
+* Rungs it does NOT outrank, correctly: `oc1C_X` @72 (whose strong branch already
+  excludes a good five-card heart suit) and `oc1C_1NT` @82.
+* No fallback effect: 1S is already covered by `oc1C_1S`.
+
+**VERIFIED.**  Base: `1H oc1C_1H` (tie).  Patched: `1S oc1C_1S_two_suited
+fit=1.000 prio=71.5`.  Regression: 6-4 in hearts and spades (`KQT5.KQT752.Q42.`)
+still overcalls 1H — the six-card suit is bid first regardless of rank, which is
+correct and is why the rung demands 5+ in BOTH majors rather than "spades ≥ hearts".
+
+**TEMPLATE.**  Four contexts, and inside each one every pair of suits where the
+higher can still be bid at the cheapest level: `oc1C_1S_two_suited`,
+`oc1D_1S_two_suited`, `oc1D_1H_two_suited`(H over D with 5-5 H/S is the 1S rung),
+`oc1H_1S_two_suited`, `oc1H_2D_two_suited`, `oc1S_2H_two_suited`,
+`oc1S_2D_two_suited`.  These are not templated contexts, so the family is written
+out; the same rule belongs in `sandwich_seat` (which IS templated,
+`expand: { o: [C, D, H, S] }`).
+
+---
+
+## Board 20 — N, call 8 (table A): `P` should be `3H`
+
+**Seat/call that went wrong.**  Table A, N, `P 1NT 2H X P 2S P P — ?` with
+`763.K963.842.A95` (7 HCP, **four-card support for partner's overcalled hearts**).
+`ballow_pass` sold out to 2S, which made nine tricks for -140.  3H makes ten
+tricks double-dummy (+140 at the other table): a 280-point swing on one call.
+
+**The missing agreement.** The level of a competitive raise follows the Law, not
+the point count: four trumps opposite a partner who has overcalled a five-card
+suit is nine combined trumps, and nine trumps belong at the three level whatever
+my six or seven points say.
+
+**Why the ladder cannot reach it.**  `general_balancing_low` has
+`ballow_raise_H2` (30, "3+ trumps, 6-9 support points") — but 2H is illegal over
+their 2S, so the 6-9 branch has **no three-level rung at all**; the next one up,
+`ballow_raise_H3` (31), demands `total_points: [10, 40]` and `rule_of_26 >= 22`
+and fits **0.001**.  The context jumps straight from a 6-9 raise that cannot be
+made to a 10+ raise that does not fit, and the hole is a pass by construction.
+
+```yaml
+  # context: general_balancing_low   (insert before `- id: ballow_raise_H4`)
+      - id: ballow_raise_lott3_H
+        call: 3H
+        priority: 31.5
+        when: { partner_suit: H, is_competitive: true, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [6, 11], "lott_total_trumps(H)": [9, 26] }
+        shows: "the Law at the three level: four trumps opposite partner's overcall, nine combined - the level follows the fit, not the points"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: ballow_raise_lott3_S
+        call: 3S
+        priority: 31.5
+        when: { partner_suit: S, is_competitive: true, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [6, 11], "lott_total_trumps(S)": [9, 26] }
+        shows: "the Law at the three level: four trumps opposite partner's overcall, nine combined - the level follows the fit, not the points"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+```
+
+**THE ANSWERING SEAT.**  `non_forcing` + `agreed_suit`, so partner's seat is
+`general_competitive_high`/`general_balancing_high`, both authored, and
+`agreed_suit` unlocks the `gf_landing` and slam families should partner be huge.
+The rung deliberately does NOT establish an invitation, because a Law raise is a
+statement about shape and partner must not treat it as values.
+
+**WHAT IT ENDANGERS:**
+
+* `ballow_pass` @21 — selling out at the two level with nine trumps is the error
+  the Law exists to prevent.
+* `ballow_nt2` @28 / `ballow_nt3` @29 / `ballow_new_*` @25-27 — bidding notrump or
+  a new suit with four-card support for partner's overcalled major is a worse
+  description; all fit ≈0 here anyway.
+* `ballow_raise_H3` @31 — same call, disjoint band (6-11 vs 10+), so the two
+  overlap only at 10-11 where either sentence is true.
+* Rungs it does NOT outrank, correctly: `ballow_raise_H4` @32 and
+  `ballow_raise_lott4_H` @32 — with TEN trumps the Law level is four, and those
+  rungs still own it.
+* **Relationship to the do-not-re-propose list.**  `cl_raise_lott3_$M` is excluded
+  (round 11 freed its `cheapest_in_suit` gate, measured -3 held out twice).  This
+  is a different rung in a different context: `cl_raise_lott3_$M` is a
+  **preemptive raise on a weak hand in the direct seat** and was unreachable
+  because a Law raise is a jump; `ballow_raise_lott3_$M` is in the **passout
+  seat**, where the cheapest raise IS the three level, and its `9+ combined
+  trumps` gate is a fit statement rather than a strength one.
+* `is_competitive: true` keeps it out of uncontested auctions entirely.
+
+**VERIFIED.**  Base: `P ballow_pass fit=1.000` (the 3H raise fits 0.001).
+Patched: `3H ballow_raise_lott3_H fit=1.000 prio=31.5` chosen — BEN's call at
+0.67.  Regressions: with only three trumps (`763.K93.8642.A95`) the engine still
+passes, the rung falling to fit 0.029 on the sharp LOTT gate; with 11 points and
+four trumps it bids 3H, which is what both rungs would have wanted.
+
+**TEMPLATE.**  Two rules as written (H and S).  The minors deserve the same
+treatment (`ballow_raise_lott3_C/D`) but at a higher trump bar, and the twins in
+`general_balancing_high` are a separate question because the three level is
+already behind us there.
+
+---
+
+## Board 60 — NOTHING-WRONG (competitive); and a NEGATIVE result worth recording
+
+**What I checked.**  The 10-IMP hole is table A, where we opened 2C on
+`Q.K7.AK5.AKQT543` and walked `2C-2D-3C-3S-4C-5C` into 5C one off with 3NT (ten
+tricks) cold.  That is the documented "the 2C auction has no landing ladder" open
+item and belongs to the constructive reviewer.
+
+Table B contains our one competitive decision, and **it was a winner**: E
+overcalled `2S` on `AK8542.2.QJ62.J6` (11 HCP, six spades) over their strong 2C,
+via `cl_new_S2` at priority 26.  BEN would pass (confidence 0.57).  The overcall
+pushed N/S out of the notrump game — they signed off in 3C for +110 instead of
+the 3NT that makes ten tricks for +630.  **The engine's undisciplined treatment of
+their strong 2C gained about 11 IMPs on this board.**
+
+**The negative result, stated plainly.**  On board 562 I noted that the file has
+no defence-to-a-strong-2C context at all: their 2C falls into
+`general_competitive_low`, which treats it as any other suit bid and lets a
+2-level overcall in with 10+ points.  My first instinct was that this wants a
+disciplined `defense_vs_strong_2C` context.  **This board is evidence against
+that**, and I am recording it rather than shipping it: the loose overcall is
+obstructive against a hand that has already announced game values, which is
+exactly when obstruction is worth the most.  Any such context must therefore be
+LOOSER than the generic ladder, not tighter, and must be measured with the
+lead-directing and preemptive wins in the denominator.
+
+A second, structural reason not to write it as a new context: `pattern: "2C - ?"`
+has specificity 1002 against `general_competitive_low`'s 3, so it would DEFINE
+every call it lists and delete the `cl_*` rungs for those calls — the exact
+shadowing trap the ledger records for round 12's `also_patterns` experiment
+(-59 paired / -106 held out).
+
+**VERIFIED** in the negative sense: I traced E's 2S and confirmed it is
+`cl_new_S2` at fit 1.000, and read the double-dummy table to price it.
+
+---
+
+## Board 85 — N, call 3 (table A): `P` should be `3H`
+
+**Seat/call that went wrong.**  Table A, N, `1S 1NT 2S — ?` with
+`3.987653.AT2.854` (4 HCP, **six hearts, a singleton in their suit**) opposite
+partner's 15-18 notrump overcall.  `cl_pass`.  They played 2S for eight tricks,
+-110; N/S make **ten tricks in hearts** and the other table scored +170 in 3H.
+
+**The missing agreement.** Opposite a partner who has already limited himself
+high — a 1NT overcall, a strong notrump opening — my six-card suit is bid on
+LENGTH, not on points: the partnership's values are already counted and my job
+is to name the trump suit before they buy the hand.
+
+**Why the ladder cannot reach it.**  Every natural three-level rung in
+`general_competitive_low` is gated on `total_points` — `cl_new_long3_H` wants
+"a SIX-card suit, **11+ points**" — a threshold written for auctions where partner
+is unlimited.  With 4 HCP and a six-card suit it fits **0.001** and the seat is a
+pass by construction.  Nothing in the file distinguishes "partner is unlimited, so
+count your points" from "partner has told me his points, so count your tricks".
+
+```yaml
+  # context: general_competitive_low   (insert before `- id: cl_nt1`)
+      - id: cl_new_long3_H_opp_limit
+        call: 3H
+        priority: 27.6
+        when: { unbid_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [6, 13] }
+          evals: { rule_of_26: [21, 99], partner_shown_max: [0, 19] }
+        shows: "a six-card H opposite a partner who has already limited himself high: the combined values are known, so the suit is bid on length"
+        establishes: { forcing: non_forcing }
+      - id: cl_new_long3_S_opp_limit
+        call: 3S
+        priority: 27.6
+        when: { unbid_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [6, 13] }
+          evals: { rule_of_26: [21, 99], partner_shown_max: [0, 19] }
+        shows: "a six-card S opposite a partner who has already limited himself high: the combined values are known, so the suit is bid on length"
+        establishes: { forcing: non_forcing }
+```
+
+`partner_shown_max: [0, 19]` is the load-bearing gate: the evaluator returns
+**40 while partner is unlimited**, so the rung is switched off opposite a takeout
+double or an opening bid and switched on opposite a limited notrump.
+
+**THE ANSWERING SEAT.**  `non_forcing`, and partner's seat over
+`1S - 1NT - 2S - 3H - act` is `general_competitive_high` / `general_balancing_high`
+with the full raise and pass ladder.  A 15-18 hand that likes hearts can raise to
+four via `ch_raise_H4`; no new context.
+
+**WHAT IT ENDANGERS:**
+
+* `cl_pass` @20 — passing out their two-level contract holding six trumps and 22+
+  combined points is the error.
+* `cl_new_long3_H` @27 / `cl_new_long3_H_hi` @27.5 / `cl_new_H3(_hi)` @27/27.5 —
+  same call, and my band is a superset only where partner is limited; they keep
+  every unlimited-partner auction.
+* `cl_nt1` @27 — 1NT is not legal at this height; irrelevant here but the rung
+  sits just above it deliberately.
+* Rungs it does NOT outrank, correctly: `cl_nt2` @28, `cl_nt3` @29,
+  `cl_rebid_*` @29, every raise @30-32, `cl_negative_X` @33, `cl_takeout_X` @36.
+  In particular a hand with support for partner still raises.
+* No fallback effect: 3H/3S are already covered in this context.
+
+**VERIFIED.**  Base: `P cl_pass fit=1.000` (3H at 0.001).  Patched:
+`3H cl_new_long3_H_opp_limit fit=1.000 prio=27.6` chosen.  Regressions: five
+hearts instead of six → still pass (fit 0.349, sharp suit gate); the **same hand
+opposite a takeout double** (`1S - X - 2S`) → still pass, because
+`partner_shown_max` reads 40 and the gate shuts.
+
+**TEMPLATE.**  Two rules here (the majors), and the minors want the same rung one
+level lower at `4C`/`4D` only if they are the cheapest call — I would not ship the
+minors in the first batch.  The identical pair belongs in
+`general_balancing_low`/`_high`.
+
+**Note on the dossier's own first divergence, which I am NOT proposing.**  The
+dossier flags table B call 0: E passes `A7542.K.73.KT972` in first seat where BEN
+opens 1S at 0.76 (`open_1S_rule20` fits 0.757).  That is an opening-style /
+rule-of-20 threshold question and is explicitly scope-excluded.
+
+---
+
+## Board 100 — S, call 6 (table A): `4H` should be `3H`
+
+**Seat/call that went wrong.**  Table A, S, `1D 1S X P 2H P — ?` with
+`K862.K9752.954.K` (9 HCP, five hearts, a **singleton king**).  `uc_raise_H4`
+jumped to game "11+ support points, a real trump fit, and the values for the
+level opposite partner's shown range".  4H was two off, -200; 2H takes eight
+tricks and the other table scored +110.
+
+**The missing agreement.** Partner's major after my negative double was FORCED —
+it may be four cards and a minimum — so my raise of it is an invitation at the
+three level, never a jump to game; only a cue bid of their suit is game-forcing.
+
+**Why the arithmetic goes wrong.**  `uc_raise_H4` gates on
+`rule_of_26: [25, 99]`, and `rule_of_26` takes the midpoint of partner's shown
+range.  Opposite a 1D opening that midpoint is about 14, so 11 support points
+reach exactly 25 and the rung fits 1.000 — but partner's 2H was not a free bid,
+it was the answer my double demanded, and it has already denied extras by not
+jumping.  The engine has no way to say "partner's last call was compelled".
+
+```yaml
+  # context: general_uncontested_continuation   (insert before `- id: uc_raise_H4`)
+      - id: uc_raise_H3_after_my_double
+        call: 3H
+        priority: 32.5
+        when: { my_last_call_was_double: true, partner_suit: H, cheapest_in_suit: true }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [10, 13] }
+        shows: "raising the suit my double asked for: partner's answer was forced, so this is an invitation and not a game bid"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: uc_raise_S3_after_my_double
+        call: 3S
+        priority: 32.5
+        when: { my_last_call_was_double: true, partner_suit: S, cheapest_in_suit: true }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [10, 13] }
+        shows: "raising the suit my double asked for: partner's answer was forced, so this is an invitation and not a game bid"
+        establishes: { forcing: invitational, agreed_suit: S }
+```
+
+**THE ANSWERING SEAT — this is an INVITATION, so it ships with its answer.**
+Opener, having been forced to bid 2H and now hearing 3H, is in
+`general_uncontested_continuation` with `agreed_suit: H` established.  The
+accepting rung already exists and fits: `uc_raise_H4` @32 (11+ support points,
+`rule_of_26 >= 25`, eight combined trumps) is exactly "accept with extras", and
+`uc_pass` @18 is the decline.  Traced: with the actual opener hand
+(`Q9.AQJ4.QJ72.T92`, 12 HCP, four trumps) `rule_of_26` opposite a shown 10-13
+lands below 25 and opener passes 3H — the contract the cards want.  No new
+context, because the invitation lands in a ladder that is already two rungs deep.
+
+**WHAT IT ENDANGERS:**
+
+* `uc_raise_H4` @32 — the jump to game.  On 14+ support points it still wins
+  (verified: `K862.K9752.95.AK` still bids 4H), because the `[10, 13]` ceiling on
+  my rung is sharp at the top of the band.
+* `uc_raise_H3` @31 — same call, wider band; kept below as the general case.
+* `uc_raise_lott4_H` @32 — needs ten combined trumps and a known enemy fit; fits
+  0.011 here and is untouched on the hands it describes.
+* `uc_nt2` @28 / `uc_nt3` @29 / `uc_new_*3` @27-27.5 — inferior descriptions of a
+  hand with four-card support for the suit I asked partner to name.
+* Rungs it does NOT outrank, correctly: `uc_doubler_raise3_H` @33 and
+  `uc_doubler_game_H` @35 (17-19 and 20+ — those are the DOUBLER raising the
+  ADVANCE, a different auction, and their floors keep them clear).
+* `my_last_call_was_double: true` is what confines the rung to the compelled-answer
+  case; it cannot reach an ordinary raise of a freely bid suit.
+
+**VERIFIED.**  Base: `4H uc_raise_H4 fit=1.000 prio=32`.  Patched:
+`3H uc_raise_H3_after_my_double fit=1.000 prio=32.5` chosen — BEN passes at 0.86,
+so BEN would stop even lower.  Regressions: 14 support points → 4H, unchanged;
+four-card support instead of five → 3H, as intended.
+
+**TEMPLATE.**  Two rules (H and S) as written.  The same pair belongs in
+`general_competitive_low`/`_high` (`cl_`/`ch_raise_*3_after_my_double`), because
+the identical auction with a fourth-hand raise lands there instead.
+
+---
