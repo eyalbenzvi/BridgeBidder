@@ -95,6 +95,60 @@ fails.  Every generic context ends in a catch-all pass with `requires: {}` that
 fits 1.00, so **any hole in an authored ladder becomes a PASS by construction**:
 `all-pass` and `fallback` in a dossier name STARVED SEATS, not bad rules.
 
+## THE LESSON OF ROUND 17: DENSITY, NOT RUNGS
+
+**A rule-based system needs a few HUNDRED rules in a subject before that
+subject works at all.  This file has 119 in the whole of slam.**
+
+The counts, which are facts about the file rather than opinions:
+
+| rules that bid at… | count |
+|---|---|
+| the three level | 686 |
+| the four level | 389 |
+| **the five level** | **55** |
+| the six level | 70 |
+| **the seven level** | **0** |
+| in every slam-named context (`rkc*`, `cue_*`, `*slam*`, `quant*`) | **119 of 2,346 (5.1%)** |
+
+Round 17 measured what that costs, at the seat where we pass our own game in
+an agreed major, by substituting each move and finishing the auction with BEN
+in the opponents' seats (`roundkit/slamprobe.py`, all 475 such seats in the two
+corpora):
+
+```
+5C -9.8    5D -10.0    5H -7.2    6M -6.8    4NT -4.4   IMPs a seat
+```
+
+The cue bids are the **worst** moves available.  Not because cueing is bad
+bridge - it is the standard tool - but because **nothing in the file answers a
+cue above game**: partner has no matching context, the fallback layer is
+`quiet` because our side holds the contract, so his only candidate is a pass
+at fit 1.00 and we play five clubs.  **The -9.8 is the measurement of an empty
+seat, not of a bad call.**
+
+Two consequences, and they change how a round should be spent:
+
+1. **A single rung cannot pay in a thin subject.**  A slam auction is a chain
+   of questions, and a question is worth nothing until the answer, the
+   answer's continuation and the sign-off all exist.  Round 17 shipped exactly
+   one well-motivated rung into this territory - a keycard ask whose gate was
+   chosen by measurement and whose answering ladder already existed - and it
+   measured **-42 IMPs over 39 changed boards, t = -0.70**.  The unit of work
+   in a thin subject is a CLOSED CONVERSATION, not a fix.
+2. **Read a per-rung measurement as a measurement of the neighbourhood.**  When
+   a call scores far worse than passing, ask first whether any seat answers it.
+   `slamprobe.py`'s spread across the five candidate calls is a cheap way to
+   see this: a call with an authored answer (4NT, -4.4) beating one without
+   (5C, -9.8) by five IMPs is the shape of a missing seat.
+
+**The same reasoning applies wherever the file is thin, not only to slam.**
+The five responding contexts (475 decisions at -3.0 to -4.6 with no indictable
+rung), the 2C tree with no landing ladder, and the whole game-force family
+after a double are all the same species: a uniformly thin subject cannot be
+repaired one rung at a time, and the rule-level yardstick cannot see it,
+because every rung in a uniformly thin context sits at its own baseline.
+
 ## The lesson that cost a whole cycle
 
 Fixes that ADD a rung can only fill a hole.  Fixes that **add a gate** to an
