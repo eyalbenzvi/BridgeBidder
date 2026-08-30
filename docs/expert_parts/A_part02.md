@@ -732,3 +732,178 @@ added `my_last_call_was_double: true` sibling — but that is the same rule
 written twice, and the sibling lint prefers two explicit rungs.
 
 ---
+
+## Board 133 — margin -10
+
+**Seat/call that went wrong:** table A, call 5, **South passes 4S out** holding
+`53.KT963.AKQJ2.Q` (15 HCP, 17 total points, five losers, `suit_quality(D)`
+3.5) after `2S – X(mine) – 4S – P – P`.  5D by South makes eleven (+600);
+we took +150 defending.
+
+**Missing agreement:** the takeout doubler whose partner could not answer must
+not sell out to their raised preempt — with five losers and a strong five-card
+suit, bid it at the five level; partner's pass over 4S was "no opinion", not a
+conversion.
+
+South's whole candidate set in that seat is **two** rules: `balhigh_pass`
+(1.000) and `balhigh_reopen_X2` (0.028, needs 19+).  The reason is structural:
+`general_balancing_high` has **no five-level rung of any kind**, while its
+sibling `general_competitive_high` has the complete family
+(`ch_new_$X5`, `ch_new_$X5_hi`, `ch_rebid_$X5`).  A sibling gap of exactly the
+species the lint was written for.
+
+### YAML — into the EXISTING context `general_balancing_high`
+
+```yaml
+      - id: balhigh_doubler_own_C5
+        call: 5C
+        priority: 30
+        when: { unbid_suit: C, cheapest_in_suit: true, my_last_call_was_double: true,
+                partner_has_acted: false }
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [16, 40], ltc: [0, 6], "suit_quality(C)": [2, 9] }
+        shows: "the doubler bids his own suit at the five level: five losers and a strong suit, the double is still working"
+        establishes: { forcing: non_forcing, agreed_suit: C }
+      - id: balhigh_doubler_own_D5
+        call: 5D
+        priority: 30
+        when: { unbid_suit: D, cheapest_in_suit: true, my_last_call_was_double: true,
+                partner_has_acted: false }
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [16, 40], ltc: [0, 6], "suit_quality(D)": [2, 9] }
+        shows: "the doubler bids his own suit at the five level: five losers and a strong suit, the double is still working"
+        establishes: { forcing: non_forcing, agreed_suit: D }
+      - id: balhigh_doubler_own_H5
+        call: 5H
+        priority: 30
+        when: { unbid_suit: H, cheapest_in_suit: true, my_last_call_was_double: true,
+                partner_has_acted: false }
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [16, 40], ltc: [0, 6], "suit_quality(H)": [2, 9] }
+        shows: "the doubler bids his own suit at the five level: five losers and a strong suit, the double is still working"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+```
+
+**Answering seat:** none — `non_forcing` with `agreed_suit`, which is what keeps
+partner out of a suitless game force if they double us.  Partner's raise/pass
+ladder over a named suit already exists in the same context.
+
+**What it endangers, in `general_balancing_high`:**
+* `balhigh_pass` (21) — the target; selling out with 17 support points, a
+  solid five-card suit and five losers is the error the board measures.
+* `balhigh_reopen_X2` / `balhigh_reopen_X` / `balhigh_X` (40 / 41) stay ABOVE
+  it: a 19+ hand with no suit still doubles again, which is right.
+* `balhigh_new_$X4` (28), `balhigh_rebid_$X4` (29), `balhigh_raise_*` (27-32)
+  are all at a LOWER level and are unaffected — none of them is legal over 4S,
+  and where they are legal `cheapest_in_suit` keeps my five-level rung out.
+* **Fallback hazard — real, and the one I would screen.**  5C/5D/5H are not
+  currently covered anywhere in `general_balancing_high`, so these rungs delete
+  the code fallback for those calls in every `... - bid>=3C - P - P - ?` seat
+  where the suit is unbid, cheapest, my last call was a double and partner has
+  not acted.  That is a narrow window, but it is the round-15 mechanism and
+  should be measured, not assumed.
+
+**VERIFIED.**  South bids `5D` at fit 1.000 / prio 30, `clear=True`.
+
+**Template:** three explicit rungs as above (5S is unreachable in this seat by
+construction — if spades were unbid and cheapest, they would be at the four
+level).  The same three belong in `general_competitive_high` as
+`ch_doubler_own_$X5` for the case where they bid again rather than pass.
+
+**Checked and rejected.**  BEN's alternative — North bidding `5C` over 4S on
+`7.AJ2.T3.AT87652` — is a LOSER: 5C by North is ten tricks double-dummy, so it
+is -100 against the +150 we actually scored.  `advance_weak2_double_raised`
+does lack any minor advance (`aw2r_4S_$W` / `aw2r_4H_$W` / responsive X only),
+which is a genuine hole, but this board is not the evidence for filling it.
+
+---
+
+## Board 174 — margin -10 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Table A we are N/S with `963.A875.94.K762` (7 HCP) and
+`JT54.J943.A85.85` (6 HCP) against an uncontested `1D – 1H – 3C – 3NT`: the
+direct seat over 1D (`oc1D_pass`), the sandwich seat over 1H (`sw_pass`) and
+both seats over 3C/3NT (`ch_pass`) are all fit 1.000, and BEN passes every one
+of them at 1.00.  Neither hand has a five-card suit or eight points.  Table B
+the auction is ours and uncontested throughout.
+
+The divergence is West's `2C` rebid on `AQ8.Q.QJ632.AQ93` (17 HCP) where the
+3C jump shift is right — `ob_1D1H_3C_jump` demands 18+ and fits 0.800, a
+one-point soft miss beaten by `ob_1D1H_2C` at 1.000.  That is a constructive
+ceiling in the opener's-rebid family and belongs to the other reviewer.
+
+---
+
+## Board 175 — margin -10
+
+**Seat/call that went wrong:** table B, call 6, **East bids 4D** holding
+`KJT9.KJ3.KQ5.A84` (17 HCP, every unshown suit stopped) after
+`2D – P – 2NT – P – 3S – P`.  3NT makes eleven (+660); 4D made twelve for +170.
+
+**Missing agreement: four of a MINOR is not a game.**  `w2ac_game_$W` bids
+`4$W` at priority 56 and the context expands `W` over `[D, H, S]`, so opposite a
+weak two in DIAMONDS the ask's own answer is a contract nobody can score a game
+in — and it outranks `w2ac_3NT_$W` (55), which is the only game the hand has.
+
+The file already knows this.  The comment on `w2ac_game8_$W` says in as many
+words: "loosening `w2ac_game_$W` in place also loosens the MINOR, where nine
+tricks beat eleven and 3NT is right".  The rung was never split.
+
+### YAML — into the EXISTING context `weak2_ask_continuation`
+
+```yaml
+      - id: w2ac_3NT_over_2D
+        call: 3NT
+        priority: 56.5
+        when: { partner_suit: D }
+        requires: { hcp: [14, 40], evals: { weakest_unshown_stopper: [0.9, 9] } }
+        shows: "nine tricks opposite the weak two in a minor: four of a minor is not a game"
+        establishes: { forcing: sign_off }
+      - id: w2ac_game5_over_2D
+        call: 5D
+        priority: 55.5
+        when: { partner_suit: D, cheapest_in_suit: true }
+        requires:
+          suits: { D: [3, 13] }
+          evals: { total_points: [18, 40], "lott_total_trumps(D)": [9, 26] }
+        shows: "eleven tricks opposite the weak two in a minor when notrump is not safe"
+        establishes: { forcing: sign_off, agreed_suit: D }
+```
+
+Both rungs are self-selecting: `when: { partner_suit: D }` holds only in the
+`[D]` expansion of the context, so the `[H]` and `[S]` copies are inert and the
+major ladder is untouched.  `weakest_unshown_stopper` is the right stopper
+evaluator here — it carries 0.3 sharp tolerance in `_EVAL_S2`, unlike
+`weakest_their_stopper`, which `DECISIONS.md` records as not gating at all.
+
+**Answering seat:** none — both are `forcing: sign_off`, they name the final
+contract, and the ask has already been answered.
+
+**What it endangers, in `weak2_ask_continuation`:**
+* `w2ac_game_$W` (56) — only in the `[D]` expansion, and only on hands with
+  14+ and every unshown suit stopped.  One sentence: 4D scores 130 and 3NT
+  scores 400, so with nine tricks and the suits stopped the notrump game is the
+  only contract worth reaching.
+* `w2ac_3NT_$W` (55) — same call, so no behaviour changes; mine only lifts it
+  above the minor "game" rung.
+* `w2ac_game8_$W` (54.5) and `w2ac_sign_$W` (54) — both describe less: `game8`
+  is the same 4D, `sign` is 3D, and a 17-count with stoppers is not signing off.
+* Without stoppers my 3NT rung does not fit and the existing ladder decides
+  exactly as before.
+* **No fallback hazard:** 3NT is already covered by `w2ac_3NT_$W`; 5D is a new
+  call in this context, but the `when` (partner's suit is diamonds and 5D is
+  cheapest) plus the 18-point floor make the window tiny.
+
+**VERIFIED.**  East bids `3NT` at fit 1.000 / prio 56.5, `clear=True`
+(`w2ac_game_D` 1.000/56 immediately behind).
+
+**Template:** the two rungs are written once inside the existing
+`expand: { W: [D, H, S] }` context and self-select on `partner_suit: D`; there
+is no 2C weak two, so diamonds is the whole minor case.  The same split is owed
+to any other ask-continuation ladder that bids `4$W` over an expansion
+containing a minor — `lint_system.py --only sibling` should be pointed at it.
+
+---

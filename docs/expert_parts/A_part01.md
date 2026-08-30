@@ -697,3 +697,147 @@ and (iii) to `general_balancing_high`.  It is the "bid your shape, not your
 stopper, when their preempt has taken your room" agreement and it is missing in
 all four generic competitive contexts.
 
+## Board 443 — NOTHING-WRONG (competitive lens)
+
+**Verdict.** Constructive board.  Table B, call 4: W with `AK64.QJT8.AQ52.A`
+(20 HCP, four-card heart support, a stiff ace) raises 1H straight to `4H`
+(`ob_raise_4H`, "19+ support points", fit 1.000 / 76) and the 6H that makes
+thirteen tricks is never in the picture.  The missing tool is a control-showing
+or splinter raise, which the round-17 correction names explicitly (mini-splinters
+0, control-showing raises 0) — constructive reviewer's ground.
+
+**What I checked on the competitive side.**  All eight of our table-A calls are
+passes BEN also makes at 1.00 against an uncontested 1D-1H-4C-4D-4NT-5D-6H
+auction; N has 6 HCP and S has 5, neither with a suit.  `oc1D_pass` and `sw_pass`
+are the correct rungs, and `general_competitive_high` should be, and is, silent
+over their cue-bidding.
+
+**NOTHING-WRONG** from the competitive/matchpoint discipline.
+
+## Board 559 — margin -13
+
+**Seat/call that went wrong.** Table A, call 5, **N bids 4H** (`uc_raise_H4`)
+after `P - 1H - 1S - 2S(partner's cue-bid raise) - P`, holding
+`9.AKT732.AQT87.6` — a 6-5 with two singletons opposite a hand that has just
+promised a limit raise or better in hearts.  We played 4H for thirteen tricks
+(+710); BEN's N/S bid 6H (+1460).
+
+**The missing agreement (one sentence).** `r1H1S_cue` is
+`forcing: one_round, agreed_suit: H` and **there is no context matching
+`1H - 1S - 2S - P - ?`** — the cue-bid raise is another starved forcing seat, so
+opener's answer is decided by `general_uncontested_continuation`, whose best
+offer is a game raise at priority 32 and which cannot say "I am five-five".
+
+**EXACT YAML.**  Two new contexts, placed after `resp_1H_over_1S`:
+
+```yaml
+  - id: opener_over_cue_raise_H
+    description: "Opener answers partner's cue-bid raise after (1S) over our 1H"
+    pattern: "1H - 1S - 2S - P - ?"
+    rules:
+      - id: ocr_H_second_D
+        call: 3D
+        priority: 60
+        requires:
+          suits: { H: [5, 13], D: [5, 13] }
+        shows: "my real second suit opposite the cue-bid raise: five-five, and the fit is already agreed so this is a slam try, not a rescue"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+      - id: ocr_H_second_C
+        call: 3C
+        priority: 60
+        requires:
+          suits: { H: [5, 13], C: [5, 13] }
+        shows: "my real second suit opposite the cue-bid raise: five-five, and the fit is already agreed so this is a slam try, not a rescue"
+        establishes: { forcing: game_forcing, agreed_suit: H }
+      - id: ocr_H_rkc
+        call: 4NT
+        priority: 58
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [19, 40], "keycards(H)": [3, 5] }
+        shows: "keycard ask: partner has promised a limit raise or better and I have the values to play a slam"
+        establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: ocr_H_game
+        call: 4H
+        priority: 52
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [14, 40] }
+        shows: "accepting the cue-bid raise: game, no second suit to show"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: ocr_H_min
+        call: 3H
+        priority: 50
+        requires:
+          suits: { H: [5, 13] }
+          evals: { total_points: [12, 13] }
+        shows: "a minimum opening opposite the cue-bid raise: partner may pass with a bare limit raise"
+        establishes: { forcing: invitational, agreed_suit: H }
+```
+
+**THE ANSWERING SEAT** (mandatory — `ocr_H_second_*` is game-forcing and
+`ocr_H_min` is an invitation):
+
+```yaml
+  - id: opener_cue_second_reply_H
+    description: "Responder after opener shows a second suit over the cue-bid raise"
+    expand: { x: [C, D] }
+    pattern: "1H - 1S - 2S - P - 3$x - P - ?"
+    rules:
+      - id: ocs_H_rkc_$x
+        call: 4NT
+        priority: 60
+        requires:
+          suits: { H: [3, 13] }
+          evals: { total_points: [14, 40], "keycards(H)": [2, 5] }
+        shows: "partner is five-five with the fit agreed: asking for keycards"
+        establishes: { forcing: one_round, agreed_suit: H, asking: keycards }
+        alertable: true
+        convention: rkc_1430
+      - id: ocs_H_game_$x
+        call: 4H
+        priority: 50
+        requires:
+          suits: { H: [3, 13] }
+        shows: "no slam interest opposite the five-five: game in the agreed major"
+        establishes: { forcing: sign_off, agreed_suit: H }
+```
+
+The 4NT then lands in the **existing** `rkc_response_agreed_H` /
+`rkc_continue_after_5D` machinery, so the conversation is closed with no further
+authoring.  `ocr_H_min`'s invitation is answered by responder's existing
+`general_uncontested_continuation` raise ladder (3H is a pass-or-4H decision at
+`uc_raise_H4` / `uc_pass`), which is authored.
+
+**WHAT IT ENDANGERS.**  The new contexts are supersets — `general_uncontested_continuation`
+still contributes every candidate it did (traced).  Within them:
+
+* `ocr_H_second_*` (60) is deliberately placed **above** `ocr_H_rkc` (58): with a
+  five-five and two singletons you describe the shape before you count aces, and
+  keycard asking on a two-suiter is how a pair reaches 6H off two cashing tricks.
+  I tried the other order first and report it as a negative: with RKC at 62 the
+  engine asked immediately on this hand.
+* `uc_raise_H4` (32) / `uc_raise_H3` (31) / `uc_rebid_H3` (29) / `uc_new_D3` (27)
+  are all outranked.  Each of them describes the hand worse: the cue bid has
+  already agreed hearts and promised 10+, so a raise adds nothing, and 3D is the
+  same call my rung makes but with a meaning attached.
+* **Fallback:** `3C`, `3D`, `3H`, `4H`, `4NT` were all already covered in this
+  seat by `uc_*` rungs, so no code fallback is deleted.
+
+**VERIFIED — the whole conversation, not just the entry.**  Walked the auction
+with our engine in both N/S seats and the opponents passing:
+`P 1H (1S) 2S P 3D P 4NT P 5D P 6H` — `ocr_H_second_D` (1.000/60), then
+`ocs_H_rkc_D` (1.000/60), then the existing `rkc_5D` and `rkc5D_slam`.
+**6H makes thirteen tricks**, which is the +1460 the other table scored, i.e.
+the board goes flat.
+
+**TEMPLATE.**  `expand` over the responder context only (`x: [C, D]`).  The
+agreement itself must be expanded to every cue-bid raise in the file: the
+two-level overcall twins (`1$M - 2$x - 3$x - P - ?` answering `r1M2x_cue`) and
+the minor-opening cue raises.  Each needs the same five-rung opener context and
+the same two-rung answering context — roughly 60 rules for the family, which is
+exactly the density the round-17 correction asks for, and all of it in
+*contested* auctions below game.
+
