@@ -26,6 +26,26 @@ Import them from anywhere in the repo with
   the ones that change. This is the blast radius of an edit, measured in
   seconds, before spending a match on it.
 
+- **`sweep.py`** — every board we lost, every decision BEN disagreed with,
+  grouped into families, plus whole-corpus denominators. Two things it fixes
+  that no other tool here gets right:
+  **(a) the deciding rule.** `explanation.source_rule_id` — which `replay.py`,
+  `repro.fires()` and the match rows' `rule` field all key on — is the PRIMARY
+  READING, the highest-priority rule producing the same call. It is what the
+  call *means*, not what chose it. `deciding_rule()` reconstructs
+  `fast_decision` (keep everything fitting >= 0.9, take the highest priority
+  among those; otherwise the top blended score) and was validated against the
+  engine on 598 consecutive decisions with 0 mismatches.
+  **(b) the right yardstick.** Par gap is jointly owned by the whole auction, so
+  a context whose decisions land on big-swing boards shows a bad gap whatever
+  its rules do. `--rank-rules` scores every rule against ITS OWN CONTEXT.
+  Judging against the corpus mean indicts innocent rules: `opener_rebid_1m_1M`
+  runs at -4.04 against a corpus -0.02, and its rungs at -4.16 are at their own
+  baseline, not four points below the field.
+  `--families` / `--boards` / `--board N` / `--family ID` / `--context ID` /
+  `--denom RULE` / `--rank-rules`. Pass `--cache` and `--index-cache` — both
+  scans replay every decision through the engine and are slow to rebuild.
+
 - **`paired.py`** — `python3 tools/roundkit/paired.py <before.jsonl>
   <after.jsonl> [--list]` compares two runs on the SAME deals: totals, the
   paired delta, and only the boards whose auction actually changed.
