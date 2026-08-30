@@ -79,4 +79,93 @@ bootstrap CI excludes zero**, and no verdict at all below k=8.
 
 ---
 
-*(items 2-5, the ablation, and the closing sections follow as they are measured)*
+## Item 2 — the slam project — **redirected by its own measurement**
+
+### What the plan asked for, and why it was wrong in its details
+
+The plan (from the bridge review) prescribes a **five-level cue ladder** above
+our own game as sub-part (a).  Before authoring it, `tools/roundkit/slamprobe.py`
+priced it: at **all 475 seats** in the two corpora where we pass our own game in
+an agreed major, substitute each plausible move, finish the auction with our
+engine in our seats and **BEN in the opponents'**, and score double-dummy.
+
+| substitution | e10 (255 seats) | held (220 seats) |
+|---|---|---|
+| 4NT | **-3.77 ± 0.42** | **-4.98 ± 0.50** |
+| six of the major | -6.23 / -6.35 | -7.36 / -7.38 |
+| 5H | -6.86 ± 0.38 | -7.51 ± 0.44 |
+| 5D | -9.72 ± 0.39 | -10.31 ± 0.39 |
+| 5C | -9.78 ± 0.35 | -10.38 ± 0.42 |
+
+Every move loses, and **the review's own prescription is the worst of them.**
+
+The mechanism is not that cueing is bad bridge.  It is that **nothing in the
+file answers a cue above game**: partner has no matching context, the fallback
+layer is `quiet` because our side holds the contract, so his only candidate is
+a pass at fit 1.00 and **we play five clubs**.  The -9.8 is the measurement of
+an empty seat.  4NT beats it by five IMPs a seat for exactly one reason — its
+answering ladder (`rkc_response*`, `rkc_continue_after_5*`, `rkc_5C_answerer`)
+is already authored.
+
+That cost twenty-one seconds of compute and saved a multi-round project from
+being built the wrong way round.
+
+### The rung, measured alone — REVERTED as a standalone
+
+Sub-part (a) was then built the only way the data supported: a keycard ask in
+the trick currency (item 2(b) applied locally rather than to the 104
+`rule_of_26` sites), `gr_rkc_tricks_$M` — 4NT with six controls, at most five
+losers and a known eight-card fit opposite partner's game bid.  Its gate was
+chosen by out-of-sample sign replication (e10 +3.33, held +2.44) rather than by
+prescription, and its known-fit clause exists because the first draft broke
+round 3's locked `r3_no_rkc_without_partnership_values`.
+
+**Screened on the fresh 6,000-board pool: -42 IMPs over 39 changed boards,
+t = -0.70, 95% bootstrap CI [-160, +75].  REVERT.**
+
+### Why that is the important result, and what replaced it
+
+A well-motivated rung, whose gate replicated out of sample and whose answering
+ladder already existed, still measured indistinguishable from zero.  The reason
+is density, and it is the round's main finding:
+
+| rules that bid at… | count |
+|---|---|
+| the three level | 686 |
+| **the five level** | **55** |
+| the six level | 70 |
+| **the seven level** | **0** |
+| all slam-named contexts | **119 of 2,346 (5.1%)** |
+
+**A rule-based system needs a few hundred rules in a subject before that
+subject works at all, and this file has 119 in the whole of slam.**  A slam
+auction is a chain of questions; a question is worth nothing until the answer,
+the answer's continuation and the sign-off all exist.  So the unit of work in a
+thin subject is a **closed conversation**, not a fix — and a rung-at-a-time
+method cannot build slam machinery at any speed.
+
+Item 2 was therefore rebuilt as one: two contexts, sixteen rules, covering the
+whole above-game conversation for both majors —
+
+```
+standing 4M, nobody has cued  ->  cue the cheapest first-round control
+partner cued above game       ->  cue back, sign off in 5M, or bid 6M
+partner signed off in 5M      ->  pass, or bid 6M with a real maximum
+```
+
+with every sign-off carrying `requires: {}` so no seat is ever starved (round
+6's `rkc5H_signoff` lesson), and `pattern: "... - ?"` — the least specific in
+the file — so the contexts sort last and cannot take a call from a context that
+already defines it.  The superset discipline obtained structurally rather than
+by copying gates.
+
+Traced: e10 board 192a, the review's headline board, now runs
+`1S 3C 3D 4C 4S P 4NT P 5S P 6S` — the cold slam we previously passed for -11.
+And with a cue forced in, partner answers 5C with **5S at fit 1.00** instead of
+passing it out.
+
+*(the batch's screened number follows)*
+
+---
+
+*(items 3-5, the ablation, and the closing sections follow as they are measured)*
