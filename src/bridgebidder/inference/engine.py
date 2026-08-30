@@ -8,6 +8,9 @@ self-consistency invariant hold.
 
 from __future__ import annotations
 
+import itertools
+import weakref
+
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -246,7 +249,7 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
         if auction.is_competitive != cond.is_competitive:
             return False
     if cond.partner_limited is not None:
-        limited = eval_ctx is not None and eval_ctx.partner_max_hcp <= 17
+        limited = ctx is not None and ctx.partner_max_hcp <= 17
         if limited != cond.partner_limited:
             return False
     if cond.my_last_call_was_double is not None:
@@ -694,6 +697,40 @@ def analyze(
 _SETUP_CACHE: dict[tuple, DecisionSetup] = {}
 _SETUP_CACHE_MAX = 20000
 
+# A stable, never-reused token per system object.  Keying the cache on
+# `id(system)` was a latent aliasing bug: the cache holds no reference to the
+# system, so once one is garbage-collected a rebuilt system can be allocated at
+# the same address and inherit its cached setups (`tools/tune.py` rebuilds
+# systems in a loop).  The weak key means the mapping dies with the system; the
+# counter means its token is never handed out again.
+_SYSTEM_TOKENS: dict[int, tuple] = {}     # id(system) -> (weakref, token)
+_TOKEN_SEQ = itertools.count()
+
+
+def _system_token(system: BiddingSystem) -> int:
+    """A stable identity for `system` that a later object cannot inherit.
+
+    A `BiddingSystem` is an unfrozen dataclass, so it is unhashable and cannot
+    be a WeakKeyDictionary key; the weakref is held beside `id()` instead and
+    checked on every lookup, which is what makes address reuse detectable.
+    """
+    key = id(system)
+    entry = _SYSTEM_TOKENS.get(key)
+    if entry is not None and entry[0]() is system:
+        return entry[1]
+    token = next(_TOKEN_SEQ)
+
+    def _drop(_ref: object, key: int = key, token: int = token) -> None:
+        cur = _SYSTEM_TOKENS.get(key)
+        if cur is not None and cur[1] == token:
+            del _SYSTEM_TOKENS[key]
+
+    try:
+        _SYSTEM_TOKENS[key] = (weakref.ref(system, _drop), token)
+    except TypeError:                      # not weak-referenceable: fall back
+        return key
+    return token
+
 
 def _expl_key(explanations: dict[int, dict] | None) -> tuple:
     if not explanations:
@@ -709,7 +746,7 @@ def prepare_decision(
 ) -> DecisionSetup:
     """Analysis + decision setup for the seat about to call. Cached."""
     key = (
-        id(system), auction.dealer.value, auction.vulnerability.value,
+        _system_token(system), auction.dealer.value, auction.vulnerability.value,
         tuple(str(c) for c in auction.calls), _expl_key(explanations),
         perspective.value if perspective else None,
     )
