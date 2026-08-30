@@ -744,3 +744,388 @@ The same six belong in `general_competitive_low` as `cl_two_suiter_*` for the
 live auctions the sandwich context does not own.
 
 ---
+
+## Board 247 — margin -6
+
+**Seat/call:** South, call 3 — `(P) 1D (2S) ?` with `QT653.AQJ8.Q2.64`:
+11 HCP and **five of their trumps**.  We doubled (`nxj_X`, priority 70, whose
+whole constraint is `hcp: [8, 40]`).  North then had to guess and pulled to 3D
+for -100.
+
+**Missing agreement:** the trap pass.  With five of their trumps a negative
+double is the one call that cannot be right — it asks partner to bid the suit I
+want to defend in.  Pass, let partner reopen, and convert.
+
+This is deliberately NOT the round-14 gate on `nxj_X` that measured -5 held out
+(a longest-suit cap plus a four-card-unbid-major requirement).  It is a landing
+seat — which is exactly what the file's own comment on `nxj_X` asks for
+("author the landing seats first") — and its gate is five cards in THEIR suit,
+counted, not a shape veto.
+
+```yaml
+# context: neg_double_3level_m, inserted before `- id: nxj_pass`
+      - id: nxj_pass_trap
+        call: P
+        priority: 71
+        requires:
+          hcp: [8, 40]
+          evals: { standing_suit_length: [5, 13] }
+        shows: "trap pass: FIVE of their trumps sitting over the jump overcall - partner reopens and I convert, and a double asking him to bid my trumps is the one call that cannot be right"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT — and it is board 758's rung.**  A trap pass is worthless
+without a reopening double, and `ballow_reopen_X` needs 16+, so North (11 HCP)
+would pass it out.  With `ballow_reopen_X_shape` (board 758) in place the
+conversation closes end to end, traced:
+
+* South `P` (`nxj_pass_trap`, fit 1.000)
+* North `X` (`ballow_reopen_X_shape`, fit 1.000) on `9.T52.KJT86.AQJ5`
+* South `P` (`adreo_pass_penalty_D`, fit 1.000 — the penalty-pass rung that was
+  already there and had nothing to convert)
+
+2S doubled, seven tricks, +100 to us against the -100 we scored.  Par is +120.
+
+**What it endangers:** `nxj_X` (70 — only on the five-trump shape); nothing else
+in the context (only `nxj_pass` at 20 is below it, same call).  Because
+`neg_double_3level_m` is the most specific live context, it also blocks
+`cl_pass`, but `P` is covered there anyway.  **Guardrail check:** the pass is
+discriminating and could in principle convert a force — but partner's opening
+bid is not a force on responder in this system, and the rung requires five cards
+in the standing bid's suit.
+
+**VERIFIED.**  Base `X`; patched `P`.  Regressions: four trumps still doubles
+(mine fits 0.349); a doubleton still doubles.
+
+**Template:** the identical rung belongs in `neg_double_3level_M` (`nx3_pass_trap`
+at priority 72, above `nx3_cue`'s 71) and in `general_competitive_low` /
+`general_competitive_high` as `cl_pass_trap` / `ch_pass_trap` above the negative
+doubles at 33.
+
+---
+
+## Board 267 — margin -6 — NOTHING-WRONG (competitive)
+
+Uncontested at both tables: `P P P 1NT P 2D P 2H P ?`.  The divergence is
+North's transfer follow-up on `Q972.QT987.T83.K2`-shaped hand
+(`Q972.QT987.K2.53`): five hearts AND four spades, and `nt_after_transfer` has
+no natural second-suit rung, so responder must choose between `tr_pass_weak` and
+an invitation.  That is the constructive item already named in
+`docs/ROUND_METHOD.md`'s open list; it belongs to the other reviewer.
+
+Competitively: E/W hold 17 HCP and never balanced over `2H`.  I checked —
+`cl_pass` is right for East over 2D and 2H (`KT53.K2.T763.K62`: no five-card
+suit, no shortness in either major, and balancing over a *completed transfer*
+walks into a 15-17 opener on your left).  Nothing to propose.
+
+---
+
+## Board 272 — margin -6
+
+**Seat/call:** South, call 2 — `(P) (1D) ?` with `KJ972.JT976.A7.T`:
+**exactly 5-5 in the majors**.  We overcalled **1H**.
+
+**Missing agreement:** with 5-5 you bid the HIGHER suit first, so the second one
+is available at the cheapest level next time.  `oc1D_1H` and `oc1D_1S` are both
+priority 71 and both fit 1.000, so the tie broke on call rank and the lower suit
+won — **the identical defect the file already fixed for `r1m_1H`/`r1m_1S` in
+round 10 and for `cl_new_H1` afterwards** (the comment on `cl_new_H1` says so in
+so many words); the overcall ladder was never swept.
+
+```yaml
+# context: overcalls_of_1D, inserted before `- id: oc1D_1S`
+      - id: oc1D_1S_55
+        call: 1S
+        priority: 71.5
+        requires:
+          suits: { S: [5, 13], H: [5, 13] }
+          hcp: [8, 16]
+          evals: { "suit_diff(S,H)": [0, 13], "suit_quality(S)": [1, 9] }
+        shows: "overcall with 5-5 in the majors: bid the HIGHER suit first so the auction has room for the second"
+        establishes: { forcing: non_forcing }
+```
+
+(The additive form is used rather than adding `"suit_diff(H,S)": [1, 13]` to
+`oc1D_1H`, because a gate on `oc1D_1H` subtracts the 6-5 hands that genuinely
+belong in hearts.)
+
+**Answering seat:** none — the overcall's advances are already authored
+(`advance_overcall`, `advance_1NT_overcall`, the `cl_*` ladder in competition).
+
+**What it endangers:** `oc1D_1H` (71 — only on exactly-equal or spade-longer
+major two-suiters, where spades is the right suit); `oc1D_1S` (71, same call,
+strictly more general); `oc1D_2C`/`2D`/`2H` (65) and the jump overcalls (below),
+none of which describe a 5-5 major two-suiter; `oc1D_pass` (25).  1S is already
+covered, so no fallback is deleted.
+
+**VERIFIED.**  Base `1H`; patched `1S` (`oc1D_1S_55`, fit 1.000, prio 71.5).
+
+**Template:** the same rung in `overcalls_of_1C`, `overcalls_of_1D` and (as a
+2S-over-1H rung) `overcalls_of_1H`: `oc1C_1S_55`, `oc1D_1S_55`, `oc1H_2S_55`.
+The sandwich and balancing ladders need it too — `sw_1S`/`sw_1H` are both 68 and
+`ballow_new_S1`/`ballow_new_H1` are both 25, so both tie-break to hearts.
+
+---
+
+## Board 274 — margin -6
+
+**Seat/call:** North, call 6 — `1D (1H) X (3H) P (P) ?` with
+`AKT4.K432.KT.432`: 13 HCP, **four hearts sitting over the 3H bidder**, three
+quick tricks.  We bid **3NT** (`balhigh_nt3`, fit 1.000, no club or heart
+stopper — `weakest_their_stopper` does not gate) for -100.  3H doubled is two
+off.
+
+**Missing agreement:** `general_balancing_high` has **no penalty double at all**
+— only the takeout doubles at 40 and the reopening doubles at 41, both of which
+demand at most a doubleton in their suit.  `general_competitive_high` has
+`ch_penalty_X`; the balancing twin was never written.
+
+```yaml
+# context: general_balancing_high, inserted before `- id: balhigh_X`
+      - id: balhigh_penalty_X
+        call: X
+        priority: 42
+        when: { their_last_bid_suit: true, we_bid_last: false, we_hold_contract: false }
+        requires:
+          hcp: [12, 40]
+          evals: { quick_tricks: [3, 12], standing_suit_length: [4, 13] }
+        shows: "penalty double in the balancing seat: four-plus of their trumps behind the bidder and three quick tricks - they have preempted into my trump stack and have nowhere to run"
+        establishes: { forcing: non_forcing }
+```
+
+The four-trump floor (against `ch_penalty_X`'s three) is the balancing-seat
+version: partner has passed, so the trumps have to be mine.
+
+**THE ANSWERING SEAT:** `general_pull_or_sit` already owns `... - X - P - ?`.
+Traced: South (`J53..Q9874.AKT65`) sits with `adx_pass_min` fit 0.800.  Good —
+that is the intended answer, and the pull rungs are there if he has somewhere
+to go.
+
+**What it endangers:** `balhigh_reopen_X`/`X2` (41) and `balhigh_X` (40) — all
+three are the same call, and mine describes a hand with FOUR of their trumps,
+which is precisely the hand the other three deny (`max_their_suit_length: [0,2]`
+/ `standing_suit_length: [0,2]`), so they are disjoint by construction;
+`balhigh_raise_*` (30-32 — I have no fit); `balhigh_nt3`/`nt2`/`nt1` (29/28/27 —
+the rule that fired, and 3NT on `K432` in their suit and `432` in clubs is the
+soft-stopper lottery); `balhigh_rebid_*`/`new_*` (25-29).  X is already covered
+in this context, so no fallback is deleted.
+
+**VERIFIED.**  Base `3NT`; patched `X` (`balhigh_penalty_X`, fit 1.000, prio 42);
+South sits.  Regression: the same hand with only three hearts bids 3NT again
+(mine fits 0.349).
+
+**Template:** none over suits.  The `general_balancing_low` twin
+(`ballow_penalty_X`, `standing_bid_level: [1, 2]`, `standing_suit_length: [5,13]`
+because a low-level penalty double needs more trumps) is the natural companion,
+but it is riskier and I would ship the high one first.
+
+---
+
+## Board 297 — margin -6
+
+**Seat/call:** North, call 3 — `1C (1D-ours) 1S ?` with `J5.AQJ6.Q853.654`:
+10 HCP with **four-card support for partner's OVERCALL**.  We doubled
+(`cl_negative_X1`, priority 33) — a responsive double denying a fit — while
+`cl_raise_D2` sat at 30 fitting 1.000.  They redoubled and we finished defending
+2S for -140.
+
+**Missing agreement:** raising partner's overcall shows the fit; the responsive
+double denies one.  When both fit, the raise wins.
+
+The gate that separates "partner overcalled" from "partner opened" without a
+new `when:` is `partner_shown_length`: an overcall promises five, a 1m opening
+promises three.
+
+```yaml
+# context: general_competitive_low, inserted before `- id: cl_negative_X1`
+      - id: cl_raise_overcall_$X
+        call: 2$X
+        priority: 34
+        when: { partner_suit: $X, cheapest_in_suit: true, i_have_acted: false,
+                side_has_acted: true, we_hold_contract: false }
+        requires:
+          suits: { $X: [3, 13] }
+          evals: { "partner_shown_length($X)": [5, 13], total_points: [8, 12], "lott_total_trumps($X)": [8, 26] }
+        shows: "raise of partner's OVERCALL: three-plus trumps opposite his promised five and 8-12 support points - a known eight-card fit beats a double that asks him to guess"
+        establishes: { forcing: non_forcing, agreed_suit: $X }
+```
+
+**Answering seat:** none — non-forcing and limited; partner passes or competes
+with the rungs he already has.
+
+**What it endangers:** `cl_negative_X1`/`X2` (33 — the point of the rung, and
+only when partner has PROMISED five cards in a suit I hold three of);
+`cl_raise_$X2` (30, same call, no `partner_shown_length` gate — mine is the
+overcall-specific version); `cl_raise_lott3_$X` (32) and `cl_raise_$X3` (31,
+both blocked by `cheapest_in_suit` here anyway); `cl_nt1`/`nt2` (27/28);
+`cl_new_*` (25-27.5).  It does NOT reach `cl_doubler_*` (33-35) or `cl_takeout_X`
+(36).  2$X is already covered, so no fallback is deleted.
+
+**VERIFIED.**  Base `X` (`cl_negative_X1`, fit 1.000, prio 33); patched `2D`
+(`cl_raise_overcall_D`, fit 1.000, prio 34).  Regression, and this is the one
+that matters: the SAME hand after `1D (1S)` — partner OPENED — still doubles
+(`nx_1m1S_X` at 80 in the more specific context), so the negative double is
+untouched where it belongs.
+
+**Template:** `expand: { X: [C, D, H, S] }`, plus the `general_competitive_high`,
+`general_balancing_low` and `general_balancing_high` twins.
+
+---
+
+## Board 343 — margin -6 — NOTHING-WRONG (competitive)
+
+**The engine's competitive call is right and BEN's is wrong.**  South, in the
+sandwich seat after `1C (P) 1H` with `AQ5.AT6.J76.KT87` (14 HCP, 3-3-3-4, no
+five-card suit and no shortness anywhere), passed at `sw_pass` fit 0.800; BEN
+would double at 0.50 confidence.  Partner holds `87.983.9852.J643` — **one**
+HCP.  A takeout double there is a disaster and the file's `sw_X` fit 0.349
+correctly says so.  I checked the rest of our calls on both tables:
+`oc1C_pass`, `cl_pass` over 1S, `ch_pass` over 3S and `balhigh_pass` are all
+right at NS-vulnerable.
+
+The board is lost at table B, where after `1C P 1H X XX 2D 2NT P` West raised
+to 3NT on a 13-count opposite an 11-12 `cl_nt2` — the `uc_nt3` ceiling, and
+**tightening `uc_nt3`'s strength gate is scope-excluded**.  Nothing to propose.
+
+---
+
+## Board 348 — margin -6 — NOTHING-WRONG (competitive)
+
+Uncontested at both tables.  The divergence is South's response to `1D` on
+`QJ.AQ4.K542.T976` — a flat 12-count with 4-4 minors choosing `r1m_2over1` (70)
+over `r1m_2NT` (54), both at fit 1.000.  That is the constructive responding
+ladder, and it runs into the open item "there is no context for opener's rebid
+after a 2/1 in a MINOR" — `1D - P - 2C - P - ?` is unauthored and `uc_nt2`
+annexed it, which is exactly what happened on call 4.  Both belong to the other
+reviewer.  Our side was never opposed; there is no competitive call to make.
+
+---
+
+## Board 369 — margin -6 — NOTHING-WRONG (competitive)
+
+Uncontested at both tables (`P 1D P 1H P 1NT P 2H P ?`).  South's pass on
+`K42.872.AQ84.A83` with three-card support for partner's rebid 2H is a
+constructive raise decision: `uc_raise_H3` fits 0.800 and `uc_pass` 1.000, and
+the position (`1$m - P - 1$M - P - 1NT - P - 2$M - P - ?`) has **no context of
+its own** — opener's seat after responder rebids his major falls all the way to
+the generic continuation.  That is a constructive hole worth naming to the other
+reviewer.  Competitively there was nothing to do: E/W passed every round and our
+side held the auction throughout.
+
+---
+
+## Board 390 — margin -6
+
+**Seat/call:** South, call 12 — `P P 1D (1S) 2C (P) (P) (X) P (2S) (P) (P) ?`
+with `J5.J7.K86.KQT875`: **six clubs**, 9 HCP, and `their_fit` measured at
+**8** (they have found their spade fit).  We passed it out (`ballow_pass`);
+`ballow_rebid_C3` wants 16+ total points and fit 0.028.
+
+**Missing agreement:** the Law in the balancing seat.  They have eight trumps
+and I have a sixth one of my own; competing to three is right on shape, not on
+points.
+
+```yaml
+# context: general_balancing_low, inserted before `- id: ballow_raise_C2`
+      - id: ballow_rebid_law3_$X
+        call: 3$X
+        priority: 29.5
+        when: { my_suit: $X, we_bid_last: false, cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          suits: { $X: [6, 13] }
+          evals: { total_points: [8, 40], their_fit: [8, 26] }
+        shows: "the Law in the balancing seat: they have found an eight-card fit and I have a sixth trump, so competing to three is right on shape, not on points"
+        establishes: { forcing: non_forcing }
+```
+
+`their_fit >= 8` is doing the same job here that it does in `cl_raise_lott4_$M`,
+where the file's own comment records that leaving it out measured +1 over 1000
+boards: the Law licenses one more level only when BOTH sides have a fit.
+
+**Answering seat:** none — non-forcing, and partner has already passed twice.
+
+**What it endangers:** `ballow_rebid_$X3` (29, same call, 16+ — mine is the
+shape-based version eight points lower and is gated on their fit);
+`ballow_rebid_$X2`/`$X4` (29); `ballow_new_*3`/`long3` (27 — `my_suit` and
+`unbid_suit` make these disjoint); `ballow_nt1`/`nt2` (27/28 — with a sixth
+trump and their eight-card fit, notrump is not the strain); `ballow_pass` (21).
+It sits BELOW `ballow_raise_*` (30-32), `ballow_nt2_strong` (30),
+`ballow_nt2_balance` (33) and every double (39-41).  3$X is already covered by
+`ballow_rebid_$X3`, so no fallback is deleted.
+
+**VERIFIED.**  Base `P` (`ballow_pass`, fit 1.000); patched `3C`
+(`ballow_rebid_law3_C`, fit 1.000, prio 29.5).  Measured on the board:
+`their_fit` 8, `total_points` 12, `lott_total_trumps(C)` 6 (which is why no
+raise rung could ever have fired — partner never bid clubs).
+
+**Template:** `expand: { X: [C, D, H, S] }`, plus the `general_balancing_high`
+twin at `call: 4$X` (`balhigh_rebid_law4_$X`) — though I would ship the low one
+first; the four level needs `their_fit >= 9`.
+
+---
+
+## Board 425 — margin -6
+
+**Seat/call:** South, call 1 — second seat, non-vulnerable, with
+`QJ98653.AQ93.4.8`: **seven spades**, 9 HCP.  We passed; `open_3S_nv` fit 0.100.
+
+**Missing agreement:** the "no preempt with a four-card major on the side" veto
+exists to stop us preempting past our OWN major — it must not fire when the
+preempt is in SPADES, the higher major, where partner can never miss a spade fit
+and we can never be preempting past hearts we could otherwise have found.
+
+Measured: `suit_quality(S)` 1.5, `hcp` 9, `quick_tricks_outside(S)` 1.5 — every
+gate passes except `not: { suits: { H: [4,13] }, "suit_quality(H)": [1.5, 9] }`,
+and `suit_quality(AQ93)` is 2.0.
+
+```yaml
+# context: openings, inserted before `- id: open_3S_vul`
+      - id: open_3S_over_hearts_nv
+        call: 3S
+        priority: 59.5
+        requires:
+          suits: { S: [7, 13], H: [4, 4] }
+          hcp: [3, 9]
+          evals: { "suit_quality(S)": [0, 9], "quick_tricks_outside(S)": [0, 2] }
+        shows: "preempt: 7+ spades, 3-9 HCP, with a four-card heart side suit - the side-major veto exists to stop preempting past our own major, and spades outranks hearts"
+        establishes: { forcing: non_forcing }
+        when: { we_vulnerable: false, opening_seat: [1, 2, 3] }
+```
+
+Priority 59.5 sits *below* `open_3S_nv` (60) on purpose: where the ordinary
+preempt fits, it stays primary and this rung is invisible.
+
+**THE ANSWERING SEAT:** `resp_preempt_S` is fully authored (raises, new suits,
+3NT, 4S, pass) and needs nothing.  That is why I am willing to widen an opening
+preempt.
+
+**What it endangers:** `open_3S_nv` (60 — never, it is above);
+`open_weak_2S_nv` (66 — above, and it demands exactly six spades, so disjoint);
+`open_1S_rule20` (79) and `open_1S` (81) — both above, so a hand that qualifies
+to open one spade still does; `open_4S` (61 — above); `open_pass` (20).  In
+practice the only call it takes is the pass.  3S is already covered by
+`open_3S_nv`, so no fallback is deleted.
+
+**VERIFIED.**  Base `P`; patched `3S` (`open_3S_over_hearts_nv`, fit 1.000).
+Regression: a hand without seven spades still passes.
+
+**Template:** `expand` is not usable (the rule is specifically about spades over
+hearts, which is the whole argument).  The vulnerable twin
+`open_3S_over_hearts_vul` with `hcp: [5, 9]` is the companion.  **Do NOT
+template this to hearts or the minors** — there the veto is doing its job.
+
+---
+
+## Board 445 — margin -6 — NOTHING-WRONG (competitive)
+
+Uncontested at both tables.  The divergence is North's fourth-seat opening on
+`A4.JT53.AK653.K8` — 15 balanced, `open_1D` at fit 1.000 versus BEN's 1NT — and
+**opening-style thresholds are scope-excluded**.  I did check the one thing that
+looked like a bug: `open_1NT` scores **0.000** on a 2-4-5-2 fifteen-count, which
+is balanced and in range.  That is worth the other reviewer's eye (the shape is
+5-4-2-2, i.e. `balanced` is false by the evaluator's definition — two doubletons
+plus a five-card suit — so it is correct, not a bug; I am recording the check so
+nobody repeats it).  Competitively E/W never had a call: they hold 16 HCP
+between them across two passed hands.
+
+---
