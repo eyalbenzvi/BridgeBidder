@@ -32,7 +32,10 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
+from ben_cache import BenCache, request_key
 
 from bridgebidder.domain.auction import Auction
 from bridgebidder.domain.cards import FULL_DECK, Hand
@@ -47,21 +50,45 @@ VULS = [Vulnerability.NONE, Vulnerability.NS, Vulnerability.EW, Vulnerability.BO
 
 
 class Ben:
-    """A persistent BEN worker process (model load is slow; keep it warm)."""
+    """A persistent BEN worker process (model load is slow; keep it warm).
 
-    def __init__(self):
-        self.p = subprocess.Popen(
-            [BEN_PYTHON, BEN_WORKER], stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE, text=True, bufsize=1)
+    Answers are memoised on disk (`tools/ben_cache.py`).  BEN is a pure
+    function of the request, so a cached answer is the same answer, and
+    re-playing a deal whose auction is unchanged costs nothing - which is what
+    makes `roundkit/screen.py` affordable.  The worker itself is spawned
+    lazily, so a fully cached replay never loads the model at all.
+    """
+
+    def __init__(self, cache=None):
+        self.p = None
+        self.cache = BenCache() if cache is None else cache
+
+    def _worker(self):
+        if self.p is None:
+            self.p = subprocess.Popen(
+                [BEN_PYTHON, BEN_WORKER], stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE, text=True, bufsize=1)
+        return self.p
 
     def ask(self, req: dict) -> dict:
-        self.p.stdin.write(json.dumps(req) + "\n")
-        self.p.stdin.flush()
-        return json.loads(self.p.stdout.readline())
+        key = request_key(req)
+        hit = self.cache.get(key)
+        if hit is not None:
+            return hit
+        p = self._worker()
+        p.stdin.write(json.dumps(req) + "\n")
+        p.stdin.flush()
+        resp = json.loads(p.stdout.readline())
+        if "error" not in resp:          # never memoise a worker failure
+            self.cache.put(key, resp)
+        return resp
 
     def close(self):
-        self.p.stdin.close()
-        self.p.wait(timeout=10)
+        self.cache.close()
+        if self.p is not None:
+            self.p.stdin.close()
+            self.p.wait(timeout=10)
+            self.p = None
 
 
 def run(n: int, seed: int, out: Path) -> None:

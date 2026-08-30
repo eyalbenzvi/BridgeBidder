@@ -8,3 +8,4 @@ reports/
 # patch(1) backups
 *.orig
 *.rej
+logs/
