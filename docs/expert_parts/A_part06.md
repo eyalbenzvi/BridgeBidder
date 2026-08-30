@@ -4,7 +4,7 @@
 (864, 582, 767, 861).  Every proposal was prototyped by loading a *copy* of
 `two_over_one.yaml` with the rung inserted and re-running `score_candidates` /
 `fast_decision` on the exact seat, hand, vulnerability and auction from the
-dossier; the repo file was never touched.  **all 34 are VERIFIED that
+dossier; the repo file was never touched.  **All 34 are VERIFIED that
 way, with controls**; one (board 76) is additionally flagged UNTESTED-in-corpus
 because its whole-corpus denominator is empty, and two more (852, 433) carry
 explicit cautions about thin or adverse denominators.
