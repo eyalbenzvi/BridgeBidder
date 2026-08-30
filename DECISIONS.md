@@ -2987,3 +2987,116 @@ overall.  See `docs/PLAN_SCALE_THE_SYSTEM.md`.
 * Item 5: both bugs diagnosed, patches written, not applied.  `partner_limited`
   reads `eval_ctx` where the parameter is `ctx` (NameError for the first rule to
   use it); `_SETUP_CACHE` keys on `id(system)` holding no reference.
+
+---
+
+## Round 18 - one rule per lost board, from three experts
+
+**The engine ships at 2,903 rules in 666 contexts, up from 2,344 in 517**,
+accepted on the 12,000-board pool at **+305 IMPs over 447 changed boards,
+t = +2.67, 95% bootstrap CI [+79, +532]** - the first change in this project's
+history to clear the acceptance bar round 17 set.  Full detail in
+`docs/ROUND_18_REPORT.md`.
+
+Baselines reproduced exactly before anything was touched: seed 242424 = -677,
+seed 828282 = -474, 766 tests, 223 lint findings.  New corpus seed 575757 =
+-489 with 302 lost boards.
+
+### The mechanism, counted rather than estimated
+
+302 lost boards, each reviewed twice by experts from different disciplines
+(competitive/matchpoint and constructive/team IMP), never in contact:
+**410 proposals, 975 distinct rule ids, 127 new contexts, 183 NOTHING-WRONG**,
+and only **16 of 302 boards** drew silence from both.  33,051 lines of review.
+
+### Per subject
+
+| batch | rules | changed | delta | t | CI | verdict |
+|---|---|---|---|---|---|---|
+| 1 generic competitive ladder | 204 | 3,497 | **-1,107** | **-3.18** | [-1804, -433] | DROPPED |
+| 1a the same without doubles | 191 | 2,810 | -122 | -0.42 | [-701, +448] | DROPPED |
+| 2 support doubles + answers | 257 | 216 | **+200** | **+2.55** | [+44, +355] | SHIPPED |
+| 3 starved answering seats | 302 | 231 | +105 | +1.26 | [-59, +270] | KEPT |
+| **build (2+3)** | **559** | **447** | **+305** | **+2.67** | **[+79, +532]** | **SHIPPED** |
+
+Batch 3 was kept against `screen.py`'s own REVERT verdict, under this round's
+decision rule that a structurally sound batch measuring neutral is kept because
+density pays only in aggregate.  Both structural tests pass: every force ships
+with its answering seat, and lint went DOWN, 223 -> 219.
+
+### THE ROUND'S CENTRAL FINDING: VOLUME IS NOT THE ACTIVE INGREDIENT
+
+**Batch 1 was the best-supported subject in the round and it lost 1,107 IMPs at
+t = -3.18 on 3,497 changed boards.**  Three independent instruments had picked
+it: coverage.py's 1,375-of-1,745 vacuous decisions, cfr.py's ch_pass beaten by
+acting at +1.90 +/- 0.66 (n=67), and 472 reviewer mentions.  204 rules in the
+emptiest subject LOST; 257 rules in one well-defined convention WON.  The
+difference is not count - batch 1 was the bigger batch.
+
+Three readings survive:
+
+1. **A generic context is the wrong place to add rules.**  The four generic
+   competitive contexts are dispatched on the SHAPE OF THE AUCTION, not on a
+   partnership agreement, so a rung added there fires in auctions its author
+   never saw.
+2. **"An alternative beats this call" does not license a RULE.**  cfr.py
+   substitutes one call while partner reads it with the UNMODIFIED system, so
+   it measures unilateral deviation; authoring the rung changes what partner
+   hears.  The hazard was documented before the batch was built and it is worth
+   -1,107 IMPs.
+3. **A post-hoc attribution must be screened, not believed.**  The slice said
+   the doubles were the loss and the raises a gain; removing all 19 double
+   rungs took the build from +305 to -122.  Selection artifact, caught for
+   twenty minutes of compute.
+
+### Item 4 - the unconditional code fallback - MEASURED AND KILLED
+
+Round 17 nominated it as the one remaining change with enough blast radius to
+resolve 1 IMP/board.  Generation half: **-162 IMPs over 670 changed boards,
+t = -1.03, CI [-476, +147]**.  Interpretation half: **29 tests fail**, among
+them `test_support_double_negative_inference_in_samples`, the invariant the
+README leads with - widening every call's constraint to admit the fallback's
+hands destroys the priority-ordered negative inference.  Ship both or neither;
+it is neither.  **The "adding a rung deletes the code fallback" trap is
+therefore still live**, so no rule added this round was safely additive.
+
+### coverage.py corrected its own instrument
+
+Its three-bucket scale said the file is 94.5% covered.  That is an artefact: a
+rule with an empty `requires` fits **1.00 against every hand**, so every
+catch-all pass counted as an agreement.  With VACUOUS split out, on live
+decisions only: KNOWS 76.0%, **VACUOUS 22.5%**, GUESSES 1.4%, NOTHING 0.1% -
+a backlog of **24.0%**, not 5.5%.  **About a quarter of our live decisions are
+made by a rule that describes no hand.**  It also confirms round 16 from the
+other side: 463 of the 464 code-fallback decisions are closing passes.
+
+### Round 17's two bugs, fixed, with tests
+
+`partner_limited` read `eval_ctx` where the parameter is `ctx` (reproduced as a
+NameError against a copy of the pre-fix tree); `_SETUP_CACHE` keyed on
+`id(system)` holding no reference - and a reviewer hit that one LIVE while
+prototyping against a patched copy, which is how it got an end-to-end test.  A
+BiddingSystem is an unfrozen dataclass and therefore unhashable, so the fix
+holds a weakref beside `id()` and checks it on every lookup.  Both
+behaviour-neutral: 10,335 decisions replayed, 0 changes.
+
+### The held-out number moved the wrong way, and what that is worth
+
+575757 -489 -> **-453** (+36), 242424 -677 -> **-641** (+36), 828282 -474 ->
+**-533** (-59).  Pooled: **+13 over 119 changed boards, t = +0.19, CI
+[-121, +145]** - the three 1,000-board corpora TOGETHER cannot resolve this
+change.  The pool's estimate predicts +81 on those boards against +13 observed,
+about one SE.  And 828282 has been the decision rule sixteen times, so -474 is
+a running maximum of a ratcheted walk; accepting or rejecting a build on it is
+the selection premium the pool exists to stop paying.
+
+### Priority-by-reasoning-upward is now the most repeated error in this project
+
+Three of batch 3's rungs were caught by locked scenarios AFTER an expert editor
+reviewed them, all three the same species as round 14's `uc_nt_raise3`: a rung
+placed above the call it should sit under.  One (`rrev_min_2$M` at priority 67,
+above `rrev_2$M` at 66) turned responder's forcing rebid after a reverse into a
+non-forcing call and was CUT rather than re-priced - it contradicted an existing
+agreement rather than filling a hole.  **At 7,000 rules this error rate is
+unmanageable by review: the next constraint is a priority-conflict tool and a
+shadowing invariant, not another expert.**
