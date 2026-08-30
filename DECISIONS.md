@@ -2826,3 +2826,105 @@ places the last two rounds nominated as the biggest remaining holes - the code
 fallback, the keycard ask over a game raise, and the priority tie - have each
 dissolved on a denominator.  The soft-miss lottery (58 decisions at -5.90) is the
 one that survived both rounds and it has never been attacked directly.
+
+## Round 17: build the test first, then let it rule on the slam project
+
+Rounds 15 and 16 each ended at the number they started at, and two independent
+expert reviews explained why: six rounds of 2-to-20-board fixes had been
+validated by a test with roughly 17% power.  Round 17 built the test first.
+
+Baselines regenerated at `e97dd06` before anything else: **-677** (242424) and
+**-474** (828282), both exact, so nothing here rests on a discrepancy.
+
+### Item 1 - screening - SHIPPED
+
+`tools/ben_cache.py` memoises BEN - a pure function of its request - in a
+content-addressed sqlite store, so a replay whose auctions are unchanged never
+loads the model at all.  `tools/roundkit/screen.py` re-plays a cached pool
+under the current tree, reuses the recorded score wherever the auction comes
+back identical, and re-scores double-dummy only where it moved.
+
+Acceptance test - round 14's YAML change reverted onto HEAD, held-out corpus:
+
+| | paired delta | boards changed | cost |
+|---|---|---|---|
+| full 1000-board match (-474 -> -525) | **-51** | 15 (4 up, 10 down, 1 flat) | 440 s |
+| `screen.py` | **-51** | 15 (4 up, 10 down, 1 flat) | 89 s |
+
+Identical, because unchanged boards are bit-identical.  The full match also
+lands on **-525**, the ledger's own round-13 number, so the reproduction checks
+out end to end.
+
+**The instrument's first verdict is on the ledger itself.  Round 14's +51 - the
+largest single gain since round 10, and the origin of the -474 bar - is
+t = 1.73 with a 95% CI of [-5, +111].  It is not distinguishable from zero on
+the corpus that accepted it.**
+
+Honest correction to the plan: 90% power at 1 IMP per changed board needs
+`k >= (2.9*sd)^2` changed boards - **254** at the working sd of 5.5, **417** at
+the 7.04 actually observed.  `screen.py` prints this on every run.
+
+The pool is **12,000 boards, not 20,000** (measured throughput made 20k plus
+the ablation a 4.5-hour critical path).  It is incremental, so it can be
+extended without redoing anything.
+
+**The ratchet is retired.**  Discovery on 242424 and 828282, which may be
+looked at freely; acceptance on pool seeds that have never been a decision
+rule; ship only if the 95% bootstrap CI excludes zero; no verdict below k=8.
+
+### Item 2 - the slam project - REDIRECTED BY ITS OWN MEASUREMENT
+
+`tools/roundkit/slamprobe.py` priced the review's prescription before building
+it.  At **all 475 seats** in the two corpora where we pass our own game in an
+agreed major, substitute each move and finish the auction with our engine in
+our seats and **BEN in the opponents'**:
+
+| substitution | e10 (255 seats) | held (220 seats) |
+|---|---|---|
+| 4NT | **-3.77 +/- 0.42** | **-4.98 +/- 0.50** |
+| six of the major | -6.23 / -6.35 | -7.36 / -7.38 |
+| 5H | -6.86 +/- 0.38 | -7.51 +/- 0.44 |
+| 5D | -9.72 +/- 0.39 | -10.31 +/- 0.39 |
+| 5C | -9.78 +/- 0.35 | -10.38 +/- 0.42 |
+
+Every move loses, and **the review's own prescription - a five-level cue
+ladder - is the worst of them.**  Not because cueing is bad bridge, but
+because **nothing in the file answers a cue above game**: partner has no
+matching context, the fallback layer is `quiet` because our side holds the
+contract, so his only candidate is a pass at fit 1.00 and **we play five
+clubs**.  The -9.8 is the measurement of an empty seat.  4NT beats it by five
+IMPs a seat for exactly one reason: its answering ladder already exists.
+
+Twenty-one seconds of compute, and a multi-round project saved from being
+built the wrong way round.
+
+**The rung, measured alone: `gr_rkc_tricks_$M` (4NT with six controls, five
+losers and a known eight-card fit opposite partner's game bid), gate chosen by
+out-of-sample sign replication.  Screened on the fresh pool: -42 IMPs over 39
+changed boards, t = -0.70, 95% bootstrap CI [-160, +75].  REVERT as a
+standalone.**
+
+### THE ROUND'S MAIN FINDING: DENSITY, NOT RUNGS
+
+A well-motivated rung whose gate replicated out of sample and whose answering
+ladder already existed still measured indistinguishable from zero.  The reason
+is that the subject is too thin for a rung to mean anything:
+
+| rules that bid at… | before | after |
+|---|---|---|
+| the three level | 686 | 686 |
+| **the five level** | **55** | 71 |
+| the six level | 70 | 76 |
+| **the seven level** | **0** | **2** |
+| all slam-named contexts | **119 of 2,346 (5.1%)** | 145 of 2,372 |
+
+**A rule-based system needs a few hundred rules in a subject before that
+subject works at all.**  A slam auction is a chain of questions and a question
+is worth nothing until the answer, the answer's continuation and the sign-off
+all exist, so the unit of work in a thin subject is a CLOSED CONVERSATION, not
+a fix - and a rung-at-a-time method cannot build slam machinery at any speed.
+The same reasoning applies to every thin subject in the file: the five
+responding contexts, the 2C tree, the game-force family after a double.
+
+Item 2 was rebuilt on that basis - see `docs/ROUND_17_REPORT.md` for the
+batch's measured result.
