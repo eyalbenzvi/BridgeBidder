@@ -5469,11 +5469,20 @@ contexts:
         priority: 61
         requires:
           all_of:
-            # deliberately permissive: with every keycard accounted for the
-            # ask costs NOTHING, because partner's cheapest answer is six of
-            # the agreed suit, which is where the auction was already going.
-            # The gate only stops a hand with no business near a grand.
-            - evals: { ltc: [0, 6] }
+            # FOUR losers, and the number was set by two locked scenarios.
+            # The ask has to outrank the direct six-of-the-agreed-suit rung to
+            # exist at all (below it, the slam rung fits every hand the ask
+            # does and the ask is dead), so it necessarily changes the call on
+            # hands that used to bid six directly.  Loosening this to six
+            # losers broke `rkc5D_two_plus_shown_values_bids_slam` and
+            # `asker_bids_slam_with_all_keycards`, both five-loser hands, and
+            # the first is a REAL BOARD whose recorded comment says it made
+            # exactly twelve tricks - so asking there risks a grand that is
+            # not there.  Four losers keeps the probe to hands with the
+            # playing strength a thirteenth trick needs, and is orthodox
+            # bridge: with every keycard present and at most four losers,
+            # ask for kings.
+            - evals: { ltc: [0, 4] }
             - evals: { "keycards(agreed)": [4, 4] }
             - any_of:
                 - evals: { "trump_queen(agreed)": [1, 1] }
@@ -5582,11 +5591,20 @@ contexts:
         priority: 61
         requires:
           all_of:
-            # deliberately permissive: with every keycard accounted for the
-            # ask costs NOTHING, because partner's cheapest answer is six of
-            # the agreed suit, which is where the auction was already going.
-            # The gate only stops a hand with no business near a grand.
-            - evals: { ltc: [0, 6] }
+            # FOUR losers, and the number was set by two locked scenarios.
+            # The ask has to outrank the direct six-of-the-agreed-suit rung to
+            # exist at all (below it, the slam rung fits every hand the ask
+            # does and the ask is dead), so it necessarily changes the call on
+            # hands that used to bid six directly.  Loosening this to six
+            # losers broke `rkc5D_two_plus_shown_values_bids_slam` and
+            # `asker_bids_slam_with_all_keycards`, both five-loser hands, and
+            # the first is a REAL BOARD whose recorded comment says it made
+            # exactly twelve tricks - so asking there risks a grand that is
+            # not there.  Four losers keeps the probe to hands with the
+            # playing strength a thirteenth trick needs, and is orthodox
+            # bridge: with every keycard present and at most four losers,
+            # ask for kings.
+            - evals: { ltc: [0, 4] }
             - evals: { "keycards(agreed)": [2, 2] }
             - any_of:
                 - evals: { "trump_queen(agreed)": [1, 1] }
@@ -5708,11 +5726,20 @@ contexts:
         priority: 61
         requires:
           all_of:
-            # deliberately permissive: with every keycard accounted for the
-            # ask costs NOTHING, because partner's cheapest answer is six of
-            # the agreed suit, which is where the auction was already going.
-            # The gate only stops a hand with no business near a grand.
-            - evals: { ltc: [0, 6] }
+            # FOUR losers, and the number was set by two locked scenarios.
+            # The ask has to outrank the direct six-of-the-agreed-suit rung to
+            # exist at all (below it, the slam rung fits every hand the ask
+            # does and the ask is dead), so it necessarily changes the call on
+            # hands that used to bid six directly.  Loosening this to six
+            # losers broke `rkc5D_two_plus_shown_values_bids_slam` and
+            # `asker_bids_slam_with_all_keycards`, both five-loser hands, and
+            # the first is a REAL BOARD whose recorded comment says it made
+            # exactly twelve tricks - so asking there risks a grand that is
+            # not there.  Four losers keeps the probe to hands with the
+            # playing strength a thirteenth trick needs, and is orthodox
+            # bridge: with every keycard present and at most four losers,
+            # ask for kings.
+            - evals: { ltc: [0, 4] }
             - evals: { "keycards(agreed)": [3, 5] }
         shows: "all five keycards accounted for and a hand that can use a king: asking for kings"
         establishes: { forcing: one_round, agreed_suit: S, asking: kings }
@@ -5749,11 +5776,20 @@ contexts:
         priority: 61
         requires:
           all_of:
-            # deliberately permissive: with every keycard accounted for the
-            # ask costs NOTHING, because partner's cheapest answer is six of
-            # the agreed suit, which is where the auction was already going.
-            # The gate only stops a hand with no business near a grand.
-            - evals: { ltc: [0, 6] }
+            # FOUR losers, and the number was set by two locked scenarios.
+            # The ask has to outrank the direct six-of-the-agreed-suit rung to
+            # exist at all (below it, the slam rung fits every hand the ask
+            # does and the ask is dead), so it necessarily changes the call on
+            # hands that used to bid six directly.  Loosening this to six
+            # losers broke `rkc5D_two_plus_shown_values_bids_slam` and
+            # `asker_bids_slam_with_all_keycards`, both five-loser hands, and
+            # the first is a REAL BOARD whose recorded comment says it made
+            # exactly twelve tricks - so asking there risks a grand that is
+            # not there.  Four losers keeps the probe to hands with the
+            # playing strength a thirteenth trick needs, and is orthodox
+            # bridge: with every keycard present and at most four losers,
+            # ask for kings.
+            - evals: { ltc: [0, 4] }
             - evals: { "keycards(agreed)": [3, 5] }
         shows: "all five keycards accounted for and a hand that can use a king: asking for kings"
         establishes: { forcing: one_round, agreed_suit: H, asking: kings }
