@@ -1193,3 +1193,203 @@ discipline applied.
 a new context is that it CAN be templated, where the four existing ones cannot.
 
 ---
+
+## Board 661 — -5; table B, call 6, the doubler jumps to game opposite a 0-8 advance
+
+`P 1D X P 1S P — ?`, W `QT98.AKQ3.8.AQJ3`, 18 HCP, four spades, singleton
+diamond; partner's 1S advance is 0-8.  `uc_doubler_game_S` (20+ support points)
+fits 1.00 at 35 and we play 4S down one.  The ladder has a hole in it: the 2S
+raise shows 17-19, the game jump shows 20+, and there is **no jump raise at
+all**, because `uc_doubler_raise3_S` carries `cheapest_in_suit: true` and 3S is
+not the cheapest spade bid over a one-level advance.
+
+**Missing agreement.**  Opposite a forced 0-8 advance, 19-22 is an invitation,
+not a game: the jump raise to three is the missing rung and the game jump needs
+22.
+
+**YAML** — context `general_uncontested_continuation`, insert before `uc_pass`,
+plus one band edit:
+
+```yaml
+      - id: uc_doubler_jumpraise_H
+        call: 3H
+        priority: 34.5
+        when: { partner_suit: H, my_last_call_was_double: true, we_hold_contract: false,
+                cheapest_in_suit: false, standing_bid_level: [1] }
+        requires:
+          suits: { H: [4, 13] }
+          evals: { total_points: [19, 22] }
+        shows: "jump raise of the cheapest advance: 19-22, invitational (the double promised 12+, the advance 0-8)"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: uc_doubler_jumpraise_S
+        call: 3S
+        priority: 34.5
+        when: { partner_suit: S, my_last_call_was_double: true, we_hold_contract: false,
+                cheapest_in_suit: false, standing_bid_level: [1] }
+        requires:
+          suits: { S: [4, 13] }
+          evals: { total_points: [19, 22] }
+        shows: "jump raise of the cheapest advance: 19-22, invitational (the double promised 12+, the advance 0-8)"
+        establishes: { forcing: invitational, agreed_suit: S }
+```
+
+and, in the same context and in `general_competitive_low` (the `cl_` twins), the
+game jump's floor:
+
+```yaml
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [22, 40] } }   # uc_doubler_game_H, cl_doubler_game_H
+        requires: { suits: { S: [4, 13] }, evals: { total_points: [22, 40] } }   # uc_doubler_game_S, cl_doubler_game_S
+```
+
+**THE ANSWERING SEAT — this call is an invitation, so it ships with one.**  I
+traced partner's next turn (`1D X P 1S P 3S P — ?`, advancer
+`J643.J54.9543.T4`, 2 HCP): he answers **P** via `uc_pass_own_raise_S` (board 4's
+rung, fit 1.00, priority 31.5), with `uc_raise_S4` at 32 available and fitting
+0.000 on a 2-count.  So the two answers — decline with `uc_pass_own_raise_$M`,
+accept with `uc_raise_$M4` — both exist and both fit correctly.  This is why the
+board-4 rung has to ship in the same batch as this one.
+
+**Endangers.**
+* `uc_doubler_game_$M` (35) — the band edit is what stops 4S; the pair of rungs
+  together turn one call into an invitation plus an acceptance.
+* `uc_doubler_raise_$M` (34) — the cheapest raise, 17-19; disjoint by
+  `cheapest_in_suit`.
+* `uc_raise_$M4` (32), `uc_raise_lott4_$M` (32) — below and untouched.
+* No fallback deleted for 3S: `uc_doubler_raise3_$M` already covers 3$M under
+  the same `partner_suit`/`my_last_call_was_double` gates.
+* **A locked scenario moves and this is deliberate.**
+  `harvested::e1_doubler_raises_the_advance` (`AQ85.A4.KQ82.KJ5`, `1C X P 1S P`)
+  went 4S -> 3S; its expectation is `["4S", "2S", "3S"]`, so it still passes.  It
+  is the only one of the 516 locked scenarios that moves under my whole batch.
+
+**VERIFIED.**  base `4S [uc_doubler_game_S] fit=1.00 p=35` -> patched
+`3S [uc_doubler_jumpraise_S] fit=1.00 p=34.5`, and the answering seat verified
+separately as above.
+
+**Template.**  `expand: { M: [H, S] }` for the jump raises; the band edit is four
+rules (`uc_`/`cl_` x `H`/`S`).  Minors omitted: three of a minor over a one-level
+advance is not an invitation anyone can act on.
+
+---
+
+## Board 705 — -5; table A, call 3, N passes out their 1C with ten points in the balancing seat
+
+`1C P P — ?`, N `KT87.94.AQJ4.972`, 10 HCP, three small clubs.  `bal_X` demands
+`any_of: [{hcp 8-16, suits {C: [0,2]}}, {hcp 15+}]` — N has THREE clubs and ten
+points, so it fits neither branch and `bal_pass` (0-10 HCP) wins.  1C is passed
+out for -70 where +110 was there in spades.
+
+**Missing agreement.**  A one-of-a-minor opening promises no length, so the
+balancing double over it does not need shortness — three cards in their minor
+and ten points is a reopening double.
+
+**YAML** — context `balancing_seat` (already templated on `$o`), insert before
+`bal_pass`:
+
+```yaml
+      - id: bal_X_minor_$o
+        call: X
+        priority: 63
+        when: { standing_bid_strain: [C, D] }
+        requires:
+          hcp: [10, 16]
+          suits: { $o: [0, 3] }
+        shows: "balancing double of their minor: 10+ with at most three of their suit; a minor opening does not promise length, so shortness is not required"
+        establishes: { forcing: one_round }
+```
+
+**Answering seat — verified live.**  The double is `one_round`; the answering
+context `advance_balancing_double_C` exists and I traced partner's hand on this
+board (`Q54.AJ63.K92.QT8`, 12 HCP): he answers **2H** via `advbal_C_H_jump`
+(fit 1.00, priority 53), with `advbal_C_2NT` (1.00) and `advbal_C_cue` (0.80)
+behind it.  Board 585's new `advance_balancing_double_convert` context adds the
+penalty-pass rung to the same seat, so the two proposals compose.
+
+**Endangers.**  Priority 63 is deliberately BELOW the existing ladder so it can
+only fill the hole:
+* `bal_2NT` (71), `bal_X` (70) — above and untouched, so a 19-21 balanced hand
+  and a genuinely short 8-16 hand keep their calls.  `bal_X`'s record is
+  **14 tables, -3, mean -0.21 — better than the corpus mean**, which is exactly
+  why this proposal widens the seat rather than gating the rule.
+* `bal_1NT` (66) — above: 11-14 balanced with a stopper still bids 1NT.
+* `balancing_suits_$o` natural bids (64) — above: a five-card suit is still bid.
+* `bal_pass` (30) — the rung it replaces, and only for 10-16 counts.
+* No fallback deleted: X is already covered in this context by `bal_X`, which
+  has no `when` at all.
+* In the `o = H` and `o = S` expansions the rung is unreachable
+  (`standing_bid_strain: [C, D]`), which is intended — doubling a major opening
+  with three of their trumps is a different and worse proposition.
+
+**VERIFIED.**  base `P [bal_pass] fit=1.00 p=30` -> patched
+`X [bal_X_minor_C] fit=1.00 p=63`.
+
+**Template.**  `expand: { o: [C, D, H, S] }` — already the context's own
+expansion, so one rung as written.
+
+---
+
+## Board 723 — -5; table A, call 3, S bids 2NT over partner's double of their weak two with a six-card minor
+
+`(2S) X P — ?`, S `A94.A6.QT9542.T9`, 10 HCP, six diamonds,
+`total_points = 12`, `suit_quality(D) = 1.5`.  `aw2S_2NT` (8-11 with a stopper)
+fits 1.00 at 55 and 2NT is down one; 4D makes eleven tricks at the other table.
+The ladder is `aw2S_3D` at **0-8** and then nothing until the major game jump —
+a 9-13 hand with a real minor has no bid.
+
+**Missing agreement.**  Opposite a takeout double of a weak two, a real
+five-card minor and 9-13 is a suit advance, not a notrump: partner's double has
+already promised support for it.
+
+**YAML** — context `advance_weak2_double_S`, insert before `aw2S_2NT`:
+
+```yaml
+      - id: aw2S_3D_inv
+        call: 3D
+        priority: 58
+        requires:
+          suits: { D: [5, 13] }
+          evals: { total_points: [9, 13], "suit_quality(D)": [1, 9] }
+          not: { any_of: [ { suits: { H: [4, 13] } } ] }
+        shows: "competitive minor advance of the double: a real five-card diamond suit and 9-13, no four-card heart suit"
+        establishes: { forcing: non_forcing }
+      - id: aw2S_3C_inv
+        call: 3C
+        priority: 58.5
+        requires:
+          suits: { C: [5, 13] }
+          evals: { total_points: [9, 13], "suit_quality(C)": [1, 9] }
+          not: { any_of: [ { suits: { H: [4, 13] } } ] }
+        shows: "competitive minor advance of the double: a real five-card club suit and 9-13, no four-card heart suit"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat — and why the rung is NOT invitational.**  My first draft
+declared `forcing: invitational`.  I traced the doubler's reply
+(`2S X P 3D P — ?`, N `53.K987.KJ3.AQ82`, 13 HCP) and the only fitting candidate
+is `uc_pass` at 1.00: there is no rung anywhere that accepts a minor-suit
+invitation from a takeout doubler.  Rather than ship an invitation into an empty
+seat — round 17 priced that at up to -9.8 a seat — I demoted it to
+`non_forcing` and worded `shows` to match.  The competitive value (getting to
+diamonds instead of notrump) is unchanged.
+
+**Endangers.**
+* `aw2S_2NT` (55) — whole-corpus **2 tables, +5, mean +2.50**, so this is a
+  small WINNER and the rung is priced accordingly: it only loses the seat with a
+  genuine five-card minor and 9-13, i.e. the hands where notrump has no source
+  of tricks.
+* `aw2S_3D` (57) / `aw2S_3C` (58) — same calls, 0-8; mine is the stronger
+  sibling and nothing new is covered.
+* `aw2S_cue` (54), `aw2S_pass_penalty` (50) — below.
+* `aw2S_3H` (62) and `aw2S_4H` (60) — above and untouched, and the `not:` clause
+  makes sure a four-card heart suit never reaches my rungs anyway.
+
+**VERIFIED.**  base `2NT [aw2S_2NT] fit=1.00 p=55` -> patched
+`3D [aw2S_3D_inv] fit=1.00 p=58`.
+
+**Template.**  `expand: { W: [D, H, S] }` is what the agreement wants; the three
+`advance_weak2_double_*` contexts are separate and untemplated, so the pair has
+to be written into each, with the `not:` clause naming whichever majors are
+still unbid (over 2D the denial is both majors, over 2H it is spades, over 2S it
+is hearts).
+
+---

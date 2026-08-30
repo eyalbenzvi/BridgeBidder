@@ -1,4 +1,88 @@
-<!--SUMMARY-->
+# Expert A — competitive / matchpoint discipline — dossier part 3 (38 boards, -299 IMPs)
+
+**31 proposals, 7 NOTHING-WRONGs.  All 31 proposals are VERIFIED**: each was
+written into a copy of `two_over_one.yaml`, loaded, and traced through
+`prepare_decision` + `score_candidates` + `fast_decision` on the exact hand,
+dealer, vulnerability and auction from the dossier, together with two or three
+regression hands chosen to be the nearest thing the rung must NOT catch.  (I
+worked against a pinned `git archive HEAD` snapshot of `src/` and `tools/`,
+because another session was editing `src/bridgebidder/inference/engine.py` while
+I ran.  The repo itself is untouched.)
+
+NOTHING-WRONG boards, with what I checked: **945** (constructive FSF/RKC; the
+sandwich pass is right), **562** (2C tree; eleven correct passes), **997**
+(opener's rebid ceiling; three correct competitive passes), **60** (2C tree —
+**and our loose 2S overcall of their strong 2C was a WINNER, which is a negative
+result against writing a disciplined defence-to-2C context**), **797**
+(uncontested Stayman, a 0.946 soft-miss), **107** (opener passing a 2NT response
+with seven clubs), **353** (an excluded opening threshold).
+
+## The three agreements that matter most in this slice
+
+**1. The minor-suit Law at the four level — four boards (306, 357, 388, 455).**
+`cl_/ch_/ballow_/balhigh_raise_C4` and `_D4` each demand *three* thresholds at
+once — the minor must be **my longest suit**, ten combined trumps, and
+`rule_of_26 >= 25` — and there is **no `*_raise_lott4_C/D` at all**, although the
+major twins `*_raise_lott4_H/S` exist in every one of those contexts.  So four of
+our minor, the one call that has to be available when a competitive auction gets
+high, fits 0.000-0.066 on four separate boards in this slice.  If the merge ships
+one thing from my part, ship this family.
+
+**2. The negative double must not swallow the suit — three boards (7, 114, 432).**
+`nxj_X` is `requires: { hcp: [8, 40] }` and nothing else; `nx3_negx` asks for
+`[4, 13]` in the other major, open-ended.  The one-level twins already split the
+hands correctly (`nx_1m1H_X` = **exactly four** spades, `nx_1m1H_1S` = five or
+more).  `neg_double_3level_m` has **two rules in the whole context**.  The ledger's
+own verdict on `nxj_X` — round 14's gate measured -5 held out — is "author the
+landing seats first"; boards 7, 114 and 432 author them, and none of the three
+touches `nxj_X`'s own `requires`.
+
+**3. The passout seat is under-specified in both directions — four boards
+(20, 376, 488, 544).**  It bids when it should pass (376: `ballow_X` checks only
+`standing_suit_length`, so a takeout double is made holding A-9-6-5-4 of the suit
+they OPENED — the sibling `ballow_reopen_X` has carried `max_their_suit_length`
+all along; 488: a `requires: {}` pass floor at priority 21 cannot outrank a suit
+rebid opposite a partner who has never bid), and it passes when it should bid
+(544: `ballow_X` has no 17+ strength branch, unlike every direct-seat takeout
+double, so a 19-count passes out a weak two; 20: there is no three-level Law raise
+on 6-9 support points, only a two-level one that is illegal and a three-level one
+that wants 10+).
+
+## Recurring mechanisms, since several proposals share them
+
+* **`cheapest_in_suit: true` on a rung that describes a JUMP makes it
+  unreachable.**  Three instances here: `cl_rebid_H4`/`ch_rebid_H4` (board 906),
+  `aw2r_4S_$W`/`aw2r_4H_$W` (board 897, dead over every raise to THREE),
+  `sw_*_jump` (board 945).  Same species as the ledger's `cl_raise_lott3_$M`.
+* **`partner_shown_max` is the missing "partner has limited himself" gate.**  It
+  returns 40 while partner is unlimited, 16-17 after an overcall, 18 after a 1NT
+  overcall.  Boards 85 and 217 both turn on it, and it lets a rung be switched off
+  opposite a takeout double without any new `when:` vocabulary.
+* **An authored, *discriminating* pass is the only way to pass a forcing call.**
+  `decision.py` re-admits PASS when `pass_forbidden` is soft and an authored pass
+  rule with a non-empty `requires` fits >= 0.9.  That is why board 44's penalty
+  pass has to be a rung and cannot be a priority change.
+* **A rung in a MORE SPECIFIC context deletes the generic rungs for that call.**
+  Boards 7, 114, 432 and 897 all do this; on board 7 I ship a low-priority mirror
+  rung carrying the displaced band verbatim so the ladder is provably a superset,
+  and on the others I state the subtraction explicitly.
+
+## Negative results, reported rather than shipped
+
+* **A disciplined defence-to-strong-2C context is probably wrong** (board 60): our
+  undisciplined 2S overcall of their 2C gained about 11 IMPs by keeping them out
+  of 3NT.  Any such context must be looser than the generic ladder, not tighter —
+  and `pattern: "2C - ?"` would shadow `general_competitive_low` outright.
+* **A suit-quality gate on the five-card-major overcall of a preempt does not
+  work** (board 538): with `"suit_quality(S)": [1, 9]` the rung stalls at fit
+  0.757, under the fast path, and the board does not change.  `quick_tricks` is
+  the honest safety catch there.
+* **`ballow_X_strong` (board 544) also fires on a 15-count** with the same 1-4-4-4
+  shape, because 17 is a soft floor.  I could not separate them and I am saying so
+  rather than pretending the rung is clean.
+
+---
+
 
 ## Board 906 — E, call 7 (table B): `3H` should be `4H`
 

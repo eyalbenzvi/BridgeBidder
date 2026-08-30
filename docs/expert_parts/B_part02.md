@@ -1100,3 +1100,325 @@ notrump, so a 4-4 minor fit found at the 32-count level can never be played in
 the minor.  That is a subject, not a rung, and it should be measured as one.
 
 ---
+
+## Board 545 — PROPOSAL — opener's rebid after the 1D - 2C game force
+
+**Seat/call that went wrong.** Table B, call 4, **E** after `1D - P - 2C - P`,
+holding `64.A87.AKQ986.Q7` — 15 HCP and six good diamonds, opposite a
+**game-forcing** 2/1.  The engine bid **2NT** via `uc_nt2`: *"natural 2NT: 11-12
+balanced with their suit stopped"*.  The whole seat is a soft-miss lottery — the
+best fit among all candidates is **0.134**.  Partner then read 11-12, and the
+auction ran 2NT - 3NT - 4NT (quantitative, `qr3_4NT_quant`) - pass, down one.
+
+This is `ROUND_METHOD.md`'s own open item — *"There is no context for opener's
+rebid after a 2/1 in a MINOR; `1D - P - 2C - P - ?` is unauthored and the
+generic 11-12 `uc_nt2` annexes a game-forcing seat"* — verified on a live board.
+`1D - 2C` is the **only** minor-over-minor 2/1 the response ladder can produce
+(`r1D_2C_gf` / `r1D_2C_gf3`), so one literal context closes it.
+
+**The missing agreement.** Opposite the 1D - 2C game force, opener shows a
+four-card major up the line, six diamonds with 3D on extras and 2D on a
+minimum, four-card club support, and 2NT/3NT for the balanced ranges the 1NT
+opening does not cover.
+
+```yaml
+  - id: opener_rebid_after_1D_2C
+    description: "Opener's rebid after the 1D - 2C game force (the only 2/1 in a minor over a minor)"
+    pattern: "1D - P - 2C - P - ?"
+    rules:
+      - id: ob1d2c_floor
+        call: 2D
+        priority: 45
+        requires: {}
+        shows: "nothing extra to describe: the cheapest rebid keeps the game force alive"
+        establishes: { forcing: game_forcing }
+      - id: ob1d2c_2H
+        call: 2H
+        priority: 57
+        requires: { suits: { H: [4, 13] } }
+        shows: "4+ hearts (GF continues)"
+        establishes: { forcing: game_forcing }
+      - id: ob1d2c_2S
+        call: 2S
+        priority: 56
+        requires: { suits: { S: [4, 13] }, not: { suits: { H: [4, 13] } } }
+        shows: "4+ spades (GF continues)"
+        establishes: { forcing: game_forcing }
+      - id: ob1d2c_2D
+        call: 2D
+        priority: 54
+        requires:
+          suits: { D: [6, 13] }
+          hcp: [12, 16]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "6+ diamonds, minimum (GF continues)"
+        establishes: { forcing: game_forcing }
+      - id: ob1d2c_3D
+        call: 3D
+        priority: 55
+        requires:
+          suits: { D: [6, 13] }
+          hcp: [15, 21]
+          features: [ "good_suit(D)" ]
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] }
+        shows: "6+ good diamonds with extras: setting trumps (GF)"
+        establishes: { forcing: game_forcing, agreed_suit: D }
+      - id: ob1d2c_3C
+        call: 3C
+        priority: 53
+        requires:
+          suits: { C: [4, 13] }
+          not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } }, { suits: { D: [6, 13] } } ] }
+        shows: "four-card club support: raising the 2/1 (GF)"
+        establishes: { forcing: game_forcing, agreed_suit: C }
+      - id: ob1d2c_2NT
+        call: 2NT
+        priority: 52
+        requires: { hcp: [12, 14], evals: { semi_balanced: [1, 1] } }
+        shows: "12-14 balanced (a 15-17 balanced hand opened 1NT)"
+        establishes: { forcing: game_forcing }
+      - id: ob1d2c_3NT
+        call: 3NT
+        priority: 51
+        requires: { hcp: [18, 19], evals: { semi_balanced: [1, 1] } }
+        shows: "18-19 balanced"
+        establishes: { forcing: sign_off }
+```
+
+**THE ANSWERING SEAT — already authored, and I checked it rather than assuming.**
+Every rung here is game-forcing, and after `1D - P - 2C - P - 3D - P` the
+`gf_landing_*` family owns the seat: `gf_minor_3NT` fires at fit 1.000 on
+`Q98.KT4.753.AK93`.  The `ob1d2c_floor` rung is the never-starve landing (round
+6's lesson) and is priced below every descriptive rung, so it can only win when
+nothing else fits — verified on a 4-3-4-2 thirteen-count.
+
+**What it endangers.**  A brand-new anchored context (specificity 1004) that
+takes 2D, 2H, 2S, 2NT, 3C, 3D and 3NT away from `general_uncontested_continuation`
+and the `gf_landing_*` family at this one seat.
+* `uc_nt2` (2NT, "11-12 balanced") — replaced by `ob1d2c_2NT`, which describes
+  12-14 balanced opposite a **game force**, the only balanced range this seat can
+  hold.  This is a pure subtraction of a lie.
+* `uc_rebid_D2` (2D, prio 29, fit 0.100 here) and `uc_raise_C3` — replaced by
+  rungs that keep the game force alive instead of sounding like a sign-off.
+* `gf_new_2H` / `gf_new_2S` (prio 36) — my 2H/2S rungs are the same natural bid
+  at a priority that beats the notrump lottery; they say four-plus rather than
+  relying on `unbid_suit`.
+* `gf_3NT` (prio 34) — my 3NT is banded 18-19, so a 15-count no longer reaches
+  3NT by soft miss.
+
+**VERIFIED.**  E → `ob1d2c_3D` 3D at fit 1.000, prio 55; W → `gf_minor_3NT` 3NT
+at fit 1.000.  3NT makes nine (+400) instead of 4NT down (-50): the board swings
+about 10 IMPs.
+
+**TEMPLATE.**  None — `1D - 2C` is the only auction of its shape the response
+ladder can produce, and templating over `m` would generate `1C - 2D`, which
+`resp_1m` never bids.  That is exactly why this hole survived: it is the one
+member of a family with no siblings to lint against.
+
+---
+
+## Board 598 — PROPOSAL — 1H - 1NT - 2S, the reverse `opener_rebid_1S_1NT_second_major` never got a twin for
+
+**Seat/call that went wrong.** Table A, call 4, **S** after `1H - P - 1NT - P`,
+holding `KQJ6.KQ742.5.AK6` (18 HCP, 4-5-1-3).  The engine bid **2C** via
+`ob_1M1NT_2C` — *"3+ clubs, 12-17, no 6-card major"* — **at fit 0.800**, one
+point over its own ceiling, because nothing in the seat fits: the best candidate
+in the entire context is 0.800.  Partner passed 2C.
+
+`opener_rebid_1S_1NT_second_major` exists and carries `ob_1S1NT_2H` with the
+comment *"the 1M - 1NT context is expanded over both majors, so it can offer a
+second suit in a minor but never the other major - and 1H - 1NT - 2S would be a
+reverse, so only this half of it is a plain second suit."*  The reverse half was
+then never written.  **That is the sibling gap**, and the file's own comment
+names it.
+
+**The missing agreement.** After 1H - 1NT, 2S is a reverse: five hearts, four or
+more spades and 16+, forcing.
+
+```yaml
+  - id: opener_rebid_1H_1NT_second_major
+    description: "1H - 1NT: 2S is the second suit and a reverse (five hearts, four spades, extras)"
+    pattern: "1H - P - 1NT - P - ?"
+    rules:
+      - id: ob_1H1NT_2S
+        call: 2S
+        priority: 58
+        requires:
+          suits: { H: [5, 13], S: [4, 13] }
+          hcp: [16, 21]
+          not: { suits: { H: [6, 13] } }
+        shows: "reverse into the second suit: five hearts, 4+ spades, 16+ - forcing"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT** — 2S is `forcing: one_round` and the seat did not exist:
+
+```yaml
+  - id: responder_over_1H1NT_2S
+    description: "Responder answers opener's 1H - 1NT - 2S reverse"
+    pattern: "1H - P - 1NT - P - 2S - P - ?"
+    rules:
+      - id: r1h2s_2NT
+        call: 2NT
+        priority: 50
+        requires: {}
+        shows: "the cheapest call opposite the forcing reverse: 6-10, nothing better to say"
+        establishes: { forcing: non_forcing }
+      - id: r1h2s_3H
+        call: 3H
+        priority: 54
+        requires: { suits: { H: [3, 13] } }
+        shows: "three-card heart preference opposite the 5-4"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: r1h2s_3S
+        call: 3S
+        priority: 55
+        requires: { suits: { S: [4, 13] } }
+        shows: "four-card spade support opposite the reverse"
+        establishes: { forcing: game_forcing, agreed_suit: S }
+      - id: r1h2s_3NT
+        call: 3NT
+        priority: 56
+        requires:
+          hcp: [9, 11]
+          evals: { weakest_unshown_stopper: [0.9, 1] }
+          not: { suits: { H: [3, 13] } }
+        shows: "9-11 with both minors held and no heart fit: game opposite the 16+ reverse"
+        establishes: { forcing: sign_off }
+```
+
+**What it endangers.**
+* `ob_1M1NT_2C` (2C, prio 52, capped at 17): the new rung outranks it at 16-17
+  where both can fit.  **The bridge:** with 5-4 in the majors and sixteen-plus,
+  a reverse shows the shape *and* the extras in one call, while three small
+  clubs shows neither; the 12-15 band underneath is untouched.  Verified: a
+  13-count 4-5-1-3 still bids 2C at fit 1.000 (the reverse falls to 0.800).
+* `ob_1M1NT_3H` (prio 56) and `ob_1M1NT_4H` (57) both require a six-card major;
+  `not: { suits: { H: [6, 13] } }` keeps them clear of my rung entirely.
+* `uc_new_S2` / `uc_new_S2_hi` (2S, prio 26/26.5, "5+ cards, 10+ points") — the
+  new rung takes 2S off them and, unlike them, gets the four-card shape right.
+* In the answering context, `r1h2s_2NT` is the `requires: {}` landing, so the
+  forcing bid can never be passed out.
+
+**VERIFIED.**  S → `ob_1H1NT_2S` 2S at fit 1.000; N (`987.8.AK986.Q974`, 9 HCP,
+both minors held, one heart) → `r1h2s_3NT` 3NT at fit 1.000.  3NT makes nine
+(+600) instead of 2C making ten (+130).
+
+**TEMPLATE.**  No expansion — it is the literal twin of
+`opener_rebid_1S_1NT_second_major`, and the pair should be filed adjacent so the
+sibling lint can see them together.
+
+---
+
+## Board 606 — PROPOSAL — responder's jump showing five-five in the majors
+
+**Seat/call that went wrong.** Table A, call 6, **N** after `1D - P - 1S - P -
+2C - P`, holding `KQJT6.A9853.J7.9` — 5-5 in the majors with 11 HCP.  The
+engine bid **2D** (`r1d2c_2D`, "preference back to the first suit: 6-10") at fit
+0.800 and the auction died in 3D; 4H makes ten.  `responder_after_1D1S_2C` has
+seven rungs and not one of them mentions a second suit, and 2H is owned by
+`fourth_suit_forcing` (`fsf_2H`, fit 0.435 here), so the 5-5 hand has literally
+nothing to bid.
+
+**The missing agreement.** Responder's JUMP into the fourth suit is natural, not
+fourth suit forcing: it shows five-five in the majors, invitational or better.
+
+```yaml
+# ADDED to the existing context responder_after_1D1S_2C
+# (pattern "1D - P - 1S - P - 2C - P - ?"), filed directly above r1d2c_3S
+      - id: r1d2c_3H
+        call: 3H
+        priority: 58
+        requires:
+          suits: { S: [5, 13], H: [5, 13] }
+          hcp: [10, 40]
+        shows: "jump in the second suit: five-five in the majors, invitational or better (a jump, so natural - not fourth suit forcing)"
+        establishes: { forcing: invitational }
+```
+
+**THE ANSWERING SEAT** — an invitation with no reply is worth nothing:
+
+```yaml
+  - id: opener_over_55_major_jump
+    description: "Opener answers responder's 3H jump showing five-five in the majors"
+    pattern: "1D - P - 1S - P - 2C - P - 3H - P - ?"
+    rules:
+      - id: o55_3S
+        call: 3S
+        priority: 50
+        requires: {}
+        shows: "preference to the first major at the cheapest level: no extras"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: o55_4H
+        call: 4H
+        priority: 56
+        requires: { suits: { H: [2, 13] }, evals: { total_points: [13, 40] } }
+        shows: "accepting the invitation with two-plus hearts"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: o55_4S
+        call: 4S
+        priority: 55
+        requires: { suits: { S: [3, 13] }, evals: { total_points: [13, 40] } }
+        shows: "accepting the invitation with three-plus spades"
+        establishes: { forcing: sign_off, agreed_suit: S }
+```
+
+**What it endangers.**
+* `fsf_2H` (2H, prio 65) is **untouched** — my rung is a jump to 3H, a different
+  call, which is precisely why the jump is the right vehicle in a system that
+  plays the fourth suit as artificial.
+* `r1d2c_3S` (prio 59, "6+ spades, game values") outranks mine and still does;
+  a genuine six-card suit is the better description.
+* `r1d2c_2D` (prio 54), `r1d2c_2S` (55), `r1d2c_2NT` (56) all keep their bands;
+  mine only wins on a hand that is 5-5 with ten-plus, which none of them fits.
+* `o55_3S` carries `requires: {}` so the invitation can never be passed out.
+
+**VERIFIED.**  N → `r1d2c_3H` 3H at fit 1.000, prio 58; S
+(`.KQ.KQT9852.J843`, KQ doubleton in hearts, 11 HCP and seven diamonds) →
+`o55_4H` 4H at fit 1.000.  4H makes ten (+620) instead of 3D+2 (+150).
+
+**TEMPLATE.**  The rung is literal here, but the SAME agreement exists in the
+other two-suit auctions the file already has contexts for —
+`responder_rebid_1D_1H_2C` (`1D - 1H - 2C`, jump to 2S) and
+`responder_after_1S_rebid` (`1m - 1H - 1S`).  Author it as
+`expand_pairs` over those three shapes when this ships.
+
+---
+
+## Board 622 — NEGATIVE PROTOTYPE, and NOTHING-WRONG at the seat
+
+**Seat.** Table A, call 6, **N** after `1NT - P - 2H - P - 2S - P`, holding
+`KQ753..T83.J9742` — 6 HCP, five spades, five clubs, a heart void.
+`tr_pass_weak` fits 1.000 and the engine passed 2S for +170; BEN's 2NT led to a
+3NT that made ten.
+
+**Verdict: NOTHING-WRONG.**  Passing 2S with six HCP opposite an accepted
+transfer is right at IMPs; the 3NT that made was a bonus from a friendly layout
+(N holds a heart void opposite a notrump opener).  `tr_2NT_inv` demands eight,
+correctly.
+
+**The agreement that IS missing here, reported as a prototype that does not fire
+on this board.**  `ROUND_METHOD.md`'s open item — *"`nt_after_transfer` has no
+natural second-suit rung, so a 5-6 hand after a transfer must choose between 3NT
+and four of the five-card major"* — is real and this board is its habitat.  The
+rung is:
+
+```yaml
+# ADDED to nt_after_transfer (expand_pairs [{M:H,T:D},{M:S,T:H}])
+      - id: tr_second_$M
+        call: 3C
+        priority: 57.5
+        when: { unbid_suit: C }
+        requires:
+          suits: { $M: [5, 13], C: [5, 13] }
+          hcp: [8, 15]
+        shows: "five-five: the second suit, game try - opener picks a game or passes the shape back"
+        establishes: { forcing: invitational }
+```
+with an answering context `1NT - P - 2$T - P - 2$M - P - 3C - P - ?` (4M with
+three-card support, 3NT with a club fit and stoppers, 4C with four).  **It does
+not fire on board 622** — six HCP is below any invitational floor — so I am
+recording it as the agreement the context needs rather than as this board's fix.
+Ship it with a board that has the values, or as part of the transfer subject.
+
+---

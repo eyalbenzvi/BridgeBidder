@@ -1420,3 +1420,292 @@ in the corpus primary reading, so this rung's own family is invisible to
 `cl_nt2`'s 28) is the companion.
 
 ---
+
+## Board 582 — margin -3
+
+**NOTHING-WRONG.**  Table A, call 4: S **passes** the semi-forcing 1NT on
+`732.AQJT8.KQ7.54` (12 HCP, `total_points` 13, shape 3=5=3=2).
+`ob_1M1NT_pass` — "balanced minimum: passing the semi-forcing 1NT" — fits 1.000
+and it is the textbook action; `DECISIONS.md` records the semi-forcing treatment
+as a deliberate system choice with a flag.  BEN's `2D` would be a **three-card**
+diamond suit, and `ob_1M1NT_2D` explicitly promises four — so BEN's call is not
+available in this system without changing the meaning of 2D.
+
+Checked in full: `ob_1M1NT_2H` wants six hearts (0.349), `ob_1M1NT_2C` wants
+three clubs and S has two (0.349), `ob_1M1NT_3H` wants 16-19 (0.047).  Every
+alternative is a lie about the hand.  The board was lost on the play in 1NT
+(five tricks) and at table B to `sw_2S`, which is the competitive reviewer's.
+
+---
+
+## Board 597 — margin -3
+
+**Seat/call:** table A, call 3, N **passes** on `J97.Q72.AJ9.A986` after
+`P - 2S - 3D`.  `ch_raise_S3` fits **0.605** — it is blocked by
+`rule_of_26: [22, 99]` where the hand computes **20.5**, because `rule_of_26`
+adds partner's shown *minimum* and a weak two's minimum is five.  Partner has
+six spades, I have three: `lott_total_trumps(S)` = **9**.
+
+**Missing agreement:** the same one as board 258 — opposite a partner limited to
+ten, the level is set by the trumps, not by the points.  Nine trumps, three
+level.
+
+**YAML** — context `general_competitive_high`, per suit:
+
+```yaml
+      - id: ch_raise_law_S3
+        call: 3S
+        priority: 30.6
+        when: { partner_last_suit: S }
+        requires: { evals: { "lott_total_trumps(S)": [9, 9], partner_shown_max: [0, 10], total_points: [6, 40] } }
+        shows: "the Law opposite a limited partner: nine trumps, compete to the three level"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+```
+
+**Answering seat:** as board 258 — a limited partner who has told his story
+passes; `ch_pass` fits 1.00 for him and the raise sets `agreed_suit` so no later
+rung invents a different trump.
+
+**What it endangers:** placed at **30.6**, deliberately *below* `ch_raise_S3`
+(31), because `ch_raise_S3` runs **+1.83 over 6 tables** and must keep every
+hand it fits.  On this board `ch_raise_S3` fits 0.605, the fast path fails, and
+the blended score gives the seat to the Law rung at fit 1.000 (0.792 against
+0.480).  Below it: `ch_free_3$M` (30), `ch_neg_major_*` (30), `ch_raise_$X2`
+(30), everything at 29 and under.  It does **not** reach `ch_raise_$M4` or
+`ch_raise_lott4_$M` (32), which is what protects `ch_raise_lott4_S`'s +3.57.
+It also outranks my own `ch_pass_limited_*` (27.6), which is the correct order:
+with a fit, compete; without one, stop.
+
+**VERIFIED.**  N now bids 3S (BEN: 3S 0.86).
+
+**Template:** as board 258 — four suits × two levels in each of
+`general_competitive_low` and `general_competitive_high`, sixteen rules from one
+agreement.
+
+---
+
+## Board 644 — margin -3
+
+**Seat/call:** table A, call 6, S bids **3NT** on `962.632.T63.J763` —
+**one high-card point** — after `2C - P - 2D - P - 2NT - P`.  `r2c_nt_3NT`
+("to play opposite 22-24") has `requires:` consisting only of a denial of a
+four-card major, so it fits **1.000 on a Yarborough** and there is no pass in
+the context at all.
+
+**Missing agreement:** the 2NT rebid after 2C-2D is **not forcing**; opposite
+22-24, a hand with fewer than three points passes.
+
+**YAML** — context `r2c_after_2NT`:
+
+```yaml
+      - id: r2c_nt_pass
+        call: P
+        priority: 62
+        requires: { hcp: [0, 2] }
+        shows: "a bust opposite 22-24: the 2NT rebid is not forcing, pass"
+        establishes: { forcing: sign_off }
+```
+
+**Answering seat:** none — the pass ends the auction, which is the point.
+
+**What it endangers:**
+* `r2c_nt_3NT` (60) — only on 0-2 counts; from three points up it fits and the
+  new rung does not.  Three opposite 22 is 25 and belongs in game.
+* `r2c_nt_stayman` (80) and the transfers (81/82) are **above** it, so a bust
+  with a five-card major still transfers and a bust with a four-card major
+  still bids Stayman — deliberate, since 3-of-a-major on a known fit is a better
+  contract than 2NT and both are reachable.
+* Fallback: `P` was covered only by `uc_pass` bleeding in from
+  `general_uncontested_continuation` at priority 18; the new rung gives the
+  context its own sign-off.
+
+**VERIFIED.**  S now passes (BEN: P 0.98).  Control: a six-count with no
+four-card major still bids 3NT (`r2c_nt_pass` at fit 0.028).
+
+**Honest denominator:** `r2c_nt_3NT` runs **-1.00 over 3 tables** — tiny.  The
+argument is structural: `DECISIONS.md` records that *"after a 2C opening,
+partner's shown minimum is ZERO by construction"*, and this is that fact
+producing a 3NT on one point.
+
+**Template:** none on suit.  The same hole exists at
+`r2c_3NT_2527` (opener's 25-27 rebid) — responder there needs a pass rung too,
+`hcp: [0, 0]`, and the two are one authored idea.
+
+---
+
+## Board 664 — margin -3
+
+**NOTHING-WRONG.**  Third seat, `QJ8764.K84.KJ.T5` — exactly six spades,
+10 HCP, `suit_quality(S)` = 1.5.  `open_weak_2S_nv` ("weak two: 6 spades,
+5-10 HCP") fits 1.000 and is the system's own documented discipline
+(*"weak twos are disciplined: exactly 6 cards"*); BEN's 3S would be a seven-card
+preempt this hand does not hold.  `open_1S_rule20_third` fits 0.606 and
+`open_1S` 0.409, so nothing is being outranked.  No constructive machinery is
+reached — the auction is 2S-2NT-P-P.
+
+---
+
+## Board 674 — margin -3 — **an absent subject, not a defect**
+
+**Seat/call:** table A, call 2, N **passes** on `3.A984.KJT42.832` after
+`1NT - 2C`.  Partner opened a 15-17 notrump and RHO overcalled; the seat falls
+to `general_competitive_low`, where `cl_negative_X2` wants **8+ HCP** (N has 8
+but the rung fits only 0.349 because it also wants an unbid *major* it reads
+differently) and `cl_new_D2` wants **10+ points** (fits 0.800).  Nothing fits
+and `cl_pass` takes it at 1.000.
+
+**Missing agreement:** responder has **no system at all** over an overcall of
+our 1NT.  The convention card calls for a negative double showing the unbid
+major, natural two-level sign-offs, and 3NT with a stopper; the file has none of
+them, and the generic competitive ladder is calibrated for auctions where
+partner has shown 12, not 15-17.
+
+**YAML** — one new context, written out per suit (a context that `expand:`s over
+a variable absent from its `pattern` produces N identical contexts and only the
+first is used — that trap cost me a prototype here):
+
+```yaml
+  - id: responder_over_1NT_overcall
+    description: "Responder after our 1NT opening is overcalled below 3C"
+    pattern: "1NT - bid<3C - ?"
+    rules:
+      - id: r1nti_X_H
+        call: X
+        priority: 34
+        when: { unbid_suit: H }
+        requires: { hcp: [7, 40], suits: { H: [4, 13] } }
+        shows: "negative double of their overcall: 7+ with four cards in the unbid major"
+        establishes: { forcing: one_round }
+        alertable: true
+      - id: r1nti_X_S
+        call: X
+        priority: 34
+        when: { unbid_suit: S }
+        requires: { hcp: [7, 40], suits: { S: [4, 13] } }
+        shows: "negative double of their overcall: 7+ with four cards in the unbid major"
+        establishes: { forcing: one_round }
+        alertable: true
+      - id: r1nti_3NT
+        call: 3NT
+        priority: 30
+        requires: { hcp: [9, 40], evals: { standing_suit_length: [0, 3], weakest_their_stopper: [0.9, 9] } }
+        shows: "game opposite 15-17 with their suit stopped"
+        establishes: { forcing: sign_off }
+      # ... and, for each of C, D, H, S:
+      - id: r1nti_2C
+        call: 2C
+        priority: 26
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires: { suits: { C: [5, 13] }, hcp: [0, 8] }
+        shows: "natural and to play: a five-card C suit and no game opposite 15-17"
+        establishes: { forcing: sign_off }
+      - id: r1nti_3C
+        call: 3C
+        priority: 25
+        when: { unbid_suit: C, cheapest_in_suit: true }
+        requires: { suits: { C: [6, 13] }, hcp: [0, 8] }
+        shows: "natural and to play at the three level: a six-card C suit and no game"
+        establishes: { forcing: sign_off }
+      # (r1nti_2D/3D, r1nti_2H/3H, r1nti_2S/3S identical with the suit substituted)
+      - id: r1nti_pass
+        call: P
+        priority: 18
+        requires: {}
+        shows: "nothing to say over their overcall"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT** — `r1nti_X_*` is `forcing: one_round` and ships with it:
+
+```yaml
+  - id: opener_over_1NT_negative_double
+    description: "The 1NT opener answers responder's negative double of the overcall"
+    pattern: "1NT - bid<3C - X - P - ?"
+    rules:
+      - id: o1ntx_2H
+        call: 2H
+        priority: 62
+        when: { cheapest_in_suit: true }
+        requires: { suits: { H: [4, 13] }, evals: { "is_their_suit(H)": [0, 0] } }
+        shows: "four cards in the major partner's double promised: the 4-4 fit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: o1ntx_3H
+        call: 3H
+        priority: 61
+        when: { cheapest_in_suit: true }
+        requires: { suits: { H: [4, 13] }, evals: { "is_their_suit(H)": [0, 0] } }
+        shows: "four cards in the major partner's double promised: the 4-4 fit"
+        establishes: { forcing: non_forcing, agreed_suit: H }
+      - id: o1ntx_2S
+        call: 2S
+        priority: 62
+        when: { cheapest_in_suit: true }
+        requires: { suits: { S: [4, 13] }, evals: { "is_their_suit(S)": [0, 0] } }
+        shows: "four cards in the major partner's double promised: the 4-4 fit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: o1ntx_3S
+        call: 3S
+        priority: 61
+        when: { cheapest_in_suit: true }
+        requires: { suits: { S: [4, 13] }, evals: { "is_their_suit(S)": [0, 0] } }
+        shows: "four cards in the major partner's double promised: the 4-4 fit"
+        establishes: { forcing: non_forcing, agreed_suit: S }
+      - id: o1ntx_3NT
+        call: 3NT
+        priority: 58
+        requires: { hcp: [16, 17], evals: { weakest_their_stopper: [0.9, 9] } }
+        shows: "a maximum with their suit stopped and no four-card major: nine tricks"
+        establishes: { forcing: sign_off }
+      - id: o1ntx_2NT
+        call: 2NT
+        priority: 56
+        when: { cheapest_in_suit: true }
+        requires: {}
+        shows: "no four-card major for partner's double: the cheapest notrump"
+        establishes: { forcing: non_forcing }
+      - id: o1ntx_pass
+        call: P
+        priority: 55
+        requires: { evals: { standing_suit_length: [4, 13] } }
+        shows: "converting the double for penalties: length in their suit"
+        establishes: { forcing: sign_off }
+```
+
+Two implementation notes, both learned from failed prototypes.
+(a) `when: { unbid_suit: H }` does **not** work in the answering context: after
+the negative double the inference engine registers hearts as partner's suit on
+some auctions and not others, so the rung fired over a 2C overcall and vanished
+over 2S.  `is_their_suit(H): [0, 0]` in `requires` is the condition that
+behaves consistently — with the caveat that, like `is_unbid_suit`, it has no
+sharp tolerance registered in `_EVAL_S2`, so it discourages rather than forbids
+bidding their suit.  Adding `"is_their_suit"` to `_EVAL_S2` at 0.05 alongside
+the other boolean vetoes would make it a real gate; that is a one-line source
+change and I am flagging it, not proposing it.
+(b) `o1ntx_2NT` carries `requires: {}` so the answering seat can never be
+starved.
+
+**What it endangers.**  This is the riskiest proposal in my file and I want that
+on the record.  The pattern is 1000+3 specific against
+`general_competitive_low`'s 3, so it takes over the **interpretation** of the
+seat.  Traced: candidate generation is not exclusive — `cl_nt2` and the rest
+still appear in the ranking — but partner's model of the call changes.  Round 12
+measured **-59 paired / -106 held out** for routing `uc_*` positions to the
+competitive contexts wholesale, and the mechanism was exactly this.  Two things
+make this case different and they should be checked rather than believed:
+the new context **defines calls the old one starved** (a negative double at 7,
+a two-level sign-off at 0-8) rather than redefining calls it already made well,
+and it ends in a `requires: {}` pass.  Rungs it can outrank: `cl_negative_X2`
+(33, **-2.07 over 15 tables**), `cl_new_$X2/_hi` (26/26.5), `cl_nt2` (28),
+`cl_pass` (20).
+
+**VERIFIED end to end.**  `1NT - 2C - X - P - 2H`: N doubles (BEN: X 0.87),
+opener bids 2H with `AT4.KT63.A8.KJ64`, and 2H makes **eleven** tricks
+double-dummy where we passed 2C out.
+
+**Template:** ten rules in the responder context (two doubles, eight natural
+sign-offs, 3NT, pass) and seven in the answering one.  Both want a `bid>=3C`
+twin (`responder_over_1NT_overcall_high`) for a three-level overcall, where the
+negative double is the only call that survives — that is the next twenty rules
+of this subject.
+
+---
