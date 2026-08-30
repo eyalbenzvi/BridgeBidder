@@ -1129,3 +1129,239 @@ nobody repeats it).  Competitively E/W never had a call: they hold 16 HCP
 between them across two passed hands.
 
 ---
+
+## Board 494 — margin -6
+
+**Seat/call:** North, call 6 — `(P) (P) 2NT (P) 3C (X) ?` with
+`AQ53.AJ43.A4.AJ8`: 20 HCP, **four hearts and four spades**, and partner has
+just asked for a major.  We passed (`xd_pass`, "sitting for their double",
+fit 1.000, priority 18) and later passed out 3H for -100 while the other table
+made 4S.
+
+**Missing agreement:** `stayman_over_interference` exists for
+`1NT - P - 2C - act - ?` and there is **no 2NT twin**, so a doubled 3C Stayman
+falls all the way to `general_their_double`, where the only candidates are a
+pass and three runouts.
+
+```yaml
+# NEW CONTEXT, inserted before `- id: resp_2NT` (specificity 1000+5, so it owns
+# this exact auction and shadows only `general_their_double`'s three-token
+# `... - X - ?`; the catch-all pass below carries the shadowed `xd_pass`
+# verbatim so the context can only ever be a superset)
+  - id: nt2_stayman_over_interference
+    description: "Opener answers 3C Stayman after their interference"
+    pattern: "2NT - P - 3C - act - ?"
+    rules:
+      - id: nt2_stmi_3H
+        call: 3H
+        priority: 70
+        requires: { suits: { H: [4, 5] } }
+        shows: "4+ hearts (over interference)"
+        establishes: { forcing: non_forcing }
+      - id: nt2_stmi_3S
+        call: 3S
+        priority: 60
+        requires: { suits: { S: [4, 5] } }
+        shows: "4+ spades, denies 4 hearts (over interference)"
+        establishes: { forcing: non_forcing }
+      - id: nt2_stmi_3D
+        call: 3D
+        priority: 50
+        requires: { not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
+        shows: "no 4-card major (over interference)"
+        establishes: { forcing: non_forcing }
+      - id: nt2_stmi_XX
+        call: XX
+        priority: 55
+        requires: { evals: { "stoppers(their)": [1, 9] }, not: { any_of: [ { suits: { H: [4, 13] } }, { suits: { S: [4, 13] } } ] } }
+        shows: "no 4-card major, their suit stopped: happy to play it redoubled"
+        establishes: { forcing: non_forcing }
+      - id: nt2_stmi_pass
+        call: P
+        priority: 20
+        requires: {}
+        shows: "nothing to say over their interference"
+        establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+```
+
+**THE ANSWERING SEAT — two edits, both required.**
+`nt2_stayman_placement` only matches when RHO passed, and it has no rung for
+"no fit with opener's major but four of my own":
+
+```yaml
+# context: nt2_stayman_placement — add the interference shape
+    also_patterns: ["2NT - P - 3C - act - 3(D|H|S) - P - ?"]
+# ... and one new rung, inserted before `- id: nt2_stm_4H`
+      - id: nt2_stm_3S_other
+        call: 3S
+        priority: 61
+        when: { standing_bid_strain: [H] }
+        requires: { suits: { S: [4, 13], H: [0, 3] } }
+        shows: "no heart fit but four spades of my own: opener may hold four of them too"
+        establishes: { forcing: one_round }
+```
+
+**What it endangers:** inside its own auction it takes over from
+`general_their_double` (`xd_pass` 18, `xd_run_*` 24-26, `xd_XX_extras` 23) —
+`nt2_stmi_pass` at priority 20 with `requires: {}` reproduces `xd_pass`, and the
+runouts are exactly what a 20-22 balanced opener must never do over a double of
+an artificial 3C.  `nt2_stm_3S_other` at 61 outranks `nt2_stm_4H` (60),
+`nt2_stm_4S` (59) and `nt2_stm_3NT` (55); it is gated to
+`standing_bid_strain: [H]` with fewer than four hearts, so it cannot steal the
+fit-raise from a hand that has one.
+
+**VERIFIED end to end.**  `2NT (P) 3C (X) 3H (P) 3S (P) 4S`:
+North `3H` (`nt2_stmi_3H`, fit 1.000), South `3S` (`nt2_stm_3S_other`, fit
+1.000), North `4S` (`uc_raise_S4`, fit 1.000).  4S makes ten for +620, which is
+the other table's score exactly.  Regression: a 4-3-3-3 twenty-count with no
+four-card major bids 3D/XX, not pass.
+
+**Template:** none needed; both blocks are literal.
+
+---
+
+## Board 535 — margin -6
+
+**Seat/call:** South, call 3 — `(P) 2S (3C) ?` with `A9.AQ843.T3.Q832`:
+partner has opened a weak two showing **exactly six spades**, they have
+overcalled 3C, and I hold `A9` — the eighth trump.  We bid **3H**
+(`ch_free_3H`, "free bid: 5+ good hearts, 10+") for -100.
+
+**Missing agreement:** raise to the level of the fit opposite partner's KNOWN
+six-card suit.  Every raise rung in `general_competitive_high` demands three
+trumps of my own (`ch_raise_S3`, fit 0.330 here), which is the right floor when
+partner's length is a minimum and the wrong one when he has announced six.
+Measured on this board: `partner_shown_length(S)` = 6, `lott_total_trumps(S)` = 8.
+
+```yaml
+# context: general_competitive_high, inserted before `- id: ch_raise_C2`
+      - id: ch_raise_preempt3_$M
+        call: 3$M
+        priority: 31.5
+        when: { partner_suit: $M, cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          suits: { $M: [2, 13] }
+          evals: { "partner_shown_length($M)": [6, 13], "lott_total_trumps($M)": [8, 26], total_points: [8, 40] }
+        shows: "raise to the level of the fit opposite partner's KNOWN six-card suit: two trumps make eight, and eight trumps belong at the three level"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+```
+
+**Answering seat:** none — non-forcing, and `preemptor_discipline`
+(`preemptor_pass`, priority 45) already stops partner bidding again.
+
+**What it endangers:** `ch_raise_$M3` (31, same call, 3+ trumps — mine is the
+doubleton version and requires partner to have PROMISED six);
+`ch_free_3H`/`ch_free_3S` (30 — the rule that fired; introducing a new suit at
+the three level opposite a known six-card weak two, on a hand with a fit, is the
+classic error); `ch_new_*3(_hi)` (27/27.5); `ch_advance_x3_*` (28.5);
+`ch_neg_major_*` (30); `ch_nt2`/`nt3` (28/29); `ch_pass` (22).  It sits below
+`ch_negative_X3` (33), `ch_penalty_X` (38) and `ch_raise_*4` (32).  3$M is
+already covered, so no fallback is deleted.
+
+**VERIFIED.**  Base `3H` (`ch_free_3H`, fit 1.000, prio 30); patched `3S`
+(`ch_raise_preempt3_S`, fit 1.000, prio 31.5).  N/S make nine tricks in spades.
+
+**Template:** `expand: { M: [H, S] }` here (minors would be a 4-level raise and
+are not worth it), plus the `general_competitive_low` twin `cl_raise_preempt$M`
+at `call: 3$M`.
+
+---
+
+## Board 558 — margin -6
+
+**Seat/call:** the first divergence (North passing `1C` on `A2.J8765.T72.T62`,
+5 HCP with five hearts) is the **constructive** responding hole again —
+`r1m_pass` is 0-5 and `r1m_1H` is 6+.
+
+**My competitive finding, call 6:** after `1C (P) (P) X XX 1S ?`, North —
+holding five hearts opposite a redouble that announced 10+ — had only `cl_pass`.
+**`general_after_redouble` stops matching the moment they bid**: its pattern is
+`... - XX - $TAIL` with `expand: { TAIL: [ "?", "P - ?" ] }`, so once RHO
+competes over our redouble the whole runout/competing ladder disappears and the
+generic competitive rungs (which know nothing about the redouble) take over.
+That is a structural hole worth a named entry in the open-items list.
+
+**The minimal safe form of the repair, and its price:**
+
+```yaml
+# context: general_after_redouble — extend the tail
+    expand: { TAIL: [ "?", "P - ?", "bid - ?" ] }
+```
+
+**This is a SHADOWING change and must not ship as written.**  `... - XX - bid - ?`
+has specificity 4 and beats `general_competitive_low`'s 3, so the new context
+would take over interpreting 1C-3S and 1NT and thereby DELETE, in every
+they-competed-over-our-redouble auction: `cl_raise_*2/3/4` (27-32),
+`cl_raise_lott3/4_*` (32), `cl_new_*` at the two and three level (26-27.5),
+`cl_rebid_*` (29) and `cl_nt2`/`cl_nt3` (28/29) — i.e. the whole raise ladder.
+`cl_negative_X*`, `cl_takeout_X` and `cl_pass` survive (X and P are not defined
+by the `rr_*` rules... `rr_pass` does define P at 18, so `cl_pass` goes too).
+To be a superset the extended context must first receive verbatim copies of the
+raise, notrump and rebid rungs.
+
+**UNTESTED**, deliberately: this is the same species as the "opener's second
+double" and "the game-force landing family after a double" open items — it
+**wants its own round**, and I am recording the diagnosis rather than shipping a
+one-line pattern change that subtracts a hundred rungs.
+
+**Answering seat:** unchanged (`redouble_continuations` and the generic ladders).
+
+**Template:** none.
+
+---
+
+## Board 563 — margin -6 — NOTHING-WRONG (competitive)
+
+Uncontested at both tables (`P 1D P 1S P 2C P ?`).  The divergence is South's
+rebid on `AK8743.KT7.A86.4` — `r1d2c_3S` ("6+ spades, game values") at fit
+1.000 against BEN's `fsf_2H` (fourth suit forcing) at 0.152.  Constructive
+machinery; the other reviewer's.  E/W had 14 HCP between them and no shape:
+`oc1D_pass`, `sw_pass`, `cl_pass` and `ch_pass` were all correct.
+
+---
+
+## Board 570 — margin -6
+
+**Seat/call:** South, call 4 — `(P) (1D) 1H (P) ?` with `932.Q6.K5.KT8653`:
+**six clubs**, 8 HCP, and `K5` in their suit.  We bid **1NT**
+(`advo_1NT`, "8-11 with a stopper in their suit", priority 55, fit 1.000).
+2C is the natural call and `uc_new_C2` was sitting there at priority 26.
+
+**Missing agreement:** `advance_overcall` has a raise, a cue-raise and a 1NT
+advance, but **no natural advance in a suit of my own** — so a six-card suit has
+to come out through the generic `uc_new_*` rungs twenty-nine priority points
+lower, and 1NT on a doubleton king wins every time.
+
+```yaml
+# context: advance_overcall, inserted before `- id: advo_1NT`
+      - id: advo_new_long2_$L
+        call: 2$L
+        priority: 56
+        when: { unbid_suit: $L, cheapest_in_suit: true }
+        requires: { suits: { $L: [6, 13] }, evals: { total_points: [7, 11] } }
+        shows: "advance in my own six-card suit: a six-card suit plays better than 1NT on a doubleton stopper"
+        establishes: { forcing: non_forcing }
+```
+
+**Answering seat:** none — non-forcing, and partner's rebid seat is the generic
+continuation, which already has the tools opposite a limited advance.
+
+**What it endangers:** `advo_1NT` (55 — the rule that fired, and only when I
+have a six-card side suit); `advo_raise` (60) and `advo_cue` (70) stay above,
+so a genuine fit for the overcall still takes priority — correctly, because
+supporting partner beats a six-card suit of my own; `adv_2NT` (56 in the sibling
+context, different call).  2$L is already covered by `uc_new_$L2`, so no code
+fallback is deleted.
+
+**VERIFIED.**  Base `1NT` (`advo_1NT`, fit 1.000, prio 55); patched `2C`
+(`advo_new_long2_C`, fit 1.000, prio 56).  N/S make nine tricks in clubs; the
+table played 2D by West for -130.
+
+**Template:** `expand` cannot be added (the context already carries
+`expand_pairs` over `{o, v}`), so write the four rules out —
+`advo_new_long2_C/D/H/S` — with `unbid_suit` keeping each out of partner's and
+their suits.  A three-level twin (`advo_new_long3_*`) is the companion for
+auctions where the two level is gone.
+
+---

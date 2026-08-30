@@ -1533,3 +1533,189 @@ with a new suit of his own — is equally empty and wants the same treatment in
 a later round.
 
 ---
+
+## Board 695 — margin -10 — proposal WITH a measured NEGATIVE result
+
+**Seat/call that went wrong:** table A, call 5, **North passes 1S** holding
+`AQ3.7.JT753.AKT5` (14 HCP) after `1D – P – P – X(partner) – 1S`.  Fourteen
+points opposite a takeout double, and the engine passes at fit 1.000.
+
+**Missing agreement:** partner's takeout double is still owed an answer when
+they bid over it, and at the ONE and TWO level the four-card suit the double
+asked for is the answer — `general_competitive_low` has no advance-of-a-double
+rung at all.
+
+**This is a documented sibling gap.**  `general_competitive_high` carries
+`ch_advance_x3_$X` / `ch_advance_x4_$X` at 28.5 with a file comment that names
+the disease exactly: "Partner made a TAKEOUT DOUBLE and they bid over it. The
+advance is still owed … `general_pull_or_sit` covers `... - X - P - ?` only;
+when they compete the seat falls here, and the generic new-suit rungs below
+demand 14+ total points (a floor calibrated for a partner who OVERCALLED)."
+`grep -n cl_advance` returns **nothing**.  The low-level twin was never written.
+
+### YAML — into the EXISTING context `general_competitive_low`
+
+```yaml
+      - id: cl_advance_x2_C
+        call: 2C
+        priority: 27.8
+        when: { unbid_suit: C, cheapest_in_suit: true, partner_last_call_was_double: true,
+                i_have_acted: false }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { "suit_quality(C)": [1.5, 9], total_points: [8, 10] }
+        shows: "answering partner's takeout double in the four-card suit it asked for, forced by the double"
+        establishes: { forcing: non_forcing }
+      - id: cl_advance_xjump_C
+        call: 3C
+        priority: 28.2
+        when: { unbid_suit: C, partner_last_call_was_double: true, i_have_acted: false }
+        requires:
+          suits: { C: [4, 13] }
+          evals: { "suit_quality(C)": [1.5, 9], total_points: [11, 40] }
+        shows: "jump advance of partner's takeout double: 11+ points and the four-card suit it asked for"
+        establishes: { forcing: non_forcing }
+```
+
+plus the same pair for D, H and S (eight rungs).  Four cards, not the high
+context's six: at the two level a takeout double is asking for a four-card
+suit, which is the whole point of the call.  27.8 keeps it under `cl_nt2` (28)
+so a balanced 11-12 with a stopper still bids notrump.
+
+**THE ANSWERING SEAT — and this is where I have to report a NEGATIVE.**  I
+traced both continuations on the real hands:
+
+| advance | doubler's rebid | advancer's third call | result |
+|---|---|---|---|
+| `2C` | **5C** by `uc_minor_game_5C` | — | makes, but a blind blast |
+| `3C` | `3H` by `uc_new_H3_hi` (correct) | **5D** by `uc_minor_game_5D` | absurd |
+
+The 5D is the interesting one.  `ctxinfo` at that seat returns
+`partner_suits: ['D', 'S', 'H']` and `partner_min_length: {S: 4, H: 5, D: 3, C: 0}`
+— **a takeout double registers three suits as partner's suits, including the
+suit the opponents opened, with a shown minimum of three cards in it.**  Every
+`uc_raise_*` and `uc_minor_game_5$m` rung is gated on `partner_suit: X` and
+therefore goes live in all three, so the advancer's third call "accepts to game
+in the raised minor" in the opponents' own suit.
+
+**So: the agreement is right, the rung is VERIFIED to fire (North bids `3C` at
+fit 1.000 / prio 28.2, `clear=True`), and it MUST NOT SHIP on its own.**  It is
+a question whose answer is currently insane, which is the exact failure round 17
+priced at -9.8 IMPs a seat.  Either author the doubler-advance continuation
+seats first, or fix the partner model so a takeout double sets a MAXIMUM in
+their suit rather than a minimum of three.  I would treat the partner-model
+finding as the more valuable half of this board.
+
+**What it endangers, in `general_competitive_low`:** `cl_new_$X2` / `_hi` /
+`cl_new_long2_$X` (26-26.5, same calls), `cl_pass` (20).  It sits under
+`cl_nt2` (28), `cl_nt3` (29), `cl_raise_*` (30-32) and `cl_negative_X*` (33),
+all of which describe the hand better when they fit.  No fallback hazard —
+2C/3C are already covered.
+
+**Not proposed:** South's balancing `X` on `7.AKQJ943.K.J873` (seven hearts) is
+the dossier's first divergence, and "a takeout double must not hide a six-card
+suit" is on the do-not-re-propose list — round 7's whole-corpus data has
+doubles WITH a 6+ suit at -2.00/table against -2.54 without.
+
+---
+
+## Board 708 — margin -10
+
+**Seat/call that went wrong:** table A, call 2, **South passes 2S** holding
+`Q.J863.JT96.QJ54` (7 HCP, 1=4=4=4) after `1NT(partner) – 2S`.  BEN doubles at
+**0.99**.  3NT makes nine (+600); we played 2NT for +150.
+
+**Missing agreement:** the negative double of an overcall of partner's STRONG
+NOTRUMP needs the combined values, not eight of my own — opposite a hand that
+has announced 15-17, seven points with a four-card major and a singleton in
+their suit is a game try.
+
+`cl_negative_X2` demands `hcp: [8, 40]`; South has seven, fits **0.800**, and
+`cl_pass` at 1.000 takes it.  The 8-point floor is right opposite a partner who
+opened one of a suit and could hold 12; it is a point and a half too high
+opposite a 15-17 notrump.  `rule_of_26` is the evaluator that already knows the
+difference, and the negative doubles do not use it.
+
+### YAML — into the EXISTING context `general_competitive_low`
+
+```yaml
+      - id: cl_negative_X2_values
+        call: X
+        priority: 33.5
+        when: { their_last_bid_suit: true, side_has_acted: true, i_have_acted: false,
+                standing_bid_level: [2] }
+        requires:
+          hcp: [6, 40]
+          evals: { rule_of_26: [22, 99], "suit_length(their)": [0, 3],
+                   longest_suit_length: [0, 4] }
+          any_of:
+            - suits: { H: [4, 13] }
+            - suits: { S: [4, 13] }
+        shows: "negative double at the two level opposite a partner who has shown a strong notrump: the combined values are there even on six"
+        establishes: { forcing: one_round }
+        convention: negative_double
+```
+
+Every gate except the floor is copied VERBATIM from `cl_negative_X2`, including
+`suit_length(their)` — I know it resolves to LHO's suit rather than "their first
+suit", and `DECISIONS.md` records that sweeping the negative doubles onto
+`standing_suit_length` measured **-40 held out**.  Keeping the wrong evaluator
+is deliberate: this rung must be a strict superset of its sibling, not a
+redesign of it.
+
+**THE ANSWERING SEAT — checked, and it answers correctly.**  `forcing:
+one_round`, and the seat is `general_pull_or_sit` plus
+`general_uncontested_continuation`.  I traced North's real hand
+`AJ2.T4.KQ85.AK63` (17 HCP) through `1NT – 2S – X – P`: it bids **3NT** by
+`uc_nt3` at fit 1.000, `clear=True`.  That is the +600 contract, reached
+without a single new rung on the answering side.
+
+**What it endangers, in `general_competitive_low`:**
+* `cl_negative_X2` (X, 33) — same call, one rung below; hands with 8+ still
+  read as the existing agreement, mine only reaches 6-7 counts and only when
+  `rule_of_26 >= 22`, i.e. only opposite a partner who has shown real values.
+* `cl_takeout_X` (36) stays above — a takeout double with opening values of my
+  own is still the primary reading.
+* `cl_pass` (20) — the target.
+* `cl_new_*` (26-27.5) and `cl_nt2` (28) sit below: with a singleton in their
+  suit, 4-4-4-1 shape and no five-card suit, the double describes the hand and
+  a natural bid does not.
+* **No fallback hazard:** X is already covered by `cl_negative_X2`.
+
+**VERIFIED.**  South doubles at fit 1.000 / prio 33.5, `clear=True`; North then
+bids 3NT.
+
+**Template:** one rung in `general_competitive_low` and its twin
+`ch_negative_X3_values` in `general_competitive_high` (priority 33.5, above
+`ch_negative_X3`'s 33, `standing_bid_level: [3]`, `rule_of_26: [23, 99]` for the
+extra level).  The `any_of` covers both majors, so no per-suit expansion.
+
+---
+
+## Board 728 — margin -10 — NOTHING-WRONG (on the competitive axis)
+
+**What I checked.**  Table B, our only competitive decision, is West's `2S` on
+`KQJ843.J543.Q2.T` (9 HCP, six spades headed KQJ) over their strong artificial
+2C, vulnerable.  BEN passes at 0.74, but a six-card suit headed KQJ is a normal
+lead-directing preempt over 2C, and the call cost nothing measurable: North
+doubled, South bid 3NT, and BEN's N/S reached the same 3NT at the other table
+by a different route.
+
+The board is lost at table A, where our own 2C auction walks
+`2C – 2D – 3C – 3H – 3S – 4C – 4NT – 5C – 6C` into a slam off two tricks.
+`DECISIONS.md` has this diagnosed and deferred four rounds — "`open_2C`
+replicates at -7.44 / -6.58 … the 2C auction has no landing ladder" — and it is
+a constructive problem.
+
+**The one competitive observation, offered but NOT proposed.**  There is no
+`defense_vs_strong_2C` context: `grep -n "id: defense_vs_"` returns 1NT, the
+weak twos and the three-level preempts, and nothing for 2C.  Our 2S over their
+2C is chosen by `cl_new_S2`, a rung whose gates (5+ cards, 10+ total points,
+`suit_quality >= 1.5`) are calibrated for overcalling a ONE-bid; over a strong
+2C the overcall is pure obstruction and should be gated on suit quality, length
+and vulnerability instead.  I am not proposing it because a new context with
+pattern `2C - ?` would take over interpreting every suit call in the seat and
+would therefore have to carry all of `cl_new_$X2`'s gates verbatim as shadow
+rungs — the round-7 trap — and this board is not the evidence that it pays.
+
+---
