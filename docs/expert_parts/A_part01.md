@@ -1806,3 +1806,128 @@ so the consolidator can measure the two bands separately.  The same agreement
 also belongs in `sandwich_seat` and in the balancing suit contexts, where the
 floors are already lower and the quality test is what is missing.
 
+## Board 326 — margin -11
+
+**Seat/call that went wrong.** Table A, call 4, **S passes** (`ch_pass`) after
+`P - 2D - 3C(partner) - 4D`, holding `Q7542.AQT53.K87.` — **five-five in the
+majors**, 11 HCP.  N holds `KJ42` hearts and N/S make twelve tricks in hearts;
+we took +100 defending 4D where the other table's N/S scored +650 in 4S.
+(S's opening pass on the same hand is the first divergence, but "opening-style /
+rule-of-20 thresholds" is on the do-not-re-propose list, so I take the board at
+the competitive seat instead.)
+
+**The missing agreement (one sentence).** A **five-five two-suiter has no rung
+at the four level**: `ch_new_$M4` is a one-suit rule gated on 14+ total points,
+so a 5-5 major hand with 11 HCP scores 0.640, misses the fast path, and the
+catch-all pass takes a seat where every expert bids.
+
+**EXACT YAML.**  One rung into `general_competitive_high`, before `ch_new_H4`:
+
+```yaml
+      - id: ch_twosuiter_majors_H4
+        call: 4H
+        priority: 29.5
+        when: { unbid_suit: H, cheapest_in_suit: true, partner_has_acted: true, we_hold_contract: false }
+        requires:
+          suits: { H: [5, 13], S: [5, 13] }
+          evals: { total_points: [10, 40] }
+        shows: "five-five in the majors over their four-level contract: bid the cheaper major on shape and let partner correct to spades"
+        establishes: { forcing: non_forcing }
+```
+
+Deliberately the **cheaper** major, so partner with the spade fit can correct at
+the same level — that is what makes a single rung enough for a two-suiter.
+
+**THE ANSWERING SEAT.**  `non_forcing`; partner's correction to 4S is
+`general_competitive_high`'s existing raise/new-suit ladder plus `ch_pass`,
+authored.
+
+**WHAT IT ENDANGERS** (`general_competitive_high`, at or below 29.5):
+
+* `ch_penalty_X` (38), `ch_negative_X3` (33), `ch_raise_*` (31/32) — all above.
+* `ch_rebid_$X4` (29) and `ch_new_$X4`/`_hi` (28/28.5), **below** — my rung only
+  reaches hands with **five cards in each major**, where naming one suit
+  understates the hand by a whole suit.
+* `ch_pass` (22, below) — the target.
+* Fallback: `4H` is already covered here by `ch_new_H4`.
+
+**VERIFIED.**  Before: `P` (`ch_pass`, fit 1.000 / 22) with `ch_new_H4` at 0.640.
+After: `4H` (`ch_twosuiter_majors_H4`, fit 1.000 / 29.5).  Two regressions
+traced: 5-4 in the majors falls to 0.349 and passes, and a 6-HCP 5-5 falls to
+0.028 and passes.
+
+**NEGATIVE RESULT.**  My first draft carried `standing_suit_length: [0, 1]` ("a
+shortage in their suit").  It does not fire on this board — S's void is in
+**clubs**, partner's suit, and he holds three of their diamonds — and I removed
+it rather than keep a gate that would have made the rung unreachable on the very
+board that motivated it.  This is the "count the hand before you write the number
+down" trap, caught in the trace.
+
+**TEMPLATE.**  Add the `ch_twosuiter_majors_H3` twin at the three level (same
+body, `total_points: [8, 40]`), the minor-plus-major pairs
+(`ch_twosuiter_$M$m`), and the same rung in `general_competitive_low` and
+`general_balancing_high`.  A two-suiter is the shape the generic toolkit
+describes worst, and it has no rule anywhere in the four generic contexts.
+
+## Board 381 — margin -11
+
+**Seat/call that went wrong.** Table A, call 3, **N passes** (`sw_pass`) in the
+sandwich seat after `1C - P - 1S`, holding `.A9653.KQJ872.T4` — **six diamonds
+and five hearts**, a spade void, 10 HCP, at equal vulnerability.  We passed, then
+balanced with a double two rounds later and played 3NT for **-400**; 3C by N
+makes eleven at the other table.
+
+**The missing agreement (one sentence).** The sandwich two-level overcall has an
+**11-HCP floor** (`sw_2$X`: `hcp: [11, 17]`), so a 6-5 ten-count — a hand with
+eleven cards in two suits — scores 0.800, misses the fast path and passes;
+shape has to be allowed to substitute for the point floor.
+
+**EXACT YAML.**  One rung into `sandwich_seat` per suit; the diamond one in full
+(C, H and S are identical with the suit and call substituted, and the three
+`suit_diff` clauses re-pointed):
+
+```yaml
+      - id: sw_2D_two
+        call: 2D
+        when: { unbid_suit: D }
+        priority: 65.5
+        requires:
+          suits: { D: [5, 13] }
+          hcp: [8, 17]
+          evals: { "suit_diff(D,C)": [0, 13], "suit_diff(D,H)": [0, 13], "suit_diff(D,S)": [0, 13] }
+          any_of: [ { suits: { C: [5, 13] } }, { suits: { H: [5, 13] } }, { suits: { S: [5, 13] } } ]
+        shows: "two-suited sandwich overcall: my longest suit plus a second five-card suit, eight points or more - shape substitutes for the eleven-point floor"
+        establishes: { forcing: non_forcing }
+```
+
+The three `suit_diff($X, other) >= 0` clauses make the rung name the **longest**
+suit, so a 6-5 or 5-5 hand never produces two candidates at the same priority
+(the `is_clear = False` tie DECISIONS prices at -76 gap-points).  This is
+**not** Michaels or the unusual notrump — it is the natural overcall with the
+point floor lowered for two-suited shape, which is why it needs no alert and no
+answering convention.
+
+**THE ANSWERING SEAT.**  `non_forcing`; the advance is `advance_overcall` /
+`general_competitive_low`, authored.
+
+**WHAT IT ENDANGERS** (`sandwich_seat`, at or below 65.5):
+
+* `sw_X` (70), `sw_3$X` (69.5), `sw_2$X_jump` (69), `sw_1$X` (68), `sw_2$X` (66)
+  — **all above** mine, so every existing sandwich action keeps precedence and my
+  rung can only fire where none of them fits.  That is the whole design: it is a
+  floor-filler, not a re-ranking.  Verified: a one-suited 10-count with seven
+  diamonds still takes `sw_3D` at fit 1.000 / 69.5.
+* `sw_pass` (30, below) — the only rung that loses hands, and only two-suited
+  ones with 8+.
+* Fallback: `2D` etc. are already covered by `sw_2$X` and `sw_2$X_jump`.
+
+**VERIFIED.**  Before: `P` (`sw_pass`, fit 1.000 / 30) with `sw_2D` at 0.800.
+After: `2D` (`sw_2D_two`, fit 1.000 / 65.5).  Regression traced.
+
+**TEMPLATE.**  Four rungs, one per suit, inside the existing
+`expand: { o: [C, D, H, S] }` of `sandwich_seat`, each guarded by
+`when: { unbid_suit: $X }`.  The identical floor-lowering belongs in the four
+`overcalls_of_1$o` contexts (whose two-level overcalls also start at 11) and in
+`balancing_suits_*`; that is roughly a dozen rules from one agreement, and it is
+the direct-seat companion to board 292's suit-quality floor.
+

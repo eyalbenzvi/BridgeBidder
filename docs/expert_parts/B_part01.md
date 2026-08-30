@@ -1824,3 +1824,279 @@ contexts × 2 rungs ≈ 50 rules from one agreement**, in a subject that today h
 **zero**.
 
 ---
+
+## Board 436 — margin -11
+
+**Seat/call:** table A call 4, N **passes** 1H on `KJ9863.J8.T.8654` — a
+six-card spade suit and 5 HCP. `r1H_pass` requires `hcp: [0, 5]` and fits 1.000;
+`r1H_1S` requires 6+ and fits 0.800. `r1H_pass` fires on **2 tables at mean
+-6.50**.
+
+The file already knows this is wrong and fixed it one context along:
+`r1m_1H` carries an explicit second branch — *"a SIX-card major answers a minor
+opening on any values: passing 1D with eight hearts and a diamond void is not a
+style choice"* — with `hcp: [3, 40]` on a six-card suit. `resp_1H` and `resp_1S`
+never got it. Pure sibling gap.
+
+**The missing agreement.** A six-card spade suit answers 1H on any values.
+
+### YAML — into the existing context `resp_1H` (and its `resp_1S` twin)
+
+```yaml
+      - id: r1H_1S_sixcard
+        call: 1S
+        priority: 71
+        requires: { suits: { S: [6, 13] }, hcp: [3, 5] }
+        shows: "a six-card spade suit answers 1H on any values: 3-5 HCP"
+        establishes: { forcing: one_round }
+```
+
+**THE ANSWERING SEAT.** 1S is `forcing: one_round` and the seat that answers it
+— `opener_rebid_1H_1S`, 11 rules — already exists. Checked in the rollout: opener
+rebids 2D and the auction lands correctly.
+
+**What it endangers.**
+* `r1H_1S` (72) — one point higher in priority and 6-40 HCP, so it keeps every
+  hand it has today; the new rung is strictly the band below it, and the two
+  cannot both fit.
+* `r1H_pass` (15) — the rung being displaced, and only for hands with six
+  spades. Verified: `KJ98.J83.T2.8654` (four spades, 4 HCP) still bids 2H /
+  passes as before, at fit 1.000.
+* `r1H_single_raise` (60), `r1H_1NT` (40) — both require heart support or deny
+  four spades; untouched.
+* 1S is already covered by `r1H_1S`, so **no code fallback is deleted**.
+
+**VERIFIED and the board is recovered.** N bids 1S at fit 1.000 / prio 71.
+Rolled out: `1H - 1S - 2D - 2S - 4S`, **eleven tricks**. Table A goes from
+1H-making-nine (+140) to **4S (+650)**; the board's -11 goes to zero.
+
+**TEMPLATE.** `resp_1H` gets the 1S rung; `resp_1S` needs the mirror question
+asked (there the cheapest six-card suit response is 2H/2C/2D, so the rung is
+`hcp: [3, 5], suits: { $X: [6, 13] }` at the two level and it wants its own
+`when: { cheapest_in_suit: true }`). Also `resp_1m`'s **spade** branch already
+has it while `r1C_1D` does not. Four rules, and the grep that finds the rest is
+"which responding rungs have an HCP floor with no six-card-suit escape".
+
+---
+
+## Board 437 — margin -11
+
+**Seat/call:** table B call 12, E **passes** partner's quantitative 4NT holding
+`A952.QT54.K4.Q87` — eleven points opposite a **2C opener**. `qa_pass` fires on
+**6 tables at mean -5.50**; `qa_6NT` requires 16 HCP, a floor that is correct
+opposite a 15-17 notrump and meaningless opposite 22+. We stopped in 4NT with
+6NT cold.
+
+This is the DECISIONS open item "`2C - 2NT` positive-response continuations have
+no landing ladder" and "after a 2C opening, partner's shown minimum is ZERO by
+construction" in one board: the arithmetic that should decide it (22 + 11 = 33)
+is unavailable to every `rule_of_26` gate in the 2C tree.
+
+**The missing agreement.** After 2C and a balanced positive, the combined count
+is known to within a point or two: eight or nine is 3NT, ten invites, eleven or
+more is the slam — and the invitation must be accepted by a hand that has
+already promised 22.
+
+### YAML — two new contexts
+
+```yaml
+  - id: responder_2C_positive_2NT_continuation
+    description: "Responder after 2C - 2NT (balanced positive) and opener's suit rebid"
+    pattern: "2C - P - 2NT - P - bid - P - ?"
+    rules:
+      - id: r2cp_6NT
+        call: 6NT
+        priority: 58
+        requires: { hcp: [11, 40], evals: { controls: [3, 12], semi_balanced: [1, 1] } }
+        shows: "eleven opposite a 2C opener and a positive: 33+ combined, bidding the slam"
+        establishes: { forcing: sign_off }
+      - id: r2cp_4NT
+        call: 4NT
+        priority: 57
+        requires: { hcp: [9, 10], evals: { semi_balanced: [1, 1] } }
+        shows: "quantitative: nine or ten opposite the 2C opener, inviting the slam"
+        establishes: { forcing: invitational }
+        alertable: true
+      - id: r2cp_3NT
+        call: 3NT
+        priority: 56
+        requires: { hcp: [0, 8] }
+        shows: "the minimum positive: nine tricks opposite the 2C opener"
+        establishes: { forcing: sign_off }
+      - id: r2cp_floor_3NT
+        call: 3NT
+        priority: 25
+        requires: {}
+        shows: "no better description opposite the 2C opener: 3NT"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+
+  - id: opener_2C_accepts_quant
+    description: "The 2C opener answers the quantitative 4NT after 2C - 2NT"
+    pattern: "2C - P - 2NT - P - bid - P - 4NT - P - ?"
+    rules:
+      - id: q2c_6NT
+        call: 6NT
+        priority: 40
+        requires: { hcp: [23, 40] }
+        shows: "accepting: 23+ opposite the eight-plus positive"
+        establishes: { forcing: sign_off }
+      - id: q2c_pass
+        call: P
+        priority: 30
+        requires: {}
+        shows: "declining: a bare 22 for the 2C opening"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+**What it endangers.** Specificity 1007 / 1011, so these own 3NT, 4NT and 6NT at
+those nodes and nothing else — the natural suit calls (`gf_new_3$X`, the raises,
+the cue and keycard machinery) still come from their own contexts and were
+checked in the candidate list. Rungs displaced: `gf_3NT` (34, 22 tables, mean
+-0.95) loses 3NT here, which is exactly the intent — its `hcp: [0, 17]` band
+cannot tell 8 from 15 opposite a 22-count; `qr3_4NT_quant` (39) and `qa_pass`
+(30) lose this node to a ladder that counts from the right base.
+`r2cp_floor_3NT` and `q2c_pass` both carry `requires: {}` so neither seat can be
+starved.
+
+**VERIFIED and the board is recovered.** E bids 6NT at fit 1.000 / prio 58.
+Rolled out: `2C - 2NT - 3D - 6NT`, twelve tricks. Table B goes from 4NT (+490)
+to **6NT (+990)**; the board's -11 goes to zero.
+
+**TEMPLATE.** The same base-22 arithmetic belongs on every 2C continuation:
+`r2c_after_2NT` (2C-2D-2NT systems-on, which has 3NT at a bare `not 4-card
+major` and nothing above), `r2c_2NT_stayman_reply`, `r2c_after_stayman_reply`
+and `r2c_after_transfer_completed`. About five contexts × four rungs, and it is
+the cheapest way to make the 2C tree — `open_2C` replicates at **-7.44 / -6.58**
+and has been deferred four rounds — bid its own hands.
+
+---
+
+## Board 449 — margin -11
+
+**Seat/call:** table B call 12, E bids **4NT** on `AQ9532.A72.3.A74` over
+partner's raise to game after a long constructive auction
+(`1S - 2D - 2S - 3D - 3S - 4S`); `gr_rkc_S`, fit 1.000, prio 46. We play 6S for
+eleven tricks. Denominator first: `gr_rkc_S` fires on **9 tables at mean +0.22**
+and `gr_rkc_H` on **7 at mean -2.86** — the family is roughly break-even, which
+is why DECISIONS records that *no gate on it has survived* (`keycards >= 3`
+measured -17 held out and deleted three cold slams).
+
+So I am not proposing a gate. I am proposing the **trick-currency rung above
+it**, which is the one form of this that has never been tried:
+
+**The missing agreement.** Losing-trick count, not points: partner's raise to
+game is about seven losers, so opposite it a six-loser hand has eleven tricks
+and a five-loser hand has twelve. Six losers passes; five asks.
+
+### YAML — into the existing context `slam_try_over_game_raise`
+
+```yaml
+      - id: gr_losers_pass_$M
+        call: P
+        priority: 47
+        when: { partner_last_suit: $M, my_suit: $M }
+        requires: { evals: { ltc: [6, 13] } }
+        shows: "six or more losers opposite the raise to game: eleven tricks, not twelve"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: gr_pass_floor_$M
+        call: P
+        priority: 8.5
+        requires: {}
+        shows: "nothing more to say over partner's game raise"
+        establishes: { forcing: sign_off }
+        negative_inference_weight: soft
+```
+
+The second rung is **not optional** and is the round-15 lesson made concrete:
+adding a P rung deletes the code fallback for P in every seat this context's
+`when` reaches, so a five-loser hand that fails the first rung would have *no
+pass candidate at all*. `gr_pass_floor_$M` restores it unconditionally.
+
+**THE ANSWERING SEAT.** A pass ends the auction; none is owed.
+
+**What it endangers.**
+* `gr_rkc_$M` (46) and `gr_rkc_general_$M` (45) — the two rungs below. Verified
+  that a five-loser hand still asks: `AKQ932.A72.3.AK4` at the identical node
+  bids 4NT at fit 1.000 while `gr_losers_pass_S` soft-misses at 0.057.
+* The code fallback pass (prio 8) at this node — replaced by
+  `gr_pass_floor_$M` at 8.5 with identical, unconditional behaviour.
+* Nothing else lives in this context.
+
+**VERIFIED and the board is recovered.** E passes at fit 1.000 / prio 47.
+Rolled out: `1S - 2D - 2S - 3D - 3S - 4S - P`, eleven tricks. Table B goes from
+6S-down-one (+50 to them) to **4S (+450 to us)**; the board's -11 goes to zero.
+
+**This is the riskiest proposal in my slice and I want that on the record.**
+It is the one place where I am pushing on a population that DECISIONS says
+resists every gate, the LTC threshold is a bright line drawn on textbook
+arithmetic rather than on this corpus, and `gr_rkc_S`'s +0.22 mean means real
+winners live inside the band I am outranking. **Measure it as its own
+experiment**, and split the result by suit — `gr_rkc_H` (-2.86) and `gr_rkc_S`
+(+0.22) do not behave alike.
+
+**TEMPLATE.** Already `expand: { M: [H, S] }` (4 rules). The same
+losers-not-points idea is the honest form of round 17's reverted
+`gr_rkc_tricks_$M` and belongs equally on `gst_rkc_$X` in `general_slam_try`,
+whose control floor is a point of sibling inconsistency (see board 59).
+
+---
+
+## Board 485 — margin -11
+
+**Seat/call:** table A call 3, N passes their 5H sacrifice over our 4S opening
+(`ch_pass`, fit 1.000; `ch_sac_X` fits 0.011). **Purely competitive** — a
+preempt, a sacrifice and a decision whether to double it.
+
+What I checked: the seat has exactly **two** candidates. `ch_sac_X` requires
+"quick tricks, no trump length" and N holds `5.A754.KJ8652.K9` — four hearts, so
+the trump-length denial is what fails, correctly. The whole conversation after
+our 4S opening consists of one rule.
+
+**Best constructive-discipline observation.** `resp_preempt_S` (six rules) and
+the 4-level opening have no **constructive** continuation at all: after
+`P - 4S - (5H)` our side's only vocabulary is pass or a sacrifice double. The
+constructive counterpart — partner of a preemptor with a fit and controls
+deciding between defending and bidding on — is the same zero-rule family as the
+control-showing raise (board 305).
+
+**VERDICT: NOTHING-WRONG (competitive).**
+
+---
+
+## Appendix — what I would ship first, and in what order
+
+Ordered by (recovered IMPs in this dossier) × (confidence that the rung is safe
+off-corpus), with the answering seats bundled where they belong:
+
+1. **The cue-raise answering family** (board 559). Five unanswered cue raises,
+   ~40 rules, and the seat currently passes a one-round force to a generic
+   raise. Highest yield per idea in the part.
+2. **The trial-bid family** (board 426). Zero rules today, ~50 from one
+   agreement, and it is the convention round 17 named first.
+3. **The four splinters** (443 opener, 318 responder-over-second-suit, 105
+   Stayman, 559 over the cue raise) with their four answering contexts. Three of
+   four recover their board outright.
+4. **The band-against-what-partner-promised sweep** (967, 437, 479). Three
+   boards recovered, and `rrevd_3NT` never firing in 1000 boards is a
+   grep-able signature for the rest.
+5. **The sibling gaps** (222 `rmr_newsuit_$oM`, 436 `r1H_1S_sixcard`, 925
+   Stayman-doubled). Small, cheap, each recovers its board.
+6. **Ceilings** (185 Jacoby, 614 jump rebid). Right bridge, neither recovers its
+   board; ship them for the description, not for the number, and say so.
+7. **Measure separately:** 449's `gr_losers_pass_$M`, 59's control-floor sibling
+   repair, and 762's 6-5 opening (which must not ship without the
+   `1m - 1NT - 2M` responder ladder).
+
+Three things I would tell whoever implements this:
+
+* **Give sibling rungs distinct priorities.** Two fit-1.000 candidates producing
+  different calls at equal priority make `fast_decision` report `is_clear=False`,
+  and `match_ben` never runs arbitration, so the result is whatever the blended
+  score happens to like.
+* **Every new `P` rung needs an unconditional `P` floor beside it**, because a
+  rung deletes the code fallback for its call. Board 449's proposal ships two
+  rules for that reason and one of them does nothing except exist.
+* **Verify with `use_arbitration: False`.** `choose_bid` defaults to `True`;
+  the match does not. I lost one reading to this and it looked like a bad rule.

@@ -7,7 +7,94 @@ from a slam-going hand BEFORE game is reached.)*
 
 ## Summary
 
-*(filled in at the end)*
+**38 boards; 14 proposals, 24 NOTHING-WRONG or scope-excluded.**  Twenty-one of
+the twenty-four are purely competitive (overcalls, advances, balancing, preempt
+defence) or opening-style, which the brief scopes out; three are boards where I
+traced the seat, built a prototype and concluded the engine's call was right.
+Every proposal below is **VERIFIED** — prototyped against a patched copy of the
+YAML through `prepare_decision` / `score_candidates` / `fast_decision`, never
+against the repo file, which I did not touch.
+
+### The three agreements that matter most in this slice
+
+1. **Board 289 — the forcing new suit opposite a weak two has no answering
+   seat, and this is the fourth recorded instance of that species.**  Four new
+   contexts (28 concrete contexts, 34 rules, from four authored ideas) close
+   the whole three-round conversation: opener raises or rebids, responder
+   passes or shows a second five-card suit, opener passes or raises to game.
+   Verified end to end: the auction goes from `2D-2S-3D-P` (-100) to
+   `2D-2S-3D-3H-P` (+140).  This is the closed-conversation unit the round
+   asked for, and it is the largest single agreement in the dossier.
+
+2. **The balanced limit rebid must outrank the second suit — boards 900 and
+   739.**  `ob_1NT` was deliberately raised to 57.5 to beat `ob_1D1S_2C` (57)
+   and the same sweep was never applied to its siblings: `ob_1D1H_2C` still
+   sits at 58 (7 tables, **-25 IMPs, mean -3.57**) and `ob_1D1H_3C_jump` at 57
+   (3 tables, **-11 IMPs, mean -3.67**), both above the notrump rebid they
+   should sit under.  Two numbers, one of them worth a whole board on its own,
+   plus the responder-side agreement (a two-level reverse promises extras) and
+   the answering context that invitation needs.
+
+3. **Four of my five biggest proposals convert a soft-miss lottery into a
+   fit-1.00 decision** — boards 152, 320, 735, 848, and a fifth site flagged on
+   934.  Board 320 is the clearest: two raise rungs both fitting **0.800**, the
+   engine returning `clear=False`, and half a point of priority choosing a
+   limit raise on a seven-count.  `ROUND_METHOD.md` names the soft-miss lottery
+   as the one surviving unattacked hypothesis; this dossier says it is
+   attackable **one hand-type at a time, additively**, by writing the rung that
+   actually describes the hand rather than by sharpening anybody's tolerance.
+
+### Two behaviours the brief asked for explicitly
+
+* **Whole-corpus denominators before accusing.**  `r1H_limit_raise` looked like
+  board 320's culprit and is **+11 IMPs over 4 tables (mean +2.75)** — a
+  profitable rule, so my rung is gated to cap at 7 HCP where its own floor is 8
+  and it therefore never loses a hand it describes.  `adx_sit` looked like
+  board 372's culprit and is **+4 over 27 tables** — so instead of gating it I
+  gave the more specific context its own pass ladder, which changes one
+  auction and leaves the other 26 firings untouched.
+* **Negative results reported rather than shipped.**  Board 273: the advancer's
+  seat over a three-level overcall *is* starved, I drafted the rung, and it
+  turns a +130 into a -50 on its own board — passing was right and BEN was
+  wrong.  Board 2: I expected the 1NT-overcall advance ladder to be missing; it
+  is authored and healthy (`adv1n_*`), so nobody should spend a round on it.
+  Board 372: my first draft simply raised `onx_nt` above `adx_sit`, and it made
+  a 13-count with four spades bid 1NT instead of showing the major — replaced
+  by a design that cannot do that.
+
+### The proposals, in one table
+
+| board | agreement | new rules (after templating) | answering seat |
+|---|---|---|---|
+| 900 | 1NT rebid beats the second minor; responder's 2S is a reverse | 1 re-rank + 2 + 5 | shipped (new) |
+| 152 | light 1S response: five spades, five HCP | 1 | already exists |
+| 266 | the support double marks a nine-card fit: bid game | 4 | not owed (sign-off) |
+| 289 | the whole conversation after a forcing new suit over a weak two | 34 | shipped (new, x3) |
+| 320 | a raise with shortness and under 8 HCP is a single raise | 2 | already exists |
+| 360 | opener answers responder's major when our 1NT is overcalled | 8 | verified existing |
+| 372 | opener's pass of a NEGATIVE double needs five trumps | 8 | not owed (sign-off) |
+| 395 | responder's natural suit after our 1NT is overcalled | 11 | board 360's context |
+| 475 | opener's second minor after a negative double | 4 | board 928's context |
+| 735 | courtesy 1H response: four hearts, five HCP, opposite a minor | 2 | already exists |
+| 739 | the 18-19 notrump rebid outranks the jump shift | 2 re-ranks | verified existing |
+| 848 | a 4-3-3-3 sixteen declines the notrump invitation | 4 | not owed (sign-off) |
+| 899 | shapely limit raise of a minor beats the Walsh diamond | 2 + 6 | shipped (new) |
+| 928 | responder's third call in the negative-double conversation | 12 | partial, stated |
+
+**Total: about 100 concrete rules and 40 concrete contexts from 14 authored
+agreements**, which is the templating ratio the scale-up plan assumes.
+
+### Implementation ordering, because three pairs are one agreement each
+
+* **900 + 739** are the same sweep (the balanced limit rebid outranks the
+  second suit / the jump shift) and should be measured as one subject.
+* **360 + 395** are the two sides of one table: without 395 opener has nothing
+  to answer, without 360 responder's suit is passed out.
+* **475 + 928** live in the negative-double conversation; 928's context wants
+  `also_patterns` for 475's second-suit rebid so the two become one subject.
+* **152 + 735** are the light one-level response, and **735 must not ship
+  without 739**, because the light response is what walks a 19-count into the
+  mis-ranked jump shift.
 
 ---
 
@@ -1644,6 +1731,138 @@ because `DECISIONS.md` disciplines weak twos to **exactly six** cards and no
 four-card side major — 5-5 is outside the definition by design.  That is a
 coherent decision, not a defect; a 5-5 nine-count simply has no opening call in
 this system, and giving it one is an opening-style change.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
+
+## Board 928 — margin -2
+
+**Seat/call that went wrong:** N, call 8 — `P` (`uc_pass`, priority 18, fit
+1.000) on `Q3.K842.74.A9873` after `1D (1S) X (P) 2D (P)`.  Nine HCP, **five
+clubs**, a doubleton in opener's diamonds, and the only candidates were
+`uc_nt2` at 0.395 and `uc_new_H2` at 0.264.  The negative-double conversation
+has **no third round**: responder doubles, opener answers, and then the file
+runs out.  They bought it in 2S for -110; BEN's 3C is one down for -50.
+
+I explicitly checked the seat the dossier names (S's 2D at call 6) and it is
+**correct** — `onx_rebid_DS` fit 1.000 on `954.Q3.AKQT9.Q54`, five diamonds and
+a minimum, and BEN's 1NT would be a 12-count calling `954` a spade stopper.
+The defect is one call later.
+
+**The missing agreement.**  After opener's minimum answer to a negative double,
+responder shows a real five-card suit — the major he promised if it is five
+long, otherwise the fourth suit — and otherwise passes.
+
+### YAML — a new context, placed before `opener_neg_double_over_raise`
+
+```yaml
+  - id: responder_rebid_after_negative_double
+    description: "Responder's second call after opener's minimum answer to the negative double"
+    expand_pairs:
+      - { m: C, M: H, oM: S, f: D, fc: 2D }
+      - { m: C, M: S, oM: H, f: D, fc: 2D }
+      - { m: D, M: H, oM: S, f: C, fc: 3C }
+      - { m: D, M: S, oM: H, f: C, fc: 3C }
+    pattern: "1$m - 1$M - X - P - 2$m - P - ?"
+    rules:
+      - id: rnx_major_$m$M
+        call: "2$oM"
+        priority: 56
+        requires: { suits: { $oM: [5, 13] }, hcp: [8, 11] }
+        shows: "five cards in the major the double promised: a real suit, invitational"
+        establishes: { forcing: non_forcing }
+      - id: rnx_fourth_$m$M
+        call: "$fc"
+        priority: 55
+        requires: { suits: { $f: [5, 13] }, hcp: [8, 11], not: { suits: { $m: [3, 13] } } }
+        shows: "a five-card fourth suit and no tolerance for opener's minor"
+        establishes: { forcing: non_forcing }
+      - id: rnx_pass_$m$M
+        call: P
+        priority: 50
+        requires: {}
+        shows: "opener has shown a minimum: pass"
+        establishes: { forcing: sign_off }
+```
+
+### THE ANSWERING SEAT
+
+Both bids are `non_forcing`, so the conversation may end there and the
+`requires: {}` pass guarantees responder's own seat is never starved.  Opener's
+seat over `rnx_major` / `rnx_fourth` falls to the generic continuation, which
+is the honest weak point of this proposal and I am stating it: the *fourth*
+round of the negative-double conversation is still unauthored.  The right next
+step, not written here, is
+`1$m - 1$M - X - P - 2$m - P - $fc - P - ?` with three rungs (raise with three
+support, 3NT with a stopper and 15+, pass).
+
+### WHAT IT ENDANGERS
+
+The context defines `P`, `2$oM` and `$fc` at this seat and therefore covers
+them away from `general_uncontested_continuation`:
+
+* `uc_pass` (18) → `rnx_pass_$m$M` (50, `requires: {}`).  Same call, same
+  population, better sentence, no starvation.
+* `uc_new_H2` / `uc_new_C3` (26-27, "5+ cards, 10+/14+ points") → `rnx_major` /
+  `rnx_fourth` at 8-11.  The lower floor is the point: opposite a partner who
+  has *opened* and then *rebid*, an eight-count with a five-card suit is worth
+  a call, and the generic ladder's floor is written for a seat with no such
+  information.
+* `uc_nt2` (28, 0.395 here) and `uc_raise_D3` (27) are **not** covered — I did
+  not define 2NT or 3$m, so both survive for the hands they fit.
+* Nothing in `opener_over_negative_double` is touched: that context decides one
+  call earlier.
+
+### VERIFIED
+
+Prototyped.  BEFORE `P` (`uc_pass` 1.000/18; best bid 0.395).  AFTER **`3C`**
+(`rnx_fourth_DS` 1.000/55), which is BEN's call and one down instead of -110.
+
+### TEMPLATE
+
+`expand_pairs` over the four (minor, overcalled-major) shapes — twelve rules
+from three ideas.  It should also be given `also_patterns` for opener's
+**second suit** rebid (`1$m - 1$M - X - P - 2$s - P - ?`), which is board 475's
+proposal, and for opener's 1NT (`1$m - 1$M - X - P - 1NT - P - ?`).  Those two
+`also_patterns` are how 475 and 928 become one subject instead of two boards.
+
+---
+
+## Board 933 — margin -2 — NOTHING-WRONG (competitive board)
+
+Table A call 3: N passes `1D 3H X` holding `KJ42.KT5.T654.Q7` — partner
+preempted to 3H over 1D, RHO doubled, and N sat with three trumps and nine HCP.
+`xd_pass` fits 1.000 at 18; the only alternative on the list is a code
+**fallback** 4H at fit 0.409 priority 12.  BEN bids 4H.
+
+**What I checked.**  Advancing partner's preempt after their double is
+competitive.  The constructive-discipline observation is the same shape as
+board 273: **the seat is starved** — `xd_run_S3` is the only authored rung and
+it needs six spades — but the winning action here (4H on a nine-count with
+three trumps opposite a preempt) is a Law-of-Total-Tricks judgement, and
+`DECISIONS.md` records that the file's LOTT raise machinery
+(`cl_raise_lott3_$M`) is broken *and* does not pay, and puts it on the
+do-not-re-propose list.
+
+**VERIFIED** (traced).  **TEMPLATE:** n/a.
+
+---
+
+## Board 934 — margin -2 — NOTHING-WRONG (competitive board)
+
+Table B call 3: E passes out `3D P P` holding `JT82.AQ8.T3.AQ76` — 13 HCP,
+4-3-2-4, `balhigh_X` fits **0.800** and loses to `balhigh_pass` at 1.000.
+Balancing over a three-level preempt.
+
+**What I checked.**  Our side never has a constructive auction on this board;
+both tables are a preempt and four passes or a preempt, a double and a run.
+The single soft-miss (0.800 on the balancing double) is the same
+one-point-short phenomenon as boards 152, 320, 735 and 848 — four of my five
+proposals in this dossier are conversions of a soft-miss lottery into a fit-1.00
+decision, and this is a fifth site in the *competitive* tree.  I am flagging
+the pattern for whoever attacks the soft-miss lottery directly, which
+`ROUND_METHOD.md` names as the one surviving unattacked hypothesis.
 
 **VERIFIED** (traced).  **TEMPLATE:** n/a.
 

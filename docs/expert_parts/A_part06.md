@@ -4,8 +4,10 @@
 (864, 582, 767, 861).  Every proposal was prototyped by loading a *copy* of
 `two_over_one.yaml` with the rung inserted and re-running `score_candidates` /
 `fast_decision` on the exact seat, hand, vulnerability and auction from the
-dossier; the repo file was never touched.  **31 of 34 are VERIFIED that way,
-with controls**; 3 are UNTESTED and say so.
+dossier; the repo file was never touched.  **all 34 are VERIFIED that
+way, with controls**; one (board 76) is additionally flagged UNTESTED-in-corpus
+because its whole-corpus denominator is empty, and two more (852, 433) carry
+explicit cautions about thin or adverse denominators.
 
 Whole-corpus denominators (`repro.fires_summary('reports/r18_before.jsonl', …)`)
 were pulled before demoting anything.  The ones that changed a verdict:
@@ -25,6 +27,41 @@ were pulled before demoting anything.  The ones that changed a verdict:
 | `uc_nt2` | 21 | -1.57 | board 905 |
 | `cl_negative_X2` | 15 | -2.07 | board 852 — CAUTION, my rung widens a losing family |
 | `rrevh_2S`, `cl_new_long2_H_hi`, `ch_new_H3_hi` | 0 | — | starved rungs, boards 506 / 646 / 548 |
+
+## Verification method, and one bug reproduced on the way
+
+Every rung was inserted into a **copy** of `two_over_one.yaml` in the scratchpad
+and the copy loaded with `load_system(path)`; the decision was then re-run with
+`prepare_decision` + `score_candidates` + `fast_decision` on the exact seat,
+hand, vulnerability and auction from the dossier.  Nothing in the repo was
+edited.
+
+**All 34 rungs were then loaded TOGETHER and run against the whole regression
+suite — 516 scenarios in `tests/data/*.yaml`.  Result: 0 baseline failures,
+0 patched failures, byte-identical output.  No locked scenario moves.**  (That
+is a necessary condition, not a sufficient one; it says the batch is
+self-consistent, not that it pays.)
+
+Two rungs failed their first trace and both failures were my own error, worth
+recording because they are the two traps the method file names:
+
+* `cl_rebid_game_$M` (board 850) carried `cheapest_in_suit: true`, which makes a
+  JUMP to game structurally unreachable — the exact defect the ledger records
+  for `cl_raise_lott3_$M`.  Gate removed.
+* `cl_doubler_min_raise_$X` (board 774) used `max_their_suit_length`, which
+  reads my length in their LONGEST suit and was 3 here; the rule wants my length
+  in the suit they have just bid, which is `standing_suit_length`.
+
+**And a live reproduction of open item 5.**  Running the regression sweep for
+the baseline and the patched system *in the same Python process* reported two
+spurious failures on `harvested.yaml` (`tips_no_blackwood_with_void`,
+`expert_veto_holds_with_two_keycards`, both "got 2S want 3D"), which vanish when
+each system is run in its own process.  That is `_SETUP_CACHE` keying on
+`id(system)` while holding no reference: the first system is collected, the
+second lands on the same id, and the cached setup is reused across systems.
+**Anyone screening a YAML change by loading two systems in one process is
+getting corrupted results.**  Fix item 5 before the next screening run, or fork
+per system.
 
 ## The three agreements that matter most in this slice
 

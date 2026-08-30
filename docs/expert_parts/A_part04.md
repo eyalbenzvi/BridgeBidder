@@ -1365,3 +1365,186 @@ their suits.  A three-level twin (`advo_new_long3_*`) is the companion for
 auctions where the two level is gone.
 
 ---
+
+## Board 655 — margin -6
+
+**Seat/call:** North, call 5 — `(1C) 1H (P) 2C (2S) ?` with
+`976.AJT84.QJ5.T3`.  Partner cue-bid 2C showing a limit-raise-or-better of my
+hearts; they competed to 2S; we **passed** (`cl_pass`, fit 1.000) while
+`cl_raise_H3` sat at 0.800 (its floor is 10 support points; I have 8) and
+`cl_rebid_H3` at 0.143 (its floor is a sixth heart).
+
+**Missing agreement:** once partner's cue has agreed MY overcalled suit, my
+rebid of it in competition is a Law decision, not a values decision: five
+trumps opposite his promised three is eight our way, and eight trumps belong at
+the three level.
+
+```yaml
+# context: general_competitive_low, inserted before `- id: cl_raise_C2`
+      - id: cl_rebid_agreed_law3_$X
+        call: 3$X
+        priority: 31.5
+        when: { my_suit: $X, partner_suit: $X, we_bid_last: false,
+                cheapest_in_suit: true, we_hold_contract: false }
+        requires:
+          suits: { $X: [5, 13] }
+          evals: { "lott_total_trumps($X)": [8, 26], total_points: [7, 40] }
+        shows: "the Law after partner agreed my suit: five trumps opposite his three, eight our way - competing to three is right on shape"
+        establishes: { forcing: non_forcing, agreed_suit: $X }
+```
+
+The double gate `my_suit: $X` AND `partner_suit: $X` is what makes it safe: it
+fires only where I bid the suit and partner has since agreed it (by a raise, a
+cue-raise, or a support double), which is exactly the position where the
+"raise partner" rungs and the "rebid my own" rungs both mis-describe the hand.
+
+**Answering seat:** none — non-forcing, and partner has already limited himself.
+
+**What it endangers:** `cl_raise_$X3` (31, same call — its 10-point floor is a
+constructive test in a contested auction); `cl_rebid_$X3` (29, same call, six
+cards); `cl_rebid_jump_$X` (31); `cl_raise_lott3_$X` (32 — stays above, but its
+`cheapest_in_suit` gate and 4-trump/3-10-point band make it a different hand);
+`cl_nt2` (28); `cl_new_*` (25-27.5).  Below `cl_negative_X*` (33) and
+`cl_takeout_X` (36).  3$X is already covered, so no fallback is deleted.
+
+**VERIFIED** for the call: base `P`; patched `3H` (`cl_rebid_agreed_law3_H`,
+fit 1.000, prio 31.5).  **Honest note: it probably does not win this board** —
+West bids 3S over it either way, and we would finish -140 instead of -140.  The
+agreement is right and the position recurs; the board's real cost is at table B,
+where East raised a 1S opening to 2S on **4 HCP** (`r1S_single_raise`, fit
+1.000, priority 60, against `r1S_pass` fit 1.000 at 15) and West then drove to a
+failing 4S.  That single-raise floor is a constructive-ladder question and I
+flag it for the other reviewer.
+
+**Template:** `expand: { X: [C, D, H, S] }`, plus the three sibling contexts.
+
+---
+
+## Board 658 — margin -6
+
+**Seat/call:** West, call 5 — `(P) 1C (1D) 1H (P) ?` with `Q54.QJ4.JT.AKT32`,
+13 HCP.  **We passed our partner's free bid** (`uc_pass`, fit 1.000, priority
+18) and played 1H.
+
+**Missing agreement, and it is the largest correctness finding in my slice:**
+responder's new suit at the one level over an overcall is **forcing**.
+`cl_new_H1` (and `cl_new_S1`, `cl_new_D1`, `cl_new_C1`) carry
+`establishes: { forcing: non_forcing }`, so nothing forbids opener's pass and
+`uc_pass` wins at fit 1.00.  Every standard system, and this one's own
+`DECISIONS.md` ("negative doubles through 3S ... 1S = 5+"), treats the free bid
+as one-round forcing.
+
+The gate that separates responder's free bid (partner opened, still unlimited)
+from advancer's free bid (partner overcalled, capped at 16-17) without a new
+`when:` is `partner_shown_max`: measured 21 here, ~16 after an overcall.
+
+```yaml
+# context: general_competitive_low, inserted before `- id: cl_new_C1`
+      - id: cl_new_free1_$X
+        call: 1$X
+        priority: 30.5
+        when: { unbid_suit: $X, cheapest_in_suit: true, side_has_acted: true,
+                i_have_acted: false, partner_last_call_was_double: false,
+                we_hold_contract: false }
+        requires:
+          suits: { $X: [4, 13] }
+          evals: { total_points: [6, 40], partner_shown_max: [19, 40] }
+        shows: "free bid of a new suit at the one level over their overcall: 4+ cards and 6+ points opposite a partner who is still unlimited - forcing for one round"
+        establishes: { forcing: one_round }
+```
+
+For `$X = H` the rule must also carry `cl_new_H1`'s ordering clause verbatim —
+`evals: { "suit_diff(H,S)": [0, 13] }` plus its
+`any_of: [ { evals: { "suit_quality(H)": [1.5, 9] } }, { suits: { H: [5, 13] } } ]`
+— or the 5-5 defect that comment describes comes back.
+
+**THE ANSWERING SEAT:** the force is one round and its answers are the whole of
+`general_uncontested_continuation` / `general_competitive_low`, which are dense
+at that level (raises 30-32, rebids 29, notrump 27-29, new suits 25-27.5).
+Traced: West now bids **2H** (`uc_raise_H2`, fit 0.800) instead of passing.
+
+**What it endangers — state this one plainly, it is the riskiest proposal here.**
+Making a call forcing **removes the pass in every seat the rule's `when`
+reaches**, and `cl_new_free1_$X` becomes the PRIMARY reading of 1-of-a-new-suit
+(priority 30.5 above `cl_new_$X1`'s 30), so partner may no longer pass it
+anywhere in the competitive-low context.  The `when` narrows that to: our side
+has acted, I have not, partner's last call was not a double (advancing a takeout
+double is a different animal and already owned by the `adv*` contexts), and
+partner is unlimited.  Within the context it can outrank `cl_new_$X1` (30, same
+call, more general), `cl_new_H1`/`cl_new_S1` (30), `cl_nt1` (27) and every
+natural two-/three-level rung (25-29); it stays below every raise at 30 only by
+call rank, so **check `cl_raise_$X2` (30) explicitly before shipping** — a hand
+with 4-card support and a 4-card side suit must still raise.
+
+**VERIFIED** for the mechanism: base West `P`; patched West `2H`.  I did NOT
+measure the blast radius, and this one deserves its own screened experiment.
+
+**Template:** `expand: { X: [C, D, H, S] }` (with the H/S ordering clauses),
+plus `general_competitive_high` for the two- and three-level free bids, where
+the same non-forcing marking applies.
+
+---
+
+## Board 690 — margin -6 — the biggest single win in my slice
+
+**Seat/call:** North, call 2 — `1D (1S) ?` with `4.J76432.4.AQT86`:
+**six hearts and five clubs**, 7 HCP, singletons in both black... in spades and
+diamonds.  We doubled (`nx_1m1S_X`, priority 80) and East jumped to 4S; -420.
+`nx_1m1S_wj_H` (3H) was sitting there at fit **1.000**, priority 56.
+
+**Missing agreement:** a two-suiter bids, it does not double.  A negative double
+asks partner to name a suit; with 6-5 I know where we are playing.
+
+```yaml
+# context: resp_1m_over_1S, inserted before `- id: nx_1m1S_X`
+      - id: nx_1m1S_wj6_H
+        call: 3H
+        priority: 81
+        requires:
+          suits: { H: [6, 13] }
+          hcp: [3, 9]
+          any_of: [ { suits: { C: [5, 13] } }, { suits: { D: [5, 13] } }, { suits: { S: [5, 13] } } ]
+        shows: "weak jump shift with a second suit: six hearts and a five-card side suit, less than a free bid - a two-suiter bids, it does not ask partner to guess"
+        establishes: { forcing: non_forcing }
+```
+
+**THE ANSWERING SEAT — and it needs one rung.**  Opposite a preemptive jump
+showing 6+ cards, every generic raise rung dies on `rule_of_26` (the known open
+item): South with `T8.AQT8.KQT73.K5` and four-card support scored
+`uc_raise_H4` at fit 0.000 and passed.  Ship this with it:
+
+```yaml
+# context: general_uncontested_continuation, before `- id: uc_raise_H4`
+      - id: uc_raise_lawpre4_$M
+        call: 4$M
+        priority: 32.5
+        when: { partner_suit: $M, we_hold_contract: false }
+        requires:
+          suits: { $M: [4, 13] }
+          evals: { "lott_total_trumps($M)": [10, 26], total_points: [12, 40] }
+        shows: "the Law opposite partner's preemptive jump: ten trumps our way and opening values - bid the game, not the invitation"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+```
+
+**What it endangers.**  The jump shift: `nx_1m1S_X` (80 — only on the 6-5
+shape); `nx_1m1S_2H` (78, 5+ hearts and 10+ HCP — mine caps at 9);
+`nx_1m1S_cue` (70), `nx_1m1S_raise` (55), `nx_1m1S_1NT`/`2NT`/`3NT` (50-52) —
+all describe hands I do not hold; `nx_1m1S_wj_H` (56, same call, no side-suit
+requirement).  3H is already covered, so no fallback is deleted.
+The answering rung: `uc_raise_$M4` (32, same call — mine is the Law version and
+requires ten counted trumps, which is strictly more information);
+`uc_raise_lott4_$M` (32, same call, `their_fit`-gated); `uc_raise_$M3` (31);
+everything below.  It does not reach `gst_rkc_$M` (46).
+
+**VERIFIED end to end.**  Base: `X`, then East 4S, -420.  Patched: North `3H`
+(`nx_1m1S_wj6_H`, fit 1.000), South `4H` (`uc_raise_lawpre4_H`, fit 1.000).
+**4H makes ten: +420 instead of -420.**  Regressions: five hearts and a five-card
+side suit still doubles; six hearts with 10+ HCP still doubles.
+
+**Template:** `expand: { m: [C, D] }` in both `resp_1m_over_1H` (as
+`nx_1m1H_wj6_S`, `call: 2S`) and `resp_1m_over_1S`; note the open item
+"`resp_1m_over_1H` has no weak jump shift at all", which this fills at the same
+time.  The answering rung: `expand: { M: [H, S] }` plus the
+`general_competitive_low/high` twins.
+
+---
