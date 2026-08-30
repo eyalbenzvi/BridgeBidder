@@ -9,7 +9,7 @@ Repo read-only.  38 boards, `docs/dossier_575757/part05.md`, worst-first.
 | boards reviewed | 38 (all) |
 | proposals | 33 |
 | NOTHING-WRONG (purely constructive, or the auction was normal) | 5 (938, 942, 291, 387, 515) |
-| new rungs written and traced | 49 rungs + 1 new context + 7 gate/band edits |
+| new rungs written and traced | **47 rungs shipped** (+1 prototype rung reported as a negative result, not shipped), 1 new context, 6 gate/band edits touching 19 existing rules |
 | VERIFIED (traced through `score_candidates`, base vs patched) | 33 of 33 |
 | locked-scenario regression (all 516 in `tests/data/*.yaml`) | 1 changed, **0 failing** before and after |
 | blast radius, measured | **32 changed decisions in 2,606 of our calls over 250 boards (1.23%)**, spread across 26 distinct agreements |
@@ -2139,7 +2139,7 @@ This is a minor-suit agreement only.
 
 ## Appendix: everything in one place
 
-New rungs by context (49 rungs, 1 new context, 7 gate/band edits):
+New rungs by context (47 shipped rungs, 1 new context, 6 gate/band edits touching 19 existing rules):
 
 | context | new rungs | edits |
 |---|---|---|
