@@ -5451,6 +5451,38 @@ contexts:
     pattern: "... - 4NT - P - 5C - P - ?"
     when: { agreed_suit: $A }
     rules:
+      # ROUND 17: THE TOP OF THE LADDER.  Until this round the file had 55
+      # rules that bid at the five level, 70 at the six and ZERO at the
+      # seven, and 5NT appeared only as a runout ("keycards missing: 5NT,
+      # notrump-shaped").  The partnership could not check for the
+      # thirteenth trick and could not bid a grand slam at all, which is
+      # not a missing rung but a missing floor of the building.
+      #
+      # The ask is only legal where the asker can already COUNT all five
+      # keycards from partner's reply, so it never risks the small slam:
+      # the cheapest continuation after it is six of the agreed suit, which
+      # is where the auction was going anyway.  It ships with the seat that
+      # answers it (`rkc_kings_response`), and that seat's sign-off carries
+      # `requires: {}` so it fits every hand.
+      - id: rkc5C_kingask
+        call: 5NT
+        priority: 61
+        requires:
+          all_of:
+            # deliberately permissive: with every keycard accounted for the
+            # ask costs NOTHING, because partner's cheapest answer is six of
+            # the agreed suit, which is where the auction was already going.
+            # The gate only stops a hand with no business near a grand.
+            - evals: { ltc: [0, 6] }
+            - evals: { "keycards(agreed)": [4, 4] }
+            - any_of:
+                - evals: { "trump_queen(agreed)": [1, 1] }
+                - evals: { "lott_total_trumps(agreed)": [9, 26] }
+        shows: "all five keycards accounted for and a hand that can use a king: asking for kings"
+        establishes: { forcing: one_round, agreed_suit: $A, asking: kings }
+        alertable: true
+        convention: rkc_1430
+        # four in hand: partner's 'one or four' can only be one, so all five
       - id: rkc5C_slam
         call: 6$A
         priority: 60
@@ -5532,6 +5564,38 @@ contexts:
       # both mistakes: making slams signed off opposite 3 (a Jacoby auction
       # with 33 combined), and the hcp gate one point from bidding a slam
       # missing two.
+      # ROUND 17: THE TOP OF THE LADDER.  Until this round the file had 55
+      # rules that bid at the five level, 70 at the six and ZERO at the
+      # seven, and 5NT appeared only as a runout ("keycards missing: 5NT,
+      # notrump-shaped").  The partnership could not check for the
+      # thirteenth trick and could not bid a grand slam at all, which is
+      # not a missing rung but a missing floor of the building.
+      #
+      # The ask is only legal where the asker can already COUNT all five
+      # keycards from partner's reply, so it never risks the small slam:
+      # the cheapest continuation after it is six of the agreed suit, which
+      # is where the auction was going anyway.  It ships with the seat that
+      # answers it (`rkc_kings_response`), and that seat's sign-off carries
+      # `requires: {}` so it fits every hand.
+      - id: rkc5D_kingask
+        call: 5NT
+        priority: 61
+        requires:
+          all_of:
+            # deliberately permissive: with every keycard accounted for the
+            # ask costs NOTHING, because partner's cheapest answer is six of
+            # the agreed suit, which is where the auction was already going.
+            # The gate only stops a hand with no business near a grand.
+            - evals: { ltc: [0, 6] }
+            - evals: { "keycards(agreed)": [2, 2] }
+            - any_of:
+                - evals: { "trump_queen(agreed)": [1, 1] }
+                - evals: { "lott_total_trumps(agreed)": [9, 26] }
+        shows: "all five keycards accounted for and a hand that can use a king: asking for kings"
+        establishes: { forcing: one_round, agreed_suit: $A, asking: kings }
+        alertable: true
+        convention: rkc_1430
+        # two in hand: partner's 'zero or three' can only be three, so all five
       - id: rkc5D_slam
         call: 6$A
         priority: 60
@@ -5626,6 +5690,35 @@ contexts:
         requires: { evals: { "keycards(agreed)": [2, 5] } }
         shows: "all five keycards + the queen: bidding the small slam"
         establishes: { forcing: sign_off, agreed_suit: S }
+      # ROUND 17: THE TOP OF THE LADDER.  Until this round the file had 55
+      # rules that bid at the five level, 70 at the six and ZERO at the
+      # seven, and 5NT appeared only as a runout ("keycards missing: 5NT,
+      # notrump-shaped").  The partnership could not check for the
+      # thirteenth trick and could not bid a grand slam at all, which is
+      # not a missing rung but a missing floor of the building.
+      #
+      # The ask is only legal where the asker can already COUNT all five
+      # keycards from partner's reply, so it never risks the small slam:
+      # the cheapest continuation after it is six of the agreed suit, which
+      # is where the auction was going anyway.  It ships with the seat that
+      # answers it (`rkc_kings_response`), and that seat's sign-off carries
+      # `requires: {}` so it fits every hand.
+      - id: rkc5S_kingask_S
+        call: 5NT
+        priority: 61
+        requires:
+          all_of:
+            # deliberately permissive: with every keycard accounted for the
+            # ask costs NOTHING, because partner's cheapest answer is six of
+            # the agreed suit, which is where the auction was already going.
+            # The gate only stops a hand with no business near a grand.
+            - evals: { ltc: [0, 6] }
+            - evals: { "keycards(agreed)": [3, 5] }
+        shows: "all five keycards accounted for and a hand that can use a king: asking for kings"
+        establishes: { forcing: one_round, agreed_suit: S, asking: kings }
+        alertable: true
+        convention: rkc_1430
+        # partner showed two and the queen; three in hand is all five
       - id: rkc5S_pass_signoff
         call: P
         priority: 40
@@ -5638,6 +5731,35 @@ contexts:
     pattern: "... - 4NT - P - 5S - P - ?"
     when: { agreed_suit: H }
     rules:
+      # ROUND 17: THE TOP OF THE LADDER.  Until this round the file had 55
+      # rules that bid at the five level, 70 at the six and ZERO at the
+      # seven, and 5NT appeared only as a runout ("keycards missing: 5NT,
+      # notrump-shaped").  The partnership could not check for the
+      # thirteenth trick and could not bid a grand slam at all, which is
+      # not a missing rung but a missing floor of the building.
+      #
+      # The ask is only legal where the asker can already COUNT all five
+      # keycards from partner's reply, so it never risks the small slam:
+      # the cheapest continuation after it is six of the agreed suit, which
+      # is where the auction was going anyway.  It ships with the seat that
+      # answers it (`rkc_kings_response`), and that seat's sign-off carries
+      # `requires: {}` so it fits every hand.
+      - id: rkc5S_kingask_H
+        call: 5NT
+        priority: 61
+        requires:
+          all_of:
+            # deliberately permissive: with every keycard accounted for the
+            # ask costs NOTHING, because partner's cheapest answer is six of
+            # the agreed suit, which is where the auction was already going.
+            # The gate only stops a hand with no business near a grand.
+            - evals: { ltc: [0, 6] }
+            - evals: { "keycards(agreed)": [3, 5] }
+        shows: "all five keycards accounted for and a hand that can use a king: asking for kings"
+        establishes: { forcing: one_round, agreed_suit: H, asking: kings }
+        alertable: true
+        convention: rkc_1430
+        # partner showed two and the queen; three in hand is all five
       - id: rkc5S_slam_H
         call: 6H
         priority: 60
@@ -5667,6 +5789,32 @@ contexts:
   # more than a six-level contract known to be missing two keycards.
   # ===========================================================================
 
+  - id: rkc_kings_response
+    description: "Answering the 5NT king ask: seven with a second king, six without"
+    # The FIRST seven-level rules in the file.  Two rungs is the whole
+    # conversation: the asker has already counted all five keycards, so the
+    # only remaining question is whether there is a thirteenth trick, and the
+    # sign-off at six is where the auction was heading regardless.  The
+    # sign-off carries `requires: {}` on purpose - round 6's rkc5H_signoff
+    # lesson is that a gated sign-off starves the seat and the engine invents
+    # a call out of thin air.
+    expand: { A: [H, S] }
+    pattern: "... - 5NT - P - ?"
+    when: { asking: kings, agreed_suit: $A }
+    rules:
+      - id: rkck_grand_$A
+        call: 7$A
+        priority: 60
+        requires:
+          evals: { kings: [2, 4] }
+        shows: "two kings opposite a king ask: the thirteenth trick is there - bidding the grand slam"
+        establishes: { forcing: sign_off, agreed_suit: $A }
+      - id: rkck_small_$A
+        call: 6$A
+        priority: 55
+        requires: {}
+        shows: "at most one king: the small slam"
+        establishes: { forcing: sign_off, agreed_suit: $A }
   - id: rkc_minor_after_5C_C
     description: "Asker's continuation after the 5C reply with C agreed"
     pattern: "... - 4NT - P - 5C - P - ?"
