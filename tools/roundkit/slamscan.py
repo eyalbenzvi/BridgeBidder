@@ -138,23 +138,31 @@ def main() -> None:
         print(f"  the calls ever offered: {offered.most_common()}")
 
     # --- the slam band -----------------------------------------------------
-    slam_bid = Counter()
-    made = Counter()
+    # WHO bid it matters: at table A our engine holds N/S and BEN holds E/W,
+    # at table B the sides are swapped.  Counting every slam at table A as
+    # ours inflates our total by every slam BEN bid sitting E/W - which is
+    # how a first pass at this made us look like the boldest pair at the club.
+    slam_bid, made = Counter(), Counter()
     for r in rows:
-        for t, who in (("a", "us"), ("b", "ben")):
+        for t, our_seats in (("a", "NS"), ("b", "EW")):
             c = r[f"{t}_contract"]
-            if c == "passed out" or "(" not in c:
+            if c == "passed out" or " by " not in c:
                 continue
             lvl = int(c[0])
+            declarer = c.split(" by ")[1].split()[0]
+            who = "us" if declarer in our_seats else "ben"
             if lvl >= 6:
                 slam_bid[who] += 1
                 tricks = int(c.split("(")[1].split()[0])
                 if tricks >= 6 + lvl:
                     made[who] += 1
+    print()
     for who in ("us", "ben"):
         n, m = slam_bid[who], made[who]
-        print(f"\nslams bid by {who:3s}: {n:3d}, made {m:3d} "
-              f"({100*m/n:.0f}%)" if n else f"\nslams bid by {who}: 0")
+        print(f"slams bid by {who:3s}: {n:3d}, made {m:3d}"
+              + (f" ({100*m/n:.0f}%)" if n else ""))
+    print("(the IMP break-even for a small slam is about 50%: a hit rate far")
+    print(" above it is under-bidding, not accuracy)")
 
 
 if __name__ == "__main__":
