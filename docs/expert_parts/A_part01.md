@@ -1,6 +1,72 @@
 # Expert A — competitive / matchpoint duplicate — dossier part 1 (38 boards)
 
-<!-- SUMMARY-PLACEHOLDER -->
+**Reviewer A — competitive / matchpoint duplicate specialist.**  Dossier part 1,
+worked board by board in dossier order.
+
+| | |
+|---|---|
+| boards in this slice | **38** |
+| proposals (one agreement each, exact YAML) | **28** |
+| NOTHING-WRONG | **10** (all of them constructive/slam boards where every one of our competitive seats is a pass BEN also makes at 1.00; each says what I checked) |
+| VERIFIED by tracing (`fast_decision` + `score_candidates` on a patched copy of the system) | **28 of 28** |
+| proposals that ship a new ANSWERING context | 6 (boards 173, 559, 580, 679, 925, and the invitational half of 384) |
+| negative results reported rather than shipped | 3 (boards 326, 426, 580) |
+
+Every proposal below was traced through a patched copy of
+`two_over_one.yaml` loaded by `load_system(path)` — the repository itself is
+untouched.  Where a proposal is a force, an ask or an invitation, the answering
+seat is in the same section, and on boards 173, 559, 580, 679 and 925 I walked
+the **whole auction** to the final contract rather than only the entry call.
+
+## The three agreements that matter most across this slice
+
+**1. The Law of Total Tricks is implemented for the majors only, and the
+pre-emptive raise of a preempt does not exist at all.**  Every LOTT rule in the
+file — `cl_raise_lott3/4_$M`, `ch_raise_lott/lott4_$M`, `uc_raise_lott4_$M`,
+`ballow_raise_lott4_$M`, `balhigh_raise_lott4_$M` — is `expand: { M: [H, S] }`,
+so a ten- or eleven-card **minor** fit has no shape raise at any level; and all
+four `resp_preempt_*` contexts contain a forcing new suit, a keycard ask, a game
+bid and a pass, with **no raise of partner's preempt whatsoever**.  Boards 59,
+305, 122 and 314 are four separate faces of the same hole and together they are
+worth about fifty IMPs in this slice alone.  It expands to roughly fifteen rules
+and it is the single cheapest density gain I found.
+
+**2. The cue-bid raise is the most common competitive convention in the file and
+almost none of its positions are authored.**  `r1H1S_cue` and `r1M2x_cue` are
+`forcing: one_round` and **no context answers either of them** (boards 559, 580);
+`resp_1M_over_2x`'s `expand_pairs` is missing the `(H, S)` pair entirely, so
+`1H - 2S - ?` has no responder context at all; and the same gap exists for
+`1H - 3S`, `1S - 3H`, `1$m - 2$M` and `1$m - 3$M`.  This is the round-17
+"closed conversation" lesson applied below game: on both boards the missing
+seats cost a **cold slam**, and on both the fix reaches it through machinery
+(`rkc_response_agreed_H`, `rkc_continue_after_5D/5H`) that already exists.
+Sixty-odd rules for the family, all of them at the two, three and four level in
+contested auctions — exactly where the project owner's round-17 correction says
+slam machinery actually lives.
+
+**3. Point floors and combined-value tests are applied where shape should
+decide, and the soft-miss lottery then eats the seat.**  The same defect
+recurs in eight boards with eight different rule ids: `v1NT_2S` needs
+`good_suit` (5-5 hands pass their 1NT — board 439), `sw_2$X` needs 11 HCP (a 6-5
+ten-count passes — board 381), `oc1$o_1$X` needs 8 HCP (a suit headed by A-K
+passes — board 292), `ch_rebid_$X3` needs `rule_of_26 >= 22` opposite a shown
+minimum that cannot reach it (board 212), `cl_raise_$M2/3/4` leave a seam at
+13 support points (board 43), `adv_2NT` stops at 12 with no 3NT above it
+(board 385), `adx_neg_major_$M2/3` have identical gates so the jump is dead
+(board 384), and `adx_pull_S3` compares suit lengths so a four-card major loses
+to a five-card minor one level higher (boards 26 and 886).  In every one of them
+the losing rule scored **0.80 or 0.946** — just under or just over the 0.9 fast
+path — which is the "soft-miss lottery" DECISIONS names as the one hypothesis
+that survived rounds 15 and 16.  These are not eight fixes; they are one
+agreement — *shape and suit quality substitute for the point floor in a
+contested auction* — expanded across the ladders.
+
+A fourth, smaller theme worth the consolidator's attention: **three boards (422,
+761, 886) are the same rule doubling on takeout shape after our side has already
+bid**, and one rung (`balhigh_no_defence_pass`, board 422) fixes two of them —
+board 761's proposal is explicitly superseded and should not be shipped
+alongside it.
+
 
 ## Board 173 — margin -15
 
