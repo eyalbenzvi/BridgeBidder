@@ -403,16 +403,31 @@ export class DealView {
    */
   _buildAuctionTable(tableData, label, tableKey, dealer) {
     const dealerIdx = SEAT_COL[dealer] ?? 0;
-    const ourSeats  = (tableData.our_side || '').split('');
 
-    // Assign each auction call to a seat, and find call_n for our calls
-    let ourN = 0;
+    // Which calls are ours, and what to ask the server about each, both come
+    // from `our_calls` -- whose `n` is the call's index in the FULL auction,
+    // the key the server stores its decision setups under.
+    //
+    // Numbering our calls 0,1,2... instead (an ordinal among our own calls)
+    // silently asks about the wrong bid: on an auction where our side's third
+    // call sits at position 4, clicking it returned the explanation for
+    // position 2, and clicking position 2 asked for a position that does not
+    // exist. Deriving it here at all was the mistake -- `n` is already in the
+    // payload and is authoritative.
+    const ourByN = new Map(
+      (tableData.our_calls || []).map(c => [c.n, c]));
+
     const cells = tableData.auction.map((call, i) => {
       const seatIdx = (dealerIdx + i) % 4;
       const seat    = SEATS[seatIdx];
-      const isOurs  = ourSeats.includes(seat);
-      const callN   = isOurs ? ourN++ : null;
-      return { call, seat, seatIdx, isOurs, callN };
+      const ours    = ourByN.get(i);
+      if (ours && ours.call !== call) {
+        console.warn(
+          `auction/our_calls disagree at n=${i}: table shows ${call}, ` +
+          `our_calls says ${ours.call}`);
+      }
+      return { call, seat, seatIdx, isOurs: !!ours, callN: ours ? i : null,
+               rule: ours ? ours.rule : null };
     });
 
     // Build table rows

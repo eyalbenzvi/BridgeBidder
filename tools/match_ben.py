@@ -39,7 +39,7 @@ from bridgebidder.domain.calls import Call  # noqa: E402
 from bridgebidder.domain.cards import FULL_DECK, Hand  # noqa: E402
 from bridgebidder.domain.types import Seat, Vulnerability  # noqa: E402
 from bridgebidder.engine.dd import EndplayDD  # noqa: E402
-from bridgebidder.engine.decision import decide_fast  # noqa: E402
+from bridgebidder.engine.decision import fast_decision  # noqa: E402
 from bridgebidder.engine.decision import choose as _choose  # noqa: E402
 
 # Round 16: the match has ALWAYS run the deterministic fast path, which
@@ -84,15 +84,19 @@ def play_table(system, ben: Ben, deal, dealer, vul, our_side: str) -> tuple[Auct
             if ARBITRATE:
                 d = _choose(system, auction, seat, deal[seat],
                             use_arbitration=True, arbitration_budget=ARB_BUDGET)
-                call = d.chosen.call
+                chosen = d.chosen
             else:
-                choice = decide_fast(setup, deal[seat])
-                call = choice if isinstance(choice, Call) else choice.call
-            rule = None
-            for c in setup.candidates:
-                if c.call == call:
-                    rule = c.rule.id if c.rule else "fallback"
-                    break
+                chosen, _by_call, _clear = fast_decision(setup, deal[seat])
+            call = chosen.call
+            # The rule is read off the candidate that WON, not off the first
+            # candidate in declaration order that happens to make the same
+            # call.  Two rules routinely produce one call - open_1S and
+            # open_1S_rule20, cl_new_S2 and cl_new_S2_hi - and the decision
+            # picks between them by priority, not by position in the YAML.
+            # Scanning setup.candidates named the loser on about 5% of calls,
+            # invisibly, because the call printed beside it was identical
+            # either way and only the attribution was wrong.
+            rule = chosen.candidate.rule.id if chosen.candidate.rule else "fallback"
             ours.append({"seat": seat.value, "call": str(call), "rule": rule,
                          "n": len(auction.calls)})
         else:

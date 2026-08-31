@@ -27,7 +27,7 @@ from bridgebidder.domain.calls import Call
 from bridgebidder.domain.types import Seat, Vulnerability
 from bridgebidder.domain.auction import Auction
 from bridgebidder.engine.dd import EndplayDD, get_dd
-from bridgebidder.engine.decision import decide_fast
+from bridgebidder.engine.decision import decide_fast, fast_decision
 from bridgebidder.engine.explain import build_explanation
 from bridgebidder.engine.scoring import imps, signed_score
 from bridgebidder.inference.engine import prepare_decision, DecisionSetup
@@ -130,13 +130,12 @@ def play_table_with_setups(
         n = len(auction.calls)
         if seat.side == our_side:
             setup = prepare_decision(system, auction, perspective=seat)
-            choice = decide_fast(setup, deal[seat])
-            call = choice if isinstance(choice, Call) else choice.call
-            rule_id = None
-            for c in setup.candidates:
-                if c.call == call:
-                    rule_id = c.rule.id if c.rule else "fallback"
-                    break
+            # Read the rule off the candidate that won, not the first declared
+            # candidate making the same call -- see the note in
+            # tools/match_ben.py:play_table.
+            chosen, _by_call, _clear = fast_decision(setup, deal[seat])
+            call = chosen.call
+            rule_id = chosen.candidate.rule.id if chosen.candidate.rule else "fallback"
             setups_by_n[n] = (setup, call)
             our_calls.append({"seat": seat.value, "call": str(call), "rule": rule_id, "n": n})
         else:
@@ -230,7 +229,7 @@ def _norm_lengths(requires: dict) -> dict:
     return {str(k).lower(): list(v) for k, v in raw.items()}
 
 
-def _candidate_row(sc) -> dict:
+def _candidate_row(sc, chosen: bool = False) -> dict:
     rule = sc.candidate.rule
     return {
         "call": str(sc.call),
@@ -239,7 +238,37 @@ def _candidate_row(sc) -> dict:
         "priority": rule.priority if rule else None,
         "fit": round(sc.fit, 4),
         "score": round(sc.score, 4),
+        "chosen": chosen,
     }
+
+
+def _winning_candidate(setup, hand, call):
+    """The candidate the engine actually selected for `call`, if it selected it.
+
+    Two rules can produce the same call, and then "which rule fired" has two
+    plausible answers that disagree.  `score_candidates` sorts by score, but
+    the engine does not take the top of that list: `fast_decision` picks by
+    priority first among candidates that clear the fit threshold.  Reading the
+    rule off score order therefore names the wrong rule whenever a lower-
+    priority rule happens to score higher -- observed on about 5% of calls,
+    quietly, since the call shown is identical either way and only the rule id
+    differs.  So ask the decision function itself.
+
+    When the recorded call is not what the engine would choose now (the system
+    has moved since the board was recorded), `fast_decision` is answering a
+    different question, and the best-scoring candidate for the recorded call is
+    the closest honest answer.
+    """
+    from bridgebidder.engine.decision import fast_decision, score_candidates
+
+    ranked = score_candidates(setup, hand)
+    try:
+        chosen, _by_call, _clear = fast_decision(setup, hand)
+    except Exception:
+        chosen = None
+    if chosen is not None and chosen.call == call:
+        return chosen, ranked
+    return next((sc for sc in ranked if sc.call == call), None), ranked
 
 
 def get_explanation(deal_id: str, table: str, call_n: int) -> dict:
@@ -255,8 +284,6 @@ def get_explanation(deal_id: str, table: str, call_n: int) -> dict:
 
     Raises KeyError if the deal or call is not in the cache.
     """
-    from bridgebidder.engine.decision import score_candidates
-
     entry = _active_deals[deal_id]  # KeyError if not found
     key = "a_setups" if table == "a" else "b_setups"
     setups_by_n = entry[key]
@@ -273,10 +300,12 @@ def get_explanation(deal_id: str, table: str, call_n: int) -> dict:
     out["rule_id"] = out.get("source_rule_id")
 
     hand = (entry.get("hand_deal") or {}).get(setup.seat)
-    ranked = score_candidates(setup, hand) if hand is not None else []
-    out["candidates"] = [_candidate_row(sc) for sc in ranked[:12]]
+    if hand is None:
+        chosen, ranked = None, []
+    else:
+        chosen, ranked = _winning_candidate(setup, hand, call)
+    out["candidates"] = [_candidate_row(sc, sc is chosen) for sc in ranked[:12]]
 
-    chosen = next((sc for sc in ranked if sc.call == call), None)
     rule = chosen.candidate.rule if (chosen and chosen.candidate.rule) else None
     out["fit_score"] = round(chosen.fit, 4) if chosen else 0.0
     out["seat"] = setup.seat.value
