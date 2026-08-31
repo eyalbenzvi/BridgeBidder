@@ -8680,12 +8680,6 @@ contexts:
   # `general_uncontested_continuation`, whose cheapest natural rung wants 14+
   # points; nothing fit above the forced-bid floor and the catch-all pass took
   # a one-round force at fit 1.00.  Verbatim clone of `responder_reverse_1C1S2H`.
-      - id: rrevh_min_2S
-        call: 2S
-        priority: 67
-        requires: { suits: { S: [5, 13] }, hcp: [0, 7] }
-        shows: "5+ spades under eight points: the cheap rebid a forcing reverse must not be passed with"
-        establishes: { forcing: non_forcing }
       - id: rrevh_floor_3C
         call: 3C
         priority: 40
@@ -8720,12 +8714,6 @@ contexts:
         priority: 63
         requires: { hcp: [12, 40], evals: { weakest_unshown_stopper: [0.9, 9] } }
         shows: "game values opposite the reverse"
-        establishes: { forcing: non_forcing }
-      - id: rrevd_min_2S
-        call: 2S
-        priority: 67
-        requires: { suits: { S: [5, 13] }, hcp: [0, 7] }
-        shows: "5+ spades under eight points: the cheap rebid a forcing reverse must not be passed with"
         establishes: { forcing: non_forcing }
       - id: rrevd_floor_3D
         call: 3D
