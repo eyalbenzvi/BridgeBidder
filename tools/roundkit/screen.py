@@ -149,6 +149,33 @@ def _replay_file(args):
 # statistics
 # --------------------------------------------------------------------------
 
+def _binomial(rng: random.Random, n: int, p: float) -> int:
+    """Binomial(n, p), exactly.
+
+    3.12 ships `random.binomialvariate`; on 3.11 fall back to geometric
+    skipping, which draws one number per success rather than one per trial and
+    so costs O(n*p) - the whole point, since p here is a few dozen over twelve
+    thousand.
+    """
+    if p <= 0.0:
+        return 0
+    if p >= 1.0:
+        return n
+    native = getattr(rng, "binomialvariate", None)
+    if native is not None:
+        return native(n, p)
+    logq = math.log1p(-p)
+    hits, i = 0, -1
+    while True:
+        u = rng.random()
+        if u <= 0.0:
+            return hits
+        i += int(math.log(u) / logq) + 1
+        if i >= n:
+            return hits
+        hits += 1
+
+
 def summarise(recs: list[dict], label: str = "", boot: int = 20000) -> dict:
     """Paired t-test over the WHOLE pool; unchanged boards enter it as zeros."""
     n = len(recs)
@@ -161,11 +188,21 @@ def summarise(recs: list[dict], label: str = "", boot: int = 20000) -> dict:
     t = total / se if se else 0.0
     lo, hi = total - 1.96 * se, total + 1.96 * se
 
+    # Percentile bootstrap on the paired total.  Resampling all n boards costs
+    # n draws a replicate -- 240 million on a 12,000-board pool -- and all but
+    # a handful of them draw a zero and add nothing.  So draw only the ones
+    # that can matter: of n picks with replacement, the number landing on a
+    # nonzero delta is Binomial(n, nz/n) and each of those is uniform over the
+    # nonzero deltas.  Same distribution, O(nz) a replicate instead of O(n).
     rng = random.Random(20250830)
+    nonzero = [d for d in deltas if d]
     boots = []
-    if k:
+    if k and nonzero:
+        p = len(nonzero) / n
         for _ in range(boot):
-            boots.append(sum(deltas[rng.randrange(n)] for _ in range(n)))
+            hits = _binomial(rng, n, p)
+            boots.append(sum(nonzero[rng.randrange(len(nonzero))]
+                             for _ in range(hits)))
         boots.sort()
         blo, bhi = boots[int(0.025 * boot)], boots[int(0.975 * boot)]
     else:

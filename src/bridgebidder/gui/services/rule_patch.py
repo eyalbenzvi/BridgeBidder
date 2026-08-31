@@ -186,9 +186,38 @@ def get_system_for_patches(patches: list[dict]) -> BiddingSystem:
     return parse_system(patched)
 
 
+def context_rule_ids(context_id: str, system: BiddingSystem | None = None) -> set[str]:
+    """Every concrete rule id belonging to `context_id`, template variants included.
+
+    A context declared with `expand:` becomes one concrete context per
+    combination -- `resp_1M` turns into `resp_1M[H]` and `resp_1M[S]` -- so a
+    patch naming the raw context has to match all of its expansions.
+    """
+    system = system or parse_system(load_system_yaml())
+    out: set[str] = set()
+    for ctx in system.contexts:
+        if ctx.id == context_id or ctx.id.startswith(f"{context_id}["):
+            out.update(r.id for r in ctx.rules)
+    return out
+
+
 def get_touched_rule_ids(patches: list[dict]) -> set[str]:
-    """Return the set of rule IDs that patches modify or affect."""
+    """Rule ids whose presence on a board means the board must be replayed.
+
+    The corpus pre-check skips any board none of whose recorded calls came
+    from one of these rules, so an id missing here is a board silently scored
+    as unchanged.
+
+    `add_rule` is the case that needs care.  A brand-new rule has an id that
+    appears on no board in the pool -- the pool predates it -- so matching on
+    the new id alone marks *nothing* as touched and the test reports a
+    confident "0 boards changed" for a rule that may fire everywhere.  What a
+    new rule can actually do is win a decision away from whatever rule wins it
+    today, and that can only happen where its context is live; so the whole
+    context is what has to be replayed.
+    """
     ids: set[str] = set()
+    system: BiddingSystem | None = None
     for patch in patches:
         ptype = patch.get("type")
         if ptype in ("modify_rule", "add_exception"):
@@ -196,8 +225,22 @@ def get_touched_rule_ids(patches: list[dict]) -> set[str]:
             if rid:
                 ids.add(rid)
         elif ptype == "add_rule":
-            rule = patch.get("rule", {})
-            rid = rule.get("id")
+            ctx_id = patch.get("context_id")
+            if ctx_id:
+                if system is None:
+                    system = parse_system(load_system_yaml())
+                ids |= context_rule_ids(ctx_id, system)
+            rid = (patch.get("rule") or {}).get("id")
             if rid:
                 ids.add(rid)
     return ids
+
+
+def touches_fallback(patches: list[dict]) -> bool:
+    """Whether any patch could fire where no rule fires today.
+
+    A board records `rule: null` for a call the engine made with no matching
+    rule.  Adding a rule can capture exactly those positions, and they match no
+    id at all, so the pre-check has to let them through explicitly.
+    """
+    return any(p.get("type") == "add_rule" for p in patches)

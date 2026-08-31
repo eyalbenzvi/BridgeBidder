@@ -233,8 +233,17 @@ export class DealView {
         const n = msg.tried || 0;
         document.getElementById('dv-gen-counter').textContent =
           `${n.toLocaleString()} tried`;
+      } else if (msg.type === 'source') {
+        this._source = msg.source;
+        if (msg.source === 'corpus') {
+          document.getElementById('dv-gen-text').textContent =
+            `Drawing from ${(msg.pool_size || 0).toLocaleString()} boards BEN already won…`;
+        }
       } else if (msg.type === 'found') {
         this._onDealFound(msg.deal);
+      } else if (msg.type === 'error') {
+        this._showError(msg.message || 'Could not produce a deal.');
+        this._resetGenBar();
       }
     });
 
@@ -285,8 +294,13 @@ export class DealView {
     // Update gen bar to show summary
     const imp = fmtImp(deal.imp_margin);
     document.getElementById('dv-gen-dot').classList.remove('pulsing');
+    // Two sources, and the label says which: a board played just now against
+    // the live model, or one replayed from the pool where BEN already won it.
+    // Both are real losses; only one is news.
     document.getElementById('dv-gen-text').textContent =
-      `Found after ${(deal.tried || 0).toLocaleString()} deals — BEN won by ${imp.str} IMP`;
+      deal.source === 'corpus'
+        ? `Board ${deal.board} from ${deal.source_file || 'the pool'} — BEN won by ${imp.str} IMP`
+        : `Found after ${(deal.tried || 0).toLocaleString()} deals — BEN won by ${imp.str} IMP`;
     document.getElementById('dv-gen-counter').textContent = '';
     document.getElementById('dv-btn-stop').classList.add('hidden');
     document.getElementById('dv-btn-find').classList.remove('hidden');
@@ -320,7 +334,17 @@ export class DealView {
         <span class="deal-meta-label">Vul</span>
         <span class="${vulClass(deal.vul)}">${deal.vul}</span>
       </div>
-      <div class="deal-tried-note">Found after ${(deal.tried || 0).toLocaleString()} deals</div>
+      <div class="deal-tried-note">${
+        deal.source === 'corpus'
+          ? `From the pool · ${deal.source_file || ''}`
+          : `Found after ${(deal.tried || 0).toLocaleString()} deals`
+      }</div>
+      ${(deal.drift && deal.drift.length) ? /* html */`
+      <div class="drift-banner" title="${deal.drift.join('\n')}">
+        ⚠ The system has changed since this board was recorded — the engine now
+        bids differently at ${deal.drift.length} position${
+          deal.drift.length === 1 ? '' : 's'}.
+      </div>` : ''}
     `;
   }
 

@@ -1,0 +1,24 @@
+# Render blueprint: deploy the GUI from a browser, with no shell anywhere.
+#
+# At render.com: New -> Blueprint -> pick this repository -> Apply.  Render
+# reads this file, builds, and hands back a public https URL.  Every step is a
+# web form, which is the point: the whole flow works from a phone.
+#
+# The free instance sleeps after 15 minutes idle and takes about a minute to
+# wake.  It has one shared core, so a full 12,000-board corpus test is slow
+# there -- the GUI defaults to a smaller pool and states the resolution it
+# bought, so a short run cannot pass itself off as a definitive one.
+services:
+  - type: web
+    name: bridgebidder-gui
+    runtime: python
+    plan: free
+    buildCommand: pip install -e ".[gui,dd]"
+    startCommand: python -m bridgebidder.gui.run
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Optional: set in the Render dashboard to enable AI-assisted rule
+      # extraction.  Everything else works without it.
+      - key: GITHUB_TOKEN
+        sync: false

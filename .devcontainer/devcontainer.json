@@ -1,0 +1,28 @@
+{
+  // GitHub Codespaces: open this repository from github.com (Code -> Codespaces
+  // -> Create) and the GUI comes up on its own. Everything below runs in the
+  // cloud, so a phone browser is enough to start it.
+  //
+  // On boot the server is started and port 8765 is forwarded and made public,
+  // so the codespace's own https URL opens the app directly -- no terminal, no
+  // Ports panel, no local install.
+  "name": "BridgeBidder GUI",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postCreateCommand": "pip install -e '.[gui,dd]'",
+  "postAttachCommand": {
+    "gui": "python -m bridgebidder.gui.run"
+  },
+  "forwardPorts": [8765],
+  "portsAttributes": {
+    "8765": {
+      "label": "BridgeBidder GUI",
+      "onAutoForward": "openBrowser",
+      "visibility": "public"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"]
+    }
+  }
+}

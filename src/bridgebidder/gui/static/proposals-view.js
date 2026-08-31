@@ -323,7 +323,8 @@ export class ProposalsView {
       if (this.selectedProposal) this._renderProposalDetail(this.selectedProposal);
     });
 
-    const url = wsUrl(`/ws/proposals/${proposalId}/test`);
+    const boards = this._testBoards || 2000;
+    const url = wsUrl(`/ws/proposals/${proposalId}/test?boards=${boards}`);
     this.testWs = new WebSocket(url);
 
     this.testWs.addEventListener('message', e => {
@@ -332,8 +333,16 @@ export class ProposalsView {
 
       if (msg.type === 'progress') {
         this._updateTestProgress(msg);
+      } else if (msg.type === 'started') {
+        const el = document.getElementById('pv-test-mode');
+        if (el) {
+          el.textContent = msg.mode === 'cache-only'
+            ? 'cached BEN' : 'live BEN';
+        }
       } else if (msg.type === 'result') {
         this._onTestResult(msg);
+      } else if (msg.type === 'error') {
+        this._onTestError(msg);
       }
     });
 
@@ -368,6 +377,30 @@ export class ProposalsView {
     set('pv-stat-imp',     (delta >= 0 ? '+' : '') + delta.toFixed(3));
   }
 
+  /**
+   * A test that cannot produce a trustworthy number does not produce one.
+   * The server refuses up front -- no solver, no pool, no BEN of any kind --
+   * and says which, because "it failed" sends the user hunting through logs
+   * for something the check already knows.
+   */
+  _onTestError(msg) {
+    this._closeTestWs();
+    this._testing = false;
+    const area = document.getElementById('pv-test-area');
+    if (!area) return;
+    area.innerHTML = /* html */`
+      <div class="error-banner">
+        <strong>Cannot run the corpus test here.</strong><br>
+        ${String(msg.message || msg.detail || 'Unknown error')
+          .replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-danger" id="pv-btn-reject-result">Reject</button>
+      </div>`;
+    area.querySelector('#pv-btn-reject-result')?.addEventListener('click', () =>
+      this._rejectProposal(this.selectedProposal?.id));
+  }
+
   _onTestResult(result) {
     this._closeTestWs();
     this._testing = false;
@@ -388,66 +421,112 @@ export class ProposalsView {
       this._rejectProposal(this.selectedProposal?.id));
   }
 
+  /**
+   * Render the verdict and the numbers behind it.
+   *
+   * Every figure the server sends is shown, including the awkward ones. The
+   * paired total comes with its bootstrap CI rather than alone, the pool size
+   * is stated next to the change count, and the resolution line says what
+   * effect this run could actually have detected -- so a result that merely
+   * failed to resolve a real effect cannot be read as evidence of no effect.
+   * Unresolved boards get their own card whenever there are any: they are
+   * holes in the corpus, not zeros, and a verdict is only as good as its
+   * coverage.
+   */
   _buildResultHtml(result) {
-    const verdict = (result.verdict || 'INCONCLUSIVE').toUpperCase();
+    const short = (result.verdict_short || 'INCONCLUSIVE').toUpperCase();
     const verdictCls =
-      verdict === 'SHIP'          ? 'verdict-ship'
-      : verdict === 'REVERT'      ? 'verdict-revert'
+      short === 'SHIP'     ? 'verdict-ship'
+      : short === 'REVERT' ? 'verdict-revert'
       : 'verdict-inconclusive';
 
-    const meanDelta = result.mean_imp_delta ?? 0;
-    const changed   = result.boards_changed ?? 0;
-    const total     = result.total_boards ?? 12000;
-    const tStat     = result.t_stat ?? 0;
-    const pVal      = result.p_value ?? 1;
+    const fmt = (v, digits = 2, plus = false) => {
+      if (v === null || v === undefined || Number.isNaN(v)) return '—';
+      const s = Number(v).toFixed(digits);
+      return plus && Number(v) >= 0 ? `+${s}` : s;
+    };
+    const boards     = result.boards ?? 0;
+    const changed    = result.boards_changed ?? 0;
+    const unresolved = result.unresolved ?? 0;
+    const [bLo, bHi] = result.boot95 || [null, null];
 
-    const statCards = [
-      ['Mean Δ IMP / board', (meanDelta >= 0 ? '+' : '') + meanDelta.toFixed(3)],
-      ['Boards changed',     `${changed.toLocaleString()} / ${total.toLocaleString()}`],
-      ['t-statistic',        tStat.toFixed(3)],
-      ['p-value',            pVal.toFixed(4)],
-    ].map(([lbl, val]) => /* html */`
+    const cards = [
+      ['Paired Δ (total)',  fmt(result.total_delta, 0, true) + ' IMP'],
+      ['Per 1000 boards',   fmt(result.per_1000, 1, true) + ' IMP'],
+      ['95% CI (bootstrap)', bLo === null ? '—'
+        : `[${fmt(bLo, 0, true)}, ${fmt(bHi, 0, true)}]`],
+      ['t-statistic',       fmt(result.t_stat, 2, true)],
+      ['Boards changed',    `${changed.toLocaleString()} / ${boards.toLocaleString()}`],
+      ['Δ per changed board', fmt(result.mean_delta, 2, true) + ' IMP'],
+      ['Resolves at 90%',   fmt(result.mde90, 2) + ' IMP/board'],
+      ['Up / down / flat',  `${result.up ?? 0} / ${result.down ?? 0} / ${result.flat ?? 0}`],
+    ];
+    if (unresolved) {
+      cards.push(['Unresolved boards', unresolved.toLocaleString()]);
+    }
+
+    const statCards = cards.map(([lbl, val]) => /* html */`
       <div class="result-stat">
         <div class="result-stat-label">${lbl}</div>
         <div class="result-stat-value">${val}</div>
       </div>`).join('');
 
-    const distHtml = this._buildDistChart(result.imp_distribution || []);
+    const deltas = (result.changed_boards || []).map(b => b.delta ?? 0);
+    const distHtml = this._buildDistChart(deltas);
 
-    const changedRows = (result.changed_boards || []).slice(0, 20).map(b => /* html */`
+    const modeNote = result.mode === 'cache-only' ? /* html */`
+      <div class="note-banner">
+        Ran without a live BEN worker: opponent calls came from the shipped
+        answer cache.${unresolved ? ` ${unresolved.toLocaleString()} board${
+          unresolved === 1 ? '' : 's'} reached a position the cache does not
+        cover and ${unresolved === 1 ? 'was' : 'were'} left out of the test
+        rather than counted as unchanged.` : ' Every board resolved.'}
+      </div>` : '';
+
+    const esc = s => String(s ?? '—').replace(/[<>&]/g, c =>
+      ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+
+    const changedRows = (result.changed_boards || []).slice(0, 20).map(b => {
+      const d = b.delta ?? 0;
+      const moved = b.a_after ? 'A' : 'B';
+      return /* html */`
       <tr>
-        <td>${b.board ?? '—'}</td>
-        <td>${b.dealer ?? '—'}</td>
-        <td>${b.vul ?? '—'}</td>
-        <td>${b.old_score ?? '—'}</td>
-        <td>${b.new_score ?? '—'}</td>
-        <td style="color:${(b.imp_delta||0) >= 0 ? 'var(--accent)' : 'var(--red)'}">${
-          (b.imp_delta ?? 0) >= 0 ? '+' : ''}${b.imp_delta ?? '—'
-        }</td>
-      </tr>`).join('');
+        <td>${esc(b.board)}</td>
+        <td>${esc(b.dealer)}</td>
+        <td>${esc(b.vul)}</td>
+        <td class="mono">${esc(b.before)} → ${esc(b.after)}</td>
+        <td class="mono small">${esc(b[`${moved.toLowerCase()}_after`])}</td>
+        <td class="mono small">${esc(b[`${moved.toLowerCase()}_contract`])}</td>
+        <td style="color:${d >= 0 ? 'var(--accent)' : 'var(--red)'}">${
+          d >= 0 ? '+' : ''}${d}</td>
+      </tr>`;
+    }).join('');
 
     return /* html */`
       <div class="verdict-block">
         <div class="verdict-eyebrow">Test Verdict</div>
-        <div class="verdict-text ${verdictCls}">${verdict}</div>
+        <div class="verdict-text ${verdictCls}">${short}</div>
+        <div class="verdict-detail">${esc(result.verdict)}</div>
       </div>
+
+      ${modeNote}
 
       <div class="result-grid">${statCards}</div>
 
       ${distHtml ? /* html */`
       <div class="imp-dist-wrap">
-        <div class="imp-dist-title">IMP Δ Distribution</div>
+        <div class="imp-dist-title">IMP Δ Distribution (changed boards)</div>
         ${distHtml}
       </div>` : ''}
 
       ${changedRows ? /* html */`
-      <div class="proposal-section-label">Changed Boards (first 20)</div>
+      <div class="proposal-section-label">Changed boards (worst first, 20 shown)</div>
       <div class="table-overflow">
         <table class="changed-tbl">
           <thead>
             <tr>
               <th>Board</th><th>Dlr</th><th>Vul</th>
-              <th>Old NS</th><th>New NS</th><th>Δ IMP</th>
+              <th>Margin</th><th>New auction</th><th>Contract</th><th>Δ IMP</th>
             </tr>
           </thead>
           <tbody>${changedRows}</tbody>

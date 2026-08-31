@@ -20,7 +20,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from .services import deal_gen, rule_patch, corpus, rule_extractor
+from .services import deal_gen, rule_patch, corpus, corpus_deals, rule_extractor
 
 app = FastAPI(title="BridgeBidder GUI")
 
@@ -38,10 +38,47 @@ PROPOSALS_DIR.mkdir(parents=True, exist_ok=True)
 # ---------------------------------------------------------------------------
 
 
+@app.get("/api/env")
+async def get_env():
+    """What this machine can actually do.
+
+    The front end asks once on load so it can label the deal source and hide
+    the corpus test rather than offer a button that fails halfway through a
+    twelve-thousand-board run.
+    """
+    return {
+        "ben": deal_gen.ben_available(),
+        "dd": deal_gen.dd_available(),
+        "pool": corpus_deals.available(),
+        "pool_losses": corpus_deals.count() if corpus_deals.available() else 0,
+        "ai_extract": rule_extractor.available(),
+        "deal_source": ("live" if deal_gen.ben_available()
+                        else "corpus" if corpus_deals.available() else "none"),
+        "corpus_test": corpus.readiness(),
+    }
+
+
 @app.websocket("/ws/deals/generate")
-async def ws_generate_deals(websocket: WebSocket, seed: int | None = None):
+async def ws_generate_deals(
+    websocket: WebSocket, seed: int | None = None, source: str = "auto",
+):
+    """Stream losing deals.
+
+    `source=auto` plays fresh deals against BEN when BEN is installed and
+    otherwise replays boards BEN already won from the pool -- same protocol,
+    same payload shape, so the front end does not branch.
+    """
     await websocket.accept()
-    generator = deal_gen.DealGenerator(seed=seed)
+    use_live = deal_gen.ben_available() if source == "auto" else (source == "live")
+    if use_live and not deal_gen.ben_available():
+        await websocket.send_json({
+            "type": "error",
+            "message": f"BEN is not installed here ({deal_gen.BEN_PYTHON} missing).",
+        })
+        await websocket.close()
+        return
+    generator = (deal_gen.DealGenerator(seed=seed) if use_live
+                 else corpus_deals.CorpusDealSource(seed=seed))
     try:
         await generator.run(websocket)
     except WebSocketDisconnect:
@@ -277,7 +314,13 @@ async def reject_proposal(prop_id: str, body: dict | None = None):
 
 
 @app.websocket("/ws/proposals/{prop_id}/test")
-async def ws_test_proposal(websocket: WebSocket, prop_id: str):
+async def ws_test_proposal(websocket: WebSocket, prop_id: str, boards: int = 2000):
+    """Replay `boards` of the pool under this proposal's patches.
+
+    `boards` is rounded down to whole 1000-board files.  It trades resolution
+    for time at roughly a minute a thousand boards on one core; the result
+    always reports the effect size the chosen pool can actually resolve.
+    """
     await websocket.accept()
     try:
         _, proposal = _load_proposal(prop_id)
@@ -287,7 +330,7 @@ async def ws_test_proposal(websocket: WebSocket, prop_id: str):
         return
     patches = proposal.get("patches", [])
     try:
-        await corpus.replay_corpus(websocket, patches)
+        await corpus.replay_corpus(websocket, patches, boards=boards)
     except WebSocketDisconnect:
         pass
 

@@ -18,6 +18,8 @@
   --ink:           #1c2b24;
   --red:           #c41e3a;
   --red-pale:      rgba(196, 30, 58, 0.1);
+  --warn:          #a1710a;
+  --warn-pale:     rgba(214, 158, 46, 0.12);
   --muted:         #6b8276;
   --border:        #d0cbbf;
   --surface:       #ffffff;
@@ -73,6 +75,8 @@
     --divider:  var(--border);
     --badge-pending-fg:  #7a9b86;
     --badge-pending-bd:  #7a9b86;
+    --warn:          #e0b341;
+    --warn-pale:     rgba(224, 179, 65, 0.14);
   }
 }
 
@@ -93,6 +97,8 @@
   --divider:  var(--border);
   --badge-pending-fg:  #7a9b86;
   --badge-pending-bd:  #7a9b86;
+  --warn:          #e0b341;
+  --warn-pale:     rgba(224, 179, 65, 0.14);
 }
 
 /* ============================================================
@@ -1755,3 +1761,41 @@ img { max-width: 100%; }
   .progress-fill { transition: none; }
   .toggle-arrow { transition: none; }
 }
+
+/* ==========================================================================
+   Honesty affordances
+   Banners and secondary text for the things a result has to admit: which deal
+   source produced a board, whether the rulebook has moved since it was
+   recorded, whether the opponent came from a live model or a cache, and the
+   full verdict sentence behind the one-word badge.
+   ========================================================================== */
+
+.verdict-detail {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-sub);
+  max-width: 62ch;
+}
+
+.note-banner,
+.drift-banner {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--divider);
+  background: var(--accent-pale);
+  color: var(--text-sub);
+}
+
+.drift-banner {
+  border-color: var(--warn);
+  background: var(--warn-pale);
+  color: var(--warn);
+  flex-basis: 100%;
+}
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+.small { font-size: 12px; }

@@ -50,6 +50,22 @@ Return ONLY the JSON object, nothing else.
 """
 
 
+def available() -> bool:
+    """Whether AI-assisted extraction can run here.
+
+    Needs both a token and the client library; the endpoint is also blocked on
+    some networks, but that only shows up on the call itself, so a `True` here
+    is a permission to try rather than a promise.
+    """
+    if not os.environ.get("GITHUB_TOKEN", ""):
+        return False
+    try:
+        import openai  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 async def extract_rule_from_text(
     description: str,
     call: str,

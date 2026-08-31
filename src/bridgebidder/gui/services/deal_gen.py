@@ -21,7 +21,7 @@ _TOOLS_DIR = Path(__file__).parents[4] / "tools"
 if str(_TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(_TOOLS_DIR))
 
-from compare_ben import Ben  # noqa: E402
+from compare_ben import Ben, BEN_PYTHON  # noqa: E402
 from bridgebidder.domain.cards import FULL_DECK, Hand
 from bridgebidder.domain.calls import Call
 from bridgebidder.domain.types import Seat, Vulnerability
@@ -50,6 +50,34 @@ MAX_CALLS = 60
 # Store last 10 deals so explanation can be retrieved.
 _active_deals: "dict[str, dict]" = {}
 _active_deal_order: "deque[str]" = deque(maxlen=10)
+
+
+def ben_available() -> bool:
+    """Whether the BEN worker can actually be spawned on this machine.
+
+    `Ben()` constructs happily anywhere -- the model is loaded lazily by the
+    subprocess -- so the only honest check is whether the interpreter it
+    execs exists.  Without it every `ask()` dies with FileNotFoundError in the
+    middle of a WebSocket stream, which is a far worse failure than declining
+    the feature up front.
+    """
+    return Path(BEN_PYTHON).exists()
+
+
+def dd_available() -> bool:
+    """Whether the real double-dummy solver is installed.
+
+    `get_dd()` falls back to a HCP/shape heuristic when `endplay` is missing.
+    That is fine for a smoke test and useless for scoring: a verdict computed
+    on estimated tricks is a made-up number wearing a t-statistic.  Callers
+    that score boards must check this rather than trust whatever get_dd hands
+    back.
+    """
+    try:
+        EndplayDD()
+        return True
+    except Exception:
+        return False
 
 
 def _get_ben() -> Ben:
@@ -177,18 +205,113 @@ def _play_both_tables(
 # ---------------------------------------------------------------------------
 
 
+def register_deal(deal_id: str, deal_dict: dict, setups: dict) -> None:
+    """Put a deal and its captured decision setups in the explain cache.
+
+    Shared by both deal sources -- the live BEN search and the pool replay in
+    `corpus_deals` -- so `/api/deals/{id}/explain/...` serves either without
+    knowing which produced the board.
+    """
+    if len(_active_deal_order) == _active_deal_order.maxlen:
+        _active_deals.pop(_active_deal_order[0], None)
+    _active_deals[deal_id] = {"deal": deal_dict, **setups}
+    _active_deal_order.append(deal_id)
+
+
+def _norm_lengths(requires: dict) -> dict:
+    """Suit-length bounds keyed by lowercase letter.
+
+    The DSL writes suits uppercase; the editor form reads and writes them
+    lowercase and diffs the two to decide what the user actually changed.
+    Left unnormalised, every suit compares unequal and a patch that touched
+    nothing reports four length changes.
+    """
+    raw = requires.get("suits") or requires.get("lengths") or {}
+    return {str(k).lower(): list(v) for k, v in raw.items()}
+
+
+def _candidate_row(sc) -> dict:
+    rule = sc.candidate.rule
+    return {
+        "call": str(sc.call),
+        "rule_id": rule.id if rule else "fallback",
+        "shows": rule.shows if rule else "",
+        "priority": rule.priority if rule else None,
+        "fit": round(sc.fit, 4),
+        "score": round(sc.score, 4),
+    }
+
+
 def get_explanation(deal_id: str, table: str, call_n: int) -> dict:
-    """Return build_explanation output for the specified call.
+    """Explain one of our calls, in the shape the inspector renders.
+
+    `build_explanation` is the engine's own structured output and stays that
+    way; this adds what the panel needs on top of it -- the rule's identity and
+    its *own* `requires` (not the interpreted constraint, which is merged with
+    inference and would write derived values back into the rulebook if the
+    editor started from it), plus the full scored candidate list, which is the
+    whole reason to open the panel: not what we bid, but what we nearly bid and
+    by how little it lost.
 
     Raises KeyError if the deal or call is not in the cache.
     """
+    from bridgebidder.engine.decision import score_candidates
+
     entry = _active_deals[deal_id]  # KeyError if not found
     key = "a_setups" if table == "a" else "b_setups"
     setups_by_n = entry[key]
     if call_n not in setups_by_n:
         raise KeyError(f"call_n={call_n} not found in deal {deal_id} table {table}")
-    setup, call = setups_by_n[call_n]
-    return build_explanation(setup, call)
+    # The live source stores (setup, call); the pool replay adds the seat.
+    setup, call = setups_by_n[call_n][:2]
+
+    out = build_explanation(setup, call)
+    # `shows` is rewritten below to the rule's own one-line text, which is what
+    # the panel prints and the editor edits; keep the engine's structured block
+    # beside it rather than dropping it.
+    out["shows_block"] = out.get("shows")
+    out["rule_id"] = out.get("source_rule_id")
+
+    hand = (entry.get("hand_deal") or {}).get(setup.seat)
+    ranked = score_candidates(setup, hand) if hand is not None else []
+    out["candidates"] = [_candidate_row(sc) for sc in ranked[:12]]
+
+    chosen = next((sc for sc in ranked if sc.call == call), None)
+    rule = chosen.candidate.rule if (chosen and chosen.candidate.rule) else None
+    out["fit_score"] = round(chosen.fit, 4) if chosen else 0.0
+    out["seat"] = setup.seat.value
+
+    if rule is not None:
+        requires = rule.requires.to_dict()
+        out.update({
+            "rule_id": rule.id,
+            "priority": rule.priority,
+            "shows": rule.shows,
+            "context_id": rule.context_id,
+            # A context declared with `expand:` yields ids like `resp_1M[H]`.
+            # A patch names the raw context, so editing one variant here edits
+            # the template for every variant -- the UI warns on this badge.
+            "is_template": "[" in rule.context_id,
+            "constraint": {
+                "hcp": list(requires.get("hcp", [0, 37])),
+                "lengths": _norm_lengths(requires),
+                "raw": requires,
+            },
+        })
+    else:
+        # No rule matched: the engine fell back.  Say so rather than showing an
+        # empty editor that looks like a rule with no constraints.
+        out.update({
+            "rule_id": "fallback",
+            "priority": None,
+            "shows": out.get("shows", {}).get("text", "") if isinstance(
+                out.get("shows"), dict) else out.get("shows", ""),
+            "context_id": setup.context_rules[0][0].id if setup.context_rules else "",
+            "is_template": False,
+            "is_fallback": True,
+            "constraint": {"hcp": [0, 37], "lengths": {}, "raw": {}},
+        })
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +369,7 @@ class DealGenerator:
 
                 deal_dict = {
                     "id": deal_id,
+                    "source": "live",
                     "tried": tried,
                     "board": board_idx - 1,
                     "dealer": dealer.value,
@@ -274,17 +398,11 @@ class DealGenerator:
                     "imp_margin": margin,
                 }
 
-                # Store in cache (LRU-style via deque).
-                if len(_active_deal_order) == _active_deal_order.maxlen:
-                    oldest = _active_deal_order[0]
-                    _active_deals.pop(oldest, None)
-                _active_deals[deal_id] = {
-                    "deal": deal_dict,
+                register_deal(deal_id, deal_dict, {
                     "a_setups": result["a_setups"],
                     "b_setups": result["b_setups"],
                     "hand_deal": deal,
-                }
-                _active_deal_order.append(deal_id)
+                })
 
                 await websocket.send_json({"type": "found", "deal": deal_dict})
                 # Reset counter for next search after frontend may continue.
