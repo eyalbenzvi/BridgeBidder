@@ -15,9 +15,11 @@ dependencies = [
 [project.optional-dependencies]
 dd = ["endplay>=0.5"]
 test = ["pytest>=7"]
+gui = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "openai>=1.0"]
 
 [project.scripts]
 bid = "bridgebidder.cli:main"
+bid-gui = "bridgebidder.gui.run:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
