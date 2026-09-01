@@ -6,6 +6,8 @@
  * the final verdict, and accept or reject the proposal.
  */
 
+import { toast, loadStagedPatches } from './ui.js';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -110,6 +112,7 @@ export class ProposalsView {
             <div class="sidebar-heading">Proposals</div>
             <div class="sidebar-sub">Rule-change submissions</div>
           </div>
+          <div id="pv-staged-note"></div>
           <div class="proposals-list" id="pv-list">
             <div class="proposals-empty-sidebar">Loading…</div>
           </div>
@@ -125,7 +128,29 @@ export class ProposalsView {
 
       </div>`;
 
+    this._renderStagedNote();
     this._loadProposals();
+  }
+
+  /**
+   * Say so when edits are staged but not submitted.
+   *
+   * This is the page someone checks after saving a rule change, and a staged
+   * patch is not here — it is in the browser's local storage, waiting for
+   * Submit Proposal back on the Deal Explorer. Without this note the list
+   * simply looks empty, which reads as "the save was lost".
+   */
+  _renderStagedNote() {
+    const el = document.getElementById('pv-staged-note');
+    if (!el) return;
+    const n = loadStagedPatches().length;
+    el.innerHTML = n === 0 ? '' : /* html */`
+      <div class="staged-note">
+        <strong>${n} staged change${n === 1 ? '' : 's'}</strong> not submitted yet.
+        They live in this browser until you press
+        <em>Submit Proposal</em> on the Deal Explorer.
+        <a href="#deal" class="staged-note-link">Go there →</a>
+      </div>`;
   }
 
   destroy() {

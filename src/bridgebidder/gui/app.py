@@ -11,6 +11,7 @@ Provides:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import uuid
@@ -117,6 +118,27 @@ async def ws_generate_deals(
 # ---------------------------------------------------------------------------
 # REST: deal explanation
 # ---------------------------------------------------------------------------
+
+
+@app.post("/api/deals/{deal_id}/rehydrate")
+async def rehydrate_deal(deal_id: str, body: dict):
+    """Rebuild a pool board's decision setups so its bids are clickable again.
+
+    Lets a page survive the server forgetting the board — an eviction, or the
+    restart a sleeping free instance performs on every wake.
+    """
+    source_file = body.get("source_file")
+    board = body.get("board")
+    if not source_file or board is None:
+        raise HTTPException(status_code=400,
+                            detail="source_file and board are required")
+    ok = await asyncio.get_event_loop().run_in_executor(
+        None, corpus_deals.rehydrate, deal_id, source_file, int(board))
+    if not ok:
+        raise HTTPException(
+            status_code=404,
+            detail=f"board {board} not found in {source_file}")
+    return {"ok": True, "id": deal_id}
 
 
 @app.get("/api/deals/{deal_id}/explain/{table}/{call_n}")
@@ -311,12 +333,13 @@ async def accept_proposal(prop_id: str):
     path, proposal = _load_proposal(prop_id)
     patches = proposal.get("patches", [])
     try:
-        yaml_data = rule_patch.load_system_yaml()
-        patched = rule_patch.apply_patches_to_yaml(yaml_data, patches)
-        rule_patch.write_system_yaml(patched)
+        # Comment-preserving write: see rule_patch.apply_and_write for why a
+        # plain PyYAML round-trip is not an option here.
+        written = rule_patch.apply_and_write(patches)
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"Patch failed: {exc}")
 
+    proposal["written"] = written
     proposal["status"] = "accepted"
     proposal["accepted_at"] = datetime.datetime.utcnow().isoformat() + "Z"
     with open(path, "w") as fh:

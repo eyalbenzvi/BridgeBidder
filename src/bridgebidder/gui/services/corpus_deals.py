@@ -203,6 +203,31 @@ def _tricks_from(contract: str | None) -> int | None:
 # ---------------------------------------------------------------------------
 
 
+def rehydrate(deal_id: str, source_file: str, board: int) -> bool:
+    """Rebuild a pool board's decision setups under an existing deal id.
+
+    The explain cache is in memory and holds a bounded number of boards, so a
+    board goes missing for two ordinary reasons: enough newer boards pushed it
+    out, or the process restarted — which on a free host happens every time
+    the instance idles out, i.e. constantly. Either way the browser is still
+    showing the board and its bids are still clickable, and the click 404s.
+
+    Nothing about a pool board is stateful, so it can simply be rebuilt: find
+    the record again and replay it. Re-registering under the id the client
+    already holds means the page it is looking at keeps working, rather than
+    being told to start over.
+    """
+    from . import deal_gen
+
+    for rec in _load_losing():
+        if rec.get("_file") == source_file and rec.get("board") == board:
+            payload, setups = build_deal(rec, load_system())
+            payload["id"] = deal_id
+            deal_gen.register_deal(deal_id, payload, setups)
+            return True
+    return False
+
+
 class CorpusDealSource:
     """Serves losing boards from the pool over the same protocol as DealGenerator."""
 

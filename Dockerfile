@@ -24,6 +24,7 @@ COPY src/bridgebidder/__init__.py src/bridgebidder/__init__.py
 RUN pip install --no-cache-dir \
         "pydantic>=2" "PyYAML>=6" \
         "fastapi>=0.110" "uvicorn[standard]>=0.29" "openai>=1.0" \
+        "ruamel.yaml>=0.18" \
         "endplay>=0.5"
 
 COPY . .

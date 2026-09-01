@@ -6,6 +6,9 @@
  * for submission as a proposal.
  */
 
+import { toast, loadStagedPatches, saveStagedPatches, clearStagedPatches }
+  from './ui.js';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -119,6 +122,12 @@ export class DealView {
     this.root.innerHTML = this._tpl();
     this._bindStaticEvents();
     this._renderStagedPatchList();
+    // Navigating to Proposals destroys this view and constructs a new one, so
+    // a board held only in the instance is gone on the way back — the user
+    // returns to the empty state and has to hunt for it again. The payload is
+    // small and self-contained, so keep it for the tab's lifetime.
+    const saved = this._loadDeal();
+    if (saved) this._showDeal(saved, true);
   }
 
   destroy() {
@@ -204,6 +213,7 @@ export class DealView {
     this._generating = true;
 
     // Reset deal UI
+    this._clearDeal();
     this.currentDeal = null;
     this.selectedBid = null;
     this.lastExplanation = null;
@@ -289,6 +299,11 @@ export class DealView {
 
   _onDealFound(deal) {
     this._stopWs();
+    this._saveDeal(deal);
+    this._showDeal(deal, false);
+  }
+
+  _showDeal(deal, restored) {
     this.currentDeal = deal;
 
     // Update gen bar to show summary
@@ -297,10 +312,11 @@ export class DealView {
     // Two sources, and the label says which: a board played just now against
     // the live model, or one replayed from the pool where BEN already won it.
     // Both are real losses; only one is news.
+    const summary = deal.source === 'corpus'
+      ? `Board ${deal.board} from ${deal.source_file || 'the pool'} — BEN won by ${imp.str} IMP`
+      : `Found after ${(deal.tried || 0).toLocaleString()} deals — BEN won by ${imp.str} IMP`;
     document.getElementById('dv-gen-text').textContent =
-      deal.source === 'corpus'
-        ? `Board ${deal.board} from ${deal.source_file || 'the pool'} — BEN won by ${imp.str} IMP`
-        : `Found after ${(deal.tried || 0).toLocaleString()} deals — BEN won by ${imp.str} IMP`;
+      restored ? `${summary} · restored` : summary;
     document.getElementById('dv-gen-counter').textContent = '';
     document.getElementById('dv-btn-stop').classList.add('hidden');
     document.getElementById('dv-btn-find').classList.remove('hidden');
@@ -539,13 +555,34 @@ export class DealView {
   // Action footer
   // -------------------------------------------------------------------------
 
+  /**
+   * Footer: what is staged, and the fact that staging is not submitting.
+   *
+   * Saving a rule edit stages a patch; nothing reaches Proposals until Submit
+   * is pressed. That is deliberate — several edits usually belong in one
+   * proposal, and each proposal costs a corpus run — but nothing said so, so a
+   * saved edit looked like a lost one. The count rides on the button, and the
+   * line above it says plainly that the work is still local.
+   */
   _renderActionFooter(deal) {
     const el = document.getElementById('dv-footer');
+    if (!el) return;
+    const n = this.stagedPatches.length;
     el.innerHTML = /* html */`
-      <button class="btn btn-secondary" id="dv-btn-next">Next Deal</button>
-      <button class="btn btn-primary"   id="dv-btn-submit">Submit Proposal</button>`;
-    document.getElementById('dv-btn-next').addEventListener('click', () => this.nextDeal());
-    document.getElementById('dv-btn-submit').addEventListener('click', () => this._openSubmitModal());
+      <div class="footer-status ${n ? 'has-staged' : ''}">${
+        n === 0
+          ? 'No staged changes yet. Edit a rule from any bid above to stage one.'
+          : `${n} staged change${n === 1 ? '' : 's'} — kept in this browser only, `
+            + `not visible in Proposals until submitted.`
+      }</div>
+      <div class="footer-actions">
+        <button class="btn btn-secondary" id="dv-btn-next">Next Deal</button>
+        <button class="btn btn-primary" id="dv-btn-submit" ${n ? '' : 'disabled'}>
+          Submit Proposal${n ? ` (${n})` : ''}
+        </button>
+      </div>`;
+    el.querySelector('#dv-btn-next').addEventListener('click', () => this.nextDeal());
+    el.querySelector('#dv-btn-submit').addEventListener('click', () => this._openSubmitModal());
   }
 
   // -------------------------------------------------------------------------
@@ -571,21 +608,50 @@ export class DealView {
       </div>`;
 
     try {
-      const expl = await apiFetch(
-        `/api/deals/${this.currentDeal.id}/explain/${table}/${callN}`
-      );
+      const expl = await this._fetchExplanation(table, callN);
       this.lastExplanation = expl;
       this._renderInspector(expl);
     } catch (err) {
+      const gone = String(err.message || '').startsWith('404');
+      const body = gone
+        ? 'The server no longer has this board loaded and could not rebuild it. '
+          + 'Press Find Another for a fresh one.'
+        : err.message;
       inspector.innerHTML = /* html */`
         <div class="inspector-header" style="background:var(--felt)">
-          <div class="inspector-rule-id">Error</div>
+          <div class="inspector-rule-id">${gone ? 'Board expired' : 'Error'}</div>
         </div>
         <div class="inspector-body">
           <div class="inspector-section">
-            <div class="error-banner" style="margin:0">${err.message}</div>
+            <div class="error-banner" style="margin:0">${body}</div>
           </div>
         </div>`;
+    }
+  }
+
+  /**
+   * Fetch an explanation, rebuilding the board server-side if it has aged out.
+   *
+   * The explain cache is in memory and bounded, and a free host restarts its
+   * instance every time it idles out — so a board the page is still showing
+   * can stop being explainable while the user is reading it. A pool board is
+   * pure data, so rather than surfacing a 404 the client asks the server to
+   * replay it under the same id and tries once more. Only once: a second 404
+   * means something other than eviction.
+   */
+  async _fetchExplanation(table, callN) {
+    const deal = this.currentDeal;
+    const url = `/api/deals/${deal.id}/explain/${table}/${callN}`;
+    try {
+      return await apiFetch(url);
+    } catch (err) {
+      const gone = String(err.message || '').startsWith('404');
+      if (!gone || deal.source !== 'corpus' || !deal.source_file) throw err;
+      await apiFetch(`/api/deals/${deal.id}/rehydrate`, {
+        method: 'POST',
+        body: JSON.stringify({ source_file: deal.source_file, board: deal.board }),
+      });
+      return await apiFetch(url);
     }
   }
 
@@ -744,11 +810,15 @@ export class DealView {
                value="${defLen(suit)[1]}" placeholder="max">
       </div>`).join('');
 
+    // Exactly the DSL's FORCING_STATUSES. "Forcing" and "Passable" used to be
+    // offered here and exist nowhere in the schema, so picking either made the
+    // whole patch unparseable.
     const forcingOptions = [
       ['non_forcing',   'Non-forcing'],
-      ['forcing',       'Forcing'],
+      ['one_round',     'Forcing one round'],
+      ['invitational',  'Invitational'],
       ['game_forcing',  'Game-forcing'],
-      ['passable',      'Passable'],
+      ['sign_off',      'Sign-off'],
     ].map(([val, lbl]) =>
       `<option value="${val}" ${expl.forcing_status === val ? 'selected' : ''}>${lbl}</option>`
     ).join('');
@@ -894,8 +964,11 @@ export class DealView {
   async _addSubRule(expl) {
     const form  = this._collectEditorForm();
     const patch = {
-      type:       'add_rule',
-      context_id: expl.context_id,
+      type:          'add_rule',
+      context_id:    expl.context_id,
+      // Land it next to the rule being refined, so the YAML reads in the
+      // order someone would explain it.
+      after_rule_id: expl.rule_id,
       rule: {
         call:           expl.call,
         priority:       (expl.priority || 50) + 1,
@@ -932,15 +1005,11 @@ export class DealView {
   }
 
   _showBannerInEditor(msg, type) {
-    const cls = type === 'error' ? 'error-banner' : 'info-banner';
-    // Remove previous banner
-    document.querySelectorAll('.editor-tmp-banner').forEach(b => b.remove());
-    const banner = document.createElement('div');
-    banner.className = `${cls} editor-tmp-banner`;
-    banner.textContent = msg;
-    const actions = document.querySelector('.editor-actions');
-    actions?.parentElement?.insertBefore(banner, actions);
-    setTimeout(() => banner.remove(), 3500);
+    // Pinned to the viewport rather than dropped next to the editor buttons,
+    // which on a phone sit well below the fold: the old banner announced both
+    // success and failure to an empty part of the screen and then deleted
+    // itself.
+    toast(msg, type === 'error' ? 'error' : 'success');
   }
 
   // -------------------------------------------------------------------------
@@ -987,18 +1056,37 @@ export class DealView {
     // Called on initial render (inspector may not be open yet, skip)
   }
 
-  _savePatches() {
+  /**
+   * Keep the board for the lifetime of the tab.
+   *
+   * sessionStorage rather than localStorage: this is working state, and a
+   * board resurrected days later in a new session would be confusing rather
+   * than helpful. It survives what actually loses it — navigating to
+   * Proposals and back, and a reload.
+   */
+  _saveDeal(deal) {
+    try { sessionStorage.setItem('current_deal', JSON.stringify(deal)); }
+    catch { /* private mode */ }
+  }
+
+  _loadDeal() {
     try {
-      localStorage.setItem('staged_patches', JSON.stringify(this.stagedPatches));
-    } catch { /* storage unavailable */ }
+      const raw = sessionStorage.getItem('current_deal');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  _clearDeal() {
+    try { sessionStorage.removeItem('current_deal'); } catch { /* as above */ }
+  }
+
+  _savePatches() {
+    saveStagedPatches(this.stagedPatches);
+    this._renderActionFooter(this.currentDeal);   // keep the count honest
   }
 
   _loadPatches() {
-    try {
-      return JSON.parse(localStorage.getItem('staged_patches') || '[]');
-    } catch {
-      return [];
-    }
+    return loadStagedPatches();
   }
 
   // -------------------------------------------------------------------------
@@ -1018,7 +1106,8 @@ export class DealView {
 
   _openSubmitModal() {
     if (this.stagedPatches.length === 0) {
-      alert('Stage at least one rule patch before submitting a proposal.');
+      toast('Nothing staged yet — edit a rule from a bid and save it first.',
+            'error');
       return;
     }
 
@@ -1078,10 +1167,15 @@ export class DealView {
     };
 
     try {
-      await apiFetch('/api/proposals', { method: 'POST', body: JSON.stringify(body) });
+      const prop = await apiFetch('/api/proposals',
+        { method: 'POST', body: JSON.stringify(body) });
+      const n = this.stagedPatches.length;
       this.stagedPatches = [];
-      this._savePatches();
+      clearStagedPatches();
       this._refreshStagedSection();
+      this._renderActionFooter(this.currentDeal);
+      toast(`Proposal "${prop.name}" submitted with ${n} change${
+        n === 1 ? '' : 's'}.`, 'success');
       window.location.hash = '#proposals';
     } catch (err) {
       this._showError(`Failed to submit proposal: ${err.message}`);

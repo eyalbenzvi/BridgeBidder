@@ -113,3 +113,43 @@ It exists because the bug it covers was invisible to every Python test: the
 server was right and the payload was right, and the page still explained the
 wrong bid, because nothing compared the index written into the DOM against
 the cell it was written on.
+
+## Editing a rule: staged, then submitted
+
+Saving a rule edit **stages** a patch in the browser. Nothing appears under
+Proposals until you press **Submit Proposal**, because several edits usually
+belong in one proposal and each proposal costs a corpus run. The Deal
+Explorer's footer carries the staged count, and Proposals says so when
+unsubmitted work is waiting — that gap was previously invisible, so a saved
+edit looked lost.
+
+The editor speaks in HCP ranges, suit lengths, priority, a shows line and a
+forcing status; `rule_patch.ui_changes_to_ops` and `ui_constraint_to_dsl`
+translate that into `requires.hcp`, `requires.suits.H`, `establishes.forcing`
+and a `not` block. Two guards are worth knowing:
+
+- A suit reset to 0–13 is **removed**, not written back. `S: [0, 13]`
+  constrains nothing and would reappear as though the rule had always cared
+  about spades.
+- An exception that constrains nothing is **refused**. The form always submits
+  all four suits whether or not you touched them, and `not: {hcp: [0,37],
+  suits: {...}}` matches every hand — an exception like that switches the rule
+  off for everyone.
+
+## Accepting a proposal
+
+`rule_patch.apply_and_write` edits the rulebook through `ruamel.yaml` in
+round-trip mode and then ports only the changed hunks back onto the original
+text. Both steps matter:
+
+- A PyYAML round-trip deletes all 2,230 comment lines and reflows the file
+  from 16,683 lines to 32,395. The write refuses outright if `ruamel.yaml` is
+  missing, and refuses again if the result would lose more than 10% of the
+  comments.
+- ruamel still normalises hand-written flow mappings (`{ a: 1 }` becomes
+  `{a: 1}`), which alone is a 9,700-line diff around a two-line change. Diffing
+  two ruamel dumps isolates the real change, which is then applied to the
+  original text — so an accepted proposal lands as about ten lines.
+
+`copy.deepcopy` on a ruamel document drops 244 of those comments, so the write
+path patches the loaded document in place rather than a copy.

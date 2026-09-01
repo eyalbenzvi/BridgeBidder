@@ -49,7 +49,10 @@ MAX_CALLS = 60
 
 # Store last 10 deals so explanation can be retrieved.
 _active_deals: "dict[str, dict]" = {}
-_active_deal_order: "deque[str]" = deque(maxlen=10)
+# Boards whose decision setups are still explainable.  Bounded because
+# each entry pins a DecisionSetup per call; deep enough that browsing a
+# few dozen boards does not silently break the earlier ones' inspectors.
+_active_deal_order: "deque[str]" = deque(maxlen=50)
 
 
 def ben_available() -> bool:

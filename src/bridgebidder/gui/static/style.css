@@ -1813,3 +1813,89 @@ img { max-width: 100%; }
   opacity: 0.75;
   white-space: nowrap;
 }
+
+/* ==========================================================================
+   Feedback that survives a phone screen
+   The editor's old banner rendered next to buttons far below the fold and
+   deleted itself after 3.5s, so a rejected save looked identical to a
+   successful one: nothing happened either way.
+   ========================================================================== */
+
+.toast-host {
+  position: fixed;
+  inset-block-end: 16px;
+  inset-inline: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(520px, 100%);
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--divider);
+  background: var(--card-bg);
+  color: var(--text);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.toast-success { border-inline-start: 4px solid var(--accent); }
+.toast-error   { border-inline-start: 4px solid var(--red); }
+.toast-info    { border-inline-start: 4px solid var(--muted); }
+
+.toast-text  { flex: 1; }
+
+.toast-close {
+  flex: none;
+  border: 0;
+  background: none;
+  color: var(--text-sub);
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.toast-close:hover { color: var(--text); }
+
+/* Footer: staged count and what it means */
+.footer-status {
+  flex-basis: 100%;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-sub);
+}
+.footer-status.has-staged { color: var(--accent); font-weight: 500; }
+
+.footer-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* Proposals: unsubmitted work is waiting elsewhere */
+.staged-note {
+  margin: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--accent);
+  background: var(--accent-pale);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.staged-note-link {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
