@@ -1799,3 +1799,17 @@ img { max-width: 100%; }
 
 .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
 .small { font-size: 12px; }
+
+/* Build identifier in the header — small, quiet, always present. */
+.build-tag {
+  margin-inline-start: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-sub);
+  opacity: 0.75;
+  white-space: nowrap;
+}

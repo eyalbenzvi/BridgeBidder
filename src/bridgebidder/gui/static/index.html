@@ -16,6 +16,10 @@
       <a href="#deal" class="nav-link active" id="nav-deal">Deal Explorer</a>
       <a href="#proposals" class="nav-link" id="nav-proposals">Proposals</a>
     </nav>
+    <!-- Which build is actually serving this page.  Without it, "is the fix
+         deployed?" is a guess, and a stale cache or a host that did not
+         redeploy looks exactly like a bug that was never fixed. -->
+    <span class="build-tag" id="build-tag" title="deployed build"></span>
   </header>
 
   <main id="app-root">

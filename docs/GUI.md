@@ -86,3 +86,30 @@ Pool size is a query parameter (`?boards=`, default 2000, rounded to whole
 1000-board files) costing roughly a minute per thousand boards on one core.
 A smaller pool is not a cheaper version of the same answer — it resolves a
 larger effect, and the result says by how much.
+
+## Which build am I looking at?
+
+The header carries the commit the server is running. A host that has not
+redeployed, and a browser holding a cached module, both look exactly like a
+bug that was never fixed — same page, same wrong behaviour, nothing to point
+at. Compare that tag against `git log -1 --format=%h` before concluding
+anything is broken. Static assets are served `Cache-Control: no-cache`, so
+they revalidate on every load and a redeploy takes effect immediately.
+
+## The auction-table click test
+
+`tools/uitest/auction_index.mjs` drives a real browser and clicks every
+engine bid on several deals, checking that the seat a call is drawn under
+agrees with the index the click sends, and that the inspector opens on the
+call that was clicked.
+
+```bash
+npm install playwright
+PYTHONPATH=src:tools python3 -m uvicorn bridgebidder.gui.app:app --port 8811
+node tools/uitest/auction_index.mjs
+```
+
+It exists because the bug it covers was invisible to every Python test: the
+server was right and the payload was right, and the page still explained the
+wrong bid, because nothing compared the index written into the DOM against
+the cell it was written on.

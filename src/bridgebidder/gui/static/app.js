@@ -36,5 +36,26 @@ function navigate(hash) {
 
 window.addEventListener('hashchange', () => navigate(window.location.hash));
 
+/**
+ * Show which build is serving the page.
+ *
+ * A host that has not redeployed and a browser holding a cached module look
+ * identical to a bug that was never fixed. This makes the difference visible
+ * without anyone having to reason about it.
+ */
+async function showBuild() {
+  const tag = document.getElementById('build-tag');
+  if (!tag) return;
+  try {
+    const res = await fetch('/api/env', { cache: 'no-store' });
+    const env = await res.json();
+    tag.textContent = env.build || '';
+    tag.title = `build ${env.build} · deals from ${env.deal_source}`;
+  } catch {
+    tag.textContent = '';
+  }
+}
+
 // Boot
+showBuild();
 navigate(window.location.hash || '#deal');

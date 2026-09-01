@@ -12,6 +12,7 @@ Provides:
 from __future__ import annotations
 
 import json
+import os
 import uuid
 import datetime
 from pathlib import Path
@@ -38,6 +39,33 @@ PROPOSALS_DIR.mkdir(parents=True, exist_ok=True)
 # ---------------------------------------------------------------------------
 
 
+def build_version() -> str:
+    """Identify the build serving this page.
+
+    A host that did not redeploy, or a browser holding a cached bundle, is
+    indistinguishable from a bug that was never fixed — the page looks the
+    same and behaves the old way. Naming the commit in the header turns that
+    question into a glance.
+    """
+    for var in ("RENDER_GIT_COMMIT", "SOURCE_COMMIT", "GIT_COMMIT",
+                "VERCEL_GIT_COMMIT_SHA", "HEROKU_SLUG_COMMIT"):
+        val = os.environ.get(var)
+        if val:
+            return val[:7]
+    try:
+        import subprocess
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=Path(__file__).parents[3], capture_output=True, text=True,
+            timeout=5, check=True)
+        return out.stdout.strip() or "unknown"
+    except Exception:
+        return "unknown"
+
+
+_BUILD = build_version()
+
+
 @app.get("/api/env")
 async def get_env():
     """What this machine can actually do.
@@ -47,6 +75,7 @@ async def get_env():
     twelve-thousand-board run.
     """
     return {
+        "build": _BUILD,
         "ben": deal_gen.ben_available(),
         "dd": deal_gen.dd_available(),
         "pool": corpus_deals.available(),
@@ -355,5 +384,24 @@ async def extract_rule(body: dict):
 # Static files (SPA frontend) — mounted last so API routes take priority
 # ---------------------------------------------------------------------------
 
+class RevalidatingStatic(StaticFiles):
+    """Static files that must be revalidated before reuse.
+
+    The front end is unbundled ES modules with stable names, so a browser
+    holding `deal-view.js` from a previous deploy keeps running last week's
+    code against this week's API — a fixed bug that still reproduces, with no
+    way to tell from the page. `no-cache` does not mean "do not store": the
+    file is still cached, the browser just asks first, and an unchanged file
+    comes back as a 304 with no body. The cost is one conditional request per
+    asset; the alternative is silently serving stale JavaScript.
+    """
+
+    def file_response(self, *args, **kwargs):
+        resp = super().file_response(*args, **kwargs)
+        resp.headers["Cache-Control"] = "no-cache"
+        return resp
+
+
 if STATIC.exists():
-    app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
+    app.mount("/", RevalidatingStatic(directory=str(STATIC), html=True),
+              name="static")

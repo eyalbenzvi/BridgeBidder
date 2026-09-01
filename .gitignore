@@ -9,3 +9,8 @@ reports/
 *.orig
 *.rej
 logs/
+
+# node deps for tools/uitest
+node_modules/
+package-lock.json
+package.json
