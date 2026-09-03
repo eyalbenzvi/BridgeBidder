@@ -1,4 +1,4 @@
-"""Corpus replay: measure a proposed patch against the 12,000-board pool.
+"""Corpus replay: measure the working tree against the 12,000-board pool.
 
 The measurement, and why it is the one from `roundkit/screen.py`
 ----------------------------------------------------------------
@@ -38,7 +38,6 @@ over a corpus with a hole in it is only as good as the size of the hole.
 
 from __future__ import annotations
 
-import asyncio
 import gzip
 import json
 import shutil
@@ -64,8 +63,7 @@ from bridgebidder.engine.scoring import imps, signed_score
 from bridgebidder.inference.engine import prepare_decision
 
 from . import deal_gen
-from .rule_patch import get_system_for_patches, get_touched_rule_ids
-
+from bridgebidder.system.dsl import load_system
 if TYPE_CHECKING:
     from bridgebidder.system.dsl import BiddingSystem
 
@@ -342,18 +340,18 @@ def _run_replay_sync(system: "BiddingSystem", files: list[Path], progress_cb):
 
 
 # ---------------------------------------------------------------------------
-# async entry point
+# entry point
 # ---------------------------------------------------------------------------
 
 
 def pool_files(boards: int | None = None) -> list[Path]:
-    """Pool files to test against, each holding 1000 boards.
+    """Pool files to screen against, each holding 1000 boards.
 
     The whole pool is the right test and costs about a minute per thousand
     boards on one core, so the caller may ask for less.  A smaller pool is not
     a cheaper version of the same answer -- it resolves a larger effect -- and
-    `summarise` says so on every run, which is what makes offering the choice
-    safe.
+    `summarise` reports that on every run, which is what makes offering the
+    choice safe.
     """
     files = sorted(POOL_DIR.glob("seed*.jsonl.gz"))
     if boards:
@@ -361,75 +359,40 @@ def pool_files(boards: int | None = None) -> list[Path]:
     return files
 
 
-async def replay_corpus(websocket, patches: list[dict], boards: int | None = None) -> dict:
-    """Replay the pool under `patches`, streaming progress, and report."""
+def screen(boards: int | None = None, progress=None) -> dict:
+    """Measure the working tree against the recorded pool.
+
+    Everything the pool holds was played at some earlier commit; this replays
+    it under whatever the YAML says now and reports the paired IMP delta.
+    That is the check after a rule change: did it help, and by enough to tell
+    from noise.
+    """
     ready = readiness()
     if not ready["ok"]:
-        result = {"type": "error", "message": "; ".join(ready["reasons"]),
-                  "readiness": ready}
-        await websocket.send_json(result)
-        return result
-
-    loop = asyncio.get_event_loop()
-    touched = get_touched_rule_ids(patches)
-    system = await loop.run_in_executor(None, get_system_for_patches, patches)
+        return {"ok": False, "readiness": ready, "reasons": ready["reasons"]}
 
     files = pool_files(boards)
-    total = len(files) * 1000
-    queue: asyncio.Queue = asyncio.Queue()
+    system = load_system()
+    recs, unresolved = _run_replay_sync(
+        system, files, progress or (lambda *a: None))
 
-    def _progress(done: int, changed: int, delta_sum: int) -> None:
-        queue.put_nowait((done, changed, delta_sum))
-
-    await websocket.send_json({
-        "type": "started", "mode": ready["mode"],
-        "touched_rules": sorted(touched), "total": total,
-    })
-
-    future = loop.run_in_executor(None, _run_replay_sync, system, files, _progress)
-
-    async def drain() -> None:
-        while not queue.empty():
-            done, changed, delta_sum = queue.get_nowait()
-            await websocket.send_json({
-                "type": "progress", "board": done, "total": total,
-                "changed": changed, "delta_imps": delta_sum,
-            })
-
-    while not future.done():
-        await drain()
-        await asyncio.sleep(0.1)
-    await drain()
-
-    recs, unresolved = await future
-
-    # The paired test runs over every board that produced a score: unchanged
-    # boards are the zeros that hold the estimate honest.  Boards the cache
-    # could not resolve are absent rather than zero, and are reported as such.
-    stats = await loop.run_in_executor(None, summarise, recs, "proposal")
-    changed = [r for r in recs if r["changed"]]
-    changed.sort(key=lambda r: r["delta"])
-
-    result = _finite({
-        "type": "result",
+    stats = summarise(recs, "working tree")
+    changed = sorted((r for r in recs if r["changed"]), key=lambda r: r["delta"])
+    return _finite({
+        "ok": True,
         "mode": ready["mode"],
         "verdict": stats["verdict"],
-        "verdict_short": ("NO VERDICT" if stats["verdict"].startswith("NO VERDICT")
-                          else stats["verdict"].split(" ")[0]),
         "boards": stats["boards"],
         "boards_changed": stats["changed"],
         "unresolved": len(unresolved),
         "unresolved_boards": unresolved[:50],
         "total_delta": stats["total"],
         "per_1000": stats["per_1000"],
-        "mean_delta": (stats["total"] / stats["changed"]) if stats["changed"] else 0.0,
         "t_stat": stats["t"],
         "ci95": list(stats["ci95"]),
         "boot95": list(stats["boot95"]),
         "sd_changed": stats["sd_changed"],
         "mde90": stats["mde90"],
         "up": stats["up"], "down": stats["down"], "flat": stats["flat"],
-        "changed_boards": changed[:200],
+        "changed_boards": changed,
     })
-    await websocket.send_json(result)
-    return result

@@ -1899,3 +1899,146 @@ img { max-width: 100%; }
   font-weight: 500;
   text-decoration: none;
 }
+
+
+/* ==========================================================================
+   Notes
+   The GUI captures what looked wrong; the fix is made by hand in the YAML.
+   These are the surfaces for writing one and for reading the list back.
+   ========================================================================== */
+
+.note-box {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+}
+
+.note-hint {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-sub);
+}
+
+.note-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.note-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.notes-view { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.notes-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.notes-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.notes-howto {
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--divider);
+  background: var(--accent-pale);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.notes-howto code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.notes-list { display: flex; flex-direction: column; gap: 12px; }
+
+.notes-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 14px;
+}
+
+.note-card {
+  padding: 14px 16px;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+}
+.note-card.is-done { opacity: 0.55; }
+
+.note-card-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.note-id {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 500;
+  color: var(--accent);
+}
+.note-ref {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  color: var(--text-sub);
+}
+.note-when { margin-inline-start: auto; color: var(--text-sub); }
+
+.note-text {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note-bid {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+.note-bid code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.note-detail { margin-top: 10px; font-size: 13px; color: var(--text-sub); }
+.note-detail summary { cursor: pointer; }
+.nv-hands { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0; }
+.nv-hand  { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; }
+.nv-auction { margin-top: 4px; overflow-x: auto; }
+.nv-auction code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.note-actions { display: flex; gap: 8px; margin-top: 12px; }

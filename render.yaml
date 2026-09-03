@@ -18,7 +18,3 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
-      # Optional: set in the Render dashboard to enable AI-assisted rule
-      # extraction.  Everything else works without it.
-      - key: GITHUB_TOKEN
-        sync: false

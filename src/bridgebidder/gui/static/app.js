@@ -1,18 +1,18 @@
 /**
  * app.js — SPA router for Bridge Bidding Lab
  *
- * Hash-based routing: #deal (default) and #proposals.
+ * Hash-based routing: #deal (default) and #notes.
  * Each view is a class with render() and optional destroy().
  */
 
 import { DealView }      from './deal-view.js';
-import { ProposalsView } from './proposals-view.js';
+import { NotesView }    from './notes-view.js';
 
 const root = document.getElementById('app-root');
 let currentView = null;
 
 const navDeal      = document.getElementById('nav-deal');
-const navProposals = document.getElementById('nav-proposals');
+const navNotes     = document.getElementById('nav-notes');
 
 /**
  * Navigate to the view corresponding to the given hash.
@@ -25,12 +25,12 @@ function navigate(hash) {
   }
   root.innerHTML = '';
 
-  const isProposals = hash === '#proposals';
+  const isNotes = hash === '#notes';
 
-  navDeal.classList.toggle('active', !isProposals);
-  navProposals.classList.toggle('active', isProposals);
+  navDeal.classList.toggle('active', !isNotes);
+  navNotes.classList.toggle('active', isNotes);
 
-  currentView = isProposals ? new ProposalsView(root) : new DealView(root);
+  currentView = isNotes ? new NotesView(root) : new DealView(root);
   currentView.render();
 }
 

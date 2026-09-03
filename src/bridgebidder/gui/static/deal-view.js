@@ -1,13 +1,16 @@
 /**
  * deal-view.js — Deal Explorer
  *
- * Generates bridge deals until BEN beats our engine, then lets the
- * user inspect each bid, edit bidding rules, and queue staged patches
- * for submission as a proposal.
+ * Finds a board where BEN outscored our engine, shows both auctions, and
+ * explains any of our calls: the rule that fired, what it shows and denies,
+ * and every candidate it beat.
+ *
+ * It does not edit rules. Describing what is wrong and encoding the fix in
+ * the DSL are different jobs; this captures the first as a free-text note
+ * with the board attached, and the fix is made by hand in the YAML.
  */
 
-import { toast, loadStagedPatches, saveStagedPatches, clearStagedPatches }
-  from './ui.js';
+import { toast } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -77,22 +80,6 @@ function fmtImp(n) {
   return { str: `${sign}${abs}`, cls: n > 0 ? 'pos' : n < 0 ? 'neg' : 'zero' };
 }
 
-/** Build compact text summary of a patch */
-function patchSummary(patch) {
-  switch (patch.type) {
-    case 'modify_rule': {
-      const fields = Object.keys(patch.changes || {}).join(', ');
-      return `Modified ${patch.rule_id}: ${fields}`;
-    }
-    case 'add_exception':
-      return `Exception added to ${patch.rule_id}`;
-    case 'add_rule':
-      return `New rule added to ${patch.context_id}`;
-    default:
-      return JSON.stringify(patch);
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Class
 // ---------------------------------------------------------------------------
@@ -108,8 +95,8 @@ export class DealView {
     this.selectedBid = null;
     /** @type {object|null} */
     this.lastExplanation = null;
-    /** @type {Array<object>} — persisted to localStorage */
-    this.stagedPatches = this._loadPatches();
+    /** @type {number|null} — open notes, for the footer */
+    this.noteCount = null;
     /** @type {boolean} */
     this._generating = false;
   }
@@ -121,11 +108,10 @@ export class DealView {
   render() {
     this.root.innerHTML = this._tpl();
     this._bindStaticEvents();
-    this._renderStagedPatchList();
-    // Navigating to Proposals destroys this view and constructs a new one, so
-    // a board held only in the instance is gone on the way back — the user
-    // returns to the empty state and has to hunt for it again. The payload is
-    // small and self-contained, so keep it for the tab's lifetime.
+    this._refreshNoteCount();
+    // Navigating away destroys this view and constructs a new one, so
+    // a board held only in the instance is gone on the way back. The payload
+    // is small and self-contained, so keep it for the tab's lifetime.
     const saved = this._loadDeal();
     if (saved) this._showDeal(saved, true);
   }
@@ -556,33 +542,38 @@ export class DealView {
   // -------------------------------------------------------------------------
 
   /**
-   * Footer: what is staged, and the fact that staging is not submitting.
+   * Footer: a note box that does not need a bid selected.
    *
-   * Saving a rule edit stages a patch; nothing reaches Proposals until Submit
-   * is pressed. That is deliberate — several edits usually belong in one
-   * proposal, and each proposal costs a corpus run — but nothing said so, so a
-   * saved edit looked like a lost one. The count rides on the button, and the
-   * line above it says plainly that the work is still local.
+   * Not every observation is about one call — "this whole auction should have
+   * stopped at 2H" belongs to the board. The per-bid box in the inspector
+   * attaches the call as well; this one attaches just the board.
    */
   _renderActionFooter(deal) {
     const el = document.getElementById('dv-footer');
     if (!el) return;
-    const n = this.stagedPatches.length;
+    const n = this.noteCount;
     el.innerHTML = /* html */`
-      <div class="footer-status ${n ? 'has-staged' : ''}">${
-        n === 0
-          ? 'No staged changes yet. Edit a rule from any bid above to stage one.'
-          : `${n} staged change${n === 1 ? '' : 's'} — kept in this browser only, `
-            + `not visible in Proposals until submitted.`
-      }</div>
-      <div class="footer-actions">
-        <button class="btn btn-secondary" id="dv-btn-next">Next Deal</button>
-        <button class="btn btn-primary" id="dv-btn-submit" ${n ? '' : 'disabled'}>
-          Submit Proposal${n ? ` (${n})` : ''}
-        </button>
+      <div class="note-box">
+        <div class="section-label">Note about this board</div>
+        <textarea class="note-input" id="dv-note-text-general" rows="3"
+          placeholder="Something about the deal as a whole — click a bid instead to attach that call too"></textarea>
+        <div class="footer-actions">
+          <button class="btn btn-primary" id="dv-note-save-general">Save note</button>
+          <button class="btn btn-secondary" id="dv-btn-next">Next Deal</button>
+          <a class="btn btn-ghost" href="#notes">${
+            n === null ? 'Notes' : `Notes (${n})`
+          }</a>
+        </div>
       </div>`;
     el.querySelector('#dv-btn-next').addEventListener('click', () => this.nextDeal());
-    el.querySelector('#dv-btn-submit').addEventListener('click', () => this._openSubmitModal());
+    const btn = el.querySelector('#dv-note-save-general');
+    const box = el.querySelector('#dv-note-text-general');
+    btn.addEventListener('click', () => this._saveNote(box.value, null, btn));
+    box.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        this._saveNote(box.value, null, btn);
+      }
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -751,309 +742,97 @@ export class DealView {
           </table>
         </div>` : ''}
 
-        <!-- Rule editor accordion -->
-        <div class="rule-editor-accordion" id="dv-editor-accordion">
-          <button class="rule-editor-toggle"
-                  aria-expanded="false"
-                  id="dv-editor-toggle"
-          >
-            Edit Rule
-            <span class="toggle-arrow">▼</span>
-          </button>
-          <div id="dv-editor-form-wrap" class="hidden">
-            ${this._buildEditorFormHtml(expl)}
-          </div>
-        </div>
-
-        <!-- Staged patches -->
-        <div class="staged-patches-section" id="dv-staged-section">
-          ${this._stagedPatchesHtml()}
+        <!-- Note about this call -->
+        <div class="note-box" id="dv-note-box">
+          <div class="section-label">What is wrong here?</div>
+          <p class="note-hint">
+            Describe it however you like — the rule that should apply, the
+            exception it is missing, a rule that should not exist, two rules
+            fighting. The board and this bid are attached automatically.
+          </p>
+          <textarea class="note-input" id="dv-note-text" rows="4"
+            placeholder="e.g. with 5-4 in the majors and 11 points this should be a negative double, not 1S — the rule never considers the second suit"></textarea>
+          <button class="btn btn-primary btn-sm" id="dv-note-save">Save note</button>
         </div>
       </div>`;
 
-    // Accordion toggle
-    document.getElementById('dv-editor-toggle').addEventListener('click', e => {
-      const btn  = e.currentTarget;
-      const wrap = document.getElementById('dv-editor-form-wrap');
-      const open = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!open));
-      wrap.classList.toggle('hidden', open);
-    });
-
-    // Editor form events
-    this._bindEditorFormEvents(expl);
-  }
-
-  // -------------------------------------------------------------------------
-  // Rule editor form
-  // -------------------------------------------------------------------------
-
-  _buildEditorFormHtml(expl) {
-    const c     = expl.constraint || {};
-    const hcp   = c.hcp || [0, 37];
-    const lengths = c.lengths || c.suits || {};
-    const defLen = (suit) => {
-      const v = lengths[suit.toLowerCase()] || lengths[suit.toUpperCase()];
-      return Array.isArray(v) ? v : [0, 13];
-    };
-
-    const suitCols = ['S', 'H', 'D', 'C'].map(suit => /* html */`
-      <div class="suit-col">
-        <div class="suit-col-header">
-          <span class="suit-sym ${suit.toLowerCase()}">${{S:'♠',H:'♥',D:'♦',C:'♣'}[suit]}</span>
-        </div>
-        <input class="form-input" type="number" min="0" max="13"
-               id="ed-len-${suit.toLowerCase()}-min"
-               value="${defLen(suit)[0]}" placeholder="min">
-        <input class="form-input" type="number" min="0" max="13"
-               id="ed-len-${suit.toLowerCase()}-max"
-               value="${defLen(suit)[1]}" placeholder="max">
-      </div>`).join('');
-
-    // Exactly the DSL's FORCING_STATUSES. "Forcing" and "Passable" used to be
-    // offered here and exist nowhere in the schema, so picking either made the
-    // whole patch unparseable.
-    const forcingOptions = [
-      ['non_forcing',   'Non-forcing'],
-      ['one_round',     'Forcing one round'],
-      ['invitational',  'Invitational'],
-      ['game_forcing',  'Game-forcing'],
-      ['sign_off',      'Sign-off'],
-    ].map(([val, lbl]) =>
-      `<option value="${val}" ${expl.forcing_status === val ? 'selected' : ''}>${lbl}</option>`
-    ).join('');
-
-    return /* html */`
-      <div class="rule-editor-form">
-
-        <div class="form-field">
-          <label class="form-field-label">HCP range</label>
-          <div class="range-row">
-            <input class="form-input" type="number" min="0" max="37"
-                   id="ed-hcp-min" value="${hcp[0]}">
-            <span class="range-sep">–</span>
-            <input class="form-input" type="number" min="0" max="37"
-                   id="ed-hcp-max" value="${hcp[1]}">
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label class="form-field-label">Suit lengths (min / max)</label>
-          <div class="suit-grid">${suitCols}</div>
-        </div>
-
-        <div class="form-field">
-          <label class="form-field-label" for="ed-priority">Priority</label>
-          <div class="priority-row">
-            <input class="priority-slider" type="range"
-                   id="ed-priority" min="1" max="100"
-                   value="${expl.priority || 50}">
-            <span class="priority-val" id="ed-priority-val">${expl.priority || 50}</span>
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label class="form-field-label" for="ed-shows">Shows</label>
-          <input class="form-input wide" type="text"
-                 id="ed-shows" value="${(expl.shows || '').replace(/"/g, '&quot;')}">
-        </div>
-
-        <div class="form-field">
-          <label class="form-field-label" for="ed-forcing">Forcing status</label>
-          <select class="form-select" id="ed-forcing">${forcingOptions}</select>
-        </div>
-
-        <div class="editor-actions">
-          <button class="btn btn-primary btn-sm"    id="ed-btn-modify">Save Modification</button>
-          <button class="btn btn-ghost btn-sm"      id="ed-btn-exception">Add Exception</button>
-          <button class="btn btn-secondary btn-sm"  id="ed-btn-subrule">Add Sub-rule</button>
-        </div>
-
-      </div>`;
-  }
-
-  _bindEditorFormEvents(expl) {
-    // Priority slider live display
-    const slider = document.getElementById('ed-priority');
-    const valEl  = document.getElementById('ed-priority-val');
-    if (slider && valEl) {
-      slider.addEventListener('input', () => { valEl.textContent = slider.value; });
-    }
-
-    document.getElementById('ed-btn-modify')?.addEventListener('click', () =>
-      this._saveModification(expl));
-    document.getElementById('ed-btn-exception')?.addEventListener('click', () =>
-      this._addException(expl));
-    document.getElementById('ed-btn-subrule')?.addEventListener('click', () =>
-      this._addSubRule(expl));
-  }
-
-  _collectEditorForm() {
-    const v = (id) => document.getElementById(id)?.value;
-    const n = (id) => parseFloat(v(id));
-    return {
-      hcp:          [n('ed-hcp-min'), n('ed-hcp-max')],
-      lengths: {
-        s: [n('ed-len-s-min'), n('ed-len-s-max')],
-        h: [n('ed-len-h-min'), n('ed-len-h-max')],
-        d: [n('ed-len-d-min'), n('ed-len-d-max')],
-        c: [n('ed-len-c-min'), n('ed-len-c-max')],
-      },
-      priority:       n('ed-priority'),
-      shows:          v('ed-shows'),
-      forcing_status: v('ed-forcing'),
-    };
-  }
-
-  async _saveModification(expl) {
-    const form = this._collectEditorForm();
-    const original = expl.constraint || {};
-    const changes = {};
-
-    // Only record fields that changed
-    if (JSON.stringify(form.hcp) !== JSON.stringify(original.hcp))
-      changes.hcp = { before: original.hcp, after: form.hcp };
-
-    if (form.shows !== expl.shows)
-      changes.shows = { before: expl.shows, after: form.shows };
-
-    if (form.forcing_status !== expl.forcing_status)
-      changes.forcing_status = { before: expl.forcing_status, after: form.forcing_status };
-
-    if (form.priority !== expl.priority)
-      changes.priority = { before: expl.priority, after: form.priority };
-
-    // Lengths
-    const origLengths = original.lengths || original.suits || {};
-    for (const suit of ['s','h','d','c']) {
-      const ov = origLengths[suit] || [0,13];
-      if (JSON.stringify(form.lengths[suit]) !== JSON.stringify(ov)) {
-        changes[`length_${suit}`] = { before: ov, after: form.lengths[suit] };
+    const save = document.getElementById('dv-note-save');
+    const text = document.getElementById('dv-note-text');
+    save.addEventListener('click', () => this._saveNote(text.value, expl, save));
+    // Ctrl/Cmd+Enter from the box itself, so the thought can be finished
+    // without reaching for a button that may be off-screen on a phone.
+    text.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        this._saveNote(text.value, expl, save);
       }
-    }
+    });
+  }
 
-    if (Object.keys(changes).length === 0) {
-      this._showBannerInEditor('No changes detected.', 'info');
+  /**
+   * Record a note against the board, and the bid if one is selected.
+   *
+   * The page holds the whole board payload, so the note carries it: the
+   * durable `file#board` reference, the hands, both auctions and the rules
+   * behind our calls. A note that cannot say which board it is about stops
+   * being actionable within the day.
+   */
+  async _saveNote(text, expl, button) {
+    if (!text || !text.trim()) {
+      toast('Write something first — the note is the whole point.', 'error');
       return;
     }
-
-    const patch = {
-      type:       'modify_rule',
+    const bid = expl ? {
+      table:      this.selectedBid?.table,
+      n:          this.selectedBid?.call_n,
+      seat:       expl.seat,
+      call:       expl.call,
       rule_id:    expl.rule_id,
       context_id: expl.context_id,
-      changes,
-    };
+      shows:      expl.shows,
+    } : null;
 
-    await this._previewAndStage(patch);
-  }
-
-  async _addException(expl) {
-    const form  = this._collectEditorForm();
-    const patch = {
-      type:       'add_exception',
-      rule_id:    expl.rule_id,
-      context_id: expl.context_id,
-      constraint: {
-        hcp:     form.hcp,
-        lengths: form.lengths,
-      },
-    };
-    await this._previewAndStage(patch);
-  }
-
-  async _addSubRule(expl) {
-    const form  = this._collectEditorForm();
-    const patch = {
-      type:          'add_rule',
-      context_id:    expl.context_id,
-      // Land it next to the rule being refined, so the YAML reads in the
-      // order someone would explain it.
-      after_rule_id: expl.rule_id,
-      rule: {
-        call:           expl.call,
-        priority:       (expl.priority || 50) + 1,
-        shows:          form.shows,
-        forcing_status: form.forcing_status,
-        constraint: {
-          hcp:     form.hcp,
-          lengths: form.lengths,
-        },
-      },
-    };
-    await this._previewAndStage(patch);
-  }
-
-  async _previewAndStage(patch) {
+    const label = button?.textContent;
+    if (button) { button.disabled = true; button.textContent = 'Saving…'; }
     try {
-      const result = await apiFetch('/api/rules/patch/preview', {
+      const note = await apiFetch('/api/notes', {
         method: 'POST',
-        body:   JSON.stringify({ patch }),
+        body: JSON.stringify({ text, deal: this.currentDeal, bid }),
       });
-
-      if (!result.ok) {
-        this._showBannerInEditor(`Preview error: ${result.error}`, 'error');
-        return;
-      }
-
-      this.stagedPatches.push(patch);
-      this._savePatches();
-      this._refreshStagedSection();
-      this._showBannerInEditor('Patch staged.', 'info');
+      const where = note.deal ? ` on ${note.deal.ref}` : '';
+      toast(`Saved ${note.id}${where}. It is in the Notes list for Claude.`,
+            'success');
+      const box = document.getElementById('dv-note-text');
+      if (box) box.value = '';
+      const general = document.getElementById('dv-note-text-general');
+      if (general) general.value = '';
+      this._refreshNoteCount();
     } catch (err) {
-      this._showBannerInEditor(`Error: ${err.message}`, 'error');
+      toast(`Could not save the note: ${err.message}`, 'error');
+    } finally {
+      if (button) { button.disabled = false; button.textContent = label; }
     }
   }
 
-  _showBannerInEditor(msg, type) {
-    // Pinned to the viewport rather than dropped next to the editor buttons,
-    // which on a phone sit well below the fold: the old banner announced both
-    // success and failure to an empty part of the screen and then deleted
-    // itself.
-    toast(msg, type === 'error' ? 'error' : 'success');
+  async _refreshNoteCount() {
+    try {
+      const data = await apiFetch('/api/notes');
+      this.noteCount = (data.notes || []).filter(n => n.status !== 'done').length;
+    } catch { this.noteCount = null; }
+    this._renderActionFooter(this.currentDeal);
   }
 
   // -------------------------------------------------------------------------
-  // Staged patches
+  // Actions
   // -------------------------------------------------------------------------
 
-  _stagedPatchesHtml() {
-    const count = this.stagedPatches.length;
-    const countBadge = count > 0
-      ? `<span class="patch-count">${count}</span>`
-      : '';
-
-    const list = this.stagedPatches.length === 0
-      ? `<div class="staged-no-patches">No staged patches yet.</div>`
-      : this.stagedPatches.map((p, i) => /* html */`
-          <div class="patch-item">
-            <div class="patch-item-text">${patchSummary(p)}</div>
-            <button class="patch-discard" data-idx="${i}" title="Discard">✕</button>
-          </div>`).join('');
-
-    return /* html */`
-      <div class="staged-header">
-        <span class="staged-title">Staged patches</span>
-        ${countBadge}
-      </div>
-      <div class="patch-list">${list}</div>`;
-  }
-
-  _refreshStagedSection() {
-    const sec = document.getElementById('dv-staged-section');
-    if (!sec) return;
-    sec.innerHTML = this._stagedPatchesHtml();
-    sec.querySelectorAll('.patch-discard').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.idx, 10);
-        this.stagedPatches.splice(idx, 1);
-        this._savePatches();
-        this._refreshStagedSection();
-      });
-    });
-  }
-
-  _renderStagedPatchList() {
-    // Called on initial render (inspector may not be open yet, skip)
+  nextDeal() {
+    this.currentDeal = null;
+    this.selectedBid = null;
+    this.lastExplanation = null;
+    document.getElementById('dv-content').classList.add('hidden');
+    this._hideInspector();
+    document.getElementById('dv-btn-find').textContent = 'Find Deal';
+    this.startGeneration();
   }
 
   /**
@@ -1061,8 +840,8 @@ export class DealView {
    *
    * sessionStorage rather than localStorage: this is working state, and a
    * board resurrected days later in a new session would be confusing rather
-   * than helpful. It survives what actually loses it — navigating to
-   * Proposals and back, and a reload.
+   * than helpful. It survives what actually loses it — navigating away and
+   * back, and a reload.
    */
   _saveDeal(deal) {
     try { sessionStorage.setItem('current_deal', JSON.stringify(deal)); }
@@ -1078,108 +857,6 @@ export class DealView {
 
   _clearDeal() {
     try { sessionStorage.removeItem('current_deal'); } catch { /* as above */ }
-  }
-
-  _savePatches() {
-    saveStagedPatches(this.stagedPatches);
-    this._renderActionFooter(this.currentDeal);   // keep the count honest
-  }
-
-  _loadPatches() {
-    return loadStagedPatches();
-  }
-
-  // -------------------------------------------------------------------------
-  // Actions
-  // -------------------------------------------------------------------------
-
-  nextDeal() {
-    // Keep staged patches, clear deal state, restart
-    this.currentDeal   = null;
-    this.selectedBid   = null;
-    this.lastExplanation = null;
-    document.getElementById('dv-content').classList.add('hidden');
-    this._hideInspector();
-    document.getElementById('dv-btn-find').textContent = 'Find Deal';
-    this.startGeneration();
-  }
-
-  _openSubmitModal() {
-    if (this.stagedPatches.length === 0) {
-      toast('Nothing staged yet — edit a rule from a bid and save it first.',
-            'error');
-      return;
-    }
-
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = /* html */`
-      <div class="modal-box">
-        <h3 class="modal-title">Submit Proposal</h3>
-        <div class="modal-form">
-          <div class="form-field">
-            <label class="form-field-label" for="modal-name">Proposal name</label>
-            <input class="form-input wide" type="text" id="modal-name"
-                   placeholder="e.g. Tighten open_1NT range">
-          </div>
-          <div class="form-field">
-            <label class="form-field-label" for="modal-note">Note (optional)</label>
-            <input class="form-input wide" type="text" id="modal-note"
-                   placeholder="Brief rationale…">
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
-          <button class="btn btn-primary"   id="modal-submit">Submit</button>
-        </div>
-      </div>`;
-
-    document.body.appendChild(overlay);
-
-    overlay.querySelector('#modal-cancel').addEventListener('click', () => overlay.remove());
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-
-    overlay.querySelector('#modal-submit').addEventListener('click', async () => {
-      const name = overlay.querySelector('#modal-name').value.trim();
-      if (!name) {
-        overlay.querySelector('#modal-name').focus();
-        return;
-      }
-      const note = overlay.querySelector('#modal-note').value.trim();
-      await this._submitProposal(name, note);
-      overlay.remove();
-    });
-  }
-
-  async _submitProposal(name, note) {
-    const deal = this.currentDeal;
-    const body = {
-      name,
-      note,
-      patches: this.stagedPatches,
-      deal_ref: deal ? {
-        id:         deal.id,
-        board:      deal.board,
-        dealer:     deal.dealer,
-        vul:        deal.vul,
-        imp_margin: deal.imp_margin,
-      } : null,
-    };
-
-    try {
-      const prop = await apiFetch('/api/proposals',
-        { method: 'POST', body: JSON.stringify(body) });
-      const n = this.stagedPatches.length;
-      this.stagedPatches = [];
-      clearStagedPatches();
-      this._refreshStagedSection();
-      this._renderActionFooter(this.currentDeal);
-      toast(`Proposal "${prop.name}" submitted with ${n} change${
-        n === 1 ? '' : 's'}.`, 'success');
-      window.location.hash = '#proposals';
-    } catch (err) {
-      this._showError(`Failed to submit proposal: ${err.message}`);
-    }
   }
 
   _showError(msg) {
