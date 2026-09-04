@@ -289,9 +289,107 @@ def _show_decision(system, vmap, r, calls, i, want):
         print(f"    contexts: {', '.join(ctxs[:6])}")
 
 
+def _call_class(call: str | None, seat_suits: dict) -> str:
+    """raise / rebid / cue / new_suit / nt / double / redouble / pass."""
+    if call is None:
+        return "?"
+    if call == "P":
+        return "pass"
+    if call == "X":
+        return "double"
+    if call == "XX":
+        return "redouble"
+    strain = call[1:]
+    if strain == "NT":
+        return "nt"
+    if strain in seat_suits["partner"]:
+        return "raise"
+    if strain in seat_suits["mine"]:
+        return "rebid"
+    if strain in seat_suits["their"]:
+        return "cue"
+    return "new_suit"
+
+
+def species(d: Path, top: int) -> None:
+    """Group the flags into species: the context and rule that made the flagged
+    call, and what kind of call the reviewer wanted instead.  With hundreds of
+    flags this is the authoring list - the top species are the missing
+    agreements, the singletons are judgment or noise."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+    from bridgebidder.domain.auction import Auction
+    from bridgebidder.domain.calls import Call
+    from bridgebidder.domain.cards import Hand
+    from bridgebidder.domain.types import Seat, Vulnerability
+    from bridgebidder.engine.decision import score_candidates
+    from bridgebidder.inference.engine import prepare_decision
+    from bridgebidder.system.dsl import load_system
+    from collections import defaultdict
+    system = load_system()
+    vmap = {v.value: v for v in Vulnerability}
+    rows = [json.loads(l) for l in open(d / "verdicts.jsonl")]
+    groups: dict = defaultdict(list)
+    unlocated = 0
+    for r in rows:
+        if r["verdict"] != "flaw" or "seat" not in r:
+            continue
+        hits = locate_decision(r)
+        if not hits:
+            unlocated += 1
+            continue
+        calls = r["auction"].split()
+        want = norm_call(re.sub(r"\(.*?\)", "", r["should"]).strip())
+        # prefer the hit at which the wanted call is legal; else the last hit
+        chosen = None
+        for i in hits:
+            au = Auction(dealer=Seat(r["dealer"]), vulnerability=vmap[r["vul"]])
+            for c in calls[:i]:
+                au.add(Call.parse(c))
+            if want is None or au.is_legal(Call.parse(want)):
+                chosen = (i, au)
+        if chosen is None:
+            i = hits[-1]
+            au = Auction(dealer=Seat(r["dealer"]), vulnerability=vmap[r["vul"]])
+            for c in calls[:i]:
+                au.add(Call.parse(c))
+            chosen = (i, au)
+        i, au = chosen
+        seat = au.next_seat
+        hand = Hand.parse(r["hands"][seat.value])
+        setup = prepare_decision(system, au, perspective=seat)
+        ranked = score_candidates(setup, hand)
+        made = calls[i]
+        fired = next((sc for sc in ranked if str(sc.call) == made), None)
+        rule = fired.candidate.rule.id if fired and fired.candidate.rule else ("fallback" if fired else "?")
+        ctx_id = fired.candidate.rule.context_id if fired and fired.candidate.rule else "-"
+        # suits by role, from the auction
+        suits = {"mine": set(), "partner": set(), "their": set()}
+        for j, c in enumerate(au.calls):
+            if not c.is_bid or c.strain == "NT":
+                continue
+            who = au.seat_of_call(j)
+            role = "mine" if who == seat else ("partner" if who == seat.partner else "their")
+            suits[role].add(c.strain)
+        wanted_sc = next((sc for sc in ranked if str(sc.call) == want), None)
+        w_state = "absent" if wanted_sc is None else f"fit {wanted_sc.fit:.2f}"
+        key = (ctx_id, rule, _call_class(made, suits), _call_class(want, suits))
+        groups[key].append((r["board"], r["table"], r["imp_margin"], r["why"], want, w_state, seat.value, str(hand), " ".join(calls[:i]) or "(open)"))
+    print(f"{sum(len(v) for v in groups.values())} located flags in {len(groups)} species ({unlocated} unlocated)\n")
+    ranked_groups = sorted(groups.items(), key=lambda kv: (-len(kv[1]), sum(x[2] for x in kv[1])))
+    for (ctx_id, rule, mc, wc), items in ranked_groups[:top]:
+        imps = sum(x[2] for x in items)
+        absent = sum(1 for x in items if x[5] == "absent")
+        print(f"=== {len(items):3}x  {imps:+5d} IMPs  [{ctx_id}] {rule}: {mc} -> {wc}   (wanted call absent in {absent})")
+        for b, t, m, why, want, ws, seat, hand, prefix in items[:4]:
+            print(f"      b{b:04d}{t} {m:+3d}  {seat} {hand}  after: {prefix}  -> {want} ({ws}) | {why[:60]}")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
+    sp = sub.add_parser("species")
+    sp.add_argument("--dir", type=Path, required=True)
+    sp.add_argument("--top", type=int, default=40)
     x = sub.add_parser("context")
     x.add_argument("--dir", type=Path, required=True)
     x.add_argument("--limit", type=int, default=1000)
@@ -308,7 +406,9 @@ if __name__ == "__main__":
     c = sub.add_parser("collect")
     c.add_argument("--dir", type=Path, required=True)
     a = ap.parse_args()
-    if a.cmd == "context":
+    if a.cmd == "species":
+        species(a.dir, a.top)
+    elif a.cmd == "context":
         context(a.dir, a.limit)
     elif a.cmd == "pack":
         pack(a.rows, a.n, a.dir, a.min_loss, a.worst)
