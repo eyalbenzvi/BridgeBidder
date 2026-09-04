@@ -1059,3 +1059,74 @@ Everything a reviewer without bridge judgement needs is mechanical:
 What still needs a bridge player: reading the worst changed boards the
 adjudicator prints, and deciding which of them are the price of correct
 discipline and which are the next species.
+
+## Blind-review round 2: seed 4242, 117 flags
+
+Same protocol on the round-1 rules: the first 120 lost boards of the fresh
+seed-4242 match, 240 blind prompts, **117 flagged, 123 clean** (round 1 had
+145 / 95 on the same-sized sample - the flag rate fell by a fifth).  Twenty-
+seven wanted calls were not a candidate.
+
+### Authored
+
+Twelve contexts: opener over the 1NT response to a minor (a 16-count with
+5-4 had passed 1NT); opener and advancer after their takeout double and a
+free response; responder over a three-level preempt of our minor (the
+pairs the existing 1M and jump-overcall contexts did not cover); responder
+after opener's support double; responder after opener's simple raise (3M
+invitations on 7-counts came from the generic raise); opener accepting a
+2NT invitation with an unbalanced 16; responder to 2C after opener's major
+rebid (3M = raise with values, 4M = fast arrival); Stayman over partner's
+1NT overcall and the overcaller's answer; advancer after partner overcalls
+their weak two; opener's splinter after 1m - 1M and responder's answer to
+it; natural overcalls of their weak two (the pass-out rule had outranked
+every generic suit bid, so a 14-count with AQJT86 passed 2D).
+
+Gates: a 2/1 in a minor is not made holding five spades over 1H; the
+redouble over their double is not made with a void in partner's suit; the
+weak pass outranks running; opener's jump raise needs 15 HCP; penalty
+passes of a weak two want real trumps; takeout doubles are not made with
+a six-card suit to bid (four overcall contexts, the 3-level defence, the
+1NT defence); the higher of 5-5 majors is overcalled first; the cue-bid
+raise needs 10 HCP; placing the contract after 2C-Stayman uses the major
+opener showed; the support-double 2NT is balanced; a good six-card suit is
+also shown before 3NT in a game force; natural 3NT in an ordinary
+continuation runs to 21; sandwich 1NT (15-18, both suits stopped) and a
+seven-card suit at the two level; quantitative 4NT over the 1NT rebid.
+
+### Tried and taken out, again
+
+Third-seat light openings with a five-card major (three flags) cost -8 and
+-10 on held-out boards and, worse, lowered partner's *shown minimum* on
+every third-seat opening, which pushed unrelated game raises below their
+gates (board 1340: a 4H raise fell to 0.8 fit because opener might now
+hold 10).  Removed.  The negative-double gate "not with four of partner's
+suit" removed a working double and left nothing behind it on board 476;
+reverted.  Two other first drafts were corrected by the seed-9001 read
+rather than removed: the 2C - 2D - 2M raise now carries values (with a bust
+it is fast arrival), because the un-gated 3M had erased the information
+the slam try was reading; and the three-level balance on a five-card suit
+is a first-action rule only (a 1NT overcaller re-entering at the three
+level was doubled for -13).
+
+### Verdict
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 (held out) | 90 | 37 / 19 / 34 | **+72** |
+| seed 9001, 2000 (held out) | 202 | 63 / 57 / 82 | **-3** |
+| seed 4242, 2000 (the flags' source) | 229 | 67 / 59 / 103 | **+76** |
+
+Positive on two of three, flat on the third; a third of round 1's per-board
+gain.  The first draft of this round read -73 on seed 9001 before the
+corrections above; the held-out read is what turned it.  Note for the next
+round: several "changed" boards on 9001 changed only because BEN answered an
+identical auction prefix differently between runs (boards 1411, 1461, 549),
+so the paired count carries a little BEN noise of its own.
+
+The method's yield is falling as it should: round 1 found whole missing
+structures, round 2 found their neighbours.  What the flags now keep
+naming and the rules do not yet address: the generic RKC gate firing over
+minimum raises (three more boards), and hand-evaluation questions (light
+openings, aggressive preemptive raises) where the reviewer and the corpus
+disagree and the corpus should win.
