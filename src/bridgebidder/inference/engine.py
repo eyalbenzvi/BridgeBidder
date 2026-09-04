@@ -150,6 +150,28 @@ def we_hold_contract(auction: Auction, seat: Seat) -> bool:
     return bidder == seat or (bidder == seat.partner and _game_reached(auction))
 
 
+def my_role(auction: Auction, seat: Seat) -> str:
+    """Who I am in this auction: the player who opened, the opener's partner,
+    the first of our side to act against their opening, that player's partner,
+    or a player who has not yet made a non-pass call.  The role is what fixes
+    the meaning of a natural notrump rebid: 2NT is 11-12 from a responder and
+    18-19 from an opener, and no hand evaluation can tell those apart."""
+    mine = [i for i, c in enumerate(auction.calls) if not c.is_pass and auction.seat_of_call(i) == seat]
+    if not mine:
+        return "silent"
+    oi = auction.opener_index()
+    if oi is None:
+        return "silent"
+    opener = auction.seat_of_call(oi)
+    if opener == seat:
+        return "opener"
+    if opener == seat.partner:
+        return "responder"
+    ours = [i for i, c in enumerate(auction.calls)
+            if not c.is_pass and auction.seat_of_call(i).side == seat.side]
+    return "overcaller" if ours and auction.seat_of_call(ours[0]) == seat else "advancer"
+
+
 def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: BiddingSystem,
                      ctx: EvalContext | None = None, call: Call | None = None) -> bool:
     if cond.is_trivial:
@@ -231,6 +253,8 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
                     if auction.seat_of_call(i).side == seat.side)
         if acted != cond.side_has_acted:
             return False
+    if cond.my_role is not None and my_role(auction, seat) not in cond.my_role:
+        return False
     for flag, want in cond.config.items():
         if system.config.get(flag) != want:
             return False

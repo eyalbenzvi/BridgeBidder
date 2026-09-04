@@ -74,6 +74,7 @@ class Conditions:
     standing_bid_level: tuple[int, ...] | None = None  # level of the standing contract bid
     standing_bid_strain: tuple[str, ...] | None = None  # strain of the standing contract bid
     my_suit: str | None = None                     # I have bid this suit myself
+    my_role: tuple[str, ...] | None = None         # opener | responder | overcaller | advancer | silent
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -97,6 +98,8 @@ class Conditions:
             standing_bid_strain=(tuple(d.pop("standing_bid_strain"))
                                  if "standing_bid_strain" in d else None),
             my_suit=d.pop("my_suit", None),
+            my_role=(tuple([d.pop("my_role")] if isinstance(d.get("my_role"), str) else d.pop("my_role"))
+                     if "my_role" in d else None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -107,6 +110,7 @@ class Conditions:
     def is_trivial(self) -> bool:
         return (
             self.opening_seat is None
+            and self.my_role is None
             and self.passed_hand is None
             and self.we_vulnerable is None
             and self.they_vulnerable is None
@@ -138,6 +142,7 @@ class BidRule:
     announce: str | None = None
     convention: str | None = None
     negative_inference_weight: str = "strong"  # strong | soft
+    penalty_pass: bool = False   # an authored pass that may convert partner's one-round force
     when: Conditions = Conditions()
     context_id: str = ""
 
@@ -164,6 +169,7 @@ class BidRule:
             announce=d.pop("announce", None),
             convention=d.pop("convention", None),
             negative_inference_weight=niw,
+            penalty_pass=bool(d.pop("penalty_pass", False)),
             when=Conditions.from_dict(d.pop("when", None)),
             context_id=context_id,
         )

@@ -945,3 +945,117 @@ Two conclusions worth more than the IMPs:
    would have found them by playing the board out; the engine finds them in
    a second, and the failing calls come tagged with the rule that made them.
 
+
+## The blind-review round: 120 lost boards, 145 flags, one rule batch
+
+The method from the board-786 experiment, run at the scale the plateau
+demanded.  `tools/blind_review.py` packed the first 120 lost boards of the
+seed-9001 match (two tables each, 240 prompts) into the starved prompt -
+four hands, our auction, which pair is under review, nothing else - and
+sent them to the strong model.  145 tables came back flagged, 95 clean.
+`blind_review.py context` then replayed every flagged decision through the
+engine and printed what it had seen: the candidates, their fits, the rule
+that won, and whether the call the reviewer wanted existed at all.  Thirty-
+nine of the 145 wanted calls were **not a candidate** - no rule offered them.
+
+Reading the 145 with the engine's view alongside sorted them into about
+twenty-five species.  Four of the first twenty-nine were reviewer errors
+(a miscounted 5-count "must respond with 6+", a 1H-1S-2D called a reverse,
+an 8-count called 7, a 25-count told to bid 22-24) - a false-positive rate
+of roughly one in seven, all of them arithmetic, none of them bridge.
+
+### What was authored
+
+Nine new contexts, each for a position the generic toolkit had been
+standing in for:
+
+- advancer after our overcall is doubled (`advance_1level/2level_overcall_
+  doubled`): the generic "their double" rules read a negative double as
+  penalty - advancer sat with five trumps, ran on a 3-count, raised on
+  responder's scale (b0010B, b0167B, b0228A, b0243A, b0306A)
+- opener after partner's negative double, three shapes of it (RHO passes,
+  RHO bids again, the double was of a weak jump): a 14-count jumped to 4S,
+  an 11-count with four hearts passed, a forcing double was passed
+  (b0189B, b0224A, b0127A, b0156A, b0341B)
+- responder after our weak two is overcalled or doubled (b0031A made a
+  "negative double" with four trumps; b0053B bid 4C on AKQJ653 of hearts)
+- advancing the takeout double of a weak two or a preempt, with a
+  **penalty pass** that outranks the forced suit bid when the hand holds
+  the trumps (b0039A, b0031B, b0200B)
+- opener after Jordan 2NT in the contested auction (b0011A: a generic 3C
+  set clubs as trumps and the keycard answer was given for clubs)
+- opener over partner's 1NT in competition, opener after a simple raise of
+  the minor, a lead-directing (not takeout) double of their Stayman reply
+
+And about forty edits to generic rules, the largest being:
+
+- **a natural 2NT is not 11-12 from a player who opened or overcalled.**
+  Six flags were openers bidding "11-12 2NT" on 11-13 counts.  A new
+  `my_role` condition (opener / responder / overcaller / advancer / silent)
+  gates the 11-12 rules and adds 18-19 and 16-18 versions.
+- penalty doubles of their high contract count trumps in the *standing*
+  strain, not their first suit (one rule became four, one per strain), and
+  only once our side has acted
+- balancing doubles need takeout shape (no 6+ suit, not a light two-suiter,
+  never with four of their suit); the negative double of a jump overcall
+  promises the unbid major; limit raises with three trumps need the high
+  cards, shortness points do not substitute; the 18-19 jump rebid's
+  responder context now also exists after a major opening; quantitative
+  4NT opposite 22-24 and after 2NT-Stayman; longest suit first over their
+  overcall and over their double; weak jump shifts over the double; the
+  1M-1NT (semi-forcing) pass is 12-13 only; 3NT in a game force is not the
+  call with a six-card major; running from partner's doubled contract is
+  for weak hands; sandwich overcalls are never in their suit.
+
+### What was tried and taken out
+
+Three "extras-showing" doubles - opener reopening with 15+ and shortness,
+a competitive double with extras, an action double of their game - were
+authored from six flags and cost **-116 IMPs on the held-out corpus**,
+with `fallback` firing 73 times behind them: partner had no agreement for
+answering a reopening double, so the answers came from the fallback layer
+(a 1S response on a doubleton, a 4S raise of that).  Same lesson as the
+board-786 iteration, from the other side: a new call is a liability until
+its continuations exist.  Removed; the six scenarios with them.  The 29-to-
+20 board-level split of that failed version is recorded here so the next
+attempt starts from the continuations.
+
+One engine change besides `my_role`: a rule may declare `penalty_pass:
+true`, and such a pass converts partner's one-round force when the hand
+fits it outright.  Before this no authored penalty pass could fire while
+any bid fitted at 0.3 - the existing `adv_pass_penalty` had been dead code.
+
+### Verdict
+
+Paired on identical deals, only boards whose auction changed:
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 boards (held out) | 194 | 79 / 50 / 65 | **+147** |
+| seed 9001, 2000 boards (the flags' source) | 449 | 169 / 126 / 154 | **+270** |
+| seed 4242, 2000 boards (fresh) | 424 | 155 / 128 / 141 | **+180** |
+
+Between +0.09 and +0.15 IMPs per board on corpora the fixes never saw,
+against a whole-project history of -1.47 to -1.30.  Roughly one board in
+five changed its auction; the worse-boards list is dominated by penalty
+passes that used to collect 500 by accident, penalty doubles the old
+first-suit bug happened to get right, and slam tries the generic RKC gate
+still fires on minimum raises (b0339A, b0258B, board 192 here) - that gate
+is the next structural item.
+
+### Verifying this round with a cheap operator
+
+Everything a reviewer without bridge judgement needs is mechanical:
+
+1. `pytest` - 612 tests, 68 of them `tests/data/blind_review_9001.yaml`,
+   one per flagged board with the hand, the auction and the accepted calls
+2. `python tools/adjudicate.py --before reports/<corpus>.jsonl --seed <n>`
+   on any corpus with a "before" file - exit 0 means the paired net is
+   non-negative; the printout lists every changed board, worst first
+3. `python tools/blind_review.py context --dir reports/review9001` - the
+   engine's view of each flagged decision after the change: the wanted
+   call should now be a candidate with fit near 1.0
+
+What still needs a bridge player: reading the worst changed boards the
+adjudicator prints, and deciding which of them are the price of correct
+discipline and which are the next species.

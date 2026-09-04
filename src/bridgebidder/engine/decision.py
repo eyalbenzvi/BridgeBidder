@@ -69,6 +69,12 @@ def score_candidates(setup: DecisionSetup, hand: Hand) -> list[ScoredCandidate]:
         # converting partner's takeout double) beats inventing a call.
         # A game force is never passed below game.
         out.extend(passes)
+    elif not setup.pass_forbidden_hard:
+        # an AUTHORED penalty pass (trump length and values behind their bid)
+        # converts a one-round force when the hand fits it outright
+        out.extend(sc for sc in passes
+                   if sc.candidate.rule is not None and sc.candidate.rule.penalty_pass
+                   and sc.fit >= FAST_FIT_THRESHOLD)
     out.sort(key=_sort_key)
     return out
 

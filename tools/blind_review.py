@@ -187,19 +187,114 @@ def collect(d: Path) -> None:
     print("Mark each line: agree / disagree / unsure.  (board, table, our side, margin)\n")
     for r in out:
         tag = f"b{r['board']:04d}{r['table']} {r['our_side']} {r['imp_margin']:+3d}"
+        h = r["hands"]
+        deal = f"N {h['N']}  E {h['E']}  S {h['S']}  W {h['W']}   (dealer {r['dealer']}, vul {r['vul']})"
         if r["verdict"] == "flaw" and "seat" in r:
             print(f"[ ] {tag}  {r['seat']} {r['made']} -> {r['should']}  | {r['why']}")
-            print(f"        {r['auction']}")
         elif r["verdict"] == "flaw":
             print(f"[ ] {tag}  {r.get('raw', '')[:90]}")
-            print(f"        {r['auction']}")
         else:
             print(f"[ ] {tag}  none")
+        print(f"        {r['auction']}")
+        print(f"        {deal}")
+
+
+CALL_WORDS = {"pass": "P", "p": "P", "dbl": "X", "double": "X", "x": "X",
+              "rdbl": "XX", "redouble": "XX", "xx": "XX"}
+SYM2LET = {"♠": "S", "♥": "H", "♦": "D", "♣": "C", "N": "NT", "NT": "NT"}
+
+
+def norm_call(text: str) -> str | None:
+    """'2♥' / '2H' / 'Pass' / 'Dbl' / '3NT' -> engine call string."""
+    t = text.strip().strip(",.;")
+    if t.lower() in CALL_WORDS:
+        return CALL_WORDS[t.lower()]
+    m = re.match(r"^([1-7])\s*(♠|♥|♦|♣|NT|N|S|H|D|C)$", t, re.IGNORECASE)
+    if not m:
+        return None
+    lvl, st = m.groups()
+    st = SYM2LET.get(st, SYM2LET.get(st.upper(), st.upper()))
+    return f"{lvl}{st}"
+
+
+def locate_decision(r: dict) -> int | None:
+    """Index in the auction of the flagged call: the flagged seat's call that
+    matches `made`, disambiguated by an '(over X)' note when present."""
+    seat = r.get("seat", "")[:1].upper()
+    made = norm_call(re.sub(r"\(.*?\)", "", r.get("made", "")).strip())
+    over = re.search(r"\(over\s+(\S+)\)", r.get("made", ""))
+    over_call = norm_call(over.group(1)) if over else None
+    calls = r["auction"].split()
+    order = SEATS[SEATS.index(r["dealer"]):] + SEATS[:SEATS.index(r["dealer"])]
+    hits = [i for i, c in enumerate(calls)
+            if order[i % 4] == seat and (made is None or c == made)]
+    if over_call:
+        hits = [i for i in hits if i > 0 and over_call in calls[max(0, i - 3):i]]
+    return hits
+
+
+def context(d: Path, limit: int) -> None:
+    """For every flagged table: the engine's own view of the flagged decision -
+    the candidates it scored, their fits, the rule that won - and whether the
+    call the reviewer wanted even existed as a candidate.  This is the bridge
+    from a verdict in bridge language to the row in the YAML."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+    from bridgebidder.domain.auction import Auction
+    from bridgebidder.domain.calls import Call
+    from bridgebidder.domain.cards import Hand
+    from bridgebidder.domain.types import Seat, Vulnerability
+    from bridgebidder.engine.decision import score_candidates
+    from bridgebidder.inference.engine import prepare_decision
+    from bridgebidder.system.dsl import load_system
+    system = load_system()
+    vmap = {v.value: v for v in Vulnerability}
+    rows = [json.loads(l) for l in open(d / "verdicts.jsonl")]
+    flaws = [r for r in rows if r["verdict"] == "flaw" and "seat" in r][:limit]
+    for r in flaws:
+        hits = locate_decision(r)
+        tag = f"b{r['board']:04d}{r['table']}"
+        print(f"\n=== {tag}  {r['seat']} {r['made']} -> {r['should']} | {r['why']}")
+        if not hits:
+            print(f"    could not locate the call in: {r['auction']}")
+            continue
+        calls = r["auction"].split()
+        if len(hits) > 1:
+            print(f"    ({len(hits)} matching calls by this seat; showing each)")
+        for i in hits[:3]:
+          _show_decision(system, vmap, r, calls, i, norm_call(re.sub(r"\(.*?\)", "", r["should"]).strip()))
+
+
+def _show_decision(system, vmap, r, calls, i, want):
+        from bridgebidder.domain.auction import Auction
+        from bridgebidder.domain.calls import Call
+        from bridgebidder.domain.cards import Hand
+        from bridgebidder.domain.types import Seat
+        from bridgebidder.engine.decision import score_candidates
+        from bridgebidder.inference.engine import prepare_decision
+        au = Auction(dealer=Seat(r["dealer"]), vulnerability=vmap[r["vul"]])
+        for c in calls[:i]:
+            au.add(Call.parse(c))
+        seat = au.next_seat
+        hand = Hand.parse(r["hands"][seat.value])
+        setup = prepare_decision(system, au, perspective=seat)
+        ranked = score_candidates(setup, hand)
+        print(f"    {seat.value} holds {hand} ({hand.hcp} HCP)   after: {' '.join(calls[:i]) or '(open)'}")
+        for sc in ranked[:6]:
+            rule = sc.candidate.rule.id if sc.candidate.rule else "fallback"
+            mark = "<- made" if str(sc.call) == calls[i] else ("<- wanted" if str(sc.call) == want else "")
+            print(f"      {str(sc.call):4} fit={sc.fit:.2f} prio={sc.candidate.priority:<4} {rule:32} {mark}")
+        if want and not any(str(sc.call) == want for sc in ranked):
+            print(f"      {want:4} NOT A CANDIDATE - no rule offers this call here")
+        ctxs = sorted({sc.candidate.rule.context_id for sc in ranked if sc.candidate.rule})
+        print(f"    contexts: {', '.join(ctxs[:6])}")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
+    x = sub.add_parser("context")
+    x.add_argument("--dir", type=Path, required=True)
+    x.add_argument("--limit", type=int, default=1000)
     p = sub.add_parser("pack")
     p.add_argument("--rows", type=Path, required=True)
     p.add_argument("--n", type=int, default=50)
@@ -213,7 +308,9 @@ if __name__ == "__main__":
     c = sub.add_parser("collect")
     c.add_argument("--dir", type=Path, required=True)
     a = ap.parse_args()
-    if a.cmd == "pack":
+    if a.cmd == "context":
+        context(a.dir, a.limit)
+    elif a.cmd == "pack":
         pack(a.rows, a.n, a.dir, a.min_loss, a.worst)
     elif a.cmd == "run":
         run(a.dir, a.model, a.jobs)

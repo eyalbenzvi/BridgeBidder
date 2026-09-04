@@ -1,0 +1,265 @@
+# Scenarios from the blind expert review of seed 9001 (DECISIONS.md, "Reading
+# a lost board as an expert would" and the round that followed).  Each is a
+# lost board whose flawed call a blind reviewer named together with the
+# agreement that should have covered it; the hand and auction are the real
+# ones.  Where two calls are defensible both are accepted.
+
+# --- advancer after our overcall is doubled (negative double)
+- name: br_advancer_raises_over_negative_double_5_trumps
+  hand: "KJ642.Q83.A.9642"
+  calls: ["1H", "1S", "X"]
+  expect: { calls: ["3S", "2S"] }
+- name: br_advancer_raises_over_negative_double_4_trumps
+  hand: "9853.A986.2.A963"
+  calls: ["1D", "1S", "X"]
+  expect: { calls: ["2S", "3S"] }
+- name: br_advancer_raises_jump_overcall_over_negative_double
+  hand: "AT76.T.T93.KQT97"
+  calls: ["1D", "2S", "X"]
+  expect: { call: "3S" }
+- name: br_advancer_shows_3_card_support_not_weak_diamonds
+  hand: "T52.A95.K97542.T"
+  calls: ["1C", "1H", "X"]
+  expect: { call: "2H" }
+- name: br_advancer_does_not_run_on_3_count
+  hand: "JT4.T7.QT643.765"
+  calls: ["1C", "1S", "X"]
+  expect: { call: "P" }
+
+# --- opener after partner's negative double
+- name: br_opener_shows_major_min_after_negative_double
+  hand: "AK83.KQ54.Q9.762"
+  calls: ["1C", "1H", "X", "P"]
+  expect: { calls: ["1S", "2S"] }
+- name: br_opener_raises_implied_major_over_their_cue
+  hand: "3.KQJ5.KQ943.T75"
+  calls: ["1D", "1S", "X", "2D"]
+  expect: { call: "2H" }
+- name: br_opener_never_passes_negative_double_of_jump
+  hand: "AT86.5.AQ73.K852"
+  calls: ["1D", "2S", "X", "P"]
+  expect: { calls: ["3C", "2NT"] }
+- name: br_opener_second_suit_after_negative_double
+  hand: "32.A2.KQ964.Q974"
+  calls: ["1D", "1S", "X", "P"]
+  expect: { calls: ["2C", "2D"] }
+- name: br_opener_1NT_not_2NT_with_13
+  hand: "J86.KQJ7.Q632.A4"
+  calls: ["1D", "1H", "X", "P"]
+  expect: { call: "1NT" }
+
+# --- responder after our weak two is overcalled
+- name: br_weak2_responder_raises_to_game_not_negative_double
+  hand: "AK2.T965.JT5.J52"
+  calls: ["2H", "2S"]
+  expect: { call: "4H" }
+- name: br_weak2_responder_bids_own_solid_suit_game
+  hand: ".AKQJ653.J.AKT52"
+  calls: ["2S", "3D"]
+  expect: { call: "4H" }
+- name: br_weak2_responder_shows_seven_card_suit
+  hand: "542.AQJ8652.9.Q7"
+  calls: ["2D", "2S"]
+  expect: { call: "3H" }
+
+# --- advancing the takeout double of a preempt / weak two
+- name: br_advancer_bids_over_doubled_preempt_with_singleton_trump
+  hand: "2.KJ97.QJT32.862"
+  calls: ["3S", "X", "P"]
+  expect: { calls: ["4H", "4D"] }
+- name: br_advancer_answers_double_over_their_raise
+  hand: "QJ65.42.64.KT943"
+  calls: ["2H", "X", "3H"]
+  expect: { call: "3S" }
+- name: br_advancer_3NT_or_penalty_pass_over_doubled_preempt
+  hand: "JT63.AJ94.K94.T4"
+  calls: ["3H", "X", "P"]
+  expect: { calls: ["3NT", "4S", "P"] }
+
+# --- opener after Jordan 2NT
+- name: br_opener_signs_off_after_jordan_minimum
+  hand: "7.AQ542.75.KJ984"
+  calls: ["1H", "X", "2NT", "P"]
+  expect: { call: "3H" }
+
+# --- a natural 2NT from an opener or overcaller is not 11-12
+- name: br_opener_passes_partners_raise_instead_of_2NT
+  hand: "JT97.K4.KJ72.A97"
+  calls: ["1D", "1H", "2D", "2H"]
+  expect: { call: "P" }
+- name: br_opener_no_11_12_2NT_over_jump_overcall
+  hand: "KJ83.K6.Q8.QJ985"
+  calls: ["1C", "P", "1D", "2H"]
+  expect: { calls: ["P", "3C"] }
+- name: br_overcaller_no_11_12_2NT
+  hand: "A8652.AQ82.73.J7"
+  calls: ["1D", "1S", "P", "1NT", "P"]
+  expect: { call: "P" }
+
+# --- the 18-19 jump rebid after a major opening; quantitative raises
+- name: br_responder_bids_3NT_over_2NT_jump_after_1H_1S
+  hand: "KJT8.J7.J864.A63"
+  calls: ["1H", "P", "1S", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+- name: br_slam_opposite_2NT_after_stayman_no_fit
+  hand: "AJ.A72.KT83.QJT4"
+  calls: ["2NT", "P", "3C", "P", "3H", "P"]
+  expect: { calls: ["6NT", "4NT"] }
+- name: br_quantitative_4NT_with_17_over_3NT_unbalanced
+  hand: "A.KT32.AKT5.K986"
+  calls: ["1D", "P", "1S", "P", "2C", "P", "3NT", "P"]
+  expect: { calls: ["4NT", "6NT"] }
+- name: br_quantitative_over_3NT_in_game_force_with_20
+  hand: "AK875.6.AQ83.AK8"
+  calls: ["1H", "P", "2D", "P", "2NT", "P", "3S", "P", "3NT", "P"]
+  expect: { calls: ["4NT", "6NT"] }
+- name: br_quantitative_opposite_22_24
+  hand: "A52.J7.KT.QT7643"
+  calls: ["2C", "P", "2D", "P", "2NT", "P"]
+  expect: { call: "4NT" }
+
+# --- uncontested continuations
+- name: br_opener_rebids_over_semi_forcing_1NT_with_14
+  hand: "AK987.KJ3.93.K43"
+  calls: ["1S", "P", "1NT", "P"]
+  expect: { call: "2C" }
+- name: br_opener_jump_rebids_six_card_suit_with_15
+  hand: "AJ3.AKQ832.5.J84"
+  calls: ["1H", "P", "1NT", "P"]
+  expect: { call: "3H" }
+- name: br_three_card_raise_with_8_is_single_raise
+  hand: "4.A93.JT32.QJ974"
+  calls: ["1H", "P"]
+  expect: { call: "2H" }
+- name: br_three_card_raise_with_7_is_not_limit
+  hand: "J96.A.J52.QT7542"
+  calls: ["1S", "P"]
+  expect: { calls: ["2S", "1NT"] }
+- name: br_responder_passes_jump_rebid_with_singleton_trump
+  hand: "T65.6.Q742.AJT96"
+  calls: ["1H", "P", "1NT", "P", "3H", "P"]
+  expect: { call: "P" }
+- name: br_opener_does_not_rebid_at_four_level_on_12
+  hand: "Q7.J.AQ97.K97632"
+  calls: ["1C", "X", "1H", "X", "2C", "2S", "3C", "P"]
+  expect: { call: "P" }
+- name: br_responder_invites_in_six_card_major_not_2NT
+  hand: "AQJ952.QT3.Q7.63"
+  calls: ["1C", "P", "1S", "P", "2C", "P"]
+  expect: { call: "3S" }
+- name: br_responder_bids_game_with_eight_card_suit
+  hand: "94.AKJT8753.T5.6"
+  calls: ["1C", "P", "1H", "P", "2C", "P"]
+  expect: { call: "4H" }
+- name: br_no_3NT_with_singleton_and_six_card_major
+  hand: "AQT953.A.953.K84"
+  calls: ["1S", "P", "2C", "P", "2S", "P", "2NT", "P"]
+  expect: { calls: ["3S", "4S"] }
+- name: br_eight_card_suit_shown_before_3NT
+  hand: "72.KT865432.J.T6"
+  calls: ["2C", "P", "2D", "P", "3C", "P"]
+  expect: { call: "3H" }
+- name: br_opener_raises_with_three_and_singleton
+  hand: "Q32.KJT7.A.KQ865"
+  calls: ["1C", "P", "1S", "P"]
+  expect: { call: "2S" }
+- name: br_opener_passes_simple_minor_raise_with_13
+  hand: "K74.K3.KT64.A962"
+  calls: ["1D", "1S", "2D", "P"]
+  expect: { call: "P" }
+- name: br_opener_bids_2NT_over_partners_1NT_in_competition
+  hand: ".A643.AKQ93.KT82"
+  calls: ["1D", "1S", "1NT", "P"]
+  expect: { calls: ["2NT", "3NT"] }
+
+# --- longest suit first, light actions with shape
+- name: br_five_spades_before_four_hearts_over_overcall
+  hand: "98764.AT93.J9.T9"
+  calls: ["1C", "1D"]
+  expect: { call: "1S" }
+- name: br_five_card_major_first_over_their_double
+  hand: "AT432.32.K974.Q8"
+  calls: ["1C", "X"]
+  expect: { call: "1S" }
+- name: br_free_1S_over_double_with_5_and_five_spades
+  hand: "JT842.T6.AT42.94"
+  calls: ["1C", "X"]
+  expect: { call: "1S" }
+- name: br_weak_jump_shift_over_double
+  hand: "965432.4.J652.K2"
+  calls: ["1D", "X"]
+  expect: { call: "2S" }
+- name: br_sandwich_2S_is_not_natural_in_their_suit
+  hand: "AK532.T94.A852.T"
+  calls: ["1S", "P", "1NT"]
+  expect: { calls: ["2D", "P", "X"] }
+- name: br_sandwich_2S_with_six_card_suit_and_10
+  hand: "AK8743.6.K532.T6"
+  calls: ["1H", "P", "1NT"]
+  expect: { call: "2S" }
+- name: br_advancer_raises_overcall_with_four_not_1NT
+  hand: "Q5.J6.9862.AJT84"
+  calls: ["1C", "1D", "1S"]
+  expect: { call: "2D" }
+- name: br_answer_double_in_longest_suit
+  hand: "852.832.KQT6.A73"
+  calls: ["1S", "X", "P"]
+  expect: { call: "2D" }
+
+# --- balancing and doubles
+- name: br_no_three_level_balance_on_five_card_suit
+  hand: "982.AT974.Q3.AK6"
+  calls: ["1S", "P", "1NT", "P", "2S", "P", "P"]
+  expect: { call: "P" }
+- name: br_no_four_level_balance_on_five_card_suit
+  hand: "Q.K.AT9763.QJ842"
+  calls: ["1D", "1S", "X", "2D", "3D", "3S", "P", "P"]
+  expect: { call: "P" }
+- name: br_no_1NT_response_with_void_and_six_of_their_suit
+  hand: "KT5.KJ9653.Q832."
+  calls: ["1C", "1H"]
+  expect: { call: "P" }
+- name: br_do_not_run_from_partners_doubled_1NT_with_9
+  hand: "42.A942.KQ743.94"
+  calls: ["1S", "P", "P", "1NT", "X"]
+  expect: { call: "P" }
+- name: br_no_penalty_double_with_singleton_trump
+  hand: "T97.9.KQ63.AKQJ6"
+  calls: ["1C", "1D", "P", "1H", "P", "2C", "P", "2H", "P", "3H", "P", "4H"]
+  expect: { call: "P" }
+- name: br_no_penalty_double_with_doubleton_trump_and_16
+  hand: "A96.AT973.J4.AK4"
+  calls: ["1NT", "2C", "P", "2D", "2H", "P", "P", "3D"]
+  expect: { call: "P" }
+- name: br_balancing_bid_not_double_with_seven_card_suit
+  hand: "Q2.85.AKJ6543.97"
+  calls: ["1S", "P", "P"]
+  expect: { calls: ["2D", "3D"] }
+- name: br_no_light_balancing_double_on_two_suiter
+  hand: "JT754.3.A4.QJT87"
+  calls: ["1D", "P", "P"]
+  expect: { calls: ["1S", "P"] }
+- name: br_balancing_1NT_not_double_with_four_of_their_suit
+  hand: "AJ.AKJ3.82.K8652"
+  calls: ["1H", "P", "P"]
+  expect: { calls: ["1NT", "2C"] }
+- name: br_negative_double_of_jump_needs_four_of_the_major
+  hand: "K85.T83.KT.QT732"
+  calls: ["1D", "2S"]
+  expect: { call: "P" }
+- name: br_negative_double_of_jump_needs_four_hearts
+  hand: "A6.T82.AJ432.J65"
+  calls: ["1C", "2S"]
+  expect: { calls: ["3D", "P"] }
+- name: br_sit_for_double_of_own_1NT_overcall
+  hand: "AKT4.Q8.A74.Q985"
+  calls: ["1D", "1NT", "P", "P", "X"]
+  expect: { call: "P" }
+- name: br_no_takeout_double_of_stayman_reply
+  hand: "J6.AJ65.A32.KJ52"
+  calls: ["1NT", "P", "2C", "P", "2S"]
+  expect: { call: "P" }
+- name: br_no_lead_directing_double_with_QJ_doubleton
+  hand: "QJ.K742.A9.QJT53"
+  calls: ["1NT", "P", "2C", "P", "2S"]
+  expect: { call: "P" }
