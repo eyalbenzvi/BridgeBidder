@@ -1130,3 +1130,77 @@ naming and the rules do not yet address: the generic RKC gate firing over
 minimum raises (three more boards), and hand-evaluation questions (light
 openings, aggressive preemptive raises) where the reviewer and the corpus
 disagree and the corpus should win.
+
+## Blind-review round 3: 500 lost boards, 516 flags, the species table
+
+The scale the user asked for: a fresh 2000-board match (seed 31337), its
+first **500 lost boards**, both tables each, 1000 blind prompts.  516 tables
+flagged, 484 clean.  At this size nobody reads 516 verdicts one by one, so
+`blind_review.py species` groups them: the context and rule that made the
+flagged call, and what kind of call the reviewer wanted (raise / rebid /
+cue / new suit / notrump / double / pass), with the count, the IMPs and
+whether the wanted call existed as a candidate.  497 located flags fell into
+264 species; the top thirty carried the round.
+
+What the table said, in one line: **the engine passes too much.**  The
+largest species were all "pass where a bid was wanted" - the generic pass in
+uncontested continuations (16 wanted notrump, 13 a raise, 12 a new suit),
+in competition (14 new suit, 9 raise), at the high level (13 new suit, 7
+raise, 5 rebid), in the balancing seats (13 doubles) - and the pass-out
+rules of the overcall contexts (14 openings, 11 overcalls, 3 over a weak
+two, 3 in the sandwich seat).
+
+### Authored
+
+Nine contexts.  The one with the widest reach is a floor under every
+takeout double: `advance_any_takeout_double` ("... - X - P - ?", for the
+doubler's partner who has not yet bid) answers a balancing double, a
+reopening double, a double over their raise or over a preempt - the direct-
+seat advance contexts existed, everything else fell to the generic pass
+(twelve flags with three small trumps).  It carries an authored penalty
+pass for four good trumps.  Then: opener's reopening double over their
+three-level-or-higher preempt after two passes (with the advance floor in
+place this time, the double has a continuation); responder's rebid over
+opener's second suit after 1D - 1M - 2C; the advancer's placement after the
+1NT overcall's Stayman reply; responder over opener's 2NT rebid of the 1NT
+response; opener after raising and being re-invited; the Ogust asker's
+continuation (a 20-count had passed the reply); the penalty doubler of 1NT
+after their runout; opener over a doubled 2C.
+
+Gates: one-level overcalls need no suit quality with six cards or with
+12+; two-level overcalls take a six-card suit on 10 or any five on 15+;
+overcalls of a weak two take an eight-card suit on 8 or a good five on 14;
+rule-of-20 openings with two five-card suits need no suit quality; natural
+3NT in an ordinary continuation is allowed a singleton with 16+ but never a
+known eight-card major fit or their suit unstopped; a first-action 1NT
+between two bidding opponents is the sandwich 1NT, so the 8-11 rule is for
+responders and advancers; the overcaller's 16-18 2NT is gone (six flags of a
+described hand re-describing itself); the two-level negative double is not
+made with four of partner's suit; the takeout-flavoured double is short in
+the suit doubled (one rule per strain); the negative double of 1S over 1H
+needs both minors and no long suit, and natural 2C/2D exist beside it;
+four-level new suits in competition take six cards, three-level ones six
+with 9+; a seven-card suit rebids itself in competition without a point
+count; a preemptive game raise with five trumps and a weak hand; support
+doubles after 1H - 1S and 1C - 1D; Stayman and transfers are answered over
+their double.
+
+### Verdict
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 (held out) | 202 | 91 / 60 / 51 | **+200** |
+| seed 9001, 2000 (held out) | 364 | 147 / 130 / 87 | **+169** |
+| seed 4242, 2000 (held out) | 372 | 158 / 122 / 92 | **+217** |
+| seed 31337, 2000 (the flags' source) | 458 | 200 / 140 / 118 | **+486** |
+
+The largest round so far on held-out deals: +586 over the 5000 boards that
+never contributed a flag, about +0.12 IMPs per board, on top of rounds 1 and
+2.  Reading five hundred boards instead of a hundred and twenty did not
+change what the method finds; it changed how confidently a species could be
+told from a one-off, and it made the "passes too much" diagnosis visible as
+a shape rather than as anecdotes.
+
+Reviewer arithmetic errors were again about one in seven, and again all of
+them counting (a 14 called 15, a 9 called 11, a 10 called 11); three
+scenarios accept the system's call because of them.

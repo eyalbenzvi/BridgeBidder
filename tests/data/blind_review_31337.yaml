@@ -1,0 +1,125 @@
+# Blind expert review, round 3 (seed 31337, 500 lost boards, 516 flags).
+
+# --- answering a takeout double made anywhere (balancing, over a raise, over a preempt)
+- name: br3_answer_balancing_double_over_raise
+  hand: "K85.752.T92.AJ94"
+  calls: ["1H", "P", "2H", "X", "P"]
+  expect: { calls: ["3C", "2NT"] }
+- name: br3_answer_passout_double_of_weak_two
+  hand: "Q983.J43.T42.KJ5"
+  calls: ["2H", "P", "P", "X", "P"]
+  expect: { call: "2S" }
+- name: br3_answer_passout_double_of_preempt_with_3NT
+  hand: "KT9.95.AT7.Q9876"
+  calls: ["3D", "P", "P", "X", "P"]
+  expect: { calls: ["3NT", "4C"] }
+# --- opener reopens with a double over their preempt
+- name: br3_opener_reopens_over_5D
+  hand: "AJ43.KQJ.Q.AT975"
+  dealer: W
+  calls: ["1C", "5D", "P", "P"]
+  expect: { call: "X" }
+- name: br3_opener_reopens_over_3H
+  hand: "A32.K9.AKT95.T84"
+  calls: ["1D", "3H", "P", "P"]
+  expect: { call: "X" }
+# --- responder over opener's second suit
+- name: br3_responder_invites_in_openers_first_suit
+  hand: "J97.AJ72.AJ942.T"
+  calls: ["1D", "P", "1H", "P", "2C", "P"]
+  expect: { call: "3D" }
+# --- 1NT overcall continuations
+- name: br3_advancer_bids_3NT_after_stayman_reply
+  hand: "T3.Q763.AQJ4.943"
+  calls: ["P", "1C", "1NT", "P", "2C", "P", "2S", "P"]
+  expect: { calls: ["2NT", "3NT"] }
+- name: br3_responder_accepts_2NT_over_1NT_response
+  hand: "KQ8.T4.T42.QJ963"
+  calls: ["P", "P", "1D", "P", "1NT", "P", "2NT", "P"]
+  expect: { call: "3NT" }
+- name: br3_opener_accepts_reinvite_with_prime_cards
+  hand: "2.AKT.J862.AQJ54"
+  calls: ["P", "P", "1C", "P", "1H", "P", "2H", "P", "3H", "P"]
+  expect: { call: "4H" }
+- name: br3_ogust_asker_bids_game
+  hand: "A.AQ52.KT95.AKT5"
+  calls: ["P", "2S", "P", "2NT", "P", "3S", "P"]
+  expect: { calls: ["4S", "3NT"] }
+- name: br3_penalty_doubler_passes_runout
+  hand: "AQ76.K9.KJ.K9654"
+  calls: ["1NT", "X", "2D", "P"]
+  expect: { calls: ["P", "X"] }
+- name: br3_opener_rebids_over_doubled_2C
+  hand: "KQ83.AK7652.AQ2."
+  calls: ["P", "P", "2C", "X", "P", "P"]
+  expect: { call: "2H" }
+# --- overcall and opening thresholds
+- name: br3_overcall_1S_with_six_and_8
+  hand: "QJ9652.73.65.A83"
+  calls: ["1C"]
+  expect: { call: "1S" }
+- name: br3_overcall_1H_with_12_and_five
+  hand: "862.J8752.A9.AK4"
+  calls: ["1C"]
+  expect: { call: "1H" }
+- name: br3_two_level_overcall_with_AKxxx_and_10
+  hand: "Q85.94.J52.AK732"
+  calls: ["1S"]
+  expect: { calls: ["2C", "P"] }
+- name: br3_two_level_overcall_with_17
+  hand: "AKT.2.A9764.AT98"
+  calls: ["1S"]
+  expect: { calls: ["2D", "X"] }
+- name: br3_overcall_weak_two_with_eight_card_suit
+  hand: "T.975.AQJ96432.Q"
+  calls: ["2S"]
+  expect: { call: "3D" }
+- name: br3_rule_of_20_five_five_opens
+  hand: "K9632.3.QJ.AJ764"
+  calls: []
+  expect: { call: "1S" }
+# --- gates
+- name: br3_no_1NT_between_two_bidding_opponents_on_10
+  hand: "A76.K2.T743.KT76"
+  calls: ["P", "P", "P", "1D", "P", "1H", "P", "1S"]
+  expect: { call: "P" }
+- name: br3_no_3NT_with_nine_card_heart_fit
+  hand: "Q52.T98.AQ8.AJ84"
+  calls: ["P", "P", "1C", "P", "1H", "1NT", "X", "2D", "3H", "P"]
+  expect: { calls: ["4H", "P"] }
+- name: br3_3NT_with_18_and_singleton_in_forcing_auction
+  hand: "KJ72.AK9.J.AQJT8"
+  calls: ["1D", "P", "1S", "P", "2D", "P", "3C", "P", "3D", "P"]
+  expect: { calls: ["3NT", "4NT", "4D"] }
+- name: br3_no_takeout_double_of_1H_with_KQxx
+  hand: "T64.KQ73.QJ.AQ76"
+  calls: ["1C", "P", "1D", "P", "1H"]
+  expect: { call: "P" }
+- name: br3_negative_double_not_with_seven_diamonds
+  hand: "2.62.AKT9872.873"
+  calls: ["1H", "1S"]
+  expect: { call: "2D" }
+- name: br3_no_four_level_new_suit_on_five_cards
+  hand: "QJ7.A93.AJ.KT863"
+  calls: ["P", "P", "1NT", "2H", "P", "3H"]
+  expect: { call: "P" }
+- name: br3_rebid_eight_card_suit_over_competition
+  hand: "Q4.AQ8..AQT97653"
+  calls: ["P", "P", "1D", "2C", "2D", "P", "3D"]
+  expect: { call: "4C" }
+- name: br3_preemptive_raise_of_overcall_with_six_trumps
+  hand: "A84.A97543.T876."
+  calls: ["1C", "1H", "1S"]
+  expect: { calls: ["4H", "3H"] }
+- name: br3_support_double_after_1H_1S
+  hand: "AQT2.QJT64.JT.J5"
+  calls: ["1H", "P", "1S", "2D"]
+  expect: { calls: ["2S", "X"] }
+- name: br3_stayman_answered_over_double
+  hand: "AQ83.AK9.AK83.83"
+  calls: ["P", "P", "2NT", "P", "3C", "X"]
+  expect: { call: "3S" }
+- name: br3_transfer_completed_over_double
+  hand: "AJ4.QJT7.A954.K6"
+  calls: ["P", "P", "1D", "1NT", "P", "2C", "X"]
+  expect: { call: "2H" }

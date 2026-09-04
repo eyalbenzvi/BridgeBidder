@@ -52,6 +52,12 @@
         }
        }
       ],
+      "evals": {
+       "longest_suit_length": [
+        0,
+        5
+       ]
+      },
       "hcp": [
        6,
        40
@@ -63,11 +69,91 @@
          13
         ]
        }
+      },
+      "suits": {
+       "C": [
+        3,
+        13
+       ],
+       "D": [
+        3,
+        13
+       ]
       }
      }
     },
     "derived_from_rule": "r1H1S_X",
     "text": "not: negative double: both minors or a long minor, no heart fit",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "hcp": [
+       10,
+       40
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         3,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "C": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H1S_2C",
+    "text": "not: natural 2C over the overcall: 5+ clubs, 10+, forcing",
+    "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "hcp": [
+         10,
+         40
+        ]
+       },
+       {
+        "hcp": [
+         5,
+         40
+        ],
+        "suits": {
+         "D": [
+          7,
+          13
+         ]
+        }
+       }
+      ],
+      "not": {
+       "suits": {
+        "H": [
+         3,
+         13
+        ]
+       }
+      },
+      "suits": {
+       "D": [
+        5,
+        13
+       ]
+      }
+     }
+    },
+    "derived_from_rule": "r1H1S_2D",
+    "text": "not: natural 2D over the overcall: 5+ diamonds, 10+ (or a seven-card suit)",
     "weight": "strong"
    }
   ],
@@ -344,6 +430,50 @@
      }
     },
     {
+     "any_of": [
+      {
+       "evals": {
+        "suit_quality(S)": [
+         1.5,
+         9
+        ]
+       }
+      },
+      {
+       "any_of": [
+        {
+         "suits": {
+          "H": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "D": [
+           5,
+           13
+          ]
+         }
+        },
+        {
+         "suits": {
+          "C": [
+           5,
+           13
+          ]
+         }
+        }
+       ],
+       "evals": {
+        "longest_suit_length": [
+         5,
+         13
+        ]
+       }
+      }
+     ],
      "evals": {
       "rule_of_20": [
        20,
@@ -352,10 +482,6 @@
       "suit_diff(S,H)": [
        0,
        13
-      ],
-      "suit_quality(S)": [
-       1.5,
-       9
       ]
      },
      "hcp": [
@@ -648,6 +774,50 @@
    {
     "constraint": {
      "not": {
+      "any_of": [
+       {
+        "evals": {
+         "suit_quality(S)": [
+          1.5,
+          9
+         ]
+        }
+       },
+       {
+        "any_of": [
+         {
+          "suits": {
+           "H": [
+            5,
+            13
+           ]
+          }
+         },
+         {
+          "suits": {
+           "D": [
+            5,
+            13
+           ]
+          }
+         },
+         {
+          "suits": {
+           "C": [
+            5,
+            13
+           ]
+          }
+         }
+        ],
+        "evals": {
+         "longest_suit_length": [
+          5,
+          13
+         ]
+        }
+       }
+      ],
       "evals": {
        "rule_of_20": [
         20,
@@ -656,10 +826,6 @@
        "suit_diff(S,H)": [
         0,
         13
-       ],
-       "suit_quality(S)": [
-        1.5,
-        9
        ]
       },
       "hcp": [
