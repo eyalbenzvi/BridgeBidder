@@ -1877,12 +1877,18 @@ contexts:
 
   - id: support_double
     description: "Support double: X = exactly 3-card support for responder's major"
+    # The agreement is triggered by responder's one-level suit response being
+    # overcalled or doubled - whether or not LHO overcalled first.  Before
+    # this pattern admitted LHO's one-level overcall, 1C - (1D) - 1H - (X)
+    # fell through to the generic doubled-contract rules, which read East's
+    # double as penalty and had opener "sit" with three-card support (seed
+    # 501 board 786: 2D by W -1 instead of our making 2H).
     expand_pairs:
       - { m: C, M: H }
       - { m: C, M: S }
       - { m: D, M: H }
       - { m: D, M: S }
-    pattern: "1$m - P - 1$M - bid<2$M - ?"
+    pattern: "1$m - (P|bid<1$M) - 1$M - bid<2$M - ?"
     rules:
       - id: sd_double
         call: X
@@ -1927,7 +1933,7 @@ contexts:
   - id: support_redouble
     description: "Support redouble after RHO's takeout double"
     expand: { m: [C, D], M: [H, S] }
-    pattern: "1$m - P - 1$M - X - ?"
+    pattern: "1$m - (P|bid<1$M) - 1$M - X - ?"
     rules:
       - id: srd_redouble
         call: XX
@@ -1949,6 +1955,60 @@ contexts:
         requires: { hcp: [12, 14], suits: { $M: [0, 2] } }
         shows: "minimum, fewer than 3 $M"
         establishes: { forcing: non_forcing }
+        negative_inference_weight: soft
+
+  # Once the support redouble has told responder about the 3-card fit, the
+  # continuations are ordinary fit auctions.  Without these two contexts the
+  # generic toolkit took over (seed 501 board 786): responder "raised" clubs
+  # on a fallback instead of rebidding the known eight-card major fit, and
+  # opener answered partner's minimum 2M with a natural 2NT on a 12-count.
+  - id: after_support_redouble_responder
+    description: "Responder's rebid once opener's support redouble has shown 3-card support"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - (P|bid<1$M) - 1$M - X - XX - * - ?"
+    rules:
+      - id: asr_game_$M
+        call: 4$M
+        priority: 70
+        requires: { suits: { $M: [5, 13] }, evals: { total_points: [13, 40] } }
+        shows: "5+ $M opposite the shown 3-card support: game values"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: asr_invite_$M
+        call: 3$M
+        priority: 68
+        requires: { suits: { $M: [5, 13] }, evals: { total_points: [10, 12] } }
+        shows: "5+ $M opposite the shown 3-card support: invitational"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: asr_rebid_$M
+        call: 2$M
+        priority: 66
+        requires: { suits: { $M: [5, 13] }, evals: { total_points: [6, 9] } }
+        shows: "5+ $M opposite the shown 3-card support: minimum, an eight-card fit"
+        establishes: { forcing: non_forcing, agreed_suit: $M }
+
+  - id: after_support_redouble_opener
+    description: "Opener after the support redouble and partner's simple rebid of the major"
+    expand: { m: [C, D], M: [H, S] }
+    pattern: "1$m - (P|bid<1$M) - 1$M - X - XX - * - 2$M - * - ?"
+    rules:
+      - id: aso_game_$M
+        call: 4$M
+        priority: 59
+        requires: { hcp: [18, 21] }
+        shows: "game opposite 5+ $M and a minimum rebid"
+        establishes: { forcing: sign_off, agreed_suit: $M }
+      - id: aso_invite_$M
+        call: 3$M
+        priority: 58
+        requires: { hcp: [15, 17] }
+        shows: "invitational raise with extras opposite 5+ $M"
+        establishes: { forcing: invitational, agreed_suit: $M }
+      - id: aso_pass_min
+        call: P
+        priority: 60
+        requires: { hcp: [12, 14] }
+        shows: "minimum opposite a minimum rebid: the eight-card fit is at its level"
+        establishes: { forcing: sign_off }
         negative_inference_weight: soft
 
   # ===========================================================================

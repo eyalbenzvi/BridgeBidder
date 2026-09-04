@@ -864,3 +864,84 @@ and fixing what they showed - and the largest remaining pocket is still
 slam depth (BEN bids five slams for our one), which is a structure problem,
 not a threshold problem.
 
+## Reading a lost board as an expert would: seed 501, board 786
+
+An experiment in method rather than a round of fixes.  The question was
+whether an LLM, asked the way a bridge expert is asked, finds what a human
+expert finds on a lost board - after all the statistical attribution
+(rule-level regret, BEN-disagreement clusters, last-bid blame) had stopped
+paying.  One board, tried eight ways.
+
+The board: none vulnerable, South deals with KQ9 K74 73 KJ965 and opens
+1C; West overcalls 1D, North (J53 QJT85 986 A8) bids 1H, East makes a
+negative double.  Our South **passed** (`xd_pass`, "sitting for their
+double") and E/W bought it in 2D, down one, while BEN's South redoubled -
+a support redouble - and N/S played 2H making.  Three IMPs, and the kind of
+board any club player reads at a glance.
+
+What the eight probes found, all run *blind* - four hands and the auction,
+no rules, no BEN, no double-dummy, tools forbidden:
+
+- **Whole-auction judgment** ("which N/S call would an expert panel
+  reject?"): Opus and Sonnet both named South's pass and both named the
+  support redouble as the call, with the reason ("by agreement pass denies
+  three-card support, so North can never compete").  Haiku named the pass
+  too but proposed 2H - it did not know the convention.  Model tier is not
+  cosmetic here.
+- **Recall instead of judgment** ("what are opener's standard agreements
+  after 1m - (1x) - 1M - (X)?"): a correct system-card table, including the
+  key fact that the support redouble is triggered by responder's one-level
+  suit being doubled *whether or not LHO overcalled first*.  That sentence
+  is the whole bug.
+- **Decomposed reasoning** (six forced steps before a verdict) and
+  **multiple choice** (rank P / XX / 2H / 1NT / 2C): both landed on XX;
+  the panel-style ranking gave XX 10, Pass 5, 2H 4, and correctly called
+  1NT the outright error (no diamond stopper, denies the support).
+- **Graded capability probes**: every single-call interpretation and every
+  hand-evaluation item was answered correctly.  On this board there was no
+  level at which the model broke.
+- **The engine as calculator**: 120 deals sampled consistent with the
+  auction from South's seat, each candidate rolled out by the engine and
+  scored double-dummy: 2H +0.80 IMPs over pass, XX -0.17, 1NT -0.35.  The
+  negative number for XX is not bridge - it is the engine not knowing what
+  its own redouble means, so partner mis-continued in every rollout.  The
+  calculator measures the *current system's* handling of a call, and is
+  blind to a call the system has never defined.  Useful for thresholds,
+  useless for holes.
+- **LLM writes the rule, the engine answers**: the `support_double` and
+  `support_redouble` patterns were widened from `1$m - P - 1$M - ...` to
+  `1$m - (P|bid<1$M) - 1$M - ...`.  The first replay against BEN then
+  showed the next two holes at once: North "raised clubs" on a fallback
+  instead of rebidding the known eight-card major, and South answered
+  partner's minimum 2H with a natural 2NT on a 12-count - the board got
+  *worse*, -3 to -6.  Two continuation contexts (`after_support_redouble_
+  responder`, `after_support_redouble_opener`) closed them; the board is
+  now 2H at both tables.  Six regression scenarios added.
+- **Fine-tuning on expert panel commentary**: not testable on one board;
+  noted as the fallback if prompting had failed.  It did not.
+
+Verdict on the fix, paired on identical deals (only boards whose auction
+changed count):
+
+| corpus | changed boards | better / worse | net |
+|---|---|---|---|
+| seed 501, 1000 boards | 5 | 1 / 0 | +3 |
+| seed 9001, 2000 boards (fresh) | 7 | 3 / 2 | +20 |
+
+Small - the trigger is rare, about four boards in a thousand - and positive.
+The two losers are downstream judgment calls of the ordinary kind (opener
+passing 2D with a minimum instead of pushing with 3C; a generic 4NT firing
+after a simple raise), not the species just fixed.
+
+Two conclusions worth more than the IMPs:
+
+1. **The expert read is reproducible when the question is posed as bridge,
+   not as data.**  Every probe that saw only the deal and the auction found
+   the flaw and named the convention.  Every earlier method that saw rule
+   ids, fit scores and BEN distributions did not, because the flaw was a
+   *missing* rule and there is no signal in the absence of a row.
+2. **"Write the rule and replay" is the loop that finds the holes behind
+   the hole.**  The first fix exposed two more within one auction.  A human
+   would have found them by playing the board out; the engine finds them in
+   a second, and the failing calls come tagged with the rule that made them.
+

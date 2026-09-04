@@ -39,3 +39,36 @@
   hand: "KQ4.A72.AQJ84.94"
   calls: ["1D", "P", "1S", "3C"]
   expect: { calls: ["P", "3D", "X", "3S"] }
+
+# The trigger survives LHO's one-level overcall: 1m - (1x) - 1M - (X or bid)
+# is the same agreement as 1m - P - 1M - (X or bid).  Seed 501 board 786.
+
+- name: support_redouble_after_lho_overcall
+  hand: "KQ9.K74.73.KJ965"
+  calls: ["1C", "1D", "1H", "X"]
+  expect: { call: "XX", convention: support_redouble, alertable: true }
+
+- name: raise_with_4_after_lho_overcall_denies_3
+  hand: "KQ9.K742.7.KJ965"
+  calls: ["1C", "1D", "1H", "X"]
+  expect: { call: "2H", denies_contains: "support redouble" }
+
+- name: support_double_after_lho_overcall
+  hand: "K74.KQ9.73.KJ965"
+  calls: ["1C", "1D", "1H", "1S"]
+  expect: { call: "X", convention: support_double }
+
+- name: pass_after_lho_overcall_denies_3
+  hand: "KQ94.K7.73.KJ965"
+  calls: ["1C", "1D", "1H", "X"]
+  expect: { call: "P", denies_contains: "support redouble" }
+
+- name: responder_rebids_major_after_support_redouble
+  hand: "J53.QJT85.986.A8"
+  calls: ["1C", "1D", "1H", "X", "XX", "P"]
+  expect: { call: "2H" }
+
+- name: opener_passes_partners_minimum_after_support_redouble
+  hand: "KQ9.K74.73.KJ965"
+  calls: ["1C", "1D", "1H", "X", "XX", "1S", "2H", "P"]
+  expect: { call: "P" }
