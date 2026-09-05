@@ -23,6 +23,15 @@ have a verdict, so it is restartable).  If `claude` is unavailable, the
 prompts in <dir>/prompts/ can be answered by any means; drop each answer in
 <dir>/verdicts/<same name>.txt and `collect` will read it.
 
+`pack --with-ben` also writes a SECOND prompt per table (prompts_ben/), asked
+after the blind one and answered separately: the same deal, our auction beside
+the other table's auction on it (BEN held our seats there), "is the second
+auction clearly preferable, and if so which of our calls was the point of
+loss?".  The blind prompt is unchanged.  `collect` stores the two answers as
+`verdict` and `verdict_ben`, and `species` groups only the flags where both
+name the same call (`--all` for every blind flag).  BEN's auction is a source
+of a second vote, never of truth - nothing here imitates it.
+
 `collect` prints one line per reviewed table for a human to mark, and writes
 <dir>/verdicts.jsonl.  Marking those lines IS the calibration set: it did not
 have to exist beforehand, it is produced by reading the machine's verdicts.
@@ -56,6 +65,26 @@ End with exactly one line in this format and nothing after it:
 VERDICT: <seat> <call made> -> <call that should have been> | <the agreement or reason, at most twelve words>
 or, if nothing is wrong:
 VERDICT: none
+"""
+
+PROMPT_BEN = """Answer from bridge knowledge alone. Do NOT use any tools, do not read files, do not search. Just think and answer.
+
+The same bridge deal was bid at two tables. At both tables the pair under review, {pair_text}, played 2/1 Game Forcing with standard modern agreements (negative doubles, support doubles and redoubles, Jacoby 2NT, RKC 1430, Michaels, unusual 2NT); the opposing pair may have bid differently at the two tables. {vul_text} {dealer_text}
+
+{hands}
+
+Table 1 auction ({order_text}):
+{auction}
+
+Table 2 auction (same dealer, same order):
+{auction_ben}
+
+Question: judged on the information available when each call was made - not on the layout of the other hands - is the Table 2 auction by {pair_text} clearly preferable to the Table 1 auction by {pair_text}? If it is, name the single call by {pair_text} at Table 1 where the auction went wrong (the point of loss), and what it should have been. Table 2 is only a hint: its calls may themselves be wrong, so the better call need not be the Table 2 call. If Table 1's calls are at least as good, or the difference is a matter of style or luck, say so. Be concise (under 200 words).
+
+End with exactly one line in this format and nothing after it:
+VERDICT_BEN: <seat> <call made at table 1> -> <call that should have been> | <the agreement or reason, at most twelve words>
+or, if Table 1 is not clearly worse:
+VERDICT_BEN: none
 """
 
 
@@ -103,7 +132,29 @@ def build_prompt(r: dict, table: str) -> str:
     )
 
 
-def pack(rows_path: Path, n: int, out: Path, min_loss: int, worst: bool) -> None:
+def build_prompt_ben(r: dict, table: str) -> str:
+    """The second, separate question: our auction beside the other table's
+    auction on the same deal (where BEN held the seats we are reviewing).  BEN's
+    auction is a source of a vote, not of truth: the prompt says so."""
+    ours = r["a_auction"] if table == "A" else r["b_auction"]
+    theirs = r["b_auction"] if table == "A" else r["a_auction"]
+    our_side = "NS" if table == "A" else "EW"
+    vul = {"None": "Nobody is vulnerable.", "NS": "North/South are vulnerable.",
+           "EW": "East/West are vulnerable.", "Both": "Both sides are vulnerable."}[r["vul"]]
+    dealer_name = {"N": "North", "E": "East", "S": "South", "W": "West"}[r["dealer"]]
+    return PROMPT_BEN.format(
+        vul_text=vul,
+        dealer_text=f"Dealer {dealer_name}.",
+        hands=fmt_hands(r["hands"]),
+        order_text=f"{dealer_name} dealt and called first; read each row left to right",
+        auction=fmt_auction(r["dealer"], ours.split()),
+        auction_ben=fmt_auction(r["dealer"], theirs.split()),
+        pair_text="North/South" if our_side == "NS" else "East/West",
+    )
+
+
+def pack(rows_path: Path, n: int, out: Path, min_loss: int, worst: bool,
+         with_ben: bool = False) -> None:
     rows = [json.loads(l) for l in open(rows_path)]
     lost = [r for r in rows if r["imp_margin"] <= -min_loss]
     if worst:
@@ -111,22 +162,29 @@ def pack(rows_path: Path, n: int, out: Path, min_loss: int, worst: bool) -> None
     lost = lost[:n]
     (out / "prompts").mkdir(parents=True, exist_ok=True)
     (out / "verdicts").mkdir(exist_ok=True)
+    if with_ben:
+        (out / "prompts_ben").mkdir(exist_ok=True)
+        (out / "verdicts_ben").mkdir(exist_ok=True)
     index = []
     for r in lost:
         for table in ("A", "B"):
             name = f"b{r['board']:05d}_{table}"
             (out / "prompts" / f"{name}.md").write_text(build_prompt(r, table))
+            if with_ben:
+                (out / "prompts_ben" / f"{name}.md").write_text(build_prompt_ben(r, table))
             index.append({"name": name, "board": r["board"], "table": table,
                           "our_side": "NS" if table == "A" else "EW",
                           "imp_margin": r["imp_margin"],
                           "auction": r["a_auction"] if table == "A" else r["b_auction"],
+                          "ben_auction": r["b_auction"] if table == "A" else r["a_auction"],
                           "contract": r["a_contract"] if table == "A" else r["b_contract"],
                           "our_calls": r["a_our_calls"] if table == "A" else r["b_our_calls"],
                           "hands": r["hands"], "dealer": r["dealer"], "vul": r["vul"]})
     with open(out / "index.jsonl", "w") as f:
         for it in index:
             f.write(json.dumps(it) + "\n")
-    print(f"{len(lost)} lost boards -> {len(index)} review prompts in {out / 'prompts'}")
+    print(f"{len(lost)} lost boards -> {len(index)} review prompts in {out / 'prompts'}"
+          + (f" (+ {len(index)} second-question prompts in {out / 'prompts_ben'})" if with_ben else ""))
 
 
 def _ask(prompt_path: Path, verdict_path: Path, model: str) -> str:
@@ -139,21 +197,41 @@ def _ask(prompt_path: Path, verdict_path: Path, model: str) -> str:
     return f"ok {prompt_path.name}"
 
 
+def _ask_table(name: str, d: Path, model: str) -> str:
+    """The blind question first; then, if the pack was made --with-ben, the
+    second question (our auction beside the other table's).  Each is skipped
+    when its verdict already exists, so a run is restartable."""
+    msgs = []
+    p, v = d / "prompts" / f"{name}.md", d / "verdicts" / f"{name}.txt"
+    if p.exists() and not v.exists():
+        msgs.append(_ask(p, v, model))
+    p2, v2 = d / "prompts_ben" / f"{name}.md", d / "verdicts_ben" / f"{name}.txt"
+    if p2.exists() and not v2.exists():
+        v2.parent.mkdir(exist_ok=True)
+        msgs.append(_ask(p2, v2, model).replace(name, name + " (2nd question)"))
+    return "; ".join(msgs) or f"skip {name}"
+
+
 def run(d: Path, model: str, jobs: int) -> None:
-    todo = [(p, d / "verdicts" / (p.stem + ".txt")) for p in sorted((d / "prompts").glob("*.md"))]
-    todo = [(p, v) for p, v in todo if not v.exists()]
-    print(f"{len(todo)} prompts to answer with {model}, {jobs} at a time")
+    names = sorted({p.stem for p in (d / "prompts").glob("*.md")}
+                   | {p.stem for p in (d / "prompts_ben").glob("*.md")})
+    todo = [n for n in names
+            if not (d / "verdicts" / f"{n}.txt").exists()
+            or ((d / "prompts_ben" / f"{n}.md").exists()
+                and not (d / "verdicts_ben" / f"{n}.txt").exists())]
+    print(f"{len(todo)} tables to answer with {model}, {jobs} at a time")
     with ThreadPoolExecutor(max_workers=jobs) as ex:
-        for msg in ex.map(lambda pv: _ask(pv[0], pv[1], model), todo):
+        for msg in ex.map(lambda n: _ask_table(n, d, model), todo):
             print("  " + msg, flush=True)
 
 
 VERDICT_RE = re.compile(r"VERDICT:\s*(.*)", re.IGNORECASE)
+VERDICT_BEN_RE = re.compile(r"VERDICT_BEN:\s*(.*)", re.IGNORECASE)
 
 
-def parse_verdict(text: str) -> dict:
+def parse_verdict(text: str, second: bool = False) -> dict:
     m = None
-    for m in VERDICT_RE.finditer(text):
+    for m in (VERDICT_BEN_RE if second else VERDICT_RE).finditer(text):
         pass
     if not m:
         return {"verdict": "unparsed", "raw": text[-200:]}
@@ -176,14 +254,32 @@ def collect(d: Path) -> None:
             continue
         text = vp.read_text()
         v = parse_verdict(text)
-        out.append({**it, **v, "review_text": text})
+        row = {**it, **v, "review_text": text}
+        vp2 = d / "verdicts_ben" / f"{name}.txt"
+        if vp2.exists():
+            text2 = vp2.read_text()
+            v2 = parse_verdict(text2, second=True)
+            row.update({"ben_" + k if k != "verdict" else "verdict_ben": val
+                        for k, val in v2.items()})
+            row["review_text_ben"] = text2
+        out.append(row)
     with open(d / "verdicts.jsonl", "w") as f:
         for r in out:
             f.write(json.dumps(r) + "\n")
     flaws = [r for r in out if r["verdict"] == "flaw"]
     print(f"{len(out)} tables reviewed | {len(flaws)} flagged | "
           f"{sum(1 for r in out if r['verdict'] == 'none')} clean | "
-          f"{sum(1 for r in out if r['verdict'] == 'unparsed')} unparsed\n")
+          f"{sum(1 for r in out if r['verdict'] == 'unparsed')} unparsed")
+    withben = [r for r in out if "verdict_ben" in r]
+    if withben:
+        both = [r for r in withben if r["verdict"] == "flaw" and r["verdict_ben"] == "flaw"]
+        same = [r for r in both if _same_call(r)]
+        print(f"second question on {len(withben)} tables: "
+              f"{sum(1 for r in withben if r['verdict_ben'] == 'flaw')} prefer the other table | "
+              f"{sum(1 for r in withben if r['verdict_ben'] == 'none')} do not | "
+              f"{sum(1 for r in withben if r['verdict_ben'] == 'unparsed')} unparsed; "
+              f"both questions flag {len(both)}, the same call in {len(same)}")
+    print()
     print("Mark each line: agree / disagree / unsure.  (board, table, our side, margin)\n")
     for r in out:
         tag = f"b{r['board']:04d}{r['table']} {r['our_side']} {r['imp_margin']:+3d}"
@@ -195,6 +291,12 @@ def collect(d: Path) -> None:
             print(f"[ ] {tag}  {r.get('raw', '')[:90]}")
         else:
             print(f"[ ] {tag}  none")
+        if "verdict_ben" in r:
+            if r["verdict_ben"] == "flaw" and "ben_seat" in r:
+                agree = "AGREE" if _same_call(r) else "differs"
+                print(f"    2nd: {r['ben_seat']} {r['ben_made']} -> {r['ben_should']}  | {r['ben_why']}  [{agree}]")
+            else:
+                print(f"    2nd: {r['verdict_ben']}")
         print(f"        {r['auction']}")
         print(f"        {deal}")
 
@@ -217,12 +319,13 @@ def norm_call(text: str) -> str | None:
     return f"{lvl}{st}"
 
 
-def locate_decision(r: dict) -> int | None:
-    """Index in the auction of the flagged call: the flagged seat's call that
-    matches `made`, disambiguated by an '(over X)' note when present."""
-    seat = r.get("seat", "")[:1].upper()
-    made = norm_call(re.sub(r"\(.*?\)", "", r.get("made", "")).strip())
-    over = re.search(r"\(over\s+(\S+)\)", r.get("made", ""))
+def locate_decision(r: dict, prefix: str = "") -> list[int]:
+    """Indices in the auction of the flagged call: the flagged seat's calls that
+    match `made`, disambiguated by an '(over X)' note when present.  With
+    prefix="ben_" the same for the second question's verdict."""
+    seat = r.get(prefix + "seat", "")[:1].upper()
+    made = norm_call(re.sub(r"\(.*?\)", "", r.get(prefix + "made", "")).strip())
+    over = re.search(r"\(over\s+(\S+)\)", r.get(prefix + "made", ""))
     over_call = norm_call(over.group(1)) if over else None
     calls = r["auction"].split()
     order = SEATS[SEATS.index(r["dealer"]):] + SEATS[:SEATS.index(r["dealer"])]
@@ -231,6 +334,18 @@ def locate_decision(r: dict) -> int | None:
     if over_call:
         hits = [i for i in hits if i > 0 and over_call in calls[max(0, i - 3):i]]
     return hits
+
+
+def _same_call(r: dict) -> bool:
+    """Do the blind verdict and the second question's verdict name the same
+    call of ours?  Same seat and same call made; when the seat made that call
+    more than once, the located indices must overlap."""
+    if r.get("verdict") != "flaw" or r.get("verdict_ben") != "flaw":
+        return False
+    if "seat" not in r or "ben_seat" not in r:
+        return False
+    a, b = locate_decision(r), locate_decision(r, "ben_")
+    return bool(set(a) & set(b))
 
 
 def context(d: Path, limit: int) -> None:
@@ -311,7 +426,7 @@ def _call_class(call: str | None, seat_suits: dict) -> str:
     return "new_suit"
 
 
-def species(d: Path, top: int) -> None:
+def species(d: Path, top: int, all_flags: bool = False) -> None:
     """Group the flags into species: the context and rule that made the flagged
     call, and what kind of call the reviewer wanted instead.  With hundreds of
     flags this is the authoring list - the top species are the missing
@@ -330,6 +445,12 @@ def species(d: Path, top: int) -> None:
     rows = [json.loads(l) for l in open(d / "verdicts.jsonl")]
     groups: dict = defaultdict(list)
     unlocated = 0
+    has_ben = any("verdict_ben" in r for r in rows)
+    if has_ben and not all_flags:
+        n_flaw = sum(1 for r in rows if r["verdict"] == "flaw" and "seat" in r)
+        rows = [r for r in rows if _same_call(r)]
+        print(f"{n_flaw} blind flags; {len(rows)} where the second question (with the other "
+              f"table's auction) names the same call.  Only those are grouped (--all for every flag).")
     for r in rows:
         if r["verdict"] != "flaw" or "seat" not in r:
             continue
@@ -390,6 +511,8 @@ if __name__ == "__main__":
     sp = sub.add_parser("species")
     sp.add_argument("--dir", type=Path, required=True)
     sp.add_argument("--top", type=int, default=40)
+    sp.add_argument("--all", action="store_true",
+                    help="group every blind flag, not only those the second question agrees with")
     x = sub.add_parser("context")
     x.add_argument("--dir", type=Path, required=True)
     x.add_argument("--limit", type=int, default=1000)
@@ -399,6 +522,9 @@ if __name__ == "__main__":
     p.add_argument("--dir", type=Path, required=True)
     p.add_argument("--min-loss", type=int, default=1)
     p.add_argument("--worst", action="store_true", help="largest losses first (default: corpus order)")
+    p.add_argument("--with-ben", action="store_true",
+                   help="also write a second, separate prompt per table that shows the other "
+                        "table's auction (BEN in our seats) and asks whether it is preferable")
     r = sub.add_parser("run")
     r.add_argument("--dir", type=Path, required=True)
     r.add_argument("--model", default="opus")
@@ -407,11 +533,11 @@ if __name__ == "__main__":
     c.add_argument("--dir", type=Path, required=True)
     a = ap.parse_args()
     if a.cmd == "species":
-        species(a.dir, a.top)
+        species(a.dir, a.top, a.all)
     elif a.cmd == "context":
         context(a.dir, a.limit)
     elif a.cmd == "pack":
-        pack(a.rows, a.n, a.dir, a.min_loss, a.worst)
+        pack(a.rows, a.n, a.dir, a.min_loss, a.worst, a.with_ben)
     elif a.cmd == "run":
         run(a.dir, a.model, a.jobs)
     else:
