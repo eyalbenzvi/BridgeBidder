@@ -1,0 +1,187 @@
+# Blind expert review, round 6 (seed 2468, 500 lost boards).
+
+- name: br6_rkc_5D_after_2C_places_the_contract
+  hand: "AKQT2.KQ9764..KQ"
+  calls: ["P", "P", "2C", "P", "2D", "P", "2H", "P", "3H", "P", "4NT", "P", "5D", "P"]
+  expect: { calls: ["5H", "6H"] }
+- name: br6_asker_places_the_contract_over_a_doubled_keycard_reply
+  hand: "AK8.KJ3.J65432.K"
+  calls: ["1S", "P", "2D", "P", "2S", "P", "3S", "P", "4D", "P", "4NT", "P", "5C", "X"]
+  expect: { calls: ["5S", "6S"] }
+- name: br6_no_second_rebid_of_a_seven_card_minor
+  hand: "5.A.QT96.KQ96432"
+  calls: ["P", "1C", "X", "1H", "2S", "3C", "3S", "P", "P"]
+  expect: { call: "P" }
+- name: br6_no_takeout_double_of_their_stayman_reply
+  hand: "AJ9873.98.A752.K"
+  calls: ["P", "1NT", "P", "2NT", "P", "3C"]
+  expect: { call: "P" }
+- name: br6_overcall_the_five_card_major_rather_than_double
+  hand: "T.AKT763.K87.KT9"
+  dealer: W
+  calls: ["1S", "P", "2S"]
+  expect: { call: "3H" }
+- name: br6_advancer_bids_six_card_suit_over_their_four_level_raise
+  hand: "QT9763..A853.A52"
+  dealer: E
+  calls: ["3H", "X", "4H"]
+  expect: { call: "4S" }
+- name: br6_3NT_over_the_invitational_minor_raise_with_a_known_fit
+  hand: "KQ9.JT.KQJ863.AT"
+  dealer: W
+  calls: ["P", "1H", "1S", "2D", "P", "3D", "P"]
+  expect: { call: "3NT" }
+- name: br6_eight_card_minor_jump_rebids_on_eleven
+  hand: "K43.K.2.AT986542"
+  calls: ["P", "1C", "P", "1H", "P"]
+  expect: { call: "3C" }
+- name: br6_six_five_shows_the_second_suit
+  hand: ".AQ9743.AQJ63.82"
+  dealer: E
+  calls: ["P", "1H", "P", "1S", "P"]
+  expect: { call: "2D" }
+- name: br6_five_five_majors_respond_in_spades
+  hand: "KQT54.QT954.T.KJ"
+  dealer: W
+  calls: ["1D", "P"]
+  expect: { call: "1S" }
+- name: br6_preemptive_jump_raise_over_their_double
+  hand: "974.A8.J652.8652"
+  dealer: W
+  calls: ["P", "1C", "X"]
+  expect: { calls: ["3C", "2C"] }
+- name: br6_stayman_fit_with_16_asks_for_keycards
+  hand: "KT86.A84.QJT.AQ5"
+  dealer: W
+  calls: ["P", "1NT", "P", "2C", "P", "2S", "P"]
+  expect: { call: "4NT" }
+- name: br6_doubler_bids_3NT_over_the_three_level_answer_with_20
+  hand: "A87.QT8.AK6.AKJ8"
+  dealer: S
+  calls: ["P", "2H", "X", "P", "3C", "P"]
+  expect: { call: "3NT" }
+- name: br6_opener_accepts_the_minor_invitation_with_15
+  hand: "A8.KQ.AJT763.J74"
+  dealer: W
+  calls: ["1D", "P", "1S", "P", "2D", "P", "3D", "P"]
+  expect: { call: "3NT" }
+- name: br6_1NT_opener_accepts_3M_invite_with_16
+  hand: "AK6.93.KQJ86.AT5"
+  dealer: W
+  calls: ["P", "1NT", "P", "2D", "P", "2H", "P", "3H", "P"]
+  expect: { call: "4H" }
+- name: br6_opener_doubles_the_balancing_2C_with_20
+  hand: "A4.AQT54.AK92.A4"
+  calls: ["P", "1H", "P", "P", "2C"]
+  expect: { call: "X" }
+- name: br6_opener_doubles_their_2C_over_1NT_response_with_17_and_a_singleton
+  hand: "AQT86.Q732.AKT.5"
+  dealer: W
+  calls: ["1S", "P", "1NT", "2C"]
+  expect: { call: "X" }
+- name: br6_stayman_advancer_continues_after_their_double
+  hand: "K742.T9.AT96.Q73"
+  dealer: E
+  calls: ["P", "1C", "1NT", "P", "2C", "X", "2H", "P"]
+  expect: { calls: ["3NT", "2NT"] }
+- name: br6_passed_responder_answers_openers_double_of_the_balance
+  hand: "6.T96.J8742.Q743"
+  dealer: E
+  calls: ["1S", "P", "P", "2H", "X", "P"]
+  expect: { calls: ["3D", "P"] }
+- name: br6_doubler_with_20_unbalanced_raises_rather_than_3NT
+  hand: "AJ.8.AKQ43.AQT52"
+  calls: ["P", "2S", "X", "P", "3C", "P"]
+  expect: { calls: ["4C", "3D", "P"] }
+- name: br6_solid_seven_card_minor_competes_to_four
+  hand: "3.AJ.KQT95432.K3"
+  dealer: S
+  calls: ["P", "P", "1D", "1S", "2C", "2S", "3D", "3S", "P", "P"]
+  expect: { call: "4D" }
+- name: br6_opener_shows_18_19_over_the_balancing_1H
+  hand: "KJT8.AQ.A875.A63"
+  dealer: S
+  calls: ["P", "P", "1D", "P", "P", "1H"]
+  expect: { call: "2NT" }
+- name: br6_bust_runs_from_the_double_of_1NT
+  hand: "9875.T942.8764.2"
+  dealer: W
+  calls: ["P", "1NT", "X"]
+  expect: { calls: ["2D", "2H", "2S"] }
+- name: br6_stayman_answered_over_their_double_after_2C
+  hand: "A7.AQ4.AKQ6.AJ83"
+  dealer: W
+  calls: ["P", "P", "P", "2C", "P", "2D", "P", "2NT", "P", "3C", "X"]
+  expect: { call: "3D" }
+- name: br6_cue_bidder_shows_a_suit_when_the_cue_is_doubled
+  hand: "QJ64.Q.Q964.A642"
+  dealer: E
+  calls: ["1H", "X", "P", "2H", "X"]
+  expect: { calls: ["2S", "3D", "3C"] }
+- name: br6_responder_raises_the_reverse_suit
+  hand: "K7.Q9863.KJ2.Q73"
+  calls: ["1C", "P", "1H", "P", "2D", "P"]
+  expect: { calls: ["2NT", "2H", "3C", "3NT"] }
+- name: br6_responder_does_not_pass_the_reverse
+  hand: "JT97.QT6.K43.876"
+  dealer: S
+  calls: ["P", "P", "1C", "P", "1S", "P", "2D", "P"]
+  expect: { calls: ["2NT", "2S", "3C"] }
+- name: br6_ten_and_three_trumps_compete_at_two
+  hand: "JT742.KQ8.KJ6.63"
+  dealer: W
+  calls: ["1D", "1H", "2D"]
+  expect: { call: "2H" }
+- name: br6_doubler_raises_advancers_suit_with_four
+  hand: "Q832.AQT8.AJ6.85"
+  calls: ["P", "P", "1C", "X", "1H", "1S", "2C"]
+  expect: { call: "2S" }
+- name: br6_six_card_rule_of_20_major_opens
+  hand: "QJ96.A98754.4.A8"
+  calls: []
+  expect: { call: "1H" }
+- name: br6_two_over_one_on_a_good_six_card_suit_with_ten
+  hand: "43.84.AKQT94.Q74"
+  dealer: W
+  calls: ["1H", "P"]
+  expect: { call: "2D" }
+- name: br6_doubler_doubles_again_with_18
+  hand: "KQ32.AQ7.AQ.Q954"
+  dealer: W
+  calls: ["1H", "X", "2H", "P", "P"]
+  expect: { call: "X" }
+- name: br6_six_card_suit_competes_at_three_over_their_raise
+  hand: "AK76.976542.4.97"
+  dealer: E
+  calls: ["P", "1D", "X", "P", "1H", "3D", "P", "P"]
+  expect: { call: "3H" }
+- name: br6_five_card_suit_rebid_with_a_singleton_in_partners
+  hand: "QJ832.3.A876.Q87"
+  dealer: E
+  calls: ["1D", "1S", "P", "2H", "P"]
+  expect: { call: "2S" }
+- name: br6_double_of_their_four_level_preempt_with_20
+  hand: "AK2.7.AJ8.AKQ732"
+  dealer: E
+  calls: ["4D"]
+  expect: { call: "X" }
+- name: br6_opener_takeout_of_their_raise_with_a_singleton
+  hand: "AKJ6.8542.7.KQT7"
+  dealer: S
+  calls: ["P", "1C", "2D", "P", "3D"]
+  expect: { call: "X" }
+- name: br6_advancer_raises_the_weak_jump_overcall_to_game
+  hand: "Q7.A52.A86.A8743"
+  dealer: W
+  calls: ["1S", "3H", "P"]
+  expect: { call: "4H" }
+- name: br6_seven_card_heart_suit_is_natural_over_their_2C
+  hand: "95.KJT8432.Q98.6"
+  dealer: W
+  calls: ["1NT", "2C"]
+  expect: { call: "2H" }
+- name: br6_overcaller_rebids_an_eight_card_suit_rather_than_doubling
+  hand: "A7..AJT97642.AKQ"
+  dealer: S
+  calls: ["P", "P", "1S", "2D", "2S", "P", "P"]
+  expect: { calls: ["3D", "4D", "5D"] }

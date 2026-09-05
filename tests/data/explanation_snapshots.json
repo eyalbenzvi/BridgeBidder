@@ -440,6 +440,14 @@
        }
       },
       {
+       "suits": {
+        "S": [
+         6,
+         13
+        ]
+       }
+      },
+      {
        "any_of": [
         {
          "suits": {
@@ -784,6 +792,14 @@
         }
        },
        {
+        "suits": {
+         "S": [
+          6,
+          13
+         ]
+        }
+       },
+       {
         "any_of": [
          {
           "suits": {
@@ -847,6 +863,24 @@
    {
     "constraint": {
      "not": {
+      "any_of": [
+       {
+        "evals": {
+         "suit_quality(H)": [
+          1.5,
+          9
+         ]
+        }
+       },
+       {
+        "suits": {
+         "H": [
+          6,
+          13
+         ]
+        }
+       }
+      ],
       "evals": {
        "rule_of_20": [
         20,
@@ -855,10 +889,6 @@
        "suit_diff(H,S)": [
         1,
         13
-       ],
-       "suit_quality(H)": [
-        1.5,
-        9
        ]
       },
       "hcp": [
@@ -1544,16 +1574,60 @@
    {
     "constraint": {
      "not": {
+      "any_of": [
+       {
+        "hcp": [
+         12,
+         40
+        ],
+        "suits": {
+         "D": [
+          4,
+          13
+         ]
+        }
+       },
+       {
+        "evals": {
+         "suit_quality(D)": [
+          2.5,
+          9
+         ]
+        },
+        "hcp": [
+         10,
+         11
+        ],
+        "suits": {
+         "D": [
+          6,
+          13
+         ]
+        }
+       },
+       {
+        "hcp": [
+         11,
+         11
+        ],
+        "suits": {
+         "D": [
+          5,
+          13
+         ],
+         "S": [
+          0,
+          0
+         ]
+        }
+       }
+      ],
       "evals": {
        "suit_diff(D,C)": [
         1,
         13
        ]
       },
-      "hcp": [
-       12,
-       40
-      ],
       "not": {
        "suits": {
         "S": [
@@ -1561,17 +1635,11 @@
          13
         ]
        }
-      },
-      "suits": {
-       "D": [
-        4,
-        13
-       ]
       }
      }
     },
     "derived_from_rule": "r1S_2D",
-    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP",
+    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP (or a good six-card suit with 10-11)",
     "weight": "strong"
    }
   ],
@@ -1715,16 +1783,60 @@
    {
     "constraint": {
      "not": {
+      "any_of": [
+       {
+        "hcp": [
+         12,
+         40
+        ],
+        "suits": {
+         "D": [
+          4,
+          13
+         ]
+        }
+       },
+       {
+        "evals": {
+         "suit_quality(D)": [
+          2.5,
+          9
+         ]
+        },
+        "hcp": [
+         10,
+         11
+        ],
+        "suits": {
+         "D": [
+          6,
+          13
+         ]
+        }
+       },
+       {
+        "hcp": [
+         11,
+         11
+        ],
+        "suits": {
+         "D": [
+          5,
+          13
+         ],
+         "H": [
+          0,
+          0
+         ]
+        }
+       }
+      ],
       "evals": {
        "suit_diff(D,C)": [
         1,
         13
        ]
       },
-      "hcp": [
-       12,
-       40
-      ],
       "not": {
        "any_of": [
         {
@@ -1744,17 +1856,11 @@
          }
         }
        ]
-      },
-      "suits": {
-       "D": [
-        4,
-        13
-       ]
       }
      }
     },
     "derived_from_rule": "r1H_2D",
-    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP",
+    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP (or a good six-card suit with 10-11)",
     "weight": "strong"
    },
    {
@@ -1938,16 +2044,60 @@
    {
     "constraint": {
      "not": {
+      "any_of": [
+       {
+        "hcp": [
+         12,
+         40
+        ],
+        "suits": {
+         "D": [
+          4,
+          13
+         ]
+        }
+       },
+       {
+        "evals": {
+         "suit_quality(D)": [
+          2.5,
+          9
+         ]
+        },
+        "hcp": [
+         10,
+         11
+        ],
+        "suits": {
+         "D": [
+          6,
+          13
+         ]
+        }
+       },
+       {
+        "hcp": [
+         11,
+         11
+        ],
+        "suits": {
+         "D": [
+          5,
+          13
+         ],
+         "H": [
+          0,
+          0
+         ]
+        }
+       }
+      ],
       "evals": {
        "suit_diff(D,C)": [
         1,
         13
        ]
       },
-      "hcp": [
-       12,
-       40
-      ],
       "not": {
        "any_of": [
         {
@@ -1967,17 +2117,11 @@
          }
         }
        ]
-      },
-      "suits": {
-       "D": [
-        4,
-        13
-       ]
       }
      }
     },
     "derived_from_rule": "r1H_2D",
-    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP",
+    "text": "not: 2/1 game forcing: 4+ diamonds, 12+ HCP (or a good six-card suit with 10-11)",
     "weight": "strong"
    },
    {

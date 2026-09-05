@@ -1376,3 +1376,90 @@ each row is a hand, an auction and the call an expert wanted.  Run
 `python -m pytest -q tests/test_regression.py -k br5`; then
 `python tools/adjudicate.py --before reports/after501_r7.jsonl --seed 501`
 for the paired verdict on the held-out corpus.
+
+## Blind-review round 6: seed 2468, 500 boards, 468 flags
+
+Same protocol: a fresh 2000-board match (seed 2468, -0.82 per board before),
+500 lost boards, 1000 blind prompts.  **468 flagged, 532 clean**; 429
+located flags in 291 species, the largest twelve strong (third-seat
+openings on 11, a system choice again).  A long tail, worked as a list of
+small agreements; four intermediate versions were adjudicated on seed 501
+and three changes were taken back on that evidence.
+
+### Taken back on seed 501
+
+- RKC only from the three level up: the flags were three misplaced 4NT
+  bids over a two-level fit bid, but the two-level RKC over a raise or a
+  second suit had been finding slams - six boards, -89, on seeds 501 and
+  9001 - so it stays.
+- A 1NT bidder's penalty double of their three-level contract: the flag was
+  one 3C doubled on AT7; two 3D doubles by the 1NT opener on seed 501 were
+  +22.  Stays.
+- The natural 3NT over a known nine-card minor fit: one flag wanted 3NT
+  with KQJ863 opposite a raise, two seed-501 boards went down in 3NT with
+  the fit.  The fit gate stays.
+- Also withdrawn after the check: a second rebid of a seven-card MAJOR to
+  the four level (a 4S over 4C was doubled for -1100), responder's 4M with
+  a five-card major over their four-level jump (fired opposite partner's
+  preempt), and the reverse raise agreeing the suit (it fed RKC).
+
+### Corrections
+
+- 5D over RKC is read against partner's shown strength as well as the
+  asker's keycards; the doubled keycard reply is still answered by the
+  asker (patterns take (P|X)); Stayman after 2C - 2D - 2NT is answered over
+  their double.
+- The takeout doubles: not with a five-card major of one's own (low level);
+  not of their Stayman reply after 2NT; the balancing double not against a
+  notrump-based auction; the doubler doubles again with 17+ and a balanced
+  hand.
+- 5-5 in the majors responds 1S; 6-5 shows the second suit; an eight-card
+  minor jump-rebids on ten; the rule-of-20 opening needs no suit quality
+  with six; 2/1 on a very good six-card suit with 10-11; a five-card suit
+  is rebid over partner's suit when holding a singleton there.
+- Competitive raises: 5-11 support points at the two level, four trumps
+  and 5-11 at the three level, the preemptive four-level raise up to 11;
+  the doubler raises advancer's suit with four trumps; a six-card suit is
+  rebid at the three level with a singleton in their suit.
+
+### Authored
+
+Responder after their penalty double of our 1NT (weak hands run), and
+after their 2C overcall (natural suits); direct defence to a four-level
+preempt; the cue-bid answer doubled shows a suit; responder after the
+reverse (forcing: 2NT weak, raises, rebids, 3NT); advancing a weak jump
+overcall (raise to game with fit and 13+; the LOTT raise over the two-level
+jump); the doubler over advancer's three-level minimum answer (3NT
+balanced 18+, raise 18+, a five-card major with 16+); opener's takeout of
+their raise to three with a singleton; opener's double of the fourth-seat
+balancing overcall, and the passed responder's answers; opener over their
+overcall of the 1NT response; opener over the invitational minor raise
+(1m - 1M - 2m - 3m); the 1NT opener over the invitational 3M after a
+transfer; the preference contexts also over 1S - 1NT - 2H, with an
+invitational raise of the second suit; the preemptive jump raise over their
+takeout double; Stayman fit with 16+ asks for keycards; responder over the
+raise of a forcing new suit in competition.
+
+### Verdict
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 (held out) | 83 | 32 / 23 / 28 | **+76** |
+| seed 9001, 2000 (held out) | 161 | 58 / 47 / 56 | **+46** |
+| seed 4242, 2000 (held out) | 158 | 59 / 53 / 46 | **+52** |
+| seed 2468, 2000 (the flags' source) | 200 | 89 / 50 / 61 | **+281** |
+
++174 on the 5000 held-out boards, +0.035 per board: the smallest round so
+far, and the first where the held-out gain is a third of the source gain.
+Six rounds together on the held-out corpora: seed 501 from -1180 to -407
+per thousand, seed 9001 from -2193 to -1367 per two thousand, seed 4242
+from -2252 to -1480; about -0.65 per board against the -1.30 at the
+start.  The flags are now mostly judgment calls at 5-15 IMPs each, and
+each fix is as likely to cost elsewhere as to gain: the per-round return
+of this method on this corpus size is flattening.
+
+### Verifying this round with a cheap operator
+
+`tests/data/blind_review_2468.yaml` (39 scenarios); run
+`python -m pytest -q tests/test_regression.py -k br6`, then
+`python tools/adjudicate.py --before reports/after501_r8.jsonl --seed 501`.

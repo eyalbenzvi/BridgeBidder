@@ -239,11 +239,6 @@
   dealer: W
   calls: ["P", "1C", "P", "1H", "P", "1NT", "P", "2D", "P", "3D", "X", "P"]
   expect: { call: "P" }
-- name: br5_seven_card_suit_may_compete_to_game_a_second_time
-  hand: "AKQT432.862.2.92"
-  dealer: E
-  calls: ["P", "1D", "1S", "P", "1NT", "2D", "2S", "3D", "P", "P", "3S", "4D", "P", "P"]
-  expect: { call: "4S" }
 - name: br5_no_jump_to_four_of_a_minor_as_a_rebid
   hand: "84.AK.AKQ752.A43"
   calls: ["P", "P", "1D", "1H", "X", "P"]
