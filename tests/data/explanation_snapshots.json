@@ -2484,6 +2484,41 @@
     "derived_from_rule": "sd_raise",
     "text": "not: raise: 4+ S support (support double would show exactly 3)",
     "weight": "strong"
+   },
+   {
+    "constraint": {
+     "not": {
+      "any_of": [
+       {
+        "hcp": [
+         15,
+         18
+        ],
+        "suits": {
+         "D": [
+          6,
+          13
+         ]
+        }
+       },
+       {
+        "hcp": [
+         13,
+         18
+        ],
+        "suits": {
+         "D": [
+          7,
+          13
+         ]
+        }
+       }
+      ]
+     }
+    },
+    "derived_from_rule": "sd_rebid_3D",
+    "text": "not: jump rebid: 6+ D, 15-18, fewer than 3 S",
+    "weight": "strong"
    }
   ],
   "forcing_status": "non_forcing",

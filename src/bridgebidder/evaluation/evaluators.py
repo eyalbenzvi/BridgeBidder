@@ -210,6 +210,16 @@ def suit_quality(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
     return sum(1.0 for r in ranks if r >= 12) + sum(0.5 for r in ranks if r in (10, 11))
 
 
+@register_evaluator("has_ace_or_king")
+def has_ace_or_king(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
+    """1.0 when the suit holds the ace or the king: a "feature" for the
+    weak-two 2NT ask."""
+    s = _resolve_suit(suit, ctx)
+    if s is None:
+        return 0.0
+    return 1.0 if any(r >= 13 for r in hand.suit_ranks(s)) else 0.0
+
+
 @register_evaluator("two_of_top3")
 def two_of_top3(hand: Hand, ctx: EvalContext, suit: str = "S") -> float:
     s = _resolve_suit(suit, ctx)

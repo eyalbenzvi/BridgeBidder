@@ -1265,3 +1265,114 @@ seed 501 has gone from -1180 to -703 IMPs per thousand, seed 9001 from
 -2193 to -1602 per two thousand, seed 4242 from -2252 to -1642.  Against
 the -1.30 per board the project stood at when the blind review began, the
 held-out corpora now read about -0.75.
+
+## Blind-review round 5: seed 7777, 500 boards, 476 flags
+
+Same protocol: a fresh 2000-board match (seed 7777, -1.04 per board before),
+500 lost boards, 1000 blind prompts.  **476 flagged, 524 clean**; 426
+located flags in 281 species.  The species table is now flat - the largest
+species has twelve members - so this round is mostly a long tail of small
+agreements, plus three engine-level gaps the flags kept running into.
+
+### Engine
+
+- Three auction-history conditions for `when`: `i_preempted` (my first call
+  was a weak two, a three-level opening or a jump overcall), `rebid_count`
+  (how many times I have already rebid my first suit) and `i_bid_nt` /
+  `they_bid_nt` / `we_bid_nt`.  Eight flags in two species were a preemptor
+  bidding again, or a suit bid for the third time over a penalty double or
+  their 3NT; the generic rebid rules now carry `i_preempted: false`, the
+  four-level ones `rebid_count: [0]` (a seven-card suit may go once more).
+- The generic `*_rebid_X3/X4` rules had `cheapest_in_suit: true`, so a jump
+  rebid did not exist as a candidate: a nine-card suit with 18 rebid 2S.
+  Jump rebids are now their own rules (invitational at three, game at four
+  in a major only - a four-of-a-minor "jump to game" cost 8 IMPs on seed
+  501 before it was taken out), never inside a game force.
+- `has_ace_or_king(suit)` evaluator.  The weak-two feature answers were
+  asking for two of the top three, so a king was not a feature and the
+  weak-two opener passed the forcing 2NT.
+- RKC after 5D (0 or 3): the slam rule required two-plus keycards of my
+  own, so an asker with four of them read partner's 5D as three.  Now one
+  or two.
+
+### Corrections to earlier rules
+
+- False preference (1M - 1NT - 2m): not with a doubleton major and five of
+  the second suit, never with a singleton; a five-card suit of its own is
+  still shown.
+- Preemptive raise to four needs a singleton or void with five trumps (a
+  flat 4-count jumped to 4S vulnerable); the jump raise to three takes five
+  flat trumps and 3-8.
+- The penalty double of their high contract is not made holding a six-card
+  agreed suit (18 with AKQJ93 and partner's raise doubled 3C on 986);
+  `suit_length(agreed)` keeps the double where partner bid a different suit.
+- `gf_3NT` counts the major fit in whichever of partner's suits, refuses a
+  seven-card suit and a six-card suit opposite a singleton in partner's
+  suit; `uc_raise_M4`'s point floor drops to 8 because `rule_of_26` does
+  the work (nine opposite a 16-18 jump rebid is game).
+- Sandwich double not with a five-card major; balancing double first with
+  17+ and a long suit; three-level new suits in competition by a hand that
+  has not acted need six cards, or five with shortness and 15+, and never
+  from a hand that bid notrump (the 1NT opener introduced 3C over their
+  2S).  Advances of a takeout double are gated `they_bid_nt: false,
+  we_bid_nt: false` - a double after a 1NT opening on either side is not
+  for takeout.
+
+### Authored
+
+Reopening doubles by opener over a passed-out one- or two-level overcall,
+and responder's answers to them (penalty pass on four trumps, or three with
+values); opener's takeout of their jump overcall of the response; takeout
+doubles of their three-level raise by a hand that has not acted, of 1NT -
+(3x) by responder, and the balancing double on 11 with a singleton;
+partner's competitive 3M over their double of my 2M is not an invitation;
+advancer's free bids over their raise of the doubled suit; the doubler over
+advancer's 2NT / 1NT / minimum suit answer, and advancer over the doubler's
+raise; responder's second call after 1M - 2x - 2y (three-card support,
+second-suit raise, natural fourth suit with 15+, 2NT 15+); super-accept
+continuations and transfer continuations over their double; second suit
+over the jump rebid; jump rebids on seven-card suits at 13; opener passes
+3NT after his own jump rebid; opener accepts the six-card invitation
+(1m - 1M - 2x - 3M); the cue-bid raise doubled goes back to the suit; 2NT
+(18-19) over the negative double answered; 5NT king ask answered; 2NT in
+the pass-out seat over their weak two; the advance of a 1NT overcall over
+their raise; the double when they outbid our 3NT or 4M.
+
+### Verdict
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 (held out) | 142 | 59 / 21 / 62 | **+220** |
+| seed 9001, 2000 (held out) | 276 | 103 / 70 / 103 | **+189** |
+| seed 4242, 2000 (held out) | 298 | 107 / 101 / 90 | **+110** |
+| seed 7777, 2000 (the flags' source) | 340 | 136 / 94 / 110 | **+390** |
+
++519 on the 5000 held-out boards, +0.10 per board, on about twice as many
+changed boards as round 4 (the engine changes touch every rebid and every
+advance of a double).  Three intermediate versions were adjudicated on seed
+501 before this one and each lost something the next fixed: a
+four-of-a-minor "jump to game" (-8), a jump rebid inside a game force
+(-14), a takeout-style advance of a penalty double after our own 1NT
+(-10), the strong 2NT outranking the balancing double (-14), a
+three-trump penalty pass against a weak jump overcall (-12), the balancing
+double of a freely bid game after their 2NT (-17).  Five rounds together,
+on the held-out corpora that saw none of the flags: seed 501 has gone from
+-1180 to -483 IMPs per thousand, seed 9001 from -2193 to -1413 per two
+thousand, seed 4242 from -2252 to -1532.  The held-out corpora now read
+about -0.69 per board against the -1.30 the project stood at when the
+blind review began.
+
+Not done, for the next round: `pass_forbidden` still lets a doubled
+forcing cue-bid be passed by the cue-bidder's partner (the cue-bidder now
+rescues it); the slam tries after a 4-4 second-suit agreement in a game
+force (`r2s_3y` then `gst_rkc`) reached two failing six-level contracts on
+seed 9001; the third-seat light opening flags (four this round) remain a
+system choice, as does the semi-forcing 1NT pass.
+
+### Verifying this round with a cheap operator
+
+`tests/data/blind_review_7777.yaml` (65 scenarios) is the acceptance suite:
+each row is a hand, an auction and the call an expert wanted.  Run
+`python -m pytest -q tests/test_regression.py -k br5`; then
+`python tools/adjudicate.py --before reports/after501_r7.jsonl --seed 501`
+for the paired verdict on the held-out corpus.

@@ -172,6 +172,40 @@ def my_role(auction: Auction, seat: Seat) -> str:
     return "overcaller" if ours and auction.seat_of_call(ours[0]) == seat else "advancer"
 
 
+_STRAIN_RANK = {"C": 0, "D": 1, "H": 2, "S": 3, "NT": 4}
+
+
+def _my_history(auction: Auction, seat: Seat) -> tuple[bool, int, bool]:
+    """(i_preempted, rebid_count, i_bid_nt) for this seat.  A preempt is an
+    opening at the two level or higher other than 2C, or a first call that is
+    a jump over the standing bid.  The rebid count is how many times the seat
+    has bid its FIRST suit again."""
+    preempted = False
+    first_suit: str | None = None
+    rebids = 0
+    bid_nt = False
+    last_bid: Call | None = None
+    seen_bid = False
+    for i, c in enumerate(auction.calls):
+        mine = auction.seat_of_call(i) == seat
+        if c.is_bid:
+            if mine:
+                if first_suit is None and c.strain != "NT":
+                    first_suit = c.strain
+                    if not seen_bid:
+                        preempted = c.level >= 2 and not (c.level == 2 and c.strain == "C")
+                    elif last_bid is not None:
+                        need = last_bid.level + (1 if _STRAIN_RANK[c.strain] <= _STRAIN_RANK[last_bid.strain] else 0)
+                        preempted = c.level > need
+                elif c.strain == first_suit:
+                    rebids += 1
+                if c.strain == "NT":
+                    bid_nt = True
+            seen_bid = True
+            last_bid = c
+    return preempted, rebids, bid_nt
+
+
 def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: BiddingSystem,
                      ctx: EvalContext | None = None, call: Call | None = None,
                      game_forced: bool | None = None) -> bool:
@@ -258,6 +292,24 @@ def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: Bid
             return False
     if cond.my_role is not None and my_role(auction, seat) not in cond.my_role:
         return False
+    if cond.i_preempted is not None or cond.rebid_count is not None or cond.i_bid_nt is not None:
+        preempted, rebids, bid_nt = _my_history(auction, seat)
+        if cond.i_preempted is not None and preempted != cond.i_preempted:
+            return False
+        if cond.rebid_count is not None and rebids not in cond.rebid_count:
+            return False
+        if cond.i_bid_nt is not None and bid_nt != cond.i_bid_nt:
+            return False
+    if cond.they_bid_nt is not None:
+        theirs = any(c.is_bid and c.strain == "NT" for i, c in enumerate(auction.calls)
+                     if auction.seat_of_call(i).side != seat.side)
+        if theirs != cond.they_bid_nt:
+            return False
+    if cond.we_bid_nt is not None:
+        ours = any(c.is_bid and c.strain == "NT" for i, c in enumerate(auction.calls)
+                   if auction.seat_of_call(i).side == seat.side)
+        if ours != cond.we_bid_nt:
+            return False
     for flag, want in cond.config.items():
         if system.config.get(flag) != want:
             return False
@@ -450,7 +502,11 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
         candidates=candidates,
         eval_ctx=eval_ctx,
         pass_forbidden=pass_forbidden,
-        pass_forbidden_hard=side.game_forced,
+        # the game force is satisfied once a game contract stands: from there a
+        # pass may still be soft-forbidden by partner's forcing call, and an
+        # authored penalty pass (e.g. passing the 5D keycard reply with
+        # diamonds agreed) may relax that
+        pass_forbidden_hard=side.game_forced and not _game_reached(auction),
     )
 
 

@@ -76,6 +76,11 @@ class Conditions:
     my_suit: str | None = None                     # I have bid this suit myself
     my_role: tuple[str, ...] | None = None         # opener | responder | overcaller | advancer | silent
     game_forced: bool | None = None                # our side is in a game force
+    i_preempted: bool | None = None                # my first call was a preempt (weak two/three, jump overcall)
+    rebid_count: tuple[int, ...] | None = None     # how many times I have already REBID my first suit
+    i_bid_nt: bool | None = None                   # I have already bid notrump in this auction
+    they_bid_nt: bool | None = None                # the opponents have bid notrump in this auction
+    we_bid_nt: bool | None = None                  # our side has bid notrump in this auction
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -102,6 +107,11 @@ class Conditions:
             my_role=(tuple([d.pop("my_role")] if isinstance(d.get("my_role"), str) else d.pop("my_role"))
                      if "my_role" in d else None),
             game_forced=d.pop("game_forced", None),
+            i_preempted=d.pop("i_preempted", None),
+            rebid_count=tuple(d.pop("rebid_count")) if "rebid_count" in d else None,
+            i_bid_nt=d.pop("i_bid_nt", None),
+            they_bid_nt=d.pop("they_bid_nt", None),
+            we_bid_nt=d.pop("we_bid_nt", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -114,6 +124,11 @@ class Conditions:
             self.opening_seat is None
             and self.my_role is None
             and self.game_forced is None
+            and self.i_preempted is None
+            and self.rebid_count is None
+            and self.i_bid_nt is None
+            and self.they_bid_nt is None
+            and self.we_bid_nt is None
             and self.passed_hand is None
             and self.we_vulnerable is None
             and self.they_vulnerable is None
