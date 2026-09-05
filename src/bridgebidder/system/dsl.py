@@ -75,6 +75,7 @@ class Conditions:
     standing_bid_strain: tuple[str, ...] | None = None  # strain of the standing contract bid
     my_suit: str | None = None                     # I have bid this suit myself
     my_role: tuple[str, ...] | None = None         # opener | responder | overcaller | advancer | silent
+    game_forced: bool | None = None                # our side is in a game force
     config: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
@@ -100,6 +101,7 @@ class Conditions:
             my_suit=d.pop("my_suit", None),
             my_role=(tuple([d.pop("my_role")] if isinstance(d.get("my_role"), str) else d.pop("my_role"))
                      if "my_role" in d else None),
+            game_forced=d.pop("game_forced", None),
             config=d.pop("config", {}) or {},
         )
         if d:
@@ -111,6 +113,7 @@ class Conditions:
         return (
             self.opening_seat is None
             and self.my_role is None
+            and self.game_forced is None
             and self.passed_hand is None
             and self.we_vulnerable is None
             and self.they_vulnerable is None

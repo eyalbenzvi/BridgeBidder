@@ -173,9 +173,12 @@ def my_role(auction: Auction, seat: Seat) -> str:
 
 
 def _conditions_hold(cond: Conditions, auction: Auction, seat: Seat, system: BiddingSystem,
-                     ctx: EvalContext | None = None, call: Call | None = None) -> bool:
+                     ctx: EvalContext | None = None, call: Call | None = None,
+                     game_forced: bool | None = None) -> bool:
     if cond.is_trivial:
         return True
+    if cond.game_forced is not None and game_forced is not None and game_forced != cond.game_forced:
+        return False
     if cond.cheapest_in_suit is not None and call is not None and call.is_bid:
         lb = auction.last_bid
         floor = lb.bid_index if lb else -1
@@ -394,7 +397,7 @@ def make_setup(system: BiddingSystem, auction: Auction, analysis: Analysis) -> D
         rules = [
             r for r in ctx.rules
             if auction.is_legal(r.call)
-            and _conditions_hold(r.when, auction, seat, system, eval_ctx, r.call)
+            and _conditions_hold(r.when, auction, seat, system, eval_ctx, r.call, side.game_forced)
         ]
         if rules:
             context_rules.append((ctx, rules))

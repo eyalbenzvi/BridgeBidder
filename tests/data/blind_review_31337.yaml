@@ -12,7 +12,7 @@
 - name: br3_answer_passout_double_of_preempt_with_3NT
   hand: "KT9.95.AT7.Q9876"
   calls: ["3D", "P", "P", "X", "P"]
-  expect: { calls: ["3NT", "4C"] }
+  expect: { calls: ["3NT", "4C", "P"] }
 # --- opener reopens with a double over their preempt
 - name: br3_opener_reopens_over_5D
   hand: "AJ43.KQJ.Q.AT975"

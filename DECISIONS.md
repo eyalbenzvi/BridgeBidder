@@ -1204,3 +1204,64 @@ a shape rather than as anecdotes.
 Reviewer arithmetic errors were again about one in seven, and again all of
 them counting (a 14 called 15, a 9 called 11, a 10 called 11); three
 scenarios accept the system's call because of them.
+
+## Blind-review round 4: seed 8080, 500 boards, 489 flags
+
+Same protocol as round 3 on the round-3 rules: a fresh 2000-board match
+(seed 8080), 500 lost boards, 1000 blind prompts.  **489 flagged, 511
+clean** - the first round where more tables came back clean than flagged.
+438 located flags in 275 species; the top species were still passes where
+a bid was wanted, and for the first time several were rules from the
+previous round misfiring.
+
+### Round-3 rules corrected by this round's flags
+
+- The reopening double over their preempt had been written on "... - bid -
+  P - P" and fired on freely bid games (a 4H reached after 1D - X - P - 1H
+  - 1S - 4H was doubled on a singleton trump).  It is now "1x - bid>=3C - P
+  - P": their direct jump over our opening only, and responder has a
+  context to answer it.
+- The advance floor under takeout doubles let a 4-count pull partner's
+  penalty double of 3S.  Suit answers are now for a silent hand at the one
+  and two levels; the pass-out-seat doubles of weak twos and preempts got
+  their own copies of the direct-seat advance contexts.
+- The semi-forcing 1NT pass (12-13) needed a shape gate: not with a
+  six-card major or a second minor to show (two harvested BEN scenarios),
+  but yes with 5-4 in the majors when 2S would be a reverse.
+
+### Authored
+
+- **Fast arrival.**  In a game force the generic four-level raise now
+  requires a minimum; with 15+ the raise is to three (slam interest).  Four
+  flags had 15-counts jumping to game and ending the auction.
+- Opener over the simple raise in competition (pass 12-15, invite 16-17,
+  game 18+); opener accepting a 2NT invitation directly over the minor,
+  after rebidding it, or in competition, with a six-card source of tricks
+  counting as acceptance; responder over the 18-19 rebid of 1NT to a major,
+  and over the jump rebid when RHO overcalled; Stayman placement after
+  their double; the doubler raising advancer's suit with four trumps; the
+  preemptive jump raise of partner's suit in competition (four trumps,
+  weak, shape, LOTT) beside the cheapest-level competitive raise; natural
+  2H/2D beside the negative double over their two-level overcall; garbage
+  Stayman; a five-card major before 1NT when advancing a double; sandwich
+  one-level overcalls on six cards or 11+; natural 3NT counting 26 with
+  partner's minimum rather than with length points; game in a major after
+  2NT - Stayman only in the major opener showed.
+- `game_forced` is now also a rule-level `when` condition.
+
+### Verdict
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 (held out) | 90 | 43 / 27 / 20 | **+58** |
+| seed 9001, 2000 (held out) | 176 | 88 / 54 / 34 | **+155** |
+| seed 4242, 2000 (held out) | 176 | 78 / 56 / 42 | **+137** |
+| seed 8080, 2000 (the flags' source) | 179 | 90 / 50 / 39 | **+258** |
+
++350 on the 5000 held-out boards, +0.07 per board; fewer boards changed
+than in round 3 (the round-3 rules had already taken the broad species).
+Four rounds together, on the held-out corpora that saw none of the flags:
+seed 501 has gone from -1180 to -703 IMPs per thousand, seed 9001 from
+-2193 to -1602 per two thousand, seed 4242 from -2252 to -1642.  Against
+the -1.30 per board the project stood at when the blind review began, the
+held-out corpora now read about -0.75.
