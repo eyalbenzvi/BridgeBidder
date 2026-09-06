@@ -6523,6 +6523,139 @@ contexts:
         establishes: { forcing: invitational }
 
   # ===========================================================================
+  # THE DOUBLER'S OWN CONTINUATION, over advancer's FORCED minimum answer to a
+  # direct-seat takeout double of a 1-level opening (blind-review round 7:
+  # a 23-count that doubled 1H and heard 1S left completely uncovered - no
+  # rule offered the jump raise, only the generic uncontested-continuation
+  # fallback).  Scoped to major-suit minimum answers only, matching the
+  # evidence; minor-suit answers (game a level higher) are a separate case.
+  # ===========================================================================
+
+  - id: doubler_after_min_major_advance_1level
+    description: "The takeout doubler over advancer's forced 1-level major answer"
+    expand_pairs: [ { o: C, x: H }, { o: C, x: S }, { o: D, x: H }, { o: D, x: S }, { o: H, x: S } ]
+    pattern: "1$o - X - P - 1$x - P - ?"
+    rules:
+      - id: dma1_raise2
+        call: 2$x
+        priority: 60
+        requires: { suits: { $x: [3, 13] }, evals: { total_points: [16, 21] } }
+        shows: "raising the forced answer: extras, 16-21"
+        establishes: { forcing: invitational, agreed_suit: $x }
+      - id: dma1_jump3
+        call: 3$x
+        priority: 61
+        requires: { suits: { $x: [4, 13] }, evals: { total_points: [19, 40] } }
+        shows: "jump raise: four trumps and 19+, inviting game"
+        establishes: { forcing: invitational, agreed_suit: $x }
+      - id: dma1_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [0, 15] } }
+        shows: "no extras: partner's answer may be 0 HCP"
+        establishes: { forcing: sign_off }
+
+  # A good 5+ card second major, shown cheaply, outranks a marginal raise of
+  # the forced answer (board 1792 and board 632, seed 9001 and 4242: a 3-card
+  # raise buried a 9-card heart fit; a 3-card raise buried a 5-card spade suit
+  # that was making game on its own).  A first version of this gated on
+  # length alone, which gives partial credit below 5 cards and let a
+  # mediocre 4-card suit steal the tie by priority on an UNRELATED board
+  # (331: a 7-card-fit game turned into a misfit two off) - taken back and
+  # rewritten with a suit-QUALITY feature (good_suit: 2 of the top 3 honors,
+  # or 3 of the top 5) alongside the length, since a mediocre 4-carder should
+  # lose that tie and a strong 5-carder should win it.  Two contexts because
+  # the level differs: the other major ranks above $x (still open at the one
+  # level) for x=H, below it (needs the two level) for x=S; $ox is the
+  # other-major helper var.
+  - id: doubler_shows_own_major_1level
+    description: "The doubler shows a good second major cheaply, ahead of raising the forced answer"
+    expand_pairs: [ { o: C, x: H }, { o: D, x: H } ]
+    pattern: "1$o - X - P - 1$x - P - ?"
+    rules:
+      - id: dsom1_show
+        call: 1$ox
+        priority: 63
+        requires: { suits: { $ox: [5, 13] }, features: [ "good_suit($ox)" ], evals: { total_points: [13, 40] } }
+        shows: "a good second major, cheaply, ahead of a marginal raise"
+        establishes: { forcing: non_forcing }
+
+  - id: doubler_shows_own_major_2level
+    description: "The doubler shows a good second major over the forced answer, ahead of raising it"
+    expand_pairs: [ { o: C, x: S }, { o: D, x: S } ]
+    pattern: "1$o - X - P - 1$x - P - ?"
+    rules:
+      - id: dsom2_show
+        call: 2$ox
+        priority: 63
+        requires: { suits: { $ox: [5, 13] }, features: [ "good_suit($ox)" ], evals: { total_points: [13, 40] } }
+        shows: "a good second major, over the forced answer, ahead of a marginal raise"
+        establishes: { forcing: non_forcing }
+
+  - id: advancer_after_doubler_min_major_raise_1level
+    description: "Advancer over the doubler's invitational raise of the forced 1-level answer"
+    expand_pairs: [ { o: C, x: H }, { o: C, x: S }, { o: D, x: H }, { o: D, x: S }, { o: H, x: S } ]
+    pattern: "1$o - X - P - 1$x - P - (2$x|3$x) - P - ?"
+    rules:
+      - id: aad1_accept
+        call: 4$x
+        priority: 60
+        # the length check matters as much as the points: our own "1$x" may
+        # have been an undiscussed fallback rather than a genuine 3+/4+
+        # advance (nothing else was biddable), and only WE know which -
+        # accepting game on a fabricated fit was the round-7 regression
+        # (board 1293, seed 9001: 2-card "support" raised straight to game).
+        requires: { suits: { $x: [3, 13] }, evals: { total_points: [7, 40] } }
+        shows: "accepting: enough for game opposite the doubler's extras"
+        establishes: { forcing: sign_off, agreed_suit: $x }
+      - id: aad1_pass
+        call: P
+        priority: 55
+        requires: { evals: { total_points: [0, 40] } }
+        shows: "a genuine minimum, or no real fit for the doubler's raise: no more to say"
+        establishes: { forcing: sign_off }
+
+  - id: doubler_after_min_major_advance_2level
+    description: "The 1S doubler over advancer's forced 2H answer (spades are taken)"
+    pattern: "1S - X - P - 2H - P - ?"
+    rules:
+      - id: dma2_raise3H
+        call: 3H
+        priority: 60
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [16, 21] } }
+        shows: "raising the forced answer: extras, 16-21"
+        establishes: { forcing: invitational, agreed_suit: H }
+      - id: dma2_jump4H
+        call: 4H
+        priority: 61
+        requires: { suits: { H: [4, 13] }, evals: { total_points: [19, 40] } }
+        shows: "jump to game: four trumps and 19+"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: dma2_pass
+        call: P
+        priority: 50
+        requires: { evals: { total_points: [0, 15] } }
+        shows: "no extras: partner's answer may be 0 HCP"
+        establishes: { forcing: sign_off }
+
+  - id: advancer_after_doubler_min_major_raise_2level
+    description: "Advancer (the 1S doubler's partner) over the invitational 3H raise"
+    pattern: "1S - X - P - 2H - P - 3H - P - ?"
+    rules:
+      - id: aad2_accept
+        call: 4H
+        priority: 60
+        requires: { suits: { H: [3, 13] }, evals: { total_points: [7, 40] } }
+        shows: "accepting: enough for game opposite the doubler's extras"
+        establishes: { forcing: sign_off, agreed_suit: H }
+      - id: aad2_pass
+        call: P
+        priority: 55
+        requires: { evals: { total_points: [0, 40] } }
+        shows: "a genuine minimum, or no real fit for the doubler's raise: no more to say"
+        establishes: { forcing: sign_off }
+
+  # ===========================================================================
   # ADVANCES OF PARTNER'S OVERCALL (simple raise / new suit / cue raise)
   # ===========================================================================
 

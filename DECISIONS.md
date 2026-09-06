@@ -1463,3 +1463,96 @@ of this method on this corpus size is flattening.
 `tests/data/blind_review_2468.yaml` (39 scenarios); run
 `python -m pytest -q tests/test_regression.py -k br6`, then
 `python tools/adjudicate.py --before reports/after501_r8.jsonl --seed 501`.
+
+## Blind-review round 7: seed 3141, 1000 lost boards targeted, 323 reviewed, a second-question filter
+
+Two changes to the method this round, both requested up front. First, the
+scan target doubled to 1000 lost boards (2000 tables) on a fresh seed
+(3141), so species that had been sitting at 5-6 members would reach 10 and
+give a real basis for a decision. Second, `blind_review.py pack --with-ben`
+now writes a SECOND, separate prompt per table after the blind one: the
+same deal, our auction beside the *other* table's auction on it (BEN held
+our seats there), asking whether the other auction is clearly preferable
+and, if so, which of our calls was the point of loss. The blind prompt
+itself is unchanged - starved of the result, the double dummy, everything.
+The two verdicts are stored separately (`verdict` / `verdict_ben`) and
+`species` now groups only the flags where both name the same call
+(`--all` recovers the old, unfiltered view). BEN's auction is a source of a
+second vote, never of truth.
+
+The run was stopped early, on cost grounds, after 323 of 2000 tables (about
+16%): 106 blind flags, of which 65 had a second-question verdict naming the
+same call. At this depth the species table is necessarily thin - 58 species
+from 65 flags, almost all singletons - so this round is narrow by
+construction, not because the method stopped finding things.
+
+### Authored
+
+One real structural gap, found twice in the 65 agreed flags and nowhere
+else in the system: nothing at all covered the takeout **doubler's own
+continuation** over advancer's forced one-level major answer
+(`1H - X - P - 1S - P - ?`) - every one of these auctions fell to the
+generic uncontested-continuation layer, which has no idea the auction is
+competitive or that advancer's call was forced rather than chosen. A
+23-count that doubled 1H and heard a forced 1S sat with `pass` (b0100B);
+an 18-count behind a 3-card spade fit did the same (b0228A). Four new
+contexts close it for both response levels reachable in a major
+(`doubler_after_min_major_advance_1level/2level` and the matching
+`advancer_after_doubler_min_major_raise_*` for the invitational tier -
+the game-level jump needs no separate advancer rule, since the engine
+already treats a partner sign-off as nothing to invent over): a raise with
+3+ trumps and 16-21 total points, a jump raise with 4+ trumps and 19+,
+otherwise pass; the advancer accepts with 7+ points **and real length in
+the raised suit** - the first draft checked points alone and drove a
+board with a 2-card holding straight to a failing game (seed 9001, board
+1293: the forced "1S" had been a fallback call, not a real advance, and
+nothing about it should have been raised at all).
+
+Reading the seed-9001 and seed-4242 adjudications of that fix (not from
+any blind flag - from watching what these new rules did to boards nobody
+had reviewed) turned up two more: the doubler holding a genuinely good
+second major should show it cheaply rather than raise a marginal 3-card
+fit (board 1792: a 3-card raise of 1S buried a 9-card heart fit; board
+632: buried a 5-card spade suit that was making game on its own, 4S-11).
+A first version gated this on suit length alone, which gives partial
+credit below the 5-card floor and let a mediocre 4-carder steal the tie
+by priority on a board this was never meant to touch (board 331, same
+seed: a 7-card-fit game-making auction turned into a two-off misfit) -
+taken back within the round and rewritten with `good_suit()` (2 of the
+top 3 honors, or 3 of the top 5) as an explicit feature alongside the
+length, so a strong 5-carder wins the tie and a weak one does not.
+
+### Taken back on seed 9001 (within the round, before this became a commit)
+
+The length-only version of `doubler_shows_own_major_*`: fixed board 1792,
+broke board 331 on the same corpus. One clear regression for one fix is
+not a trade; the quality-gated rewrite above fixes both.
+
+### Verdict
+
+| corpus | changed | better / worse / flat | net |
+|---|---|---|---|
+| seed 501, 1000 (held out) | 1 | 1 / 0 / 0 | **+10** |
+| seed 9001, 2000 (held out) | 8 | 3 / 4 / 1 | **+5** |
+| seed 4242, 2000 (held out) | 6 | 3 / 2 / 1 | **+12** |
+| seed 3141, 4000 (the flags' source, partially reviewed) | 7 | 2 / 2 / 3 | **+12** |
+
++27 on the two fully-held-out corpora, on eight changed boards total - a
+small round, matched to a small, deliberately interrupted scan. Seven
+rounds together, on the corpora that never contributed a flag: seed 501
+from -1180 to -397 per thousand, seed 9001 from -2193 to -1362 per two
+thousand, seed 4242 from -2252 to -1468; about -0.62 per board against the
+-1.30 the project stood at when the blind review began. The remaining
+worse boards on seed 9001 (b0184, b0769, b0853) are the same shape as
+every prior round's residue: a real trade where the new rule's raise or
+pass is correct in general and wrong on that one layout, not a bug.
+
+### Verifying this round with a cheap operator
+
+`tests/data/blind_review_3141.yaml` (6 scenarios); run
+`python -m pytest -q -k br7`, then
+`python tools/adjudicate.py --before reports/base501.jsonl --seed 501 --skip-tests`
+(and the same against `base9001.jsonl` / `base4242.jsonl` for the other
+two held-out corpora - those three files are this round's "before" for
+every corpus, generated fresh at the start of the session rather than
+reused from an earlier round).

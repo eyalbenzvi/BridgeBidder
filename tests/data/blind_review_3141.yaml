@@ -1,0 +1,46 @@
+# Blind expert review, round 7 (seed 3141, 1000 lost boards packed with the
+# second, --with-ben question; the run was stopped early on cost grounds
+# after 323 of 2000 tables reviewed, so this round is narrow: one context
+# gap found from two flags both questions agreed on, plus two more boards
+# (1792, 632) the held-out adjudication itself turned up while checking that
+# fix - not a full pass over the corpus.
+
+# --- the takeout doubler's own continuation over advancer's forced 1-level
+# major answer (nothing at all offered "1H - X - P - 1S - P - ?" before;
+# the generic uncontested-continuation layer stood in for it)
+- name: br7_doubler_jump_raises_forced_1level_major_answer
+  hand: "AKQ2.K5.AQ2.KQT5"
+  calls: ["1H", "X", "P", "1S", "P"]
+  expect: { call: "3S" }
+- name: br7_doubler_raises_forced_1level_major_answer_three_card_support
+  hand: "AK2.KQ6.KJ92.K97"
+  calls: ["P", "1C", "X", "P", "1S", "P"]
+  expect: { call: "2S" }
+
+# --- a good, high-quality second major shown cheaply beats a marginal raise
+# of the forced answer (seed 9001 board 1792 and seed 4242 board 632)
+- name: br7_doubler_shows_own_good_major_ahead_of_marginal_raise
+  hand: "K95.AKQJ2.KQJ.65"
+  calls: ["P", "P", "1C", "X", "P", "1S", "P"]
+  expect: { call: "2H" }
+- name: br7_advancer_passes_the_natural_second_major
+  hand: "Q8763.9743.64.KT"
+  calls: ["P", "P", "1C", "X", "P", "1S", "P", "2H", "P"]
+  expect: { call: "P" }
+- name: br7_doubler_shows_own_good_major_cheaply_at_1level
+  dealer: N
+  vulnerability: EW
+  hand: "AKQJ8.K43.Q.K853"
+  calls: ["P", "1D", "X", "P", "1H", "P"]
+  expect: { call: "1S" }
+
+# --- but a MEDIOCRE 4-card second suit (no suit quality) must not steal the
+# tie from a genuine long-suit raise (board 331, seed 9001: a 7-card-fit
+# game-making auction was broken by an early, length-only version of the
+# rule above; good_suit() as a feature, not just length, fixed it)
+- name: br7_doubler_still_raises_over_a_mediocre_second_suit
+  dealer: W
+  vulnerability: EW
+  hand: "K8.AT86.AQ7.AK86"
+  calls: ["P", "1D", "X", "P", "1S", "P"]
+  expect: { call: "2S" }
