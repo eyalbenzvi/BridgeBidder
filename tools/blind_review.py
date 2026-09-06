@@ -44,6 +44,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -187,14 +188,29 @@ def pack(rows_path: Path, n: int, out: Path, min_loss: int, worst: bool,
           + (f" (+ {len(index)} second-question prompts in {out / 'prompts_ben'})" if with_ben else ""))
 
 
-def _ask(prompt_path: Path, verdict_path: Path, model: str) -> str:
+def _ask(prompt_path: Path, verdict_path: Path, model: str, tries: int = 3) -> str:
+    """One `claude -p` call, no tools and no MCP servers (the prompt forbids
+    tools anyway, and each nested process is cheaper without them).  A failed
+    call is retried after a pause: under load the failures are transient
+    (rate limits, the container's memory cap) and the verdict is not written,
+    so a later `run` picks the prompt up again."""
     text = prompt_path.read_text()
-    res = subprocess.run(["claude", "-p", "--model", model, text],
-                         capture_output=True, text=True, timeout=600)
-    if res.returncode != 0 or not res.stdout.strip():
-        return f"FAILED {prompt_path.name}: {res.stderr.strip()[:200]}"
-    verdict_path.write_text(res.stdout)
-    return f"ok {prompt_path.name}"
+    last = ""
+    for attempt in range(tries):
+        try:
+            res = subprocess.run(["claude", "-p", "--strict-mcp-config", "--tools", "",
+                                  "--model", model, text],
+                                 capture_output=True, text=True, timeout=600,
+                                 stdin=subprocess.DEVNULL)
+        except subprocess.TimeoutExpired:
+            last = "timeout"
+            continue
+        if res.returncode == 0 and "VERDICT" in res.stdout:
+            verdict_path.write_text(res.stdout)
+            return f"ok {prompt_path.name}" + (f" (attempt {attempt + 1})" if attempt else "")
+        last = f"rc={res.returncode} {res.stderr.strip()[-160:] or res.stdout.strip()[-160:]}"
+        time.sleep(20 * (attempt + 1))
+    return f"FAILED {prompt_path.name}: {last}"
 
 
 def _ask_table(name: str, d: Path, model: str) -> str:
