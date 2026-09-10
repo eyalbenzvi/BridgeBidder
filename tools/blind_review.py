@@ -15,7 +15,7 @@ the double-dummy tricks, par, the other table's auction, or anything from
 BEN.  Losing to BEN only selects the board; it never enters the prompt.
 
     python tools/blind_review.py pack    --rows reports/after9001.jsonl --n 50 --dir reports/review9001
-    python tools/blind_review.py run     --dir reports/review9001 --model opus --jobs 4
+    python tools/blind_review.py run     --dir reports/review9001 --jobs 4
     python tools/blind_review.py collect --dir reports/review9001
 
 `run` drives `claude -p` one prompt at a time (skipping prompts that already
@@ -213,16 +213,26 @@ def _ask(prompt_path: Path, verdict_path: Path, model: str, tries: int = 3) -> s
     return f"FAILED {prompt_path.name}: {last}"
 
 
+def _blind_verdict_is_flaw(v: Path) -> bool:
+    """Has the blind prompt already come back, flagged?  Used to gate the
+    second, --with-ben question: most tables come back clean, and a clean
+    table has nothing for the second question to confirm or refute, so
+    asking it anyway would just double the call count for no signal."""
+    return v.exists() and parse_verdict(v.read_text())["verdict"] == "flaw"
+
+
 def _ask_table(name: str, d: Path, model: str) -> str:
-    """The blind question first; then, if the pack was made --with-ben, the
-    second question (our auction beside the other table's).  Each is skipped
-    when its verdict already exists, so a run is restartable."""
+    """The blind question first; then, only when it flagged something, the
+    second question (our auction beside the other table's) - a clean blind
+    verdict skips it entirely, roughly halving the paired call count since
+    most tables come back clean.  Each is skipped when its verdict already
+    exists, so a run is restartable."""
     msgs = []
     p, v = d / "prompts" / f"{name}.md", d / "verdicts" / f"{name}.txt"
     if p.exists() and not v.exists():
         msgs.append(_ask(p, v, model))
     p2, v2 = d / "prompts_ben" / f"{name}.md", d / "verdicts_ben" / f"{name}.txt"
-    if p2.exists() and not v2.exists():
+    if p2.exists() and not v2.exists() and _blind_verdict_is_flaw(v):
         v2.parent.mkdir(exist_ok=True)
         msgs.append(_ask(p2, v2, model).replace(name, name + " (2nd question)"))
     return "; ".join(msgs) or f"skip {name}"
@@ -231,10 +241,16 @@ def _ask_table(name: str, d: Path, model: str) -> str:
 def run(d: Path, model: str, jobs: int) -> None:
     names = sorted({p.stem for p in (d / "prompts").glob("*.md")}
                    | {p.stem for p in (d / "prompts_ben").glob("*.md")})
-    todo = [n for n in names
-            if not (d / "verdicts" / f"{n}.txt").exists()
-            or ((d / "prompts_ben" / f"{n}.md").exists()
-                and not (d / "verdicts_ben" / f"{n}.txt").exists())]
+
+    def is_todo(n: str) -> bool:
+        v = d / "verdicts" / f"{n}.txt"
+        if not v.exists():
+            return True
+        v2 = d / "verdicts_ben" / f"{n}.txt"
+        return ((d / "prompts_ben" / f"{n}.md").exists() and not v2.exists()
+                and _blind_verdict_is_flaw(v))
+
+    todo = [n for n in names if is_todo(n)]
     print(f"{len(todo)} tables to answer with {model}, {jobs} at a time")
     with ThreadPoolExecutor(max_workers=jobs) as ex:
         for msg in ex.map(lambda n: _ask_table(n, d, model), todo):
@@ -543,7 +559,7 @@ if __name__ == "__main__":
                         "table's auction (BEN in our seats) and asks whether it is preferable")
     r = sub.add_parser("run")
     r.add_argument("--dir", type=Path, required=True)
-    r.add_argument("--model", default="opus")
+    r.add_argument("--model", default="claude-sonnet-5")
     r.add_argument("--jobs", type=int, default=4)
     c = sub.add_parser("collect")
     c.add_argument("--dir", type=Path, required=True)
